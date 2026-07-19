@@ -198,11 +198,11 @@ a {
 }
 .igot-workspace {
   display: grid;
-  grid-template-columns: 1fr 420px;
-  grid-template-rows: 1fr; /* linha única ocupa toda a altura */
+  grid-template-columns: minmax(0, 1fr); /* 1 coluna só (AIPanel é overlay) */
+  grid-template-rows: minmax(0, 1fr);
   flex: 1;
   min-height: 0;
-  overflow: hidden; /* contém o conteúdo dentro da área do grid */
+  overflow: hidden;
 }
 .igot-workspace > * {
   min-height: 0;

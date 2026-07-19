@@ -566,6 +566,13 @@ export function Reader({
   const pinchStartZoom = useRef<number>(1);
 
   const handleTouchStart = (e: React.TouchEvent) => {
+    // Se o toque começou sobre TEXTO, não captura swipe (deixa seleção nativa).
+    // Solução ChatGPT: swipe só nas margens vazias, não sobre o texto.
+    const target = e.target as Element;
+    if (target?.closest(".reader-text, .pdf-text-layer, .reader-text p, .reader-text span")) {
+      touchStart.current = null;
+      return;
+    }
     // PINCH: se tem 2 dedos na tela, captura a distância inicial.
     if (e.touches.length === 2) {
       const t1 = e.touches[0];
@@ -1440,7 +1447,7 @@ export function Reader({
           height: 100%;
           min-height: 0;
           background: var(--bg);
-          border-right: 1px solid var(--border);
+          border-right: none; /* era 1px solid, mas sem painel lateral não precisa */
           position: relative;
           /* overflow: hidden é NECESSÁRIO pra conter o reader-scroll e
              deixar a nav-bar visível. Mas NÃO corta o header porque:
