@@ -30,6 +30,15 @@ export default function BookPage({ params }: { params: { id: string } }) {
   const [configReady, setConfigReady] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  // Reconstrói o ArrayBuffer a partir do Uint8Array (cópia defensiva).
+  // MEMOIZADO: deve vir ANTES de TODOS os early returns (Rules of Hooks).
+  const pdfSource = useMemo(() => {
+    if (!session?.pdfSource) return null;
+    const copy = new ArrayBuffer(session.pdfSource.byteLength);
+    new Uint8Array(copy).set(session.pdfSource);
+    return copy;
+  }, [session?.pdfSource]);
+
   // Carrega o livro pelo ID da URL.
   useEffect(() => {
     loadConfigCache().then(() => setConfigReady(hasConfig())).catch(() => {});
@@ -85,15 +94,6 @@ export default function BookPage({ params }: { params: { id: string } }) {
       </main>
     );
   }
-
-  // Reconstrói o ArrayBuffer a partir do Uint8Array (cópia defensiva).
-  // MEMOIZADO: deve vir ANTES dos early returns (Rules of Hooks).
-  const pdfSource = useMemo(() => {
-    if (!session?.pdfSource) return null;
-    const copy = new ArrayBuffer(session.pdfSource.byteLength);
-    new Uint8Array(copy).set(session.pdfSource);
-    return copy;
-  }, [session?.pdfSource]);
 
   if (notFound || !session) {
     return (
