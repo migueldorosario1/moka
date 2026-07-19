@@ -14,14 +14,15 @@ interface AuthButtonProps {
 }
 
 /**
- * Botão de login/logout no TopBar.
+ * Botão de login/logout.
  *
- * - Carregando: pequeno spinner
- * - Deslogado: "Entrar com Google" (com logo)
- * - Logado: avatar (foto do Google) + dropdown com nome e "Sair"
+ * Logado: avatar + dropdown com backdrop invisível.
+ * O backdrop cobre a tela inteira atrás do dropdown:
+ * - Tocar fora = fecha (backdrop recebe o clique)
+ * - Tocar no dropdown = funciona normal (sem corrida de eventos)
+ * - Tocar em "Sair" = executa logout ANTES de fechar
  *
- * Dropdown renderizado via createPortal(document.body) pra escapar de
- * qualquer overflow:hidden do header do Reader.
+ * Isso é à prova de iOS/Safari (sem pointerdown/pointerup race condition).
  */
 export function AuthButton({
   status,
@@ -33,23 +34,6 @@ export function AuthButton({
   const { t } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const triggerRef = useRef<HTMLDivElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
-
-  // Fecha o dropdown ao clicar fora (verifica trigger E dropdown).
-  useEffect(() => {
-    if (!menuOpen) return;
-    const onPointerDown = (e: PointerEvent) => {
-      const target = e.target as Node;
-      const insideTrigger = triggerRef.current?.contains(target);
-      const insideDropdown = dropdownRef.current?.contains(target);
-      if (!insideTrigger && !insideDropdown) {
-        setMenuOpen(false);
-      }
-    };
-    document.addEventListener("pointerdown", onPointerDown);
-    return () => document.removeEventListener("pointerdown", onPointerDown);
-  }, [menuOpen]);
 
   if (status === "loading") {
     return (
@@ -73,7 +57,7 @@ export function AuthButton({
     );
   }
 
-  // Logado: avatar + dropdown via PORTAL.
+  // Logado: avatar + dropdown com BACKDROP.
   const handleSignOut = async () => {
     setSigningOut(true);
     try {
@@ -86,7 +70,7 @@ export function AuthButton({
   };
 
   return (
-    <div className="auth-user" ref={triggerRef} style={{ position: "relative" }}>
+    <div className="auth-user" style={{ position: "relative" }}>
       <button
         className="auth-avatar-btn"
         onClick={() => setMenuOpen((o) => !o)}
@@ -102,53 +86,62 @@ export function AuthButton({
         )}
       </button>
       {menuOpen && typeof document !== "undefined" && createPortal(
-        <div
-          ref={dropdownRef}
-          role="menu"
-          style={{
-            position: "fixed",
-            top: "54px",
-            right: "12px",
-            zIndex: 99999,
-            background: "var(--surface)",
-            border: "1px solid var(--border)",
-            borderRadius: "12px",
-            boxShadow: "0 4px 24px rgba(0,0,0,0.2)",
-            padding: "10px",
-            minWidth: "180px",
-          }}
-        >
-          <div style={{
-            fontSize: "13px",
-            color: "var(--text-muted)",
-            padding: "6px 8px",
-            borderBottom: "1px solid var(--border)",
-            marginBottom: "8px",
-            wordBreak: "break-word",
-          }}>
-            {userName ?? t("auth_user")}
-          </div>
-          <button
-            onClick={handleSignOut}
-            role="menuitem"
-            disabled={signingOut}
+        <>
+          {/* BACKDROP invisível que cobre a tela toda.
+              Tocar fora do dropdown = clica no backdrop = fecha.
+              Sem race condition (pointerdown vs click). */}
+          <div
+            style={{ position: "fixed", inset: 0, zIndex: 99998 }}
+            onClick={() => setMenuOpen(false)}
+          />
+          {/* DROPDOWN com zIndex maior que o backdrop. */}
+          <div
+            role="menu"
             style={{
-              width: "100%",
-              border: "none",
-              background: "transparent",
-              color: "var(--accent)",
-              padding: "10px 8px",
-              borderRadius: "8px",
-              fontSize: "15px",
-              fontWeight: "600",
-              cursor: signingOut ? "wait" : "pointer",
-              textAlign: "left",
-              opacity: signingOut ? 0.5 : 1,
+              position: "fixed",
+              top: "54px",
+              right: "12px",
+              zIndex: 99999,
+              background: "var(--surface)",
+              border: "1px solid var(--border)",
+              borderRadius: "12px",
+              boxShadow: "0 4px 24px rgba(0,0,0,0.2)",
+              padding: "10px",
+              minWidth: "180px",
             }}
           >
-            {signingOut ? "..." : t("auth_signout")}
-          </button>
-        </div>,
+            <div style={{
+              fontSize: "13px",
+              color: "var(--text-muted)",
+              padding: "6px 8px",
+              borderBottom: "1px solid var(--border)",
+              marginBottom: "8px",
+              wordBreak: "break-word",
+            }}>
+              {userName ?? t("auth_user")}
+            </div>
+            <button
+              onClick={handleSignOut}
+              role="menuitem"
+              disabled={signingOut}
+              style={{
+                width: "100%",
+                border: "none",
+                background: "transparent",
+                color: "var(--accent)",
+                padding: "10px 8px",
+                borderRadius: "8px",
+                fontSize: "15px",
+                fontWeight: "600",
+                cursor: signingOut ? "wait" : "pointer",
+                textAlign: "left",
+                opacity: signingOut ? 0.5 : 1,
+              }}
+            >
+              {signingOut ? "..." : t("auth_signout")}
+            </button>
+          </div>
+        </>,
         document.body,
       )}
     </div>

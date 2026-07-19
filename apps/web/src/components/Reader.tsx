@@ -636,7 +636,13 @@ export function Reader({
   const [currentPageText, setCurrentPageText] = useState("");
 
   const chapter = book.chapters[chapterIdx];
-  const totalChapters = book.chapters.length;
+  const [pdfNumPages, setPdfNumPages] = useState(0);
+  // Nav bar usa o MAIOR entre chapters.length e pdfNumPages (do PdfPageCanvas).
+  // Isso garante que a barra nunca some, mesmo se chapters estiver vazio na nuvem.
+  const totalChapters = Math.max(
+    Array.isArray(book.chapters) ? book.chapters.length : 0,
+    pdfNumPages,
+  );
 
   // Wrappers que atualizam o estado E avisam o pai (pra persistir).
   const setChapterIdx = (n: number | ((prev: number) => number)) => {
@@ -1194,6 +1200,7 @@ export function Reader({
             showTranslation={showTranslation}
             onPageText={setCurrentPageText}
             onCanvasReady={(c) => (pdfCanvasRef.current = c)}
+            onNumPages={setPdfNumPages}
           />
         ) : (
           <article className="reader-text">

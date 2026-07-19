@@ -108,25 +108,29 @@ export default function HomePage() {
       try {
         const data = await file.arrayBuffer();
 
-        // ANTES de parsear, checa se já existe pelo tamanho do arquivo
-        // (mais rápido que parsear tudo pra depois descartar).
+        // ANTES de parsear, checa se já existe pelo tamanho do arquivo.
+        // DEDUP DEFENSIVO: entre os candidatos, PREFERE o que tem chapters válidos.
         const existingBySize = books.find(
+          (b) => b.fileName === file.name && b.fileSize === file.size
+            && (b.book?.chapters?.length ?? 0) > 0,
+        ) ?? books.find(
           (b) => b.fileName === file.name && b.fileSize === file.size,
         );
         if (existingBySize) {
-          // Livro já existe! Abre direto (com progresso salvo).
           router.push(`/book/${existingBySize.id}`);
           return;
         }
 
         const result = await parseBook({ data: data.slice(0), fileName: file.name });
         if (result.ok) {
-          // DEDUPLICAÇÃO por título (caso nome do arquivo seja diferente).
+          // DEDUPLICAÇÃO por título — também prefere chapters válidos.
           const existingByTitle = books.find(
+            (b) => b.book.title === result.book?.title
+              && (b.book?.chapters?.length ?? 0) > 0,
+          ) ?? books.find(
             (b) => b.book.title === result.book?.title,
           );
           if (existingByTitle) {
-            // Atualiza o pdfSource (caso tenha sido perdido) e abre.
             existingByTitle.pdfSource = result.book.sourceFormat === "pdf" ? new Uint8Array(data) : null;
             await saveToLibrary(existingByTitle, auth.userId);
             router.push(`/book/${existingByTitle.id}`);

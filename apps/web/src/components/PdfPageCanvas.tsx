@@ -35,6 +35,8 @@ interface PdfPageCanvasProps {
   onPageText?: (text: string) => void;
   /** Entrega o canvas renderizado ao pai (pra snapshot/foto da página). */
   onCanvasReady?: (canvas: HTMLCanvasElement) => void;
+  /** Entrega o número TOTAL de páginas do documento ao pai (pra nav bar). */
+  onNumPages?: (n: number) => void;
 }
 
 type Status = "loading" | "ready" | "error";
@@ -81,6 +83,7 @@ export function PdfPageCanvas({
   showTranslation = false,
   onPageText,
   onCanvasReady,
+  onNumPages,
 }: PdfPageCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -114,6 +117,10 @@ export function PdfPageCanvas({
         }
         docRef.current = doc;
         setDocReady(true);
+        // Entrega o número total de páginas ao pai (pra nav bar não depender de chapters).
+        if (onNumPages && (doc as any).numPages) {
+          onNumPages((doc as any).numPages);
+        }
       })
       .catch((err) => {
         if (cancelled) return;
@@ -320,13 +327,13 @@ function splitParagraphs(text: string): string[] {
 async function loadDoc(data: ArrayBuffer) {
   const pdfjs = await import("pdfjs-dist");
   pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
-  // Cópia defensiva: este buffer pertence ao componente, não ao caller.
   const owned = data.slice(0);
   const loadingTask = pdfjs.getDocument({ data: new Uint8Array(owned) });
   const doc = await loadingTask.promise;
   return {
     getPage: (n: number) => doc.getPage(n),
     destroy: () => doc.destroy(),
+    numPages: doc.numPages,
   };
 }
 
