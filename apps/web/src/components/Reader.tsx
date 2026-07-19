@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import type { ParsedBook } from "@igot/parser";
 import type { SelectionAction } from "@/lib/types";
 import { PdfPageCanvas } from "./PdfPageCanvas";
@@ -681,13 +681,15 @@ export function Reader({
     const saved = translations[key];
     if (saved) {
       setPageTranslation(saved);
-      setShowTranslation(false); // volta pro original por padrão
+      setShowTranslation(false);
     } else {
       setPageTranslation(null);
       setShowTranslation(false);
     }
     setOverlayMode(null);
     setCurrentPageText("");
+    setMenu(null);
+    clearCustomHighlight(); // limpa highlight ao trocar de página
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapterIdx]);
 
@@ -814,21 +816,36 @@ export function Reader({
    * quando a seleção estabiliza (debounce curto: 180ms pra aparecer antes do
    * menu nativo do iOS, que costuma demorar ~300ms).
    */
+  // Guard: ignora o próximo selectionchange causado pelo NOSSO removeAllRanges.
+  const ignoreNextSelChange = useRef(false);
+
+  /** Limpa o highlight customizado (chamar ao trocar página/fechar menu). */
+  const clearCustomHighlight = useCallback(() => {
+    if (typeof CSS !== "undefined" && "highlights" in CSS) {
+      (CSS as any).highlights.delete("moka-sel");
+    }
+  }, []);
+
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout> | null = null;
     const check = () => {
+      // Guard: se fomos nós que limpamos a seleção, ignora o evento.
+      if (ignoreNextSelChange.current) {
+        ignoreNextSelChange.current = false;
+        return;
+      }
       if (timer) clearTimeout(timer);
-      // Debounce MAIOR (400ms) pra deixar o menu nativo do iOS aparecer E
-      // o usuário dispensar primeiro. Depois nosso menu aparece por cima.
       timer = setTimeout(() => {
         const sel = window.getSelection();
         if (!sel || sel.isCollapsed) {
           setMenu(null);
+          clearCustomHighlight();
           return;
         }
         const text = sel.toString().trim();
         if (!text || text.length < 2) {
           setMenu(null);
+          clearCustomHighlight();
           return;
         }
         // Só mostra o menu se a seleção está DENTRO do reader.
@@ -846,15 +863,29 @@ export function Reader({
         const relTop = rect.top - (containerRect?.top ?? 0);
         const placement: "above" | "below" = relTop < menuH + 16 ? "below" : "above";
         const y = placement === "above" ? relTop - 12 : rect.bottom - (containerRect?.top ?? 0) + 12;
+
+        // CLAUDE SOLUTION: Capturar → Limpar → Repintar com Custom Highlight API
+        // 1. Clona o Range ANTES de limpar (o Range continua válido após removeAllRanges).
+        const rangeCopy = range.cloneRange();
+        // 2. Repinta o highlight amarelo SEM seleção nativa (Safari 17.2+).
+        if (typeof CSS !== "undefined" && "highlights" in CSS) {
+          try {
+            (CSS as any).highlights.set("moka-sel", new (window as any).Highlight(rangeCopy));
+          } catch { /* fallback: sem highlight, mas funciona */ }
+        }
+        // 3. Limpa a seleção nativa → menu nativo do iOS SOME.
+        ignoreNextSelChange.current = true;
+        sel.removeAllRanges();
+        // 4. Mostra nosso menu customizado.
         setMenu({ x: clampedX, y: Math.max(20, y), text, placement });
-      }, 400);
+      }, 200);
     };
     document.addEventListener("selectionchange", check);
     return () => {
       document.removeEventListener("selectionchange", check);
       if (timer) clearTimeout(timer);
     };
-  }, []);
+  }, [clearCustomHighlight]);
 
   /**
    * Toque duplo (double-click/double-tap): seleciona o parágrafo inteiro
@@ -906,12 +937,14 @@ export function Reader({
       });
     }
     setMenu(null);
+    clearCustomHighlight();
     window.getSelection()?.removeAllRanges();
   };
 
   /** Lê um trecho selecionado em voz alta (neural ou nativa). */
   const fireSpeak = async (text: string) => {
     setMenu(null);
+    clearCustomHighlight();
     window.getSelection()?.removeAllRanges();
     if (tts.state === "playing") tts.stop();
 
@@ -1254,8 +1287,18 @@ export function Reader({
             🔊 {t("reader_sel_speak")}
           </button>
           <button
+            onClick={() => {
+              navigator.clipboard?.writeText(menu.text).catch(() => {});
+              setMenu(null);
+              clearCustomHighlight();
+            }}
+            role="menuitem"
+          >
+            📋 {t("reader_sel_copy")}
+          </button>
+          <button
             className="selection-menu-close"
-            onClick={() => { setMenu(null); window.getSelection()?.removeAllRanges(); }}
+            onClick={() => { setMenu(null); clearCustomHighlight(); window.getSelection()?.removeAllRanges(); }}
             role="menuitem"
             aria-label={t("close")}
             title={t("close")}

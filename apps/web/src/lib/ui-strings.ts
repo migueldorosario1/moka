@@ -80,6 +80,7 @@ export type UIStringKey =
   | "reader_confirm_explain_page"
   | "reader_confirm_translate_page"
   | "reader_sel_speak"
+  | "reader_sel_copy"
   | "reader_no_text"
   | "reader_translate_page"
   | "reader_translating"
@@ -257,6 +258,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
+    reader_sel_copy: "Copiar",
     reader_confirm_translate_page: "Quer traduzir a página inteira?",
     reader_confirm_explain_page: "Quer explicar a página inteira?",
     reader_confirm_audio: "Gerar áudio desta página agora?",
@@ -430,6 +432,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
+    reader_sel_copy: "Copiar",
     reader_confirm_translate_page: "Quer traduzir a página inteira?",
     reader_confirm_explain_page: "Quer explicar a página inteira?",
     reader_confirm_audio: "Gerar áudio desta página agora?",
@@ -599,6 +602,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
+    reader_sel_copy: "Copiar",
     reader_confirm_translate_page: "Quer traduzir a página inteira?",
     reader_confirm_explain_page: "Quer explicar a página inteira?",
     reader_confirm_audio: "Gerar áudio desta página agora?",
@@ -768,6 +772,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
+    reader_sel_copy: "Copiar",
     reader_confirm_translate_page: "Quer traduzir a página inteira?",
     reader_confirm_explain_page: "Quer explicar a página inteira?",
     reader_confirm_audio: "Gerar áudio desta página agora?",
@@ -937,6 +942,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
+    reader_sel_copy: "Copiar",
     reader_confirm_translate_page: "Quer traduzir a página inteira?",
     reader_confirm_explain_page: "Quer explicar a página inteira?",
     reader_confirm_audio: "Gerar áudio desta página agora?",
@@ -1106,6 +1112,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
+    reader_sel_copy: "Copiar",
     reader_confirm_translate_page: "Quer traduzir a página inteira?",
     reader_confirm_explain_page: "Quer explicar a página inteira?",
     reader_confirm_audio: "Gerar áudio desta página agora?",
@@ -1275,6 +1282,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
+    reader_sel_copy: "Copiar",
     reader_confirm_translate_page: "Quer traduzir a página inteira?",
     reader_confirm_explain_page: "Quer explicar a página inteira?",
     reader_confirm_audio: "Gerar áudio desta página agora?",
@@ -1444,6 +1452,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
+    reader_sel_copy: "Copiar",
     reader_confirm_translate_page: "Quer traduzir a página inteira?",
     reader_confirm_explain_page: "Quer explicar a página inteira?",
     reader_confirm_audio: "Gerar áudio desta página agora?",
@@ -1613,6 +1622,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
+    reader_sel_copy: "Copiar",
     reader_confirm_translate_page: "Quer traduzir a página inteira?",
     reader_confirm_explain_page: "Quer explicar a página inteira?",
     reader_confirm_audio: "Gerar áudio desta página agora?",
@@ -1782,6 +1792,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
+    reader_sel_copy: "Copiar",
     reader_confirm_translate_page: "Quer traduzir a página inteira?",
     reader_confirm_explain_page: "Quer explicar a página inteira?",
     reader_confirm_audio: "Gerar áudio desta página agora?",
@@ -1951,6 +1962,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
+    reader_sel_copy: "Copiar",
     reader_confirm_translate_page: "Quer traduzir a página inteira?",
     reader_confirm_explain_page: "Quer explicar a página inteira?",
     reader_confirm_audio: "Gerar áudio desta página agora?",
@@ -2120,6 +2132,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
+    reader_sel_copy: "Copiar",
     reader_confirm_translate_page: "Quer traduzir a página inteira?",
     reader_confirm_explain_page: "Quer explicar a página inteira?",
     reader_confirm_audio: "Gerar áudio desta página agora?",
