@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Reader } from "@/components/Reader";
 import { useI18n } from "@/components/I18nProvider";
@@ -95,12 +95,15 @@ export default function BookPage({ params }: { params: { id: string } }) {
   }
 
   // Reconstrói o ArrayBuffer a partir do Uint8Array (cópia defensiva).
-  let pdfSource: ArrayBuffer | null = null;
-  if (session.pdfSource) {
+  // MEMOIZADO: só recria quando session.pdfSource muda de verdade.
+  // Antes era recriado a cada render → PdfPageCanvas achava que era
+  // outro PDF → recarregava tudo → instabilidade na seleção.
+  const pdfSource = useMemo(() => {
+    if (!session.pdfSource) return null;
     const copy = new ArrayBuffer(session.pdfSource.byteLength);
     new Uint8Array(copy).set(session.pdfSource);
-    pdfSource = copy;
-  }
+    return copy;
+  }, [session.pdfSource]);
 
   return (
     <main className="igot-shell">

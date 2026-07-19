@@ -63,12 +63,35 @@ function fitScale(
   return Math.min(byWidth, byHeight);
 }
 
-/** Hook: tamanho da janela (pra re-render ao redimensionar/girar). */
+/**
+ * Hook: tamanho do container (ResizeObserver em vez de window.resize).
+ * Filtros anti-jitter do iOS Safari (sugestões ChatGPT + Claude):
+ * - Só atualiza se mudou mais de 4px (threshold)
+ * - Ignora mudança só de altura <150px (barra do Safari encolhendo/aparecendo)
+ *   → era isso que reconstruía a text layer no meio da seleção
+ */
 function useViewportSize() {
   const [size, setSize] = useState({ w: 0, h: 0 });
   useEffect(() => {
-    const update = () => setSize({ w: window.innerWidth, h: window.innerHeight });
+    const update = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      setSize((prev) => {
+        // Só re-renderiza se a LARGURA mudou (rotação/janela) OU se a altura
+        // mudou MUITO (>150px). Ignora a barra do Safari encolhendo (Claude).
+        if (prev.w === w && Math.abs(prev.h - h) < 150) return prev;
+        // Threshold extra de 4px (ChatGPT).
+        if (Math.abs(prev.w - w) < 4 && Math.abs(prev.h - h) < 4) return prev;
+        return { w, h };
+      });
+    };
     update();
+    // ResizeObserver no body (mais preciso que window.resize).
+    if (typeof ResizeObserver !== "undefined") {
+      const ro = new ResizeObserver(update);
+      ro.observe(document.body);
+      return () => ro.disconnect();
+    }
     window.addEventListener("resize", update);
     return () => window.removeEventListener("resize", update);
   }, []);
@@ -91,6 +114,23 @@ export function PdfPageCanvas({
 
   // Re-render quando a janela muda de tamanho (redimensionar, girar tablet).
   const vpSize = useViewportSize();
+
+  // ANTI-PULO: adiciona/remove classe 'selecting' durante gesto de seleção.
+  // Faz o endOfContent expandir e cobrir os vazios entre linhas.
+  useEffect(() => {
+    const layer = textLayerRef.current;
+    if (!layer) return;
+    const start = () => layer.classList.add("selecting");
+    const stop = () => layer.classList.remove("selecting");
+    layer.addEventListener("pointerdown", start);
+    document.addEventListener("pointerup", stop);
+    document.addEventListener("pointercancel", stop);
+    return () => {
+      layer.removeEventListener("pointerdown", start);
+      document.removeEventListener("pointerup", stop);
+      document.removeEventListener("pointercancel", stop);
+    };
+  }, []);
 
   // Handles transitórios (pra cancelar em re-renders).
   const docRef = useRef<Awaited<ReturnType<typeof loadDoc>> | null>(null);
@@ -224,6 +264,14 @@ export function PdfPageCanvas({
         localTextLayer = textLayer;
         textLayerHandleRef.current = textLayer;
         await textLayer.render();
+
+        // ANTI-PULO: mecanismo endOfContent do pdf.js viewer oficial.
+        // Um div invisível atrás dos spans que cobre os vazios entre linhas
+        // durante o gesto de seleção. Sem isso, o hit-test cai no container
+        // e a seleção "explode" pra cima/baixo da página. (Solução Claude)
+        const end = document.createElement("div");
+        end.className = "endOfContent";
+        textLayerDiv.appendChild(end);
 
         if (cancelled) return;
 
