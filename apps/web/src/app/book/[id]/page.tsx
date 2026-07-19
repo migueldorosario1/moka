@@ -32,14 +32,19 @@ export default function BookPage({ params }: { params: { id: string } }) {
 
   // Carrega o livro pelo ID da URL.
   useEffect(() => {
-    loadConfigCache().then(() => setConfigReady(hasConfig()));
+    loadConfigCache().then(() => setConfigReady(hasConfig())).catch(() => {});
     let cancelled = false;
     (async () => {
-      const book = await getBook(params.id);
-      if (cancelled) return;
-      if (book) {
-        setSession(book);
-      } else {
+      try {
+        const book = await getBook(params.id);
+        if (cancelled) return;
+        if (book) {
+          setSession(book);
+        } else {
+          setNotFound(true);
+        }
+      } catch (err) {
+        console.error("[moka] Erro ao carregar livro:", err);
         setNotFound(true);
       }
       setLoading(false);
@@ -81,6 +86,15 @@ export default function BookPage({ params }: { params: { id: string } }) {
     );
   }
 
+  // Reconstrói o ArrayBuffer a partir do Uint8Array (cópia defensiva).
+  // MEMOIZADO: deve vir ANTES dos early returns (Rules of Hooks).
+  const pdfSource = useMemo(() => {
+    if (!session?.pdfSource) return null;
+    const copy = new ArrayBuffer(session.pdfSource.byteLength);
+    new Uint8Array(copy).set(session.pdfSource);
+    return copy;
+  }, [session?.pdfSource]);
+
   if (notFound || !session) {
     return (
       <main className="igot-shell">
@@ -93,17 +107,6 @@ export default function BookPage({ params }: { params: { id: string } }) {
       </main>
     );
   }
-
-  // Reconstrói o ArrayBuffer a partir do Uint8Array (cópia defensiva).
-  // MEMOIZADO: só recria quando session.pdfSource muda de verdade.
-  // Antes era recriado a cada render → PdfPageCanvas achava que era
-  // outro PDF → recarregava tudo → instabilidade na seleção.
-  const pdfSource = useMemo(() => {
-    if (!session.pdfSource) return null;
-    const copy = new ArrayBuffer(session.pdfSource.byteLength);
-    new Uint8Array(copy).set(session.pdfSource);
-    return copy;
-  }, [session.pdfSource]);
 
   return (
     <main className="igot-shell">
