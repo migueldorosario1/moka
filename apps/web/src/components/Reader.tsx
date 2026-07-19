@@ -818,6 +818,8 @@ export function Reader({
     let timer: ReturnType<typeof setTimeout> | null = null;
     const check = () => {
       if (timer) clearTimeout(timer);
+      // Debounce MAIOR (400ms) pra deixar o menu nativo do iOS aparecer E
+      // o usuário dispensar primeiro. Depois nosso menu aparece por cima.
       timer = setTimeout(() => {
         const sel = window.getSelection();
         if (!sel || sel.isCollapsed) {
@@ -836,10 +838,6 @@ export function Reader({
         }
         const rect = range.getBoundingClientRect();
         const containerRect = containerRef.current?.getBoundingClientRect();
-
-        // LIMPA a seleção nativa IMEDIATAMENTE — isso faz o menu nativo do
-        // iOS (Copiar/Compartilhar) sumir. Nosso menu customizado aparece sozinho.
-        // Guardamos o texto e a posição ANTES de limpar.
         const menuW = 300;
         const menuH = 52;
         const rawX = rect.right - (containerRect?.left ?? 0);
@@ -848,15 +846,8 @@ export function Reader({
         const relTop = rect.top - (containerRect?.top ?? 0);
         const placement: "above" | "below" = relTop < menuH + 16 ? "below" : "above";
         const y = placement === "above" ? relTop - 12 : rect.bottom - (containerRect?.top ?? 0) + 12;
-
-        // Limpa seleção nativa (faz menu iOS sumir).
-        sel.removeAllRanges();
-
-        // Mostra nosso menu (com leve delay pra garantir que o nativo sumiu).
-        setTimeout(() => {
-          setMenu({ x: clampedX, y: Math.max(20, y), text, placement });
-        }, 50);
-      }, 300);
+        setMenu({ x: clampedX, y: Math.max(20, y), text, placement });
+      }, 400);
     };
     document.addEventListener("selectionchange", check);
     return () => {
