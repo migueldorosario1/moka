@@ -1426,19 +1426,20 @@ export function Reader({
         }
         .reader:fullscreen .reader-header {
           padding: 8px 16px;
-          /* Header NO FLUXO NORMAL — empurra o texto pra baixo (não sobrepõe).
-             Quando oculto, colapsa a altura em vez de flutuar. */
           flex-shrink: 0;
-          overflow: hidden;
-          transition: max-height 200ms ease, opacity 200ms ease, padding 200ms ease;
-          max-height: 70px; /* uma linha só */
+          height: auto;
+          max-height: none;
+          overflow: visible;
         }
         .reader:fullscreen[data-menu-hidden="true"] .reader-header {
+          height: 0;
+          min-height: 0;
           max-height: 0;
           padding-top: 0;
           padding-bottom: 0;
+          overflow: hidden;
           opacity: 0;
-          border-bottom-color: transparent;
+          border: 0;
           pointer-events: none;
         }
         .reader:fullscreen .reader-scroll {
@@ -1465,46 +1466,65 @@ export function Reader({
           flex-wrap: wrap;
           min-height: 42px;
         }
-        /* Container principal: row-scroll + row-right lado a lado. */
+        /* Container principal: GRID (scroll + right) — solução ChatGPT */
         .reader-row-main {
-          display: flex;
+          display: grid;
+          grid-template-columns: minmax(0, 1fr) max-content;
           align-items: center;
+          gap: 6px;
+          width: 100%;
           min-width: 0;
-          overflow: visible; /* NÃO corta o dropdown */
+          overflow: visible;
         }
-        /* Ações do livro (em telas grandes: scroll horizontal; em pequenas: wrap) */
+        /* Ações do livro — scroll horizontal suave com snap */
         .reader-row-scroll {
           display: flex;
           align-items: center;
           gap: 6px;
-          flex: 1 1 auto;
           min-width: 0;
           overflow-x: auto;
+          overflow-y: hidden;
+          -webkit-overflow-scrolling: touch;
+          overscroll-behavior-x: contain;
+          scroll-snap-type: x proximity;
           scrollbar-width: none;
         }
         .reader-row-scroll::-webkit-scrollbar {
           display: none;
         }
-        /* Em telas pequenas (celular): botões quebram pra próxima linha */
+        .reader-row-scroll > * {
+          flex: 0 0 auto;
+          scroll-snap-align: start;
+        }
+        /* Em telas pequenas (celular): 2 linhas harmônicas */
         @media (max-width: 600px) {
-          .reader-row-scroll {
-            flex-wrap: wrap;
-            overflow-x: visible;
+          .reader-header {
+            min-height: 0;
+            padding: 6px 8px;
+            overflow: visible;
           }
           .reader-row-main {
-            flex-wrap: wrap;
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: auto auto;
+            gap: 6px;
           }
-          /* Botões um pouco menores no celular */
+          .reader-row-scroll {
+            grid-row: 1;
+            width: 100%;
+            min-height: 38px;
+          }
+          .reader-row-right {
+            grid-row: 2;
+            width: 100%;
+            min-height: 38px;
+            justify-content: center;
+            margin: 0;
+          }
           .icon-btn {
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             font-size: 16px;
           }
-        }
-        .reader-row-scroll > .icon-btn,
-        .reader-row-scroll > .page-action-btn,
-        .reader-row-scroll > .cafezinho-mark {
-          flex-shrink: 0;
         }
         /* Controles fixos à direita (NÃO scrolla, NÃO corta dropdown) */
         .reader-row-right {
@@ -2185,6 +2205,19 @@ export function Reader({
         /* Abaixo: quando não cabe em cima (topo da página). */
         .selection-menu.placement-below {
           transform: translate(-50%, 0);
+        }
+        /* No celular: barra fixa no rodapé, longe do menu nativo iOS */
+        @media (max-width: 600px) {
+          .selection-menu {
+            position: fixed !important;
+            left: 10px !important;
+            right: 10px !important;
+            top: auto !important;
+            bottom: 70px !important;
+            transform: none !important;
+            justify-content: center;
+            z-index: 2000;
+          }
         }
         .selection-menu button {
           border: none;

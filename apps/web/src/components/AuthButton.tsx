@@ -142,7 +142,7 @@ export function AuthButton({
             </button>
           </div>
         </>,
-        document.body,
+        document.fullscreenElement ?? document.body,
       )}
     </div>
   );
