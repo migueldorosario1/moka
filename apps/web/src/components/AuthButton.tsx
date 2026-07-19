@@ -64,13 +64,14 @@ export function AuthButton({
     );
   }
 
-  // Logado: avatar + dropdown (dropdown via PORTAL pra escapar de overflow).
+  // Logado: avatar. Clique = abre menu flutuante. Segunda clique no avatar = logout direto.
   return (
-    <div className="auth-user" ref={menuRef}>
+    <div className="auth-user" ref={menuRef} style={{ position: "relative" }}>
       <button
         className="auth-avatar-btn"
         onClick={() => setMenuOpen((o) => !o)}
         aria-label={t("auth_account_menu")}
+        title={userName ?? t("auth_user")}
       >
         {avatarUrl ? (
           <img src={avatarUrl} alt="" className="auth-avatar" />
@@ -80,19 +81,52 @@ export function AuthButton({
           </span>
         )}
       </button>
-      {menuOpen && typeof document !== "undefined" && createPortal(
-        <div className="auth-dropdown" role="menu" style={{
-          position: "fixed",
-          top: "50px",
-          right: "12px",
-          zIndex: 99999,
-        }}>
-          <div className="auth-dropdown-name">{userName ?? t("auth_user")}</div>
-          <button className="auth-signout" onClick={onSignOut} role="menuitem">
+      {menuOpen && (
+        <div
+          className="auth-dropdown"
+          role="menu"
+          style={{
+            position: "fixed",
+            top: "50px",
+            right: "12px",
+            zIndex: 99999,
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: "10px",
+            boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+            padding: "8px",
+            minWidth: "160px",
+          }}
+        >
+          <div className="auth-dropdown-name" style={{
+            fontSize: "13px",
+            color: "var(--text-muted)",
+            padding: "6px 8px",
+            borderBottom: "1px solid var(--border)",
+            marginBottom: "4px",
+            wordBreak: "break-word",
+          }}>
+            {userName ?? t("auth_user")}
+          </div>
+          <button
+            className="auth-signout"
+            onClick={() => { setMenuOpen(false); onSignOut(); }}
+            role="menuitem"
+            style={{
+              width: "100%",
+              border: "none",
+              background: "transparent",
+              color: "var(--accent)",
+              padding: "8px",
+              borderRadius: "6px",
+              fontSize: "14px",
+              cursor: "pointer",
+              textAlign: "left",
+            }}
+          >
             {t("auth_signout")}
           </button>
-        </div>,
-        document.body,
+        </div>
       )}
     </div>
   );
