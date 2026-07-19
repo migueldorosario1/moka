@@ -1488,6 +1488,10 @@ export function Reader({
           overscroll-behavior-x: contain;
           scroll-snap-type: x proximity;
           scrollbar-width: none;
+          /* Fade indicador de scroll nas bordas (solução Claude).
+             Quando tem botões escondidos, a borda fica esmaecida. */
+          -webkit-mask-image: linear-gradient(to right, transparent 0, black 12px, black calc(100% - 12px), transparent 100%);
+          mask-image: linear-gradient(to right, transparent 0, black 12px, black calc(100% - 12px), transparent 100%);
         }
         .reader-row-scroll::-webkit-scrollbar {
           display: none;

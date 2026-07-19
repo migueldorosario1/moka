@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import type { AuthStatus } from "@/lib/auth";
 import { useI18n } from "./I18nProvider";
@@ -34,6 +34,30 @@ export function AuthButton({
   const { t } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const [dropdownPos, setDropdownPos] = useState({ top: 54, right: 12 });
+
+  // Calcula posição do dropdown baseada na posição real do avatar.
+  const updatePos = useCallback(() => {
+    if (!triggerRef.current) return;
+    const rect = triggerRef.current.getBoundingClientRect();
+    setDropdownPos({
+      top: rect.bottom + 6,
+      right: Math.max(4, window.innerWidth - rect.right),
+    });
+  }, []);
+
+  // Atualiza posição ao abrir e em resize/scroll.
+  useEffect(() => {
+    if (!menuOpen) return;
+    updatePos();
+    window.addEventListener("resize", updatePos);
+    window.addEventListener("scroll", updatePos, true);
+    return () => {
+      window.removeEventListener("resize", updatePos);
+      window.removeEventListener("scroll", updatePos, true);
+    };
+  }, [menuOpen, updatePos]);
 
   if (status === "loading") {
     return (
@@ -70,7 +94,7 @@ export function AuthButton({
   };
 
   return (
-    <div className="auth-user" style={{ position: "relative" }}>
+    <div className="auth-user" ref={triggerRef} style={{ position: "relative" }}>
       <button
         className="auth-avatar-btn"
         onClick={() => setMenuOpen((o) => !o)}
@@ -99,8 +123,8 @@ export function AuthButton({
             role="menu"
             style={{
               position: "fixed",
-              top: "54px",
-              right: "12px",
+              top: `${dropdownPos.top}px`,
+              right: `${dropdownPos.right}px`,
               zIndex: 99999,
               background: "var(--surface)",
               border: "1px solid var(--border)",
