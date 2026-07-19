@@ -304,34 +304,41 @@ export default function HomePage() {
 
       <style jsx>{`
         .premium-link {
-          font-size: 22px;
+          font-size: 20px;
           text-decoration: none;
           display: flex;
           align-items: center;
           justify-content: center;
           width: 44px;
           height: 44px;
-          border-radius: 10px;
-          transition: all 150ms ease;
+          border-radius: var(--radius);
+          transition: background var(--transition), transform var(--transition);
         }
         .premium-link:hover {
-          transform: scale(1.15);
+          background: var(--accent-soft);
+        }
+        .premium-link:active {
+          transform: scale(0.94);
         }
         .shelf-page {
           flex: 1;
           overflow-y: auto;
-          padding: 24px 32px 80px;
+          padding: 32px 40px 100px;
         }
         .shelf-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
-          margin-bottom: 24px;
+          margin-bottom: 28px;
+          gap: 16px;
+          flex-wrap: wrap;
         }
         .shelf-header h1 {
           margin: 0;
-          font-size: var(--text-xl);
-          font-weight: 700;
+          font-family: var(--font-brand);
+          font-size: 30px;
+          font-weight: 600;
+          letter-spacing: 0.005em;
         }
         .shelf-actions {
           display: flex;
@@ -339,51 +346,62 @@ export default function HomePage() {
           align-items: center;
         }
         .add-book-btn {
-          padding: 8px 16px;
-          border: 1px solid var(--accent);
-          background: var(--accent-soft);
-          color: var(--accent);
-          border-radius: 8px;
+          padding: 10px 20px;
+          border: none;
+          background: linear-gradient(180deg, var(--accent), var(--accent-dark));
+          color: #fff8ee;
+          border-radius: var(--radius-pill);
           font-size: var(--text-sm);
           font-weight: 600;
+          letter-spacing: 0.01em;
           cursor: pointer;
-          transition: var(--transition);
+          box-shadow: var(--shadow-sm);
+          transition: box-shadow var(--transition), transform var(--transition),
+            filter var(--transition);
         }
         .add-book-btn:hover {
-          background: var(--accent);
-          color: white;
+          box-shadow: var(--shadow);
+          transform: translateY(-1px);
+          filter: brightness(1.05);
+        }
+        .add-book-btn:active {
+          transform: translateY(0) scale(0.98);
         }
         .clear-shelf-btn {
-          padding: 8px 14px;
-          border: 1px solid var(--border);
-          background: var(--surface);
+          padding: 9px 16px;
+          border: 1px solid transparent;
+          background: transparent;
           color: var(--text-muted);
-          border-radius: 8px;
+          border-radius: var(--radius-pill);
           font-size: var(--text-sm);
           cursor: pointer;
-          transition: var(--transition);
+          transition: border-color var(--transition), color var(--transition),
+            background var(--transition);
         }
         .clear-shelf-btn:hover {
-          border-color: #c0392b;
-          color: #c0392b;
+          border-color: var(--border);
+          background: var(--surface);
+          color: var(--accent-dark);
         }
         .book-card-wrapper {
           position: relative;
         }
         .book-delete-btn {
           position: absolute;
-          top: 6px;
-          right: 6px;
+          top: 8px;
+          right: 8px;
           width: 32px;
           height: 32px;
           border: none;
-          background: rgba(0, 0, 0, 0.55);
-          color: white;
+          background: rgba(30, 20, 12, 0.55);
+          -webkit-backdrop-filter: blur(4px);
+          backdrop-filter: blur(4px);
+          color: #fff8ee;
           border-radius: 50%;
-          font-size: 14px;
+          font-size: 13px;
           cursor: pointer;
-          opacity: 0.7; /* sempre visível em touch (sem hover no iPad) */
-          transition: opacity var(--transition);
+          opacity: 0.65; /* sempre visível em touch (sem hover no iPad) */
+          transition: opacity var(--transition), background var(--transition);
           z-index: 5;
           display: flex;
           align-items: center;
@@ -391,42 +409,61 @@ export default function HomePage() {
         }
         .book-delete-btn:hover {
           opacity: 1;
-          background: rgba(192, 57, 43, 0.85);
+          background: rgba(126, 69, 34, 0.9);
         }
         .shelf-error {
-          padding: 10px 14px;
-          background: #fdecea;
-          border-radius: 8px;
-          color: #c0392b;
+          padding: 12px 16px;
+          background: var(--accent-soft);
+          border-radius: var(--radius);
+          color: var(--accent-dark);
           font-size: var(--text-sm);
           margin-bottom: 16px;
-          border: 1px solid #f5b7b1;
+          border: 1px solid var(--gold);
         }
         .shelf-grid {
           display: grid;
           grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-          gap: 20px;
+          gap: 32px 24px;
         }
         .book-card {
           text-decoration: none;
           color: var(--text);
           display: flex;
           flex-direction: column;
-          gap: 8px;
-          transition: transform var(--transition);
+          gap: 12px;
         }
-        .book-card:hover {
-          transform: translateY(-3px);
-        }
+        /* Capa como livro de verdade: lombada à esquerda, cantos de folha
+           à direita, sombra que aprofunda no hover (o livro "levanta"). */
         .book-cover {
+          position: relative;
           aspect-ratio: 2 / 3;
           background: var(--surface-alt);
-          border-radius: 6px;
+          border-radius: 3px 8px 8px 3px;
           overflow: hidden;
           box-shadow: var(--shadow);
           display: flex;
           align-items: center;
           justify-content: center;
+          transition: box-shadow 280ms var(--ease), transform 280ms var(--ease);
+        }
+        .book-cover::after {
+          content: "";
+          position: absolute;
+          inset: 0;
+          pointer-events: none;
+          border-radius: inherit;
+          background: linear-gradient(
+            to right,
+            rgba(30, 20, 12, 0.18) 0%,
+            rgba(30, 20, 12, 0.05) 3%,
+            rgba(255, 255, 255, 0.12) 5%,
+            transparent 8%
+          );
+          box-shadow: inset 0 0 0 1px rgba(62, 42, 24, 0.06);
+        }
+        .book-card:hover .book-cover {
+          transform: translateY(-6px) rotate(-0.5deg);
+          box-shadow: var(--shadow-lg);
         }
         .book-cover img {
           width: 100%;
@@ -437,34 +474,38 @@ export default function HomePage() {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 8px;
+          gap: 10px;
           color: var(--text-muted);
         }
         .book-cover-icon {
-          font-size: 36px;
+          font-size: 34px;
+          opacity: 0.75;
         }
         .book-cover-format {
           font-size: 10px;
           font-weight: 600;
-          padding: 2px 6px;
+          letter-spacing: 0.08em;
+          padding: 3px 8px;
           background: var(--surface);
-          border-radius: 4px;
+          border-radius: var(--radius-pill);
+          box-shadow: var(--shadow-sm);
         }
         .book-info {
           text-align: center;
         }
         .book-title {
           margin: 0;
-          font-size: var(--text-sm);
+          font-family: var(--font-brand);
+          font-size: 14px;
           font-weight: 600;
-          line-height: 1.3;
+          line-height: 1.35;
           display: -webkit-box;
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;
           overflow: hidden;
         }
         .book-author {
-          margin: 2px 0 0;
+          margin: 3px 0 0;
           font-size: var(--text-xs);
           color: var(--text-muted);
           white-space: nowrap;
@@ -472,10 +513,11 @@ export default function HomePage() {
           text-overflow: ellipsis;
         }
         .book-progress {
-          margin: 2px 0 0;
-          font-size: var(--text-xs);
+          margin: 4px 0 0;
+          font-size: 11px;
+          letter-spacing: 0.03em;
           color: var(--accent);
-          font-weight: 500;
+          font-weight: 600;
         }
       `}</style>
     </main>

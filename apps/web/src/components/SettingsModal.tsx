@@ -79,7 +79,9 @@ export function SettingsModal({ onClose, onSaved }: SettingsModalProps) {
         .settings-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.45);
+          background: rgba(30, 20, 12, 0.4);
+          -webkit-backdrop-filter: blur(5px);
+          backdrop-filter: blur(5px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -89,12 +91,13 @@ export function SettingsModal({ onClose, onSaved }: SettingsModalProps) {
         }
         .settings-modal {
           background: var(--bg);
-          border-radius: 14px;
+          border: 1px solid var(--border-soft);
+          border-radius: var(--radius-lg);
           width: 100%;
           max-width: 560px;
           max-height: 90vh;
           overflow-y: auto;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+          box-shadow: var(--shadow-lg);
         }
         .settings-modal-header {
           display: flex;
@@ -109,8 +112,9 @@ export function SettingsModal({ onClose, onSaved }: SettingsModalProps) {
         }
         .settings-modal-header h2 {
           margin: 0;
-          font-size: 18px;
-          font-weight: 700;
+          font-family: var(--font-brand);
+          font-size: 19px;
+          font-weight: 600;
         }
         .settings-modal-close {
           width: 32px;

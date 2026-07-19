@@ -262,7 +262,7 @@ export default function AjudaPage() {
         .info-page { min-height: 100vh; background: var(--bg); padding: 40px 20px; }
         .info-card { max-width: 680px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 40px 48px; box-shadow: var(--shadow); }
         .info-back { color: var(--accent); text-decoration: none; margin-bottom: 24px; font-size: 14px; display: inline-block; }
-        .info-card h1 { font-size: 26px; font-weight: 700; color: var(--accent); margin: 0 0 16px; }
+        .info-card h1 { font-family: var(--font-brand); font-weight: 600; font-size: 26px; font-weight: 700; color: var(--accent); margin: 0 0 16px; }
         .info-intro { font-size: 15px; line-height: 1.7; color: var(--text); margin: 0 0 24px; }
         .info-card h2 { font-size: 19px; font-weight: 600; margin: 32px 0 12px; color: var(--text); }
         .info-card p { font-size: 15px; line-height: 1.7; margin: 0 0 12px; }
