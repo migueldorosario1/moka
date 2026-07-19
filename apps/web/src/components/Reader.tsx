@@ -132,10 +132,57 @@ export function Reader({
     let text = "";
     let speakLang = "";
 
+    // Se tem tradução visível na tela, lê ela.
     if (showTranslation && pageTranslation && overlayMode === "translate") {
       text = pageTranslation;
       speakLang = audioLang === "original" ? getTargetLang() : audioLang;
+    } else if (audioLang !== "original" && audioLang !== (book.language || "en")) {
+      // IDIOMA DO ÁUDIO DIFERENTE DO ORIGINAL → traduz e fala!
+      // Ex: livro em inglês, áudio em português → traduz a página pra PT e lê.
+      const targetLang = getTargetLang();
+      if (book.sourceFormat === "pdf") {
+        text = currentPageText || chapter?.blocks.map((b) => b.text ?? "").join(" ") || "";
+      } else {
+        text = chapter?.blocks
+          .map((b) => {
+            if (b.type === "heading" || b.type === "quote") return b.text ?? "";
+            if (b.type === "list") return (b.items ?? []).join(", ");
+            return b.text ?? "";
+          })
+          .join(". ") ?? "";
+      }
+      if (!text.trim()) return;
+      // Traduz a página no idioma do áudio e depois lê.
+      setTtsLoading(true);
+      const ctx = { bookTitle: book.title, bookAuthor: book.author, bookLanguage: book.language };
+      const result = await translatePageStream(text, ctx, (full) => { /* streaming */ });
+      setTtsLoading(false);
+      if (result.ok && result.text) {
+        const config = getConfigSync();
+        if (config && config.providerId === "openai") {
+          await tts.speakNeural(result.text, audioLang, {
+            baseUrl: "https://api.openai.com/v1",
+            apiKey: config.apiKey,
+            model: "tts-1",
+            voice: "nova",
+          });
+        } else {
+          tts.speak(result.text, audioLang);
+        }
+        // Salva a tradução gerada nas notas.
+        onSaveNote?.({
+          kind: "translate",
+          source: text.slice(0, 500),
+          result: result.text,
+          chapterId: chapter?.id,
+        });
+        return;
+      } else {
+        alert(result.error ?? "Erro ao traduzir.");
+        return;
+      }
     } else {
+      // Lê no idioma original do livro.
       if (book.sourceFormat === "pdf") {
         text = currentPageText || chapter?.blocks.map((b) => b.text ?? "").join(" ") || "";
       } else {
