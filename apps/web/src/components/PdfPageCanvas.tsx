@@ -115,20 +115,44 @@ export function PdfPageCanvas({
   // Re-render quando a janela muda de tamanho (redimensionar, girar tablet).
   const vpSize = useViewportSize();
 
-  // ANTI-PULO: adiciona/remove classe 'selecting' durante gesto de seleção.
-  // Faz o endOfContent expandir e cobrir os vazios entre linhas.
+  // ANTI-PULO: endOfContent expande durante seleção pra cobrir vazios.
+  // Desktop: mousedown ativa imediatamente (igual ao pdf.js oficial).
+  // Touch: só ativa DEPOIS que uma seleção real existe (selectionchange).
+  // (pointerdown no touch bloqueava a seleção — solução ChatGPT/Claude).
   useEffect(() => {
     const layer = textLayerRef.current;
     if (!layer) return;
-    const start = () => layer.classList.add("selecting");
+
+    const startMouse = () => layer.classList.add("selecting");
+
+    const checkSelection = () => {
+      const sel = document.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) {
+        layer.classList.remove("selecting");
+        return;
+      }
+      try {
+        const inside = sel.getRangeAt(0).intersectsNode(layer);
+        layer.classList.toggle("selecting", !!inside);
+      } catch { /* range transitório do Safari */ }
+    };
+
     const stop = () => layer.classList.remove("selecting");
-    layer.addEventListener("pointerdown", start);
+
+    // Desktop: mousedown (igual pdf.js oficial).
+    layer.addEventListener("mousedown", startMouse);
+    // Touch: só quando seleção real existe.
+    document.addEventListener("selectionchange", checkSelection);
     document.addEventListener("pointerup", stop);
     document.addEventListener("pointercancel", stop);
+    window.addEventListener("blur", stop);
+
     return () => {
-      layer.removeEventListener("pointerdown", start);
+      layer.removeEventListener("mousedown", startMouse);
+      document.removeEventListener("selectionchange", checkSelection);
       document.removeEventListener("pointerup", stop);
       document.removeEventListener("pointercancel", stop);
+      window.removeEventListener("blur", stop);
     };
   }, []);
 

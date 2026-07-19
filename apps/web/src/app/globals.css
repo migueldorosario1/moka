@@ -116,15 +116,14 @@ button,
 }
 
 /* Seleção de texto funciona bem dentro do leitor, inclusive em PWA iOS.
-   -webkit-touch-callout: none SUPRIME o menu nativo do iOS (copiar/
-   traduzir/compartilhar) pra não duplicar com o nosso menu Traduzir/Explicar. */
+   REMOVIDO: -webkit-touch-callout: none — bloqueava a seleção no iOS
+   (impedia o toque longo de iniciar seleção). O ChatGPT e Claude confirmaram. */
 .reader-text {
   -webkit-user-select: text;
   user-select: text;
-  -webkit-touch-callout: none;
 }
 .pdf-text-layer {
-  -webkit-touch-callout: none;
+  /* sem -webkit-touch-callout: none */
 }
 
 button {
@@ -536,7 +535,8 @@ a {
   cursor: text;
   -webkit-user-select: text;
   user-select: text;
-  -webkit-touch-callout: none; /* suprime menu nativo iOS */
+  z-index: 1; /* ACIMA do endOfContent (z-index: 0). Sem isso, a cobertura
+                 anti-pulo fica por cima do texto e mata a seleção. */
 }
 
 .pdf-text-layer br {
