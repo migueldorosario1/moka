@@ -554,6 +554,10 @@ export function Reader({
   const touchStart = useRef<{ x: number; y: number } | null>(null);
   const SWIPE_MIN = 110;        // mínimo de 110px pra contar como swipe
   const SWIPE_MAX_VERTICAL = 50; // se scrollou >50px na vertical, ignora (era scroll)
+  // Em tela pequena (celular), só conta swipe se começou no centro da tela
+  // (longe da borda esquerda/direita) pra não conflitar com o gesture de
+  // "voltar" do navegador (swipe da borda).
+  const EDGE_MARGIN = 30; // pixels de margem das bordas laterais
 
   // --- Pinch-to-zoom: pinça com 2 dedos pra aumentar/diminuir o zoom do PDF ---
   // Funciona em iPad/iPhone e Android. Mede a distância entre os 2 dedos
@@ -574,6 +578,10 @@ export function Reader({
     // SWIPE (1 dedo): só registra se não tava fazendo pinch.
     if (pinchStartDist.current !== null) return;
     const t = e.touches[0];
+    // Não registra swipe se começou muito na borda (gesture de voltar do sistema).
+    if (t.clientX < EDGE_MARGIN || t.clientX > window.innerWidth - EDGE_MARGIN) {
+      return;
+    }
     touchStart.current = { x: t.clientX, y: t.clientY };
   };
 
@@ -1473,7 +1481,7 @@ export function Reader({
           min-width: 0;
           overflow: visible; /* NÃO corta o dropdown */
         }
-        /* Ações do livro (scrollável se não couber) */
+        /* Ações do livro (em telas grandes: scroll horizontal; em pequenas: wrap) */
         .reader-row-scroll {
           display: flex;
           align-items: center;
@@ -1485,6 +1493,22 @@ export function Reader({
         }
         .reader-row-scroll::-webkit-scrollbar {
           display: none;
+        }
+        /* Em telas pequenas (celular): botões quebram pra próxima linha */
+        @media (max-width: 600px) {
+          .reader-row-scroll {
+            flex-wrap: wrap;
+            overflow-x: visible;
+          }
+          .reader-row-main {
+            flex-wrap: wrap;
+          }
+          /* Botões um pouco menores no celular */
+          .icon-btn {
+            width: 38px;
+            height: 38px;
+            font-size: 16px;
+          }
         }
         .reader-row-scroll > .icon-btn,
         .reader-row-scroll > .page-action-btn,
