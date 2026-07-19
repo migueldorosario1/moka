@@ -828,19 +828,27 @@ export function Reader({
         }
         const rect = range.getBoundingClientRect();
         const containerRect = containerRef.current?.getBoundingClientRect();
-        // Menu ACIMA da seleção, alinhado à DIREITA (o menu nativo iOS aparece
-        // no centro horizontal — assim não se sobrepõem).
+
+        // LIMPA a seleção nativa IMEDIATAMENTE — isso faz o menu nativo do
+        // iOS (Copiar/Compartilhar) sumir. Nosso menu customizado aparece sozinho.
+        // Guardamos o texto e a posição ANTES de limpar.
         const menuW = 300;
-        const menuH = 52; // altura aproximada do menu
+        const menuH = 52;
         const rawX = rect.right - (containerRect?.left ?? 0);
         const contW = containerRect?.width ?? 800;
         const clampedX = Math.max(menuW / 2 + 8, Math.min(contW - menuW / 2 - 8, rawX - menuW / 2));
         const relTop = rect.top - (containerRect?.top ?? 0);
-        // Se não cabe acima (topo da página), mostra ABAIXO da seleção.
         const placement: "above" | "below" = relTop < menuH + 16 ? "below" : "above";
         const y = placement === "above" ? relTop - 12 : rect.bottom - (containerRect?.top ?? 0) + 12;
-        setMenu({ x: clampedX, y: Math.max(20, y), text, placement });
-      }, 180);
+
+        // Limpa seleção nativa (faz menu iOS sumir).
+        sel.removeAllRanges();
+
+        // Mostra nosso menu (com leve delay pra garantir que o nativo sumiu).
+        setTimeout(() => {
+          setMenu({ x: clampedX, y: Math.max(20, y), text, placement });
+        }, 50);
+      }, 300);
     };
     document.addEventListener("selectionchange", check);
     return () => {
