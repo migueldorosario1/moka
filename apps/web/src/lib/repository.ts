@@ -167,29 +167,70 @@ export async function deleteBook(
  * Logado → Supabase. Deslogado → IndexedDB.
  */
 export async function listLibrary(userId: string | null): Promise<Session[]> {
+  // Sempre carrega LOCAL primeiro (tem chapters + pdfSource válidos).
+  const localBooks = await listAllBooks().catch(() => []);
+
   if (!userId) {
-    return listAllBooks().catch(() => []);
+    return localBooks;
   }
+
+  // Logado: busca da nuvem e FAZ MERGE com local.
+  // Prioriza o `book` LOCAL (tem chapters completos), mas pega progresso/
+  // notas/marcadores da nuvem se forem mais recentes.
   const supabase = createClient();
   const { data, error } = await supabase
     .from("books")
     .select("*")
     .order("saved_at", { ascending: false });
-  if (error || !data) return listAllBooks().catch(() => []);
-  return data.map((row: Record<string, unknown>) => ({
-    id: row.id as string,
-    fileName: row.file_name as string,
-    fileSize: row.file_size as number,
-    book: row.book as ParsedBook,
-    pdfSource: null,
-    chapterIdx: row.chapter_idx as number,
-    zoom: row.zoom as number,
-    savedAt: row.saved_at as number,
-    translations: (row.translations as Record<string, string>) ?? {},
-    notes: (row.notes as SavedNote[]) ?? [],
-    bookmarks: (row.bookmarks as Array<{ chapterIdx: number; savedAt: number }>) ?? [],
-    coverImage: row.cover_image as string | undefined,
-  }));
+
+  if (error || !data) return localBooks;
+
+  // Mapa dos livros locais por ID (pra merge rápido).
+  const localById = new Map(localBooks.map((b) => [b.id, b]));
+
+  const merged: Session[] = data.map((row: Record<string, unknown>) => {
+    const id = row.id as string;
+    const local = localById.get(id);
+
+    // Se tem cópia local VÁLIDA (com chapters), usa ela como base.
+    if (local && local.book?.chapters?.length > 0) {
+      return {
+        ...local,
+        // Pegamos da nuvem só o que faz sentido sincronizar:
+        chapterIdx: (row.chapter_idx as number) ?? local.chapterIdx,
+        zoom: (row.zoom as number) ?? local.zoom,
+        savedAt: (row.saved_at as number) ?? local.savedAt,
+        translations: (row.translations as Record<string, string>) ?? local.translations ?? {},
+        notes: (row.notes as SavedNote[]) ?? local.notes ?? [],
+        bookmarks: (row.bookmarks as Array<{ chapterIdx: number; savedAt: number }>) ?? local.bookmarks ?? [],
+      };
+    }
+
+    // Senão, usa o da nuvem (pode ter chapters incompletos, mas é o que tem).
+    return {
+      id,
+      fileName: row.file_name as string,
+      fileSize: row.file_size as number,
+      book: row.book as ParsedBook,
+      pdfSource: null,
+      chapterIdx: row.chapter_idx as number,
+      zoom: row.zoom as number,
+      savedAt: row.saved_at as number,
+      translations: (row.translations as Record<string, string>) ?? {},
+      notes: (row.notes as SavedNote[]) ?? [],
+      bookmarks: (row.bookmarks as Array<{ chapterIdx: number; savedAt: number }>) ?? [],
+      coverImage: row.cover_image as string | undefined,
+    };
+  });
+
+  // Adiciona livros locais que NÃO tão na nuvem (novos, ainda não sincronizados).
+  for (const local of localBooks) {
+    if (!merged.some((m) => m.id === local.id)) {
+      merged.push(local);
+    }
+  }
+
+  return merged;
 }
 
 /** Pega um livro específico pelo ID (com pdfSource pra renderizar PDF). */

@@ -1200,8 +1200,9 @@ export function Reader({
         )}
       </div>
 
-      {/* Barra de navegação rápida — slider horizontal pra pular páginas */}
-      {totalChapters > 1 && (
+      {/* Barra de navegação rápida — slider horizontal pra pular páginas.
+          Sempre mostra (mesmo com 1 página) pra não sumir em nenhum caso. */}
+      {totalChapters >= 1 && (
         <div className="reader-nav-bar">
           <button onClick={goPrev} disabled={chapterIdx === 0} aria-label={t("reader_nav_prev")}>
             ‹

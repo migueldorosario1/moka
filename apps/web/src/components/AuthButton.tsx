@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import { createPortal } from "react-dom";
 import type { AuthStatus } from "@/lib/auth";
 import { useI18n } from "./I18nProvider";
 
@@ -63,7 +64,7 @@ export function AuthButton({
     );
   }
 
-  // Logado: avatar + dropdown.
+  // Logado: avatar + dropdown (dropdown via PORTAL pra escapar de overflow).
   return (
     <div className="auth-user" ref={menuRef}>
       <button
@@ -79,13 +80,19 @@ export function AuthButton({
           </span>
         )}
       </button>
-      {menuOpen && (
-        <div className="auth-dropdown" role="menu">
+      {menuOpen && typeof document !== "undefined" && createPortal(
+        <div className="auth-dropdown" role="menu" style={{
+          position: "fixed",
+          top: "50px",
+          right: "12px",
+          zIndex: 99999,
+        }}>
           <div className="auth-dropdown-name">{userName ?? t("auth_user")}</div>
           <button className="auth-signout" onClick={onSignOut} role="menuitem">
             {t("auth_signout")}
           </button>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
