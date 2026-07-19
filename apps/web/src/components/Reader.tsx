@@ -552,7 +552,7 @@ export function Reader({
   // Threshold GENEROSO pra evitar trocas acidentais durante scroll/seleção.
   // Só vira "passar página" se o gesto for longo E claramente horizontal.
   const touchStart = useRef<{ x: number; y: number } | null>(null);
-  const SWIPE_MIN = 110;        // mínimo de 110px pra contar como swipe
+  const SWIPE_MIN = 80;         // mínimo de 80px pra contar como swipe
   const SWIPE_MAX_VERTICAL = 50; // se scrollou >50px na vertical, ignora (era scroll)
   // Em tela pequena (celular), só conta swipe se começou no centro da tela
   // (longe da borda esquerda/direita) pra não conflitar com o gesture de
@@ -1208,7 +1208,6 @@ export function Reader({
       <div
         ref={scrollRef}
         className={`reader-scroll ${book.sourceFormat === "pdf" ? "pdf-mode" : ""}`}
-        onPointerUp={handleSelection}
         onDoubleClick={handleDoubleClick}
         onClick={handleInvisibleMark}
         onTouchStart={handleTouchStart}
