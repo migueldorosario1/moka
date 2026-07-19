@@ -103,7 +103,7 @@ export default function SobrePage() {
           margin-bottom: 24px;
           font-size: 14px;
         }
-        .info-card h1 {
+        .info-card h1 { font-family: var(--font-brand); font-weight: 600;
           font-size: 28px;
           font-weight: 700;
           margin: 0 0 24px;

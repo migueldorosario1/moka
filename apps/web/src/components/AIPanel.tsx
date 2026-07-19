@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import type { ParsedBook } from "@igot/parser";
 import type { SelectionAction } from "@/lib/types";
 import { useI18n } from "./I18nProvider";
+import { CafezinhoLogo } from "./CafezinhoLogo";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
 import { translateStream, explainStream, ask, type BookContext } from "@/lib/ai-client";
 
@@ -140,7 +141,10 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
   return (
     <aside className="ai-panel">
       <header className="ai-header">
-        <span className="ai-title">{action ? title : t("ai_assistant")}</span>
+        <span className="ai-brand">
+          <CafezinhoLogo size={22} opacity={0.9} />
+          <span className="ai-title">{action ? title : t("ai_assistant")}</span>
+        </span>
         <div className="ai-header-actions">
           {state.result && action && (
             <button
@@ -249,56 +253,80 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
           align-items: center;
           justify-content: space-between;
           padding: 14px 20px;
-          border-bottom: 1px solid var(--border);
+          border-bottom: 1px solid var(--border-soft);
+          background: linear-gradient(180deg, var(--surface), transparent);
+        }
+        .ai-brand {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+          min-width: 0;
         }
         .ai-title {
           font-weight: 600;
-          font-size: 15px;
+          font-size: 14px;
+          letter-spacing: 0.01em;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         .ai-close {
           border: none;
           background: transparent;
           color: var(--text-muted);
-          font-size: 24px;
+          font-size: 20px;
           line-height: 1;
-          padding: 0 4px;
+          padding: 6px;
+          border-radius: 50%;
+          transition: background var(--transition), color var(--transition);
+        }
+        .ai-close:hover {
+          background: var(--accent-soft);
+          color: var(--accent-dark);
         }
         .ai-hide {
           border: none;
           background: transparent;
-          font-size: 18px;
+          font-size: 17px;
           line-height: 1;
-          padding: 0 4px;
+          padding: 6px;
+          border-radius: 50%;
           cursor: pointer;
-          opacity: 0.7;
+          opacity: 0.65;
+          transition: opacity var(--transition), background var(--transition);
         }
         .ai-hide:hover {
           opacity: 1;
+          background: var(--accent-soft);
         }
         .ai-header-actions {
           display: flex;
           align-items: center;
-          gap: 6px;
+          gap: 4px;
         }
         .ai-save {
           border: 1px solid var(--border);
-          background: var(--surface-alt);
+          background: var(--surface);
           color: var(--text);
-          border-radius: 6px;
+          border-radius: var(--radius-pill);
           font-size: 12px;
-          padding: 4px 10px;
+          font-weight: 500;
+          padding: 5px 12px;
           cursor: pointer;
+          transition: border-color var(--transition), color var(--transition),
+            box-shadow var(--transition);
         }
         .ai-save:hover {
-          border-color: var(--accent);
-          color: var(--accent);
+          border-color: var(--gold);
+          color: var(--accent-dark);
+          box-shadow: var(--shadow-sm);
         }
         .ai-body {
           flex: 1;
           overflow-y: auto;
           overscroll-behavior: contain;
           min-height: 0;
-          padding: 20px;
+          padding: 24px;
           display: flex;
           flex-direction: column;
           gap: 16px;
@@ -306,13 +334,14 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
         .ai-empty {
           color: var(--text-muted);
           text-align: center;
-          margin-top: 40px;
+          margin-top: 48px;
         }
         .ai-empty p {
           margin: 0 0 8px;
         }
         .ai-empty-sub {
           font-size: 13px;
+          opacity: 0.8;
         }
         .ai-loading {
           display: flex;
@@ -330,8 +359,8 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
           color: var(--text-muted);
         }
         .dot {
-          width: 8px;
-          height: 8px;
+          width: 7px;
+          height: 7px;
           border-radius: 50%;
           background: var(--accent);
           opacity: 0.4;
@@ -355,15 +384,17 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
         }
         .ai-error {
           margin: 0;
-          padding: 12px;
+          padding: 12px 16px;
           background: var(--accent-soft);
-          border-radius: 8px;
-          color: var(--accent);
+          border-radius: var(--radius);
+          color: var(--accent-dark);
           font-size: 14px;
         }
+        /* O texto é o protagonista: resposta em serifada de leitura. */
         .ai-result {
-          font-size: var(--text-base);
-          line-height: 1.7;
+          font-family: var(--font-serif);
+          font-size: 16px;
+          line-height: 1.75;
           white-space: pre-wrap;
           padding: 4px 0;
         }
@@ -379,15 +410,15 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
           display: flex;
           align-items: flex-end;
           gap: 8px;
-          padding: 14px 20px;
-          border-top: 1px solid var(--border);
+          padding: 14px 20px 18px;
+          border-top: 1px solid var(--border-soft);
         }
         .ai-footer input,
         .ai-footer textarea {
           flex: 1;
-          padding: 10px 14px;
+          padding: 12px 16px;
           border: 1px solid var(--border);
-          border-radius: 8px;
+          border-radius: var(--radius-lg);
           background: var(--bg);
           color: var(--text);
           font-size: 14px;
@@ -395,22 +426,37 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
           resize: none;
           min-height: 60px;
           line-height: 1.5;
+          transition: border-color var(--transition), box-shadow var(--transition);
         }
         .ai-footer textarea:focus,
         .ai-footer input:focus {
           outline: none;
           border-color: var(--accent);
+          box-shadow: 0 0 0 3px var(--accent-soft);
         }
         .ai-footer button {
-          width: 40px;
+          width: 42px;
+          height: 42px;
           border: none;
-          background: var(--accent);
-          color: white;
-          border-radius: 8px;
-          font-size: 16px;
+          background: linear-gradient(180deg, var(--accent), var(--accent-dark));
+          color: #fff8ee;
+          border-radius: 50%;
+          font-size: 15px;
+          flex-shrink: 0;
+          box-shadow: var(--shadow-sm);
+          transition: transform var(--transition), box-shadow var(--transition),
+            filter var(--transition);
+        }
+        .ai-footer button:not(:disabled):hover {
+          transform: translateY(-1px);
+          box-shadow: var(--shadow);
+          filter: brightness(1.06);
+        }
+        .ai-footer button:not(:disabled):active {
+          transform: scale(0.94);
         }
         .ai-footer button:disabled {
-          opacity: 0.4;
+          opacity: 0.35;
           cursor: not-allowed;
         }
         /* Botão do microfone — diferente do botão de enviar (mais discreto). */
@@ -418,18 +464,18 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
           background: var(--surface-alt) !important;
           color: var(--text) !important;
           border: 1px solid var(--border) !important;
-          font-size: 18px !important;
+          font-size: 17px !important;
           flex-shrink: 0;
         }
         .ai-mic.listening {
-          background: #e74c3c !important;
-          color: white !important;
-          border-color: #e74c3c !important;
+          background: var(--accent-dark) !important;
+          color: #fff8ee !important;
+          border-color: var(--accent-dark) !important;
           animation: pulse 1.2s infinite;
         }
         @keyframes pulse {
           0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.1); }
+          50% { transform: scale(1.08); }
         }
       `}</style>
     </aside>

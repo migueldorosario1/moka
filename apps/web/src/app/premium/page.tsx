@@ -186,14 +186,15 @@ export default function PremiumPage() {
 
       <style>{`
         .premium-page { min-height: 100vh; background: var(--bg); padding: 40px 20px; }
-        .premium-card { max-width: 900px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px; box-shadow: var(--shadow); }
+        .premium-card { max-width: 900px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius-lg); padding: 48px 40px; box-shadow: var(--shadow); }
         .premium-back { color: var(--accent); text-decoration: none; font-size: 14px; }
         .premium-header { text-align: center; margin: 24px 0 40px; }
         .premium-logo { font-size: 48px; display: block; margin-bottom: 8px; }
-        .premium-header h1 { font-size: 32px; font-weight: 700; color: var(--accent); margin: 0 0 8px; }
+        .premium-header h1 { font-family: var(--font-brand); font-size: 34px; font-weight: 600; color: var(--accent-dark); margin: 0 0 8px; }
         .premium-subtitle { font-size: 16px; color: var(--text-muted); margin: 0; }
         .plans-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 28px; }
-        .plan-card { border: 2px solid var(--border); border-radius: 14px; padding: 24px 20px; position: relative; display: flex; flex-direction: column; }
+        .plan-card { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px 22px; position: relative; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); transition: box-shadow var(--transition), transform var(--transition); }
+        .plan-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
         .plan-card.highlighted { border-color: var(--accent); background: var(--accent-soft); }
         .plan-cappuccino { border-color: var(--accent); }
         .plan-espresso { border-color: var(--gold, #c89968); }
@@ -201,7 +202,7 @@ export default function PremiumPage() {
         .plan-badge { background: var(--accent); color: white; }
         .plan-badge-edu { background: var(--gold, #c89968); color: white; top: -28px; }
         .plan-emoji { font-size: 32px; margin-bottom: 4px; }
-        .plan-card h2 { font-size: 20px; font-weight: 700; margin: 0; }
+        .plan-card h2 { font-family: var(--font-brand); font-size: 21px; font-weight: 600; margin: 0; }
         .plan-tagline { font-size: 12px; color: var(--text-muted); margin: 4px 0 12px; min-height: 32px; }
         .plan-price { font-size: 28px; font-weight: 700; color: var(--accent); margin: 0 0 16px; }
         .plan-period { font-size: 14px; color: var(--text-muted); font-weight: 400; }

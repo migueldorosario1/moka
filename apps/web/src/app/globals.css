@@ -1,27 +1,40 @@
 /* ─── Moka — estilos globais ───────────────────────────────────────────
-   Paleta inspirada no universo do café: cobre, madeira, porcelana.
-   Sem neon, sem futurista — aconchego, elegância, minimalismo. */
+   Identidade: a hora do café. Porcelana, madeira, cobre e crema.
+   Sem neon, sem futurista — aconchego, elegância, minimalismo.
+   A IA é invisível; o texto é o protagonista. */
 
 :root {
-  /* Cores — LIGHT MODE (porcelana + cobre + madeira clara) */
-  --bg: #faf6f0;              /* porcelana quente (fundo) */
-  --surface: #fffefb;         /* branco quente (cards/superfícies) */
-  --surface-alt: #f2ebe0;     /* madeira clara (áreas secundárias) */
-  --text: #2c2018;            /* marrom-escuro (quase preto, texto) */
-  --text-muted: #8a7560;      /* marrom médio (texto secundário) */
-  --border: #e0d5c4;          /* bege-madeira (bordas) */
-  --accent: #b06a3b;          /* cobre (cor principal: botões, links) */
-  --accent-soft: #f5e6d8;     /* cobre claro (hover, fundos suaves) */
-  --accent-dark: #8a4f2a;     /* cobre escuro (press, sombra) */
-  --gold: #c89968;            /* dourado/cobre claro (destaques) */
-  --shadow: 0 1px 4px rgba(120, 90, 50, 0.08), 0 1px 2px rgba(120, 90, 50, 0.04);
-  --radius: 10px;
+  /* Cores — LIGHT MODE (porcelana + cobre queimado + madeira clara) */
+  --bg: #f6efe3;              /* porcelana quente (fundo) */
+  --surface: #fffcf5;         /* louça branca (cards/superfícies) */
+  --surface-alt: #eee3d1;     /* madeira clara (áreas secundárias) */
+  --text: #2b2015;            /* espresso (texto principal) */
+  --text-muted: #8b7460;      /* café com leite (texto secundário) */
+  --border: #e3d6c1;          /* bege-madeira (bordas) */
+  --border-soft: #ede3d2;     /* borda quase invisível */
+  --accent: #a35d2f;          /* cobre queimado (cor principal) */
+  --accent-soft: #f3e4d0;     /* crema (hover, fundos suaves) */
+  --accent-dark: #7e4522;     /* cobre escuro (press, ênfase) */
+  --gold: #c2955c;            /* dourado envelhecido (detalhes) */
 
-  /* Tipografia */
-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
-    "Helvetica Neue", Arial, sans-serif;
-  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
-    "Times New Roman", serif;
+  /* Sombras — sempre tingidas de marrom, nunca cinza-frio */
+  --shadow-sm: 0 1px 2px rgba(62, 42, 24, 0.05), 0 1px 3px rgba(62, 42, 24, 0.04);
+  --shadow: 0 2px 6px rgba(62, 42, 24, 0.06), 0 6px 20px rgba(62, 42, 24, 0.07);
+  --shadow-lg: 0 4px 12px rgba(62, 42, 24, 0.08), 0 18px 50px rgba(62, 42, 24, 0.14);
+  --shadow-up: 0 -2px 12px rgba(62, 42, 24, 0.08);
+
+  /* Raios */
+  --radius-sm: 8px;
+  --radius: 12px;
+  --radius-lg: 18px;
+  --radius-pill: 999px;
+
+  /* Tipografia (next/font injeta --font-display/--font-reading/--font-ui) */
+  --font-sans: var(--font-ui, ui-sans-serif), system-ui, -apple-system,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: var(--font-reading, "Iowan Old Style"), "Palatino Linotype",
+    Palatino, Georgia, "Times New Roman", serif;
+  --font-brand: var(--font-display, "Iowan Old Style"), Georgia, serif;
   --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
 
   /* Escala de tamanhos */
@@ -40,30 +53,35 @@
   --space-5: 24px;
   --space-6: 32px;
 
-  /* Transições */
-  --transition: 150ms ease;
+  /* Transições — curva suave, sem pressa (como o café) */
+  --ease: cubic-bezier(0.25, 0.6, 0.3, 1);
+  --transition: 180ms var(--ease);
 
   /* Seleção de texto (marca-texto dourado/cobre) */
-  --selection-bg: #f0d090;
-  --selection-color: #2c2018;
+  --selection-bg: #efd6a4;
+  --selection-color: #2b2015;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* DARK MODE (madeira escura + cobre) */
-    --bg: #1c1611;            /* marrom muito escuro (fundo) */
-    --surface: #26201a;       /* madeira escura (superfícies) */
-    --surface-alt: #302822;   /* madeira um pouco mais clara */
-    --text: #f0e6d8;          /* porcelana quente (texto) */
-    --text-muted: #a89580;    /* madeira seca (texto secundário) */
-    --border: #3d3328;        /* madeira queimada (bordas) */
-    --accent: #d4905a;        /* cobre mais claro (destaca no escuro) */
-    --accent-soft: #3a2a1c;   /* cobre escuro (hover) */
+    /* DARK MODE (madeira escura + cobre à meia-luz) */
+    --bg: #1a1410;            /* madeira quase preta (fundo) */
+    --surface: #221b15;       /* madeira escura (superfícies) */
+    --surface-alt: #2d241c;   /* madeira um pouco mais clara */
+    --text: #f0e6d5;          /* porcelana quente (texto) */
+    --text-muted: #a68f79;    /* madeira seca (texto secundário) */
+    --border: #3a2f24;        /* madeira queimada (bordas) */
+    --border-soft: #2f261d;
+    --accent: #d29360;        /* cobre iluminado (destaca no escuro) */
+    --accent-soft: #33251a;   /* cobre profundo (hover) */
     --accent-dark: #b06a3b;   /* cobre médio */
-    --gold: #d4a868;          /* dourado quente */
-    --shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+    --gold: #d3a96e;          /* dourado quente */
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+    --shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.45), 0 20px 56px rgba(0, 0, 0, 0.5);
+    --shadow-up: 0 -2px 12px rgba(0, 0, 0, 0.4);
     --selection-bg: #5a4520;
-    --selection-color: #f0e6d8;
+    --selection-color: #f0e6d5;
   }
 }
 
@@ -82,6 +100,47 @@ body {
   font-size: 16px;
   line-height: 1.6;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Foco visível — anel de cobre suave, só via teclado */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Movimento reduzido — todo mundo merece calma */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Scrollbars finas e quentes (WebKit + Firefox) */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--gold);
 }
 
 /* ── Ajustes pra iOS / iPad (PWA) ─────────────────────────────────── */
@@ -134,6 +193,10 @@ button {
 
 a {
   color: var(--accent);
+  transition: color var(--transition);
+}
+a:hover {
+  color: var(--accent-dark);
 }
 
 /* ── Tipografia do leitor ─────────────────────────────────────────── */
@@ -149,12 +212,15 @@ a {
 .reader-text h3 {
   margin: 1.6em 0 0.6em;
   line-height: 1.3;
+  font-family: var(--font-brand);
+  font-weight: 550;
+  letter-spacing: 0.005em;
 }
 
 .reader-text blockquote {
   margin: 1.2em 0;
   padding-left: 1em;
-  border-left: 3px solid var(--border);
+  border-left: 3px solid var(--gold);
   color: var(--text-muted);
   font-style: italic;
 }
@@ -185,8 +251,8 @@ a {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 20px;
-  border-bottom: 1px solid var(--border);
+  padding: 10px 24px;
+  border-bottom: 1px solid var(--border-soft);
   background: var(--surface);
   flex-shrink: 0;
 }
@@ -215,8 +281,9 @@ a {
   width: 420px;
   max-width: 100vw;
   z-index: 600;
-  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
+  box-shadow: -8px 0 40px rgba(62, 42, 24, 0.14);
   background: var(--surface);
+  border-left: 1px solid var(--border-soft);
 }
 .ai-panel-overlay .ai-panel {
   height: 100%;
@@ -224,21 +291,21 @@ a {
 @media (max-width: 900px) {
   .ai-panel-overlay {
     top: auto !important;
-    left: 8px !important;
-    right: 8px !important;
-    bottom: 8px !important;
+    left: 10px !important;
+    right: 10px !important;
+    bottom: 10px !important;
     width: auto !important;
     height: auto !important;
     max-height: 260px;
-    border: 2px solid var(--accent);
-    border-radius: 14px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
     overflow: hidden;
   }
   .ai-panel-overlay .ai-panel {
     height: auto;
     max-height: 260px;
-    border-radius: 12px;
+    border-radius: var(--radius-lg);
     overflow: hidden;
   }
   .ai-panel-overlay .ai-body {
@@ -281,7 +348,7 @@ a {
 .igot-topbar-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 /* Lado esquerdo do topbar: logo + estante */
@@ -296,61 +363,75 @@ a {
   color: var(--text);
 }
 .shelf-icon-btn {
-  font-size: 20px;
+  font-size: 19px;
   display: flex;
   align-items: center;
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 8px;
-  transition: var(--transition);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition), transform var(--transition);
 }
 .shelf-icon-btn:hover {
   background: var(--accent-soft);
 }
+.shelf-icon-btn:active {
+  transform: scale(0.94);
+}
 
-/* Ícones do topo — tamanho confortável pra touch (mínimo 44px Apple HIG). */
+/* Ícones do topo — ghost buttons (sem borda, hover suave).
+   44px mínimo pra touch (Apple HIG). */
 .igot-topbar .gear {
   width: 44px;
   height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid var(--border);
-  background: var(--bg);
-  border-radius: 10px;
-  font-size: 20px;
-  color: var(--text);
+  border: 1px solid transparent;
+  background: transparent;
+  border-radius: var(--radius);
+  font-size: 19px;
+  color: var(--text-muted);
   cursor: pointer;
   position: relative;
-  transition: var(--transition);
+  transition: background var(--transition), color var(--transition),
+    transform var(--transition);
 }
 .igot-topbar .gear:hover {
-  border-color: var(--accent);
-  transform: scale(1.05);
+  background: var(--accent-soft);
+  color: var(--accent);
+  transform: none;
+}
+.igot-topbar .gear:active {
+  transform: scale(0.94);
 }
 .igot-topbar .gear.unset::after {
   content: "";
   position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 9px;
-  height: 9px;
+  top: 7px;
+  right: 7px;
+  width: 8px;
+  height: 8px;
   background: var(--accent);
   border-radius: 50%;
+  box-shadow: 0 0 0 2px var(--surface);
 }
+
+/* A marca — Fraunces, tinta de cobre. Elegante, sem gradiente berrante. */
 .igot-topbar .brand {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-weight: 700;
-  font-size: 20px;
+  font-family: var(--font-brand);
+  font-weight: 600;
+  font-size: 22px;
+  letter-spacing: 0.01em;
   cursor: pointer;
   text-decoration: none;
   color: var(--text);
 }
 .igot-topbar .brand span {
-  background: linear-gradient(135deg, var(--accent), #e8a03d);
+  background: linear-gradient(160deg, var(--accent-dark) 20%, var(--accent) 65%, var(--gold));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
@@ -361,19 +442,19 @@ a {
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 12px;
+  padding: 8px 16px;
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
-  border-radius: 8px;
+  border-radius: var(--radius-pill);
   font-size: 13px;
   font-weight: 500;
   cursor: pointer;
-  transition: box-shadow 0.15s, border-color 0.15s;
+  transition: box-shadow var(--transition), border-color var(--transition);
 }
 .auth-signin:hover {
-  border-color: var(--accent);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+  border-color: var(--gold);
+  box-shadow: var(--shadow-sm);
 }
 
 /* Avatar (logado) */
@@ -402,29 +483,29 @@ a {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: var(--accent);
-  color: white;
+  background: linear-gradient(160deg, var(--accent), var(--accent-dark));
+  color: #fff8ee;
   font-size: 14px;
   font-weight: 600;
   border: 2px solid var(--border);
 }
 .auth-dropdown {
   position: fixed;
-  top: 50px;
-  right: 10px;
+  top: 54px;
+  right: 12px;
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
   padding: 8px;
-  min-width: 160px;
+  min-width: 170px;
   z-index: 9999;
 }
 .auth-dropdown-name {
   font-size: 13px;
   color: var(--text-muted);
   padding: 6px 8px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-soft);
   margin-bottom: 4px;
   word-break: break-word;
 }
@@ -435,14 +516,15 @@ a {
   border: none;
   background: transparent;
   color: var(--text);
-  padding: 8px;
-  border-radius: 6px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
   font-size: 14px;
   cursor: pointer;
+  transition: background var(--transition), color var(--transition);
 }
 .auth-signout:hover {
   background: var(--accent-soft);
-  color: var(--accent);
+  color: var(--accent-dark);
 }
 
 /* Spinner de loading do auth */
@@ -490,9 +572,9 @@ a {
   /* Wrapper relativo pra a text-layer se posicionar absolutamente sobre o canvas.
      Sem overflow:hidden (cortava o canvas ao fazer zoom). */
   position: relative;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow);
   background: white !important; /* sempre branco, mesmo em dark mode */
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 .pdf-canvas {
@@ -551,7 +633,7 @@ a {
   color: var(--text-muted);
   font-size: 14px;
   background: var(--surface);
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 .pdf-spinner {
@@ -573,8 +655,8 @@ a {
   padding: 24px;
   margin: 24px;
   background: var(--accent-soft);
-  border-radius: 8px;
-  color: var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--accent-dark);
   font-size: 14px;
   text-align: center;
 }
@@ -593,10 +675,10 @@ a {
   inset: 0;
   /* Altura mínima garante espaço de leitura mesmo se o canvas PDF for baixo. */
   min-height: 100%;
-  background: #fdfbf6; /* papel creme, como livro impresso */
+  background: #fdfaf3; /* papel creme, como livro impresso */
   overflow-y: auto;
   z-index: 5; /* acima do canvas e da text-layer */
-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
+  box-shadow: inset 0 0 0 1px rgba(62, 42, 24, 0.05);
 }
 
 .pdf-translation-page {
@@ -604,11 +686,10 @@ a {
   max-width: 38em; /* ~38 caracteres por linha — ideal pra leitura */
   margin: 0 auto;
   padding: 8% 6% 12%;
-  color: #1f1b16;
-  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
-    "Times New Roman", serif;
+  color: #241b12;
+  font-family: var(--font-serif);
   font-size: 17px;
-  line-height: 1.7;
+  line-height: 1.75;
   text-align: justify;
   hyphens: auto;
   -webkit-hyphens: auto;
@@ -638,52 +719,116 @@ a {
 /* Dark mode: a página traduzida também acompanha o tema. */
 @media (prefers-color-scheme: dark) {
   .pdf-translation-overlay {
-    background: #1a1a1f;
-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+    background: #1e1813;
+    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
   }
   .pdf-translation-page {
-    color: #e8e4dc;
+    color: #ece3d3;
   }
 }
 
-/* ─── Nav bar (passador de página) — GLOBAL pra funcionar sempre ─── */
+/* ─── Nav bar (passador de página) — GLOBAL pra funcionar sempre ───
+   Agora é uma BANDEJA FLUTUANTE: pill com blur, solta do rodapé,
+   como um pires apoiado na mesa. */
 .reader-nav-bar {
   position: fixed !important;
-  bottom: 0 !important;
-  left: 0 !important;
-  right: 0 !important;
+  bottom: 12px !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translateX(-50%);
+  width: min(600px, calc(100vw - 24px));
   z-index: 50 !important;
   display: flex !important;
   align-items: center !important;
   gap: 10px !important;
-  padding: 8px 16px !important;
-  background: var(--surface) !important;
-  border-top: 1px solid var(--border) !important;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.08) !important;
+  padding: 8px 12px !important;
+  background: color-mix(in srgb, var(--surface) 85%, transparent) !important;
+  -webkit-backdrop-filter: blur(14px) saturate(1.1);
+  backdrop-filter: blur(14px) saturate(1.1);
+  border: 1px solid var(--border-soft) !important;
+  border-top: 1px solid var(--border-soft) !important;
+  border-radius: var(--radius-pill) !important;
+  box-shadow: var(--shadow-lg) !important;
+}
+/* Fallback: navegadores sem color-mix/backdrop-filter */
+@supports not (background: color-mix(in srgb, red 50%, blue)) {
+  .reader-nav-bar {
+    background: var(--surface) !important;
+  }
 }
 .reader-nav-bar button {
-  width: 36px;
-  height: 36px;
-  border: 1px solid var(--border);
-  background: var(--bg);
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: transparent;
   color: var(--text);
-  border-radius: 8px;
-  font-size: 18px;
+  border-radius: 50%;
+  font-size: 17px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  transition: background var(--transition), color var(--transition),
+    transform var(--transition);
+}
+.reader-nav-bar button:not(:disabled):hover {
+  background: var(--accent-soft);
+  color: var(--accent-dark);
+}
+.reader-nav-bar button:not(:disabled):active {
+  transform: scale(0.92);
 }
 .reader-nav-bar .nav-slider {
   flex: 1;
-  height: 36px;
+  height: 38px;
   cursor: pointer;
   accent-color: var(--accent);
 }
 .reader-nav-bar .nav-counter-bottom {
   font-size: 13px;
+  font-variant-numeric: tabular-nums;
   color: var(--text-muted);
   min-width: 60px;
   text-align: center;
   flex-shrink: 0;
+}
+
+/* Slider refinado (WebKit) — trilho fino, pingo de cobre */
+.nav-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  background: transparent;
+}
+.nav-slider::-webkit-slider-runnable-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-alt);
+}
+.nav-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  margin-top: -6px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--surface);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition);
+}
+.nav-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+.nav-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 999px;
+  background: var(--surface-alt);
+}
+.nav-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 2px solid var(--surface);
+  box-shadow: var(--shadow-sm);
 }

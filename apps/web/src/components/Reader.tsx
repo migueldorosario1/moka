@@ -1421,12 +1421,12 @@ export function Reader({
           display: flex;
           flex-direction: column;
           gap: 4px;
-          padding: 6px 14px;
-          border-bottom: 1px solid var(--border);
+          padding: 7px 16px;
+          border-bottom: 1px solid var(--border-soft);
           background: var(--surface);
           flex-shrink: 0;
           min-height: 50px;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+          box-shadow: var(--shadow-sm);
           position: relative;
           z-index: 5;
         }
@@ -1486,9 +1486,9 @@ export function Reader({
           gap: 2px;
           padding: 4px;
           background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          box-shadow: 0 2px 10px rgba(0,0,0,0.12);
+          border: 1px solid var(--border-soft);
+          border-radius: var(--radius-pill);
+          box-shadow: var(--shadow);
           z-index: 40;
           transition: opacity 200ms ease;
         }
@@ -1511,7 +1511,7 @@ export function Reader({
           color: var(--text);
           font-size: 22px;
           font-weight: 600;
-          border-radius: 10px;
+          border-radius: 50%;
           cursor: pointer;
           transition: all 120ms ease;
           display: flex;
@@ -1530,17 +1530,21 @@ export function Reader({
           cursor: not-allowed;
         }
         .translate-page-btn {
-          padding: 6px 12px;
-          border: 1px solid var(--border);
-          background: var(--surface);
+          padding: 7px 14px;
+          border: 1px solid var(--border-soft);
+          background: var(--bg);
           color: var(--text);
-          border-radius: 8px;
+          border-radius: var(--radius-pill);
           font-size: 13px;
+          font-weight: 500;
           white-space: nowrap;
+          transition: border-color var(--transition), color var(--transition),
+            background var(--transition);
         }
         .translate-page-btn:hover:not(:disabled) {
-          border-color: var(--accent);
-          color: var(--accent);
+          border-color: var(--gold);
+          background: var(--accent-soft);
+          color: var(--accent-dark);
         }
         .translate-page-btn:disabled {
           opacity: 0.4;
@@ -1550,20 +1554,23 @@ export function Reader({
            No modo NORMAL: texto (padding menor, fonte 13px).
            No FULLSCREEN: só ícone (44px touch target). */
         .page-action-btn {
-          padding: 6px 12px;
-          border: 1px solid var(--border);
-          background: var(--surface);
+          padding: 7px 14px;
+          border: 1px solid var(--border-soft);
+          background: var(--bg);
           color: var(--text);
-          border-radius: 8px;
+          border-radius: var(--radius-pill);
           font-size: 13px;
+          font-weight: 500;
           white-space: nowrap;
           cursor: pointer;
-          transition: var(--transition);
+          transition: border-color var(--transition), color var(--transition),
+            background var(--transition);
           flex-shrink: 0;
         }
         .page-action-btn:hover:not(:disabled) {
-          border-color: var(--accent);
-          color: var(--accent);
+          border-color: var(--gold);
+          background: var(--accent-soft);
+          color: var(--accent-dark);
         }
         .page-action-btn:disabled {
           opacity: 0.4;
@@ -1582,22 +1589,27 @@ export function Reader({
         /* Destaque quando a página está traduzida/explicada (ativo). */
         .page-action-btn.active {
           background: var(--accent-soft);
-          border-color: var(--accent);
+          border-color: var(--gold);
+          color: var(--accent-dark);
         }
         .open-other-btn,
         .notes-btn {
-          padding: 6px 12px;
-          border: 1px solid var(--border);
-          background: var(--surface);
+          padding: 7px 14px;
+          border: 1px solid var(--border-soft);
+          background: var(--bg);
           color: var(--text);
-          border-radius: 8px;
+          border-radius: var(--radius-pill);
           font-size: 13px;
+          font-weight: 500;
           white-space: nowrap;
+          transition: border-color var(--transition), color var(--transition),
+            background var(--transition);
         }
         .open-other-btn:hover,
         .notes-btn:hover {
-          border-color: var(--accent);
-          color: var(--accent);
+          border-color: var(--gold);
+          background: var(--accent-soft);
+          color: var(--accent-dark);
         }
         .notes-btn .btn-label {
           font-size: 11px;
@@ -1629,27 +1641,28 @@ export function Reader({
           display: flex;
           align-items: center;
           justify-content: center;
-          border: 1px solid var(--border);
-          background: var(--surface);
-          color: var(--text);
-          border-radius: 10px;
+          border: 1px solid transparent;
+          background: transparent;
+          color: var(--text-muted);
+          border-radius: var(--radius);
           font-size: 17px;
           cursor: pointer;
-          transition: all 150ms ease;
+          transition: background var(--transition), color var(--transition),
+            transform var(--transition);
           flex-shrink: 0;
           position: relative;
         }
         .icon-btn:hover {
-          border-color: var(--accent);
           background: var(--accent-soft);
-          color: var(--accent);
+          color: var(--accent-dark);
         }
         .icon-btn:active {
           transform: scale(0.92);
         }
         .icon-btn.active {
           background: var(--accent-soft);
-          border-color: var(--accent);
+          color: var(--accent-dark);
+          border-color: var(--gold);
         }
         /* Contador dentro do botão (notas/marcadores) */
         .icon-btn .badge {
@@ -1725,17 +1738,17 @@ export function Reader({
           right: 16px;
           width: 48px;
           height: 48px;
-          border: 1px solid var(--border);
+          border: 1px solid var(--border-soft);
           background: var(--surface);
           color: var(--text-muted);
-          border-radius: 12px;
+          border-radius: 50%;
           cursor: pointer;
           display: flex;
           align-items: center;
           justify-content: center;
-          box-shadow: 0 2px 12px rgba(0,0,0,0.12);
+          box-shadow: var(--shadow);
           z-index: 60;
-          transition: var(--transition);
+          transition: border-color var(--transition), color var(--transition);
         }
         .fs-show-menu-btn:hover {
           border-color: var(--accent);
@@ -1750,12 +1763,12 @@ export function Reader({
           gap: 2px;
           width: 100%;
           text-align: left;
-          padding: 12px 14px;
-          border: 1px solid var(--border);
+          padding: 13px 16px;
+          border: 1px solid var(--border-soft);
           background: var(--surface);
-          border-radius: 10px;
+          border-radius: var(--radius);
           cursor: pointer;
-          transition: var(--transition);
+          transition: border-color var(--transition), background var(--transition);
           color: var(--text);
         }
         .bookmark-item:hover {
@@ -1775,7 +1788,9 @@ export function Reader({
         .notes-overlay {
           position: fixed;
           inset: 0;
-          background: rgba(0, 0, 0, 0.5);
+          background: rgba(30, 20, 12, 0.4);
+          -webkit-backdrop-filter: blur(5px);
+          backdrop-filter: blur(5px);
           display: flex;
           align-items: center;
           justify-content: center;
@@ -1784,25 +1799,27 @@ export function Reader({
         }
         .notes-modal {
           background: var(--bg);
-          border-radius: 14px;
+          border-radius: var(--radius-lg);
           width: 100%;
           max-width: 620px;
           max-height: 85vh;
           display: flex;
           flex-direction: column;
-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+          box-shadow: var(--shadow-lg);
+          border: 1px solid var(--border-soft);
         }
         .notes-header {
           display: flex;
           align-items: center;
           justify-content: space-between;
           padding: 18px 24px;
-          border-bottom: 1px solid var(--border);
+          border-bottom: 1px solid var(--border-soft);
         }
         .notes-header h2 {
           margin: 0;
-          font-size: 18px;
-          font-weight: 700;
+          font-family: var(--font-brand);
+          font-size: 19px;
+          font-weight: 600;
         }
         .notes-header button {
           border: none;
@@ -1827,10 +1844,11 @@ export function Reader({
           margin: 40px 0;
         }
         .note-card {
-          border: 1px solid var(--border);
-          border-radius: 10px;
-          padding: 14px;
+          border: 1px solid var(--border-soft);
+          border-radius: var(--radius);
+          padding: 16px;
           background: var(--surface);
+          box-shadow: var(--shadow-sm);
         }
         .note-meta {
           display: flex;
@@ -1861,18 +1879,20 @@ export function Reader({
           opacity: 1;
         }
         .note-source {
-          margin: 0 0 8px;
-          padding: 8px 10px;
+          margin: 0 0 10px;
+          padding: 10px 12px;
           background: var(--surface-alt);
-          border-left: 3px solid var(--accent);
-          border-radius: 4px;
+          border-left: 3px solid var(--gold);
+          border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+          font-family: var(--font-serif);
           font-size: 13px;
           font-style: italic;
           white-space: pre-wrap;
         }
         .note-result {
+          font-family: var(--font-serif);
           font-size: 14px;
-          line-height: 1.6;
+          line-height: 1.65;
           white-space: pre-wrap;
           color: var(--text);
         }
@@ -1883,8 +1903,10 @@ export function Reader({
         }
         .reader-title h1 {
           margin: 0;
+          font-family: var(--font-brand);
           font-size: 15px;
           font-weight: 600;
+          letter-spacing: 0.005em;
           white-space: nowrap;
           overflow: hidden;
           text-overflow: ellipsis;
@@ -1917,16 +1939,21 @@ export function Reader({
           gap: 12px;
         }
         .reader-nav button {
-          width: 32px;
-          height: 32px;
-          border: 1px solid var(--border);
-          background: var(--surface);
-          color: var(--text);
-          border-radius: 8px;
-          font-size: 18px;
+          width: 34px;
+          height: 34px;
+          border: none;
+          background: transparent;
+          color: var(--text-muted);
+          border-radius: 50%;
+          font-size: 17px;
           display: flex;
           align-items: center;
           justify-content: center;
+          transition: background var(--transition), color var(--transition);
+        }
+        .reader-nav button:not(:disabled):hover {
+          background: var(--accent-soft);
+          color: var(--accent-dark);
         }
         .reader-nav button:disabled {
           opacity: 0.3;
@@ -1934,6 +1961,7 @@ export function Reader({
         }
         .reader-counter {
           font-size: 13px;
+          font-variant-numeric: tabular-nums;
           color: var(--text-muted);
           min-width: 56px;
           text-align: center;
@@ -1949,10 +1977,10 @@ export function Reader({
         .reader-text {
           max-width: 680px;
           margin: 0 auto;
-          padding: 0 32px;
+          padding: 0 36px;
           font-family: var(--font-serif);
           font-size: var(--text-lg);
-          line-height: 1.8;
+          line-height: 1.85;
           color: var(--text);
         }
         /* Barra de progresso de leitura */
@@ -1967,8 +1995,8 @@ export function Reader({
         }
         .reader-progress-bar {
           height: 100%;
-          background: var(--accent);
-          transition: width 200ms ease;
+          background: linear-gradient(90deg, var(--accent-dark), var(--accent), var(--gold));
+          transition: width 300ms var(--ease);
           border-radius: 0 2px 2px 0;
         }
 
@@ -1981,9 +2009,9 @@ export function Reader({
           max-width: 90vw;
           max-height: 50vh;
           background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: 12px;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+          border: 1px solid var(--border-soft);
+          border-radius: var(--radius-lg);
+          box-shadow: var(--shadow-lg);
           z-index: 100;
           display: flex;
           flex-direction: column;
@@ -2006,10 +2034,11 @@ export function Reader({
           color: var(--text-muted);
         }
         .fs-result-body {
-          padding: 14px;
+          padding: 16px;
           overflow-y: auto;
+          font-family: var(--font-serif);
           font-size: var(--text-base);
-          line-height: 1.7;
+          line-height: 1.75;
           white-space: pre-wrap;
         }
         .reader-text h2 {
@@ -2081,14 +2110,15 @@ export function Reader({
         }
         .selection-menu {
           position: absolute;
-          background: var(--accent);
-          border: 2px solid rgba(255, 255, 255, 0.4);
-          border-radius: 14px;
-          box-shadow: 0 6px 24px rgba(0, 0, 0, 0.28);
+          background: linear-gradient(180deg, var(--accent), var(--accent-dark));
+          border: none;
+          border-radius: var(--radius-pill);
+          box-shadow: 0 8px 28px rgba(43, 26, 12, 0.32),
+            inset 0 1px 0 rgba(255, 255, 255, 0.18);
           display: flex;
           align-items: center;
           gap: 2px;
-          padding: 5px;
+          padding: 4px;
           z-index: 9999;
         }
         /* Acima: sobe o menu pra cima da coordenada (padrão). */
@@ -2102,17 +2132,19 @@ export function Reader({
         .selection-menu button {
           border: none;
           background: transparent;
-          color: white;
+          color: #fff8ee;
           padding: 10px 16px;
-          border-radius: 10px;
-          font-size: 15px;
+          border-radius: var(--radius-pill);
+          font-size: 14px;
           font-weight: 600;
+          letter-spacing: 0.01em;
           white-space: nowrap;
           cursor: pointer;
+          transition: background var(--transition);
         }
         .selection-menu button:hover,
         .selection-menu button:active {
-          background: rgba(255, 255, 255, 0.25);
+          background: rgba(255, 248, 238, 0.2);
         }
         .selection-menu-close {
           width: 36px !important;

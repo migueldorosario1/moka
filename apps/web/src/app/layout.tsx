@@ -1,7 +1,33 @@
 import type { Metadata, Viewport } from "next";
+import { Fraunces, Literata, Figtree } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { I18nProvider } from "@/components/I18nProvider";
+
+/*
+ * Tipografia do Moka — três vozes, um só clima:
+ *  - Fraunces  → display (marca, títulos). Serifada "soft", com o calor
+ *                de letreiro de cafeteria antiga. É a personalidade do app.
+ *  - Literata  → leitura (corpo dos livros, respostas da IA). Desenhada
+ *                especificamente pra leitura longa em tela.
+ *  - Figtree   → interface (botões, labels, menus). Sans humanista,
+ *                discreta — a IA e o chrome ficam invisíveis.
+ */
+const fontDisplay = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+const fontReading = Literata({
+  subsets: ["latin"],
+  variable: "--font-reading",
+  display: "swap",
+});
+const fontUI = Figtree({
+  subsets: ["latin"],
+  variable: "--font-ui",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Moka — Leia qualquer coisa. Entenda tudo.",
@@ -32,7 +58,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#b06a3b",
+  themeColor: "#a35d2f",
 };
 
 export default function RootLayout({
@@ -41,17 +67,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="pt-BR">
+    <html
+      lang="pt-BR"
+      className={`${fontDisplay.variable} ${fontReading.variable} ${fontUI.variable}`}
+    >
       <body>
         <I18nProvider>
           {children}
         </I18nProvider>
         {/* Selo LAB — difere do site oficial */}
         <div style={{
-          position: "fixed", bottom: 4, right: 4, zIndex: 9999,
-          background: "#e74c3c", color: "white", fontSize: 10,
-          fontWeight: 700, padding: "3px 8px", borderRadius: 6,
-          pointerEvents: "none", opacity: 0.8,
+          position: "fixed", bottom: 6, right: 6, zIndex: 9999,
+          background: "#3c2a1b", color: "#e9d9c3", fontSize: 10,
+          fontWeight: 600, letterSpacing: "0.06em", padding: "3px 9px",
+          borderRadius: 999, pointerEvents: "none", opacity: 0.75,
         }}>🧪 LAB</div>
         <ServiceWorkerRegister />
       </body>
