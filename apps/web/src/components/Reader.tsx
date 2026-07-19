@@ -864,21 +864,12 @@ export function Reader({
         const placement: "above" | "below" = relTop < menuH + 16 ? "below" : "above";
         const y = placement === "above" ? relTop - 12 : rect.bottom - (containerRect?.top ?? 0) + 12;
 
-        // CLAUDE SOLUTION: Capturar → Limpar → Repintar com Custom Highlight API
-        // 1. Clona o Range ANTES de limpar (o Range continua válido após removeAllRanges).
-        const rangeCopy = range.cloneRange();
-        // 2. Repinta o highlight amarelo SEM seleção nativa (Safari 17.2+).
-        if (typeof CSS !== "undefined" && "highlights" in CSS) {
-          try {
-            (CSS as any).highlights.set("moka-sel", new (window as any).Highlight(rangeCopy));
-          } catch { /* fallback: sem highlight, mas funciona */ }
-        }
-        // 3. Limpa a seleção nativa → menu nativo do iOS SOME.
-        ignoreNextSelChange.current = true;
-        sel.removeAllRanges();
-        // 4. Mostra nosso menu customizado.
+        // NÃO limpa a seleção nem usa removeAllRanges (quebra a seleção no iOS).
+        // O menu nativo pode aparecer junto, mas nosso menu tem z-index alto
+        // e posição diferente (acima/direita) pra não conflitar tanto.
+        // No celular, o menu nosso fica no rodapé (longe do nativo).
         setMenu({ x: clampedX, y: Math.max(20, y), text, placement });
-      }, 200);
+      }, 500);
     };
     document.addEventListener("selectionchange", check);
     return () => {
