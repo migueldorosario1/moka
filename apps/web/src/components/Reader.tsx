@@ -511,6 +511,8 @@ export function Reader({
   };
 
   const [notesOpen, setNotesOpen] = useState(false);
+  // Aba ativa no modal unificado: "notes" | "bookmarks" | "audio"
+  const [notesTab, setNotesTab] = useState<"notes" | "bookmarks" | "audio">("notes");
 
   // --- Resultado de trecho em fullscreen (painel flutuante) ---
   const [fsResult, setFsResult] = useState<string | null>(null);
@@ -988,15 +990,6 @@ export function Reader({
           >
             {isBookmarked ? "🔖" : "🏷"}
           </button>
-          {/* 🔖 Lista marcadores */}
-          <button
-            onClick={() => setBookmarksOpen(true)}
-            className="icon-btn"
-            title={t("reader_bookmarks")}
-            aria-label={t("reader_bookmarks")}
-          >
-            🔖 {bookmarks.length > 0 && <span className="badge">{bookmarks.length}</span>}
-          </button>
           {/* 📸 Foto */}
           <button
             onClick={savePageAsImage}
@@ -1291,89 +1284,109 @@ export function Reader({
         </button>
       )}
 
-      {/* Modal de marcadores (bookmarks) */}
-      {bookmarksOpen && (
-        <div className="notes-overlay" onClick={() => setBookmarksOpen(false)}>
-          <div className="notes-modal" onClick={(e) => e.stopPropagation()}>
-            <header className="notes-header">
-              <h2>{t("reader_bookmarks_title")}</h2>
-              <button onClick={() => setBookmarksOpen(false)} aria-label={t("close")}>✕</button>
-            </header>
-            <div className="notes-body">
-              {bookmarks.length === 0 ? (
-                <p className="notes-empty">
-                  {t("reader_bookmarks_empty")}
-                </p>
-              ) : (
-                [...bookmarks]
-                  .sort((a, b) => b.savedAt - a.savedAt)
-                  .map((bm) => {
-                    const ch = book.chapters[bm.chapterIdx];
-                    const label =
-                      book.sourceFormat === "pdf"
-                        ? t("reader_page_n", { n: bm.chapterIdx + 1 })
-                        : ch?.title || t("reader_chapter_n", { n: bm.chapterIdx + 1 });
-                    return (
-                      <button
-                        key={`${bm.chapterIdx}-${bm.savedAt}`}
-                        className="bookmark-item"
-                        onClick={() => {
-                          setChapterIdx(bm.chapterIdx);
-                          setBookmarksOpen(false);
-                        }}
-                      >
-                        <span className="bookmark-label">{label}</span>
-                        <span className="bookmark-date">
-                          {new Date(bm.savedAt).toLocaleDateString(lang, {
-                            day: "2-digit",
-                            month: "short",
-                            hour: "2-digit",
-                            minute: "2-digit",
-                          })}
-                        </span>
-                      </button>
-                    );
-                  })
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
+      {/* Modal UNIFICADO: Anotações + Marcadores + Áudios (3 abas) */}
       {notesOpen && (
         <div className="notes-overlay" onClick={() => setNotesOpen(false)}>
           <div className="notes-modal" onClick={(e) => e.stopPropagation()}>
             <header className="notes-header">
-              <h2>{t("reader_notes_title")}</h2>
+              <h2>📓 {t("reader_notes_title")}</h2>
               <button onClick={() => setNotesOpen(false)} aria-label={t("close")}>✕</button>
             </header>
+            {/* Abas */}
+            <div className="notes-tabs">
+              <button
+                className={`notes-tab ${notesTab === "notes" ? "active" : ""}`}
+                onClick={() => setNotesTab("notes")}
+              >
+                📝 {t("reader_notes_title").replace("📓 ", "")}
+                {notes.length > 0 && <span className="tab-count">{notes.length}</span>}
+              </button>
+              <button
+                className={`notes-tab ${notesTab === "bookmarks" ? "active" : ""}`}
+                onClick={() => setNotesTab("bookmarks")}
+              >
+                🔖 {t("reader_bookmarks_title").replace("🔖 ", "")}
+                {bookmarks.length > 0 && <span className="tab-count">{bookmarks.length}</span>}
+              </button>
+              <button
+                className={`notes-tab ${notesTab === "audio" ? "active" : ""}`}
+                onClick={() => setNotesTab("audio")}
+              >
+                🔊 Áudios
+              </button>
+            </div>
+            {/* Conteúdo da aba */}
             <div className="notes-body">
-              {notes.length === 0 ? (
+              {notesTab === "notes" && (
+                <>
+                  {notes.length === 0 ? (
+                    <p className="notes-empty">{t("reader_notes_empty")}</p>
+                  ) : (
+                    notes.map((n) => (
+                      <div key={n.id} className="note-card">
+                        <div className="note-meta">
+                          <span className={`note-kind note-${n.kind}`}>
+                            {n.kind === "translate" ? t("reader_note_translate") : n.kind === "explain" ? t("reader_note_explain") : t("reader_note_question")}
+                          </span>
+                          <time>{new Date(n.savedAt).toLocaleString(lang)}</time>
+                          <button
+                            className="note-delete"
+                            onClick={() => onRemoveNote?.(n.id)}
+                            aria-label={t("remove")}
+                          >
+                            🗑
+                          </button>
+                        </div>
+                        {n.source && (
+                          <blockquote className="note-source">{n.source}</blockquote>
+                        )}
+                        <div className="note-result">{n.result}</div>
+                      </div>
+                    ))
+                  )}
+                </>
+              )}
+              {notesTab === "bookmarks" && (
+                <>
+                  {bookmarks.length === 0 ? (
+                    <p className="notes-empty">{t("reader_bookmarks_empty")}</p>
+                  ) : (
+                    [...bookmarks]
+                      .sort((a, b) => b.savedAt - a.savedAt)
+                      .map((bm) => {
+                        const ch = book.chapters[bm.chapterIdx];
+                        const label =
+                          book.sourceFormat === "pdf"
+                            ? t("reader_page_n", { n: bm.chapterIdx + 1 })
+                            : ch?.title || t("reader_chapter_n", { n: bm.chapterIdx + 1 });
+                        return (
+                          <button
+                            key={`${bm.chapterIdx}-${bm.savedAt}`}
+                            className="bookmark-item"
+                            onClick={() => {
+                              setChapterIdx(bm.chapterIdx);
+                              setNotesOpen(false);
+                            }}
+                          >
+                            <span className="bookmark-label">{label}</span>
+                            <span className="bookmark-date">
+                              {new Date(bm.savedAt).toLocaleDateString(lang, {
+                                day: "2-digit",
+                                month: "short",
+                                hour: "2-digit",
+                                minute: "2-digit",
+                              })}
+                            </span>
+                          </button>
+                        );
+                      })
+                  )}
+                </>
+              )}
+              {notesTab === "audio" && (
                 <p className="notes-empty">
-                  {t("reader_notes_empty")}
+                  🔊 Áudios gerados aparecerão aqui. (Em breve)
                 </p>
-              ) : (
-                notes.map((n) => (
-                  <div key={n.id} className="note-card">
-                    <div className="note-meta">
-                      <span className={`note-kind note-${n.kind}`}>
-                        {n.kind === "translate" ? t("reader_note_translate") : n.kind === "explain" ? t("reader_note_explain") : t("reader_note_question")}
-                      </span>
-                      <time>{new Date(n.savedAt).toLocaleString(lang)}</time>
-                      <button
-                        className="note-delete"
-                        onClick={() => onRemoveNote?.(n.id)}
-                        aria-label={t("remove")}
-                      >
-                        🗑
-                      </button>
-                    </div>
-                    {n.source && (
-                      <blockquote className="note-source">{n.source}</blockquote>
-                    )}
-                    <div className="note-result">{n.result}</div>
-                  </div>
-                ))
               )}
             </div>
           </div>
@@ -1805,6 +1818,50 @@ export function Reader({
           justify-content: space-between;
           padding: 18px 24px;
           border-bottom: 1px solid var(--border);
+        }
+        /* Abas do modal unificado */
+        .notes-tabs {
+          display: flex;
+          gap: 0;
+          padding: 0 16px;
+          border-bottom: 1px solid var(--border);
+          background: var(--surface-alt);
+        }
+        .notes-tab {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          padding: 12px 16px;
+          border: none;
+          background: transparent;
+          color: var(--text-muted);
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          border-bottom: 2px solid transparent;
+          transition: all 150ms ease;
+        }
+        .notes-tab:hover {
+          color: var(--text);
+          background: var(--surface);
+        }
+        .notes-tab.active {
+          color: var(--accent);
+          border-bottom-color: var(--accent);
+          font-weight: 600;
+        }
+        .tab-count {
+          background: var(--accent);
+          color: white;
+          font-size: 10px;
+          font-weight: 700;
+          min-width: 18px;
+          height: 18px;
+          border-radius: 9px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 0 5px;
         }
         .notes-header h2 {
           margin: 0;
