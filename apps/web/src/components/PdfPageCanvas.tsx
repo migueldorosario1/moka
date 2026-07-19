@@ -115,46 +115,11 @@ export function PdfPageCanvas({
   // Re-render quando a janela muda de tamanho (redimensionar, girar tablet).
   const vpSize = useViewportSize();
 
-  // ANTI-PULO: endOfContent expande durante seleção pra cobrir vazios.
-  // Desktop: mousedown ativa imediatamente (igual ao pdf.js oficial).
-  // Touch: só ativa DEPOIS que uma seleção real existe (selectionchange).
-  // (pointerdown no touch bloqueava a seleção — solução ChatGPT/Claude).
-  useEffect(() => {
-    const layer = textLayerRef.current;
-    if (!layer) return;
-
-    const startMouse = () => layer.classList.add("selecting");
-
-    const checkSelection = () => {
-      const sel = document.getSelection();
-      if (!sel || sel.isCollapsed || sel.rangeCount === 0) {
-        layer.classList.remove("selecting");
-        return;
-      }
-      try {
-        const inside = sel.getRangeAt(0).intersectsNode(layer);
-        layer.classList.toggle("selecting", !!inside);
-      } catch { /* range transitório do Safari */ }
-    };
-
-    const stop = () => layer.classList.remove("selecting");
-
-    // Desktop: mousedown (igual pdf.js oficial).
-    layer.addEventListener("mousedown", startMouse);
-    // Touch: só quando seleção real existe.
-    document.addEventListener("selectionchange", checkSelection);
-    document.addEventListener("pointerup", stop);
-    document.addEventListener("pointercancel", stop);
-    window.addEventListener("blur", stop);
-
-    return () => {
-      layer.removeEventListener("mousedown", startMouse);
-      document.removeEventListener("selectionchange", checkSelection);
-      document.removeEventListener("pointerup", stop);
-      document.removeEventListener("pointercancel", stop);
-      window.removeEventListener("blur", stop);
-    };
-  }, []);
+  // ANTI-PULO REMOVIDO: o endOfContent com user-select:none bloqueava
+  // a seleção no iPad/touch (iOS detectava user-select:none embaixo do dedo
+  // e cancelava a seleção nativa). No desktop funcionava, mas no touch não.
+  // A seleção básica é mais importante que o anti-pulo.
+  // Para reativar no futuro: só ativar em dispositivos NÃO-touch.
 
   // Handles transitórios (pra cancelar em re-renders).
   const docRef = useRef<Awaited<ReturnType<typeof loadDoc>> | null>(null);
@@ -289,13 +254,7 @@ export function PdfPageCanvas({
         textLayerHandleRef.current = textLayer;
         await textLayer.render();
 
-        // ANTI-PULO: mecanismo endOfContent do pdf.js viewer oficial.
-        // Um div invisível atrás dos spans que cobre os vazios entre linhas
-        // durante o gesto de seleção. Sem isso, o hit-test cai no container
-        // e a seleção "explode" pra cima/baixo da página. (Solução Claude)
-        const end = document.createElement("div");
-        end.className = "endOfContent";
-        textLayerDiv.appendChild(end);
+        // endOfContent REMOVIDO — bloqueava seleção no iPad/touch.
 
         if (cancelled) return;
 

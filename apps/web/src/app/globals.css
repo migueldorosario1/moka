@@ -543,21 +543,7 @@ a {
   display: none;
 }
 
-/* ANTI-PULO DE SELEÇÃO (mecanismo endOfContent do pdf.js viewer oficial).
-   Um div atrás dos spans que cobre os vazios entre linhas durante o gesto.
-   Sem isso, o hit-test cai no container e a seleção "explode" pra cima/baixo. */
-.pdf-text-layer .endOfContent {
-  display: block;
-  position: absolute;
-  inset: 100% 0 0; /* repousa colapsado no rodapé da camada */
-  z-index: 0; /* ATRÁS dos spans (que são z-index: auto) */
-  cursor: default;
-  -webkit-user-select: none;
-  user-select: none;
-}
-.pdf-text-layer.selecting .endOfContent {
-  top: 0; /* durante o gesto, expande e cobre a página toda */
-}
+/* endOfContent REMOVIDO — bloqueava seleção no iPad/touch. */
 
 /* Spinner / estados de carregamento */
 .pdf-loading {
