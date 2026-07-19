@@ -10,7 +10,7 @@ interface AuthButtonProps {
   userName?: string | null;
   avatarUrl?: string | null;
   onSignIn: () => void;
-  onSignOut: () => void;
+  onSignOut: () => Promise<void> | void;
 }
 
 /**
@@ -19,6 +19,9 @@ interface AuthButtonProps {
  * - Carregando: pequeno spinner
  * - Deslogado: "Entrar com Google" (com logo)
  * - Logado: avatar (foto do Google) + dropdown com nome e "Sair"
+ *
+ * Dropdown renderizado via createPortal(document.body) pra escapar de
+ * qualquer overflow:hidden do header do Reader.
  */
 export function AuthButton({
   status,
@@ -29,17 +32,23 @@ export function AuthButton({
 }: AuthButtonProps) {
   const { t } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [signingOut, setSigningOut] = useState(false);
+  const triggerRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fecha o dropdown ao clicar fora.
+  // Fecha o dropdown ao clicar fora (verifica trigger E dropdown).
   useEffect(() => {
-    const onClick = (e: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+    if (!menuOpen) return;
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      const insideTrigger = triggerRef.current?.contains(target);
+      const insideDropdown = dropdownRef.current?.contains(target);
+      if (!insideTrigger && !insideDropdown) {
         setMenuOpen(false);
       }
     };
-    if (menuOpen) document.addEventListener("mousedown", onClick);
-    return () => document.removeEventListener("mousedown", onClick);
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
   }, [menuOpen]);
 
   if (status === "loading") {
@@ -64,13 +73,25 @@ export function AuthButton({
     );
   }
 
-  // Logado: avatar + dropdown (dropdown via PORTAL pra escapar de overflow).
+  // Logado: avatar + dropdown via PORTAL.
+  const handleSignOut = async () => {
+    setSigningOut(true);
+    try {
+      await onSignOut();
+    } catch (err) {
+      console.error("[moka-auth] Falha no logout:", err);
+    }
+    setSigningOut(false);
+    setMenuOpen(false);
+  };
+
   return (
-    <div className="auth-user" ref={menuRef}>
+    <div className="auth-user" ref={triggerRef} style={{ position: "relative" }}>
       <button
         className="auth-avatar-btn"
         onClick={() => setMenuOpen((o) => !o)}
         aria-label={t("auth_account_menu")}
+        title={userName ?? t("auth_user")}
       >
         {avatarUrl ? (
           <img src={avatarUrl} alt="" className="auth-avatar" />
@@ -81,15 +102,51 @@ export function AuthButton({
         )}
       </button>
       {menuOpen && typeof document !== "undefined" && createPortal(
-        <div className="auth-dropdown" role="menu" style={{
-          position: "fixed",
-          top: "50px",
-          right: "12px",
-          zIndex: 99999,
-        }}>
-          <div className="auth-dropdown-name">{userName ?? t("auth_user")}</div>
-          <button className="auth-signout" onClick={onSignOut} role="menuitem">
-            {t("auth_signout")}
+        <div
+          ref={dropdownRef}
+          role="menu"
+          style={{
+            position: "fixed",
+            top: "54px",
+            right: "12px",
+            zIndex: 99999,
+            background: "var(--surface)",
+            border: "1px solid var(--border)",
+            borderRadius: "12px",
+            boxShadow: "0 4px 24px rgba(0,0,0,0.2)",
+            padding: "10px",
+            minWidth: "180px",
+          }}
+        >
+          <div style={{
+            fontSize: "13px",
+            color: "var(--text-muted)",
+            padding: "6px 8px",
+            borderBottom: "1px solid var(--border)",
+            marginBottom: "8px",
+            wordBreak: "break-word",
+          }}>
+            {userName ?? t("auth_user")}
+          </div>
+          <button
+            onClick={handleSignOut}
+            role="menuitem"
+            disabled={signingOut}
+            style={{
+              width: "100%",
+              border: "none",
+              background: "transparent",
+              color: "var(--accent)",
+              padding: "10px 8px",
+              borderRadius: "8px",
+              fontSize: "15px",
+              fontWeight: "600",
+              cursor: signingOut ? "wait" : "pointer",
+              textAlign: "left",
+              opacity: signingOut ? 0.5 : 1,
+            }}
+          >
+            {signingOut ? "..." : t("auth_signout")}
           </button>
         </div>,
         document.body,

@@ -932,8 +932,9 @@ export function Reader({
   return (
     <section className="reader" ref={containerRef} data-menu-hidden={!menuVisible}>
       <header className="reader-header" data-hidden={!menuVisible}>
-        {/* ── Menu em UMA LINHA só (sem título/autor — libera espaço) ── */}
-        <div className="reader-row reader-row-main">
+        {/* ── Menu: row-scroll (ações do livro, scrollável) + row-right (controles, fixo) ── */}
+        <div className="reader-row-main">
+        <div className="reader-row-scroll">
           {/* Logo Cafezinho — canto esquerdo, vazada */}
           <a
             href="/"
@@ -1081,7 +1082,8 @@ export function Reader({
               ⏹
             </button>
           )}
-          {/* Agrupa à direita: ❓ + ⚙️ + login + fullscreen */}
+        </div>
+        {/* Fim reader-row-scroll. Início reader-row-right (controles fixos). */}
           <div className="reader-row-right">
             {/* ❓ Ajuda */}
             <a
@@ -1436,29 +1438,40 @@ export function Reader({
           flex-wrap: wrap;
           min-height: 42px;
         }
-        /* Linha única: botões à esquerda + grupo à direita (space-between). */
+        /* Container principal: row-scroll + row-right lado a lado. */
         .reader-row-main {
-          justify-content: space-between;
-          flex-wrap: nowrap; /* NUNCA quebra — tudo numa linha só */
-          overflow-x: auto; /* scroll horizontal se não couber (raro) */
+          display: flex;
+          align-items: center;
+          min-width: 0;
+          overflow: visible; /* NÃO corta o dropdown */
+        }
+        /* Ações do livro (scrollável se não couber) */
+        .reader-row-scroll {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          flex: 1 1 auto;
+          min-width: 0;
+          overflow-x: auto;
           scrollbar-width: none;
         }
-        .reader-row-main::-webkit-scrollbar {
+        .reader-row-scroll::-webkit-scrollbar {
           display: none;
         }
-        .reader-row-main > .icon-btn,
-        .reader-row-main > .page-action-btn,
-        .reader-row-main > .cafezinho-mark {
+        .reader-row-scroll > .icon-btn,
+        .reader-row-scroll > .page-action-btn,
+        .reader-row-scroll > .cafezinho-mark {
           flex-shrink: 0;
         }
-        /* Grupo de botões à direita (⚙️ + idioma + login + fullscreen). */
+        /* Controles fixos à direita (NÃO scrolla, NÃO corta dropdown) */
         .reader-row-right {
           display: flex;
           align-items: center;
           gap: 6px;
-          flex-shrink: 0;
+          flex: 0 0 auto;
+          background: var(--surface);
+          z-index: 10;
           margin-left: auto;
-          gap: 6px;
           flex-shrink: 0;
           margin-left: auto; /* empurra tudo pra direita */
         }
