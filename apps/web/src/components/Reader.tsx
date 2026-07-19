@@ -2251,14 +2251,20 @@ export function Reader({
           transform: translate(-50%, 0);
         }
         /* No celular: barra fixa no rodapé, longe do menu nativo iOS */
-        @media (max-width: 600px) {
+        /* Em dispositivos de TOQUE (iPad, iPhone, Android): barra fixa no rodapé,
+           longe do menu nativo do iOS. Usa hover:none + pointer:coarse que detecta
+           TODOS os dispositivos touch, incluindo iPad (solução ChatGPT). */
+        @media (hover: none) and (pointer: coarse) {
           .selection-menu {
             position: fixed !important;
             left: 10px !important;
-            right: 10px !important;
+            right: auto !important;
             top: auto !important;
-            bottom: 70px !important;
-            transform: none !important;
+            bottom: calc(66px + env(safe-area-inset-bottom, 0px)) !important;
+            transform: translateX(-50%) !important;
+            left: 50% !important;
+            width: max-content;
+            max-width: calc(100vw - 24px);
             justify-content: center;
             z-index: 2000;
           }
