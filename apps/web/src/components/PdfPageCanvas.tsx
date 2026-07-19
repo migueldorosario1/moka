@@ -115,11 +115,42 @@ export function PdfPageCanvas({
   // Re-render quando a janela muda de tamanho (redimensionar, girar tablet).
   const vpSize = useViewportSize();
 
-  // ANTI-PULO REMOVIDO: o endOfContent com user-select:none bloqueava
-  // a seleção no iPad/touch (iOS detectava user-select:none embaixo do dedo
-  // e cancelava a seleção nativa). No desktop funcionava, mas no touch não.
-  // A seleção básica é mais importante que o anti-pulo.
-  // Para reativar no futuro: só ativar em dispositivos NÃO-touch.
+  // ANTI-PULO (endOfContent): cobre os vazios entre linhas do text layer
+  // durante a seleção. Sem isso, o hit-test cai no container e a seleção
+  // "explode" pra cima/baixo.
+  // VERSÃO CORRETA (não bloqueia seleção no iPad):
+  // - Só ativa com selectionchange (depois que seleção JÁ EXISTE)
+  // - NÃO usa pointerdown/mousedown (que bloqueava o início da seleção)
+  // - z-index: 0 no endOfContent, z-index: 1 nos spans (já no globals.css)
+  useEffect(() => {
+    const layer = textLayerRef.current;
+    if (!layer) return;
+
+    const checkSelection = () => {
+      const sel = document.getSelection();
+      if (!sel || sel.isCollapsed || sel.rangeCount === 0) {
+        layer.classList.remove("selecting");
+        return;
+      }
+      try {
+        const inside = sel.getRangeAt(0).intersectsNode(layer);
+        layer.classList.toggle("selecting", !!inside);
+      } catch { /* range transitório do Safari */ }
+    };
+
+    const stop = () => layer.classList.remove("selecting");
+
+    // SÓ selectionchange — sem pointerdown/mousedown (que bloqueava touch).
+    document.addEventListener("selectionchange", checkSelection);
+    document.addEventListener("pointerup", stop);
+    window.addEventListener("blur", stop);
+
+    return () => {
+      document.removeEventListener("selectionchange", checkSelection);
+      document.removeEventListener("pointerup", stop);
+      window.removeEventListener("blur", stop);
+    };
+  }, []);
 
   // Handles transitórios (pra cancelar em re-renders).
   const docRef = useRef<Awaited<ReturnType<typeof loadDoc>> | null>(null);
@@ -254,7 +285,12 @@ export function PdfPageCanvas({
         textLayerHandleRef.current = textLayer;
         await textLayer.render();
 
-        // endOfContent REMOVIDO — bloqueava seleção no iPad/touch.
+        // ANTI-PULO: endOfContent (mecanismo do pdf.js oficial).
+        // Div atrás dos spans que cobre os vazios entre linhas durante seleção.
+        // Funciona em iPad porque: não usa pointerdown, só selectionchange.
+        const end = document.createElement("div");
+        end.className = "endOfContent";
+        textLayerDiv.appendChild(end);
 
         if (cancelled) return;
 

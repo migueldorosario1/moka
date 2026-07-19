@@ -543,7 +543,22 @@ a {
   display: none;
 }
 
-/* endOfContent REMOVIDO — bloqueava seleção no iPad/touch. */
+/* ANTI-PULO: endOfContent (mecanismo pdf.js oficial).
+   Div atrás dos spans que cobre vazios entre linhas durante seleção.
+   z-index: 0 (atrás dos spans que têm z-index: 1).
+   Só expande quando classe .selecting é adicionada (via selectionchange). */
+.pdf-text-layer .endOfContent {
+  display: block;
+  position: absolute;
+  inset: 100% 0 0; /* repousa colapsado no rodapé (não bloqueia seleção) */
+  z-index: 0; /* ATRÁS dos spans (z-index: 1) */
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+}
+.pdf-text-layer.selecting .endOfContent {
+  top: 0; /* só expande DEPOIS que seleção já existe (selectionchange) */
+}
 
 /* Spinner / estados de carregamento */
 .pdf-loading {
