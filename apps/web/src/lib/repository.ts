@@ -175,8 +175,6 @@ export async function listLibrary(userId: string | null): Promise<Session[]> {
   }
 
   // Logado: busca da nuvem e FAZ MERGE com local.
-  // Prioriza o `book` LOCAL (tem chapters completos), mas pega progresso/
-  // notas/marcadores da nuvem se forem mais recentes.
   const supabase = createClient();
   const { data, error } = await supabase
     .from("books")
@@ -185,32 +183,59 @@ export async function listLibrary(userId: string | null): Promise<Session[]> {
 
   if (error || !data) return localBooks;
 
-  // Mapa dos livros locais por ID (pra merge rápido).
+  // Mapa dos livros locais por ID E por fingerprint (fileName+fileSize).
   const localById = new Map(localBooks.map((b) => [b.id, b]));
+  const fingerprint = (fn: string, fs: number) => `${fn}\u0000${fs}`;
+  const localByFingerprint = new Map(
+    localBooks.map((b) => [fingerprint(b.fileName, b.fileSize), b]),
+  );
+
+  const matchedLocalIds = new Set<string>();
 
   const merged: Session[] = data.map((row: Record<string, unknown>) => {
-    const id = row.id as string;
-    const local = localById.get(id);
+    const cloudId = row.id as string;
+    const cloudFileName = row.file_name as string;
+    const cloudFileSize = row.file_size as number;
+
+    // Procura local por ID ou por fingerprint.
+    const local =
+      localById.get(cloudId) ??
+      localByFingerprint.get(fingerprint(cloudFileName, cloudFileSize));
+
+    if (local) {
+      matchedLocalIds.add(local.id);
+    }
 
     // Se tem cópia local VÁLIDA (com chapters), usa ela como base.
     if (local && local.book?.chapters?.length > 0) {
+      // Compara datas pra decidir progresso.
+      const cloudSavedAt = Number(row.saved_at) || 0;
+      const localSavedAt = Number(local.savedAt) || 0;
+      const cloudIsNewer = cloudSavedAt > localSavedAt;
+
+      // Limita chapterIdx ao array local.
+      const maxChapter = Math.max(0, local.book.chapters.length - 1);
+      const requestedChapter = cloudIsNewer
+        ? (Number(row.chapter_idx) || 0)
+        : local.chapterIdx;
+      const chapterIdx = Math.min(maxChapter, Math.max(0, requestedChapter));
+
       return {
         ...local,
-        // Pegamos da nuvem só o que faz sentido sincronizar:
-        chapterIdx: (row.chapter_idx as number) ?? local.chapterIdx,
+        chapterIdx,
         zoom: (row.zoom as number) ?? local.zoom,
-        savedAt: (row.saved_at as number) ?? local.savedAt,
+        savedAt: cloudSavedAt || localSavedAt,
         translations: (row.translations as Record<string, string>) ?? local.translations ?? {},
         notes: (row.notes as SavedNote[]) ?? local.notes ?? [],
         bookmarks: (row.bookmarks as Array<{ chapterIdx: number; savedAt: number }>) ?? local.bookmarks ?? [],
       };
     }
 
-    // Senão, usa o da nuvem (pode ter chapters incompletos, mas é o que tem).
+    // Senão, usa o da nuvem (pode ter chapters incompleto).
     return {
-      id,
-      fileName: row.file_name as string,
-      fileSize: row.file_size as number,
+      id: cloudId,
+      fileName: cloudFileName,
+      fileSize: cloudFileSize,
       book: row.book as ParsedBook,
       pdfSource: null,
       chapterIdx: row.chapter_idx as number,
@@ -223,9 +248,9 @@ export async function listLibrary(userId: string | null): Promise<Session[]> {
     };
   });
 
-  // Adiciona livros locais que NÃO tão na nuvem (novos, ainda não sincronizados).
+  // Adiciona livros locais que NÃO tão na nuvem.
   for (const local of localBooks) {
-    if (!merged.some((m) => m.id === local.id)) {
+    if (!matchedLocalIds.has(local.id)) {
       merged.push(local);
     }
   }
