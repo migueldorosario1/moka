@@ -1,0 +1,246 @@
+From 088f209f46587cf21eef2b122859758bf4816615 Mon Sep 17 00:00:00 2001
+From: Claude <noreply@anthropic.com>
+Date: Sun, 19 Jul 2026 13:56:57 +0000
+Subject: [PATCH] =?UTF-8?q?fix:=20header=20em=202=20linhas=20no=20celular?=
+ =?UTF-8?q?=20+=20fullscreen=20sem=20cortar=20bot=C3=B5es?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Celular (≤600px): layout fixo de 2 linhas — linha 1 = ações do livro
+  (scroll horizontal, nunca quebra em 3 linhas), linha 2 = controles
+  (❓ ⚙️ 👤 ⛶ 👁) alinhados à direita.
+- Fade nas bordas da fileira de ações quando há botões escondidos
+  (indicador visual de que dá pra scrollar — antes sumiam sem pista).
+- Fullscreen: max-height do header 70px → 150px; comporta as 2 linhas
+  do celular sem cortar os controles da direita.
+- Media query mobile movido pro FIM do CSS: antes vinha antes das regras
+  base (.icon-btn, .reader-row-right) e perdia na cascata — os overrides
+  de 38px nunca aplicavam.
+- overscroll-behavior-x: contain na fileira (scroll não vira gesto
+  "voltar" do navegador).
+- AuthButton: dropdown montado em document.fullscreenElement ?? body
+  (portal no body fica invisível em fullscreen) e posição ancorada no
+  avatar via getBoundingClientRect (top fixo de 54px errava quando o
+  avatar está na 2ª linha do celular).
+
+Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_011X2k2u1wUNbQgwB6my7Q36
+---
+ apps/web/src/components/AuthButton.tsx | 28 ++++++--
+ apps/web/src/components/Reader.tsx     | 98 +++++++++++++++++++++-----
+ 2 files changed, 104 insertions(+), 22 deletions(-)
+
+diff --git a/apps/web/src/components/AuthButton.tsx b/apps/web/src/components/AuthButton.tsx
+index 639c694..2884520 100644
+--- a/apps/web/src/components/AuthButton.tsx
++++ b/apps/web/src/components/AuthButton.tsx
+@@ -34,6 +34,22 @@ export function AuthButton({
+   const { t } = useI18n();
+   const [menuOpen, setMenuOpen] = useState(false);
+   const [signingOut, setSigningOut] = useState(false);
++  const avatarBtnRef = useRef<HTMLButtonElement>(null);
++  // Posição do dropdown, ancorada no avatar (medida ao abrir).
++  // Valor fixo (ex.: top 54px) erra quando o avatar está na 2ª linha
++  // do header no celular, ou quando o header tem altura diferente.
++  const [menuPos, setMenuPos] = useState({ top: 54, right: 12 });
++
++  const toggleMenu = () => {
++    const rect = avatarBtnRef.current?.getBoundingClientRect();
++    if (rect) {
++      setMenuPos({
++        top: rect.bottom + 6,
++        right: Math.max(8, window.innerWidth - rect.right),
++      });
++    }
++    setMenuOpen((o) => !o);
++  };
+ 
+   if (status === "loading") {
+     return (
+@@ -72,8 +88,9 @@ export function AuthButton({
+   return (
+     <div className="auth-user" style={{ position: "relative" }}>
+       <button
++        ref={avatarBtnRef}
+         className="auth-avatar-btn"
+-        onClick={() => setMenuOpen((o) => !o)}
++        onClick={toggleMenu}
+         aria-label={t("auth_account_menu")}
+         title={userName ?? t("auth_user")}
+       >
+@@ -99,8 +116,8 @@ export function AuthButton({
+             role="menu"
+             style={{
+               position: "fixed",
+-              top: "54px",
+-              right: "12px",
++              top: `${menuPos.top}px`,
++              right: `${menuPos.right}px`,
+               zIndex: 99999,
+               background: "var(--surface)",
+               border: "1px solid var(--border)",
+@@ -142,7 +159,10 @@ export function AuthButton({
+             </button>
+           </div>
+         </>,
+-        document.body,
++        // Em fullscreen o navegador só renderiza o elemento em tela cheia e
++        // seus descendentes — um portal no <body> fica INVISÍVEL. Monta o
++        // dropdown dentro do elemento fullscreen quando houver um.
++        document.fullscreenElement ?? document.body,
+       )}
+     </div>
+   );
+diff --git a/apps/web/src/components/Reader.tsx b/apps/web/src/components/Reader.tsx
+index 6fccc48..4917013 100644
+--- a/apps/web/src/components/Reader.tsx
++++ b/apps/web/src/components/Reader.tsx
+@@ -200,6 +200,35 @@ export function Reader({
+   const [isFullscreen, setIsFullscreen] = useState(false);
+   const [menuVisible, setMenuVisible] = useState(true);
+   const [bookmarksOpen, setBookmarksOpen] = useState(false);
++  // Fileira scrollável de botões do header (pra indicar overflow com fade).
++  const rowScrollRef = useRef<HTMLDivElement>(null);
++
++  /**
++   * Marca nas bordas da fileira de botões quando há mais botões escondidos
++   * (fade via CSS [data-fade]). Sem isso, overflow-x + scrollbar oculta
++   * faz os botões "sumirem" sem nenhuma pista visual.
++   */
++  const updateRowFade = () => {
++    const el = rowScrollRef.current;
++    if (!el) return;
++    const canLeft = el.scrollLeft > 2;
++    const canRight = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
++    el.dataset.fade =
++      canLeft && canRight ? "both" : canLeft ? "left" : canRight ? "right" : "none";
++  };
++
++  // Reavalia o fade a cada render (botões aparecem/somem: ⏹ TTS, 🌐/🧠 PDF)
++  // e quando o container muda de tamanho (rotação, resize, fullscreen).
++  useEffect(() => {
++    updateRowFade();
++  });
++  useEffect(() => {
++    const el = rowScrollRef.current;
++    if (!el || typeof ResizeObserver === "undefined") return;
++    const ro = new ResizeObserver(updateRowFade);
++    ro.observe(el);
++    return () => ro.disconnect();
++  }, []);
+ 
+   /** Entra/sai do modo tela cheia (só a página do livro visível). */
+   const toggleFullscreen = () => {
+@@ -949,7 +978,7 @@ export function Reader({
+       <header className="reader-header" data-hidden={!menuVisible}>
+         {/* ── Menu: row-scroll (ações do livro, scrollável) + row-right (controles, fixo) ── */}
+         <div className="reader-row-main">
+-        <div className="reader-row-scroll">
++        <div className="reader-row-scroll" ref={rowScrollRef} onScroll={updateRowFade}>
+           {/* Logo Cafezinho — canto esquerdo, vazada */}
+           <a
+             href="/"
+@@ -1431,7 +1460,11 @@ export function Reader({
+           flex-shrink: 0;
+           overflow: hidden;
+           transition: max-height 200ms ease, opacity 200ms ease, padding 200ms ease;
+-          max-height: 70px; /* uma linha só */
++          /* Precisa comportar DUAS linhas (layout do celular) + barra de
++             progresso. 70px cortava a segunda linha e os controles da
++             direita em fullscreen. O max-height aqui existe só pra animar
++             o colapso — folga não muda a altura real (o conteúdo define). */
++          max-height: 150px;
+         }
+         .reader:fullscreen[data-menu-hidden="true"] .reader-header {
+           max-height: 0;
+@@ -1472,34 +1505,37 @@ export function Reader({
+           min-width: 0;
+           overflow: visible; /* NÃO corta o dropdown */
+         }
+-        /* Ações do livro (em telas grandes: scroll horizontal; em pequenas: wrap) */
++        /* Ações do livro — SEMPRE uma linha só, com scroll horizontal.
++           Nunca usa wrap: com 10+ botões, wrap vira 3 linhas desorganizadas.
++           O fade nas bordas (data-fade, setado por JS) indica que há mais. */
+         .reader-row-scroll {
+           display: flex;
+           align-items: center;
+           gap: 6px;
+           flex: 1 1 auto;
+           min-width: 0;
++          flex-wrap: nowrap;
+           overflow-x: auto;
+           scrollbar-width: none;
++          -webkit-overflow-scrolling: touch;
++          /* Não deixa o scroll da fileira virar gesto "voltar" do navegador */
++          overscroll-behavior-x: contain;
+         }
+         .reader-row-scroll::-webkit-scrollbar {
+           display: none;
+         }
+-        /* Em telas pequenas (celular): botões quebram pra próxima linha */
+-        @media (max-width: 600px) {
+-          .reader-row-scroll {
+-            flex-wrap: wrap;
+-            overflow-x: visible;
+-          }
+-          .reader-row-main {
+-            flex-wrap: wrap;
+-          }
+-          /* Botões um pouco menores no celular */
+-          .icon-btn {
+-            width: 38px;
+-            height: 38px;
+-            font-size: 16px;
+-          }
++        /* Fade nas bordas quando há botões escondidos (indicador de scroll) */
++        .reader-row-scroll[data-fade="right"] {
++          -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
++          mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent);
++        }
++        .reader-row-scroll[data-fade="left"] {
++          -webkit-mask-image: linear-gradient(to right, transparent, #000 36px);
++          mask-image: linear-gradient(to right, transparent, #000 36px);
++        }
++        .reader-row-scroll[data-fade="both"] {
++          -webkit-mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent);
++          mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent);
+         }
+         .reader-row-scroll > .icon-btn,
+         .reader-row-scroll > .page-action-btn,
+@@ -2215,6 +2251,32 @@ export function Reader({
+           opacity: 1;
+           background: rgba(0, 0, 0, 0.2) !important;
+         }
++
++        /* ── Celular: DUAS linhas fixas e harmônicas no header ─────────────
++           Linha 1 = ações do livro (scroll horizontal, nunca quebra).
++           Linha 2 = controles (❓ ⚙️ 👤 ⛶ 👁) alinhados à direita.
++           IMPORTANTE: este bloco fica no FIM do CSS — com a mesma
++           especificidade, a última regra vence; se ficar antes das regras
++           base (.reader-row-right, .icon-btn), os overrides não aplicam. */
++        @media (max-width: 600px) {
++          .reader-row-main {
++            flex-wrap: wrap;
++            row-gap: 6px;
++          }
++          .reader-row-scroll {
++            flex: 1 1 100%; /* ocupa a linha 1 inteira → empurra row-right pra linha 2 */
++          }
++          .reader-row-right {
++            flex: 1 1 100%;
++            justify-content: flex-end;
++          }
++          /* Botões um pouco menores no celular */
++          .icon-btn {
++            width: 38px;
++            height: 38px;
++            font-size: 16px;
++          }
++        }
+       `}</style>
+ 
+       {/* Settings renderizado DENTRO da <section.reader> — assim aparece
+-- 
+2.43.0
+

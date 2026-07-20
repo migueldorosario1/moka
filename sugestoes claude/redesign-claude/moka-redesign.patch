@@ -1,0 +1,2132 @@
+From 3243581785aed49dc034f99c04231b50bf604e07 Mon Sep 17 00:00:00 2001
+From: Claude <claude@anthropic.com>
+Date: Sun, 19 Jul 2026 22:35:35 +0000
+Subject: [PATCH] =?UTF-8?q?design:=20redesign=20visual=20completo=20?=
+ =?UTF-8?q?=E2=80=94=20identidade=20do=20caf=C3=A9?=
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+- Tipografia: Fraunces (marca/títulos) + Literata (leitura/IA) + Figtree (interface) via next/font
+- Paleta refinada: porcelana #f6efe3, cobre queimado #a35d2f, espresso #2b2015, dourado #c2955c
+- Sombras tingidas de marrom quente (3 níveis), raios 12/18/pill, curva de transição suave
+- Uploader: vapor animado na xícara + brilho de crema + chips de features
+- Estante: capas com lombada de livro real, hover que 'levanta' o livro
+- Nav bar: bandeja flutuante (pill com blur) + slider customizado
+- Reader: header limpo (ghost/pill buttons), título em Fraunces, menu de seleção em pílula de cobre
+- AIPanel: logo Cafezinho no header, respostas em Literata (o texto é o protagonista)
+- Modais com backdrop marrom desfocado, scrollbars finas, focus-visible, reduced-motion
+---
+ apps/web/src/app/ajuda/page.tsx           |   2 +-
+ apps/web/src/app/globals.css              | 373 +++++++++++++++-------
+ apps/web/src/app/layout.tsx               |  41 ++-
+ apps/web/src/app/page.tsx                 | 148 ++++++---
+ apps/web/src/app/premium/page.tsx         |   9 +-
+ apps/web/src/app/privacidade/page.tsx     |   2 +-
+ apps/web/src/app/sobre/page.tsx           |   2 +-
+ apps/web/src/components/AIPanel.tsx       | 122 ++++---
+ apps/web/src/components/Reader.tsx        | 196 +++++++-----
+ apps/web/src/components/SettingsModal.tsx |  14 +-
+ apps/web/src/components/Uploader.tsx      | 165 +++++++---
+ 11 files changed, 723 insertions(+), 351 deletions(-)
+
+diff --git a/apps/web/src/app/ajuda/page.tsx b/apps/web/src/app/ajuda/page.tsx
+index 46ddbfc..9e4acea 100644
+--- a/apps/web/src/app/ajuda/page.tsx
++++ b/apps/web/src/app/ajuda/page.tsx
+@@ -262,7 +262,7 @@ export default function AjudaPage() {
+         .info-page { min-height: 100vh; background: var(--bg); padding: 40px 20px; }
+         .info-card { max-width: 680px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 40px 48px; box-shadow: var(--shadow); }
+         .info-back { color: var(--accent); text-decoration: none; margin-bottom: 24px; font-size: 14px; display: inline-block; }
+-        .info-card h1 { font-size: 26px; font-weight: 700; color: var(--accent); margin: 0 0 16px; }
++        .info-card h1 { font-family: var(--font-brand); font-weight: 600; font-size: 26px; font-weight: 700; color: var(--accent); margin: 0 0 16px; }
+         .info-intro { font-size: 15px; line-height: 1.7; color: var(--text); margin: 0 0 24px; }
+         .info-card h2 { font-size: 19px; font-weight: 600; margin: 32px 0 12px; color: var(--text); }
+         .info-card p { font-size: 15px; line-height: 1.7; margin: 0 0 12px; }
+diff --git a/apps/web/src/app/globals.css b/apps/web/src/app/globals.css
+index 53e22e9..bdb64e2 100644
+--- a/apps/web/src/app/globals.css
++++ b/apps/web/src/app/globals.css
+@@ -1,27 +1,40 @@
+ /* ─── Moka — estilos globais ───────────────────────────────────────────
+-   Paleta inspirada no universo do café: cobre, madeira, porcelana.
+-   Sem neon, sem futurista — aconchego, elegância, minimalismo. */
++   Identidade: a hora do café. Porcelana, madeira, cobre e crema.
++   Sem neon, sem futurista — aconchego, elegância, minimalismo.
++   A IA é invisível; o texto é o protagonista. */
+ 
+ :root {
+-  /* Cores — LIGHT MODE (porcelana + cobre + madeira clara) */
+-  --bg: #faf6f0;              /* porcelana quente (fundo) */
+-  --surface: #fffefb;         /* branco quente (cards/superfícies) */
+-  --surface-alt: #f2ebe0;     /* madeira clara (áreas secundárias) */
+-  --text: #2c2018;            /* marrom-escuro (quase preto, texto) */
+-  --text-muted: #8a7560;      /* marrom médio (texto secundário) */
+-  --border: #e0d5c4;          /* bege-madeira (bordas) */
+-  --accent: #b06a3b;          /* cobre (cor principal: botões, links) */
+-  --accent-soft: #f5e6d8;     /* cobre claro (hover, fundos suaves) */
+-  --accent-dark: #8a4f2a;     /* cobre escuro (press, sombra) */
+-  --gold: #c89968;            /* dourado/cobre claro (destaques) */
+-  --shadow: 0 1px 4px rgba(120, 90, 50, 0.08), 0 1px 2px rgba(120, 90, 50, 0.04);
+-  --radius: 10px;
+-
+-  /* Tipografia */
+-  --font-sans: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+-    "Helvetica Neue", Arial, sans-serif;
+-  --font-serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+-    "Times New Roman", serif;
++  /* Cores — LIGHT MODE (porcelana + cobre queimado + madeira clara) */
++  --bg: #f6efe3;              /* porcelana quente (fundo) */
++  --surface: #fffcf5;         /* louça branca (cards/superfícies) */
++  --surface-alt: #eee3d1;     /* madeira clara (áreas secundárias) */
++  --text: #2b2015;            /* espresso (texto principal) */
++  --text-muted: #8b7460;      /* café com leite (texto secundário) */
++  --border: #e3d6c1;          /* bege-madeira (bordas) */
++  --border-soft: #ede3d2;     /* borda quase invisível */
++  --accent: #a35d2f;          /* cobre queimado (cor principal) */
++  --accent-soft: #f3e4d0;     /* crema (hover, fundos suaves) */
++  --accent-dark: #7e4522;     /* cobre escuro (press, ênfase) */
++  --gold: #c2955c;            /* dourado envelhecido (detalhes) */
++
++  /* Sombras — sempre tingidas de marrom, nunca cinza-frio */
++  --shadow-sm: 0 1px 2px rgba(62, 42, 24, 0.05), 0 1px 3px rgba(62, 42, 24, 0.04);
++  --shadow: 0 2px 6px rgba(62, 42, 24, 0.06), 0 6px 20px rgba(62, 42, 24, 0.07);
++  --shadow-lg: 0 4px 12px rgba(62, 42, 24, 0.08), 0 18px 50px rgba(62, 42, 24, 0.14);
++  --shadow-up: 0 -2px 12px rgba(62, 42, 24, 0.08);
++
++  /* Raios */
++  --radius-sm: 8px;
++  --radius: 12px;
++  --radius-lg: 18px;
++  --radius-pill: 999px;
++
++  /* Tipografia (next/font injeta --font-display/--font-reading/--font-ui) */
++  --font-sans: var(--font-ui, ui-sans-serif), system-ui, -apple-system,
++    "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
++  --font-serif: var(--font-reading, "Iowan Old Style"), "Palatino Linotype",
++    Palatino, Georgia, "Times New Roman", serif;
++  --font-brand: var(--font-display, "Iowan Old Style"), Georgia, serif;
+   --font-mono: ui-monospace, "SF Mono", "Cascadia Code", Consolas, monospace;
+ 
+   /* Escala de tamanhos */
+@@ -40,30 +53,35 @@
+   --space-5: 24px;
+   --space-6: 32px;
+ 
+-  /* Transições */
+-  --transition: 150ms ease;
++  /* Transições — curva suave, sem pressa (como o café) */
++  --ease: cubic-bezier(0.25, 0.6, 0.3, 1);
++  --transition: 180ms var(--ease);
+ 
+   /* Seleção de texto (marca-texto dourado/cobre) */
+-  --selection-bg: #f0d090;
+-  --selection-color: #2c2018;
++  --selection-bg: #efd6a4;
++  --selection-color: #2b2015;
+ }
+ 
+ @media (prefers-color-scheme: dark) {
+   :root {
+-    /* DARK MODE (madeira escura + cobre) */
+-    --bg: #1c1611;            /* marrom muito escuro (fundo) */
+-    --surface: #26201a;       /* madeira escura (superfícies) */
+-    --surface-alt: #302822;   /* madeira um pouco mais clara */
+-    --text: #f0e6d8;          /* porcelana quente (texto) */
+-    --text-muted: #a89580;    /* madeira seca (texto secundário) */
+-    --border: #3d3328;        /* madeira queimada (bordas) */
+-    --accent: #d4905a;        /* cobre mais claro (destaca no escuro) */
+-    --accent-soft: #3a2a1c;   /* cobre escuro (hover) */
++    /* DARK MODE (madeira escura + cobre à meia-luz) */
++    --bg: #1a1410;            /* madeira quase preta (fundo) */
++    --surface: #221b15;       /* madeira escura (superfícies) */
++    --surface-alt: #2d241c;   /* madeira um pouco mais clara */
++    --text: #f0e6d5;          /* porcelana quente (texto) */
++    --text-muted: #a68f79;    /* madeira seca (texto secundário) */
++    --border: #3a2f24;        /* madeira queimada (bordas) */
++    --border-soft: #2f261d;
++    --accent: #d29360;        /* cobre iluminado (destaca no escuro) */
++    --accent-soft: #33251a;   /* cobre profundo (hover) */
+     --accent-dark: #b06a3b;   /* cobre médio */
+-    --gold: #d4a868;          /* dourado quente */
+-    --shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
++    --gold: #d3a96e;          /* dourado quente */
++    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
++    --shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
++    --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.45), 0 20px 56px rgba(0, 0, 0, 0.5);
++    --shadow-up: 0 -2px 12px rgba(0, 0, 0, 0.4);
+     --selection-bg: #5a4520;
+-    --selection-color: #f0e6d8;
++    --selection-color: #f0e6d5;
+   }
+ }
+ 
+@@ -82,6 +100,47 @@ body {
+   font-size: 16px;
+   line-height: 1.6;
+   -webkit-font-smoothing: antialiased;
++  text-rendering: optimizeLegibility;
++}
++
++/* Foco visível — anel de cobre suave, só via teclado */
++:focus-visible {
++  outline: 2px solid var(--accent);
++  outline-offset: 2px;
++  border-radius: 4px;
++}
++
++/* Movimento reduzido — todo mundo merece calma */
++@media (prefers-reduced-motion: reduce) {
++  *,
++  *::before,
++  *::after {
++    animation-duration: 0.01ms !important;
++    animation-iteration-count: 1 !important;
++    transition-duration: 0.01ms !important;
++  }
++}
++
++/* Scrollbars finas e quentes (WebKit + Firefox) */
++* {
++  scrollbar-width: thin;
++  scrollbar-color: var(--border) transparent;
++}
++*::-webkit-scrollbar {
++  width: 8px;
++  height: 8px;
++}
++*::-webkit-scrollbar-track {
++  background: transparent;
++}
++*::-webkit-scrollbar-thumb {
++  background: var(--border);
++  border-radius: 999px;
++  border: 2px solid transparent;
++  background-clip: content-box;
++}
++*::-webkit-scrollbar-thumb:hover {
++  background-color: var(--gold);
+ }
+ 
+ /* ── Ajustes pra iOS / iPad (PWA) ─────────────────────────────────── */
+@@ -134,6 +193,10 @@ button {
+ 
+ a {
+   color: var(--accent);
++  transition: color var(--transition);
++}
++a:hover {
++  color: var(--accent-dark);
+ }
+ 
+ /* ── Tipografia do leitor ─────────────────────────────────────────── */
+@@ -149,12 +212,15 @@ a {
+ .reader-text h3 {
+   margin: 1.6em 0 0.6em;
+   line-height: 1.3;
++  font-family: var(--font-brand);
++  font-weight: 550;
++  letter-spacing: 0.005em;
+ }
+ 
+ .reader-text blockquote {
+   margin: 1.2em 0;
+   padding-left: 1em;
+-  border-left: 3px solid var(--border);
++  border-left: 3px solid var(--gold);
+   color: var(--text-muted);
+   font-style: italic;
+ }
+@@ -185,8 +251,8 @@ a {
+   display: flex;
+   align-items: center;
+   justify-content: space-between;
+-  padding: 10px 20px;
+-  border-bottom: 1px solid var(--border);
++  padding: 10px 24px;
++  border-bottom: 1px solid var(--border-soft);
+   background: var(--surface);
+   flex-shrink: 0;
+ }
+@@ -215,8 +281,9 @@ a {
+   width: 420px;
+   max-width: 100vw;
+   z-index: 600;
+-  box-shadow: -4px 0 24px rgba(0,0,0,0.12);
++  box-shadow: -8px 0 40px rgba(62, 42, 24, 0.14);
+   background: var(--surface);
++  border-left: 1px solid var(--border-soft);
+ }
+ .ai-panel-overlay .ai-panel {
+   height: 100%;
+@@ -224,21 +291,21 @@ a {
+ @media (max-width: 900px) {
+   .ai-panel-overlay {
+     top: auto !important;
+-    left: 8px !important;
+-    right: 8px !important;
+-    bottom: 8px !important;
++    left: 10px !important;
++    right: 10px !important;
++    bottom: 10px !important;
+     width: auto !important;
+     height: auto !important;
+     max-height: 260px;
+-    border: 2px solid var(--accent);
+-    border-radius: 14px;
+-    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
++    border: 1px solid var(--border);
++    border-radius: var(--radius-lg);
++    box-shadow: var(--shadow-lg);
+     overflow: hidden;
+   }
+   .ai-panel-overlay .ai-panel {
+     height: auto;
+     max-height: 260px;
+-    border-radius: 12px;
++    border-radius: var(--radius-lg);
+     overflow: hidden;
+   }
+   .ai-panel-overlay .ai-body {
+@@ -281,7 +348,7 @@ a {
+ .igot-topbar-actions {
+   display: flex;
+   align-items: center;
+-  gap: 10px;
++  gap: 8px;
+ }
+ 
+ /* Lado esquerdo do topbar: logo + estante */
+@@ -296,61 +363,75 @@ a {
+   color: var(--text);
+ }
+ .shelf-icon-btn {
+-  font-size: 20px;
++  font-size: 19px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   width: 40px;
+   height: 40px;
+-  border-radius: 8px;
+-  transition: var(--transition);
++  border-radius: var(--radius-sm);
++  transition: background var(--transition), transform var(--transition);
+ }
+ .shelf-icon-btn:hover {
+   background: var(--accent-soft);
+ }
++.shelf-icon-btn:active {
++  transform: scale(0.94);
++}
+ 
+-/* Ícones do topo — tamanho confortável pra touch (mínimo 44px Apple HIG). */
++/* Ícones do topo — ghost buttons (sem borda, hover suave).
++   44px mínimo pra touch (Apple HIG). */
+ .igot-topbar .gear {
+   width: 44px;
+   height: 44px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+-  border: 1px solid var(--border);
+-  background: var(--bg);
+-  border-radius: 10px;
+-  font-size: 20px;
+-  color: var(--text);
++  border: 1px solid transparent;
++  background: transparent;
++  border-radius: var(--radius);
++  font-size: 19px;
++  color: var(--text-muted);
+   cursor: pointer;
+   position: relative;
+-  transition: var(--transition);
++  transition: background var(--transition), color var(--transition),
++    transform var(--transition);
+ }
+ .igot-topbar .gear:hover {
+-  border-color: var(--accent);
+-  transform: scale(1.05);
++  background: var(--accent-soft);
++  color: var(--accent);
++  transform: none;
++}
++.igot-topbar .gear:active {
++  transform: scale(0.94);
+ }
+ .igot-topbar .gear.unset::after {
+   content: "";
+   position: absolute;
+-  top: 6px;
+-  right: 6px;
+-  width: 9px;
+-  height: 9px;
++  top: 7px;
++  right: 7px;
++  width: 8px;
++  height: 8px;
+   background: var(--accent);
+   border-radius: 50%;
++  box-shadow: 0 0 0 2px var(--surface);
+ }
++
++/* A marca — Fraunces, tinta de cobre. Elegante, sem gradiente berrante. */
+ .igot-topbar .brand {
+   display: flex;
+   align-items: center;
+   gap: 8px;
+-  font-weight: 700;
+-  font-size: 20px;
++  font-family: var(--font-brand);
++  font-weight: 600;
++  font-size: 22px;
++  letter-spacing: 0.01em;
+   cursor: pointer;
+   text-decoration: none;
+   color: var(--text);
+ }
+ .igot-topbar .brand span {
+-  background: linear-gradient(135deg, var(--accent), #e8a03d);
++  background: linear-gradient(160deg, var(--accent-dark) 20%, var(--accent) 65%, var(--gold));
+   -webkit-background-clip: text;
+   background-clip: text;
+   color: transparent;
+@@ -361,19 +442,19 @@ a {
+   display: flex;
+   align-items: center;
+   gap: 6px;
+-  padding: 6px 12px;
++  padding: 8px 16px;
+   border: 1px solid var(--border);
+   background: var(--surface);
+   color: var(--text);
+-  border-radius: 8px;
++  border-radius: var(--radius-pill);
+   font-size: 13px;
+   font-weight: 500;
+   cursor: pointer;
+-  transition: box-shadow 0.15s, border-color 0.15s;
++  transition: box-shadow var(--transition), border-color var(--transition);
+ }
+ .auth-signin:hover {
+-  border-color: var(--accent);
+-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
++  border-color: var(--gold);
++  box-shadow: var(--shadow-sm);
+ }
+ 
+ /* Avatar (logado) */
+@@ -402,29 +483,29 @@ a {
+   width: 32px;
+   height: 32px;
+   border-radius: 50%;
+-  background: var(--accent);
+-  color: white;
++  background: linear-gradient(160deg, var(--accent), var(--accent-dark));
++  color: #fff8ee;
+   font-size: 14px;
+   font-weight: 600;
+   border: 2px solid var(--border);
+ }
+ .auth-dropdown {
+   position: fixed;
+-  top: 50px;
+-  right: 10px;
++  top: 54px;
++  right: 12px;
+   background: var(--surface);
+-  border: 1px solid var(--border);
+-  border-radius: 10px;
+-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
++  border: 1px solid var(--border-soft);
++  border-radius: var(--radius);
++  box-shadow: var(--shadow-lg);
+   padding: 8px;
+-  min-width: 160px;
++  min-width: 170px;
+   z-index: 9999;
+ }
+ .auth-dropdown-name {
+   font-size: 13px;
+   color: var(--text-muted);
+   padding: 6px 8px;
+-  border-bottom: 1px solid var(--border);
++  border-bottom: 1px solid var(--border-soft);
+   margin-bottom: 4px;
+   word-break: break-word;
+ }
+@@ -435,14 +516,15 @@ a {
+   border: none;
+   background: transparent;
+   color: var(--text);
+-  padding: 8px;
+-  border-radius: 6px;
++  padding: 8px 10px;
++  border-radius: var(--radius-sm);
+   font-size: 14px;
+   cursor: pointer;
++  transition: background var(--transition), color var(--transition);
+ }
+ .auth-signout:hover {
+   background: var(--accent-soft);
+-  color: var(--accent);
++  color: var(--accent-dark);
+ }
+ 
+ /* Spinner de loading do auth */
+@@ -490,9 +572,9 @@ a {
+   /* Wrapper relativo pra a text-layer se posicionar absolutamente sobre o canvas.
+      Sem overflow:hidden (cortava o canvas ao fazer zoom). */
+   position: relative;
+-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.12);
++  box-shadow: var(--shadow);
+   background: white !important; /* sempre branco, mesmo em dark mode */
+-  border-radius: 2px;
++  border-radius: 3px;
+ }
+ 
+ .pdf-canvas {
+@@ -551,7 +633,7 @@ a {
+   color: var(--text-muted);
+   font-size: 14px;
+   background: var(--surface);
+-  border-radius: 2px;
++  border-radius: 3px;
+ }
+ 
+ .pdf-spinner {
+@@ -573,8 +655,8 @@ a {
+   padding: 24px;
+   margin: 24px;
+   background: var(--accent-soft);
+-  border-radius: 8px;
+-  color: var(--accent);
++  border-radius: var(--radius-sm);
++  color: var(--accent-dark);
+   font-size: 14px;
+   text-align: center;
+ }
+@@ -593,10 +675,10 @@ a {
+   inset: 0;
+   /* Altura mínima garante espaço de leitura mesmo se o canvas PDF for baixo. */
+   min-height: 100%;
+-  background: #fdfbf6; /* papel creme, como livro impresso */
++  background: #fdfaf3; /* papel creme, como livro impresso */
+   overflow-y: auto;
+   z-index: 5; /* acima do canvas e da text-layer */
+-  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.05);
++  box-shadow: inset 0 0 0 1px rgba(62, 42, 24, 0.05);
+ }
+ 
+ .pdf-translation-page {
+@@ -604,11 +686,10 @@ a {
+   max-width: 38em; /* ~38 caracteres por linha — ideal pra leitura */
+   margin: 0 auto;
+   padding: 8% 6% 12%;
+-  color: #1f1b16;
+-  font-family: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia,
+-    "Times New Roman", serif;
++  color: #241b12;
++  font-family: var(--font-serif);
+   font-size: 17px;
+-  line-height: 1.7;
++  line-height: 1.75;
+   text-align: justify;
+   hyphens: auto;
+   -webkit-hyphens: auto;
+@@ -638,52 +719,116 @@ a {
+ /* Dark mode: a página traduzida também acompanha o tema. */
+ @media (prefers-color-scheme: dark) {
+   .pdf-translation-overlay {
+-    background: #1a1a1f;
+-    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.06);
++    background: #1e1813;
++    box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+   }
+   .pdf-translation-page {
+-    color: #e8e4dc;
++    color: #ece3d3;
+   }
+ }
+ 
+-/* ─── Nav bar (passador de página) — GLOBAL pra funcionar sempre ─── */
++/* ─── Nav bar (passador de página) — GLOBAL pra funcionar sempre ───
++   Agora é uma BANDEJA FLUTUANTE: pill com blur, solta do rodapé,
++   como um pires apoiado na mesa. */
+ .reader-nav-bar {
+   position: fixed !important;
+-  bottom: 0 !important;
+-  left: 0 !important;
+-  right: 0 !important;
++  bottom: 12px !important;
++  left: 50% !important;
++  right: auto !important;
++  transform: translateX(-50%);
++  width: min(600px, calc(100vw - 24px));
+   z-index: 50 !important;
+   display: flex !important;
+   align-items: center !important;
+   gap: 10px !important;
+-  padding: 8px 16px !important;
+-  background: var(--surface) !important;
+-  border-top: 1px solid var(--border) !important;
+-  box-shadow: 0 -2px 8px rgba(0,0,0,0.08) !important;
++  padding: 8px 12px !important;
++  background: color-mix(in srgb, var(--surface) 85%, transparent) !important;
++  -webkit-backdrop-filter: blur(14px) saturate(1.1);
++  backdrop-filter: blur(14px) saturate(1.1);
++  border: 1px solid var(--border-soft) !important;
++  border-top: 1px solid var(--border-soft) !important;
++  border-radius: var(--radius-pill) !important;
++  box-shadow: var(--shadow-lg) !important;
++}
++/* Fallback: navegadores sem color-mix/backdrop-filter */
++@supports not (background: color-mix(in srgb, red 50%, blue)) {
++  .reader-nav-bar {
++    background: var(--surface) !important;
++  }
+ }
+ .reader-nav-bar button {
+-  width: 36px;
+-  height: 36px;
+-  border: 1px solid var(--border);
+-  background: var(--bg);
++  width: 38px;
++  height: 38px;
++  border: none;
++  background: transparent;
+   color: var(--text);
+-  border-radius: 8px;
+-  font-size: 18px;
++  border-radius: 50%;
++  font-size: 17px;
+   display: flex;
+   align-items: center;
+   justify-content: center;
+   flex-shrink: 0;
++  transition: background var(--transition), color var(--transition),
++    transform var(--transition);
++}
++.reader-nav-bar button:not(:disabled):hover {
++  background: var(--accent-soft);
++  color: var(--accent-dark);
++}
++.reader-nav-bar button:not(:disabled):active {
++  transform: scale(0.92);
+ }
+ .reader-nav-bar .nav-slider {
+   flex: 1;
+-  height: 36px;
++  height: 38px;
+   cursor: pointer;
+   accent-color: var(--accent);
+ }
+ .reader-nav-bar .nav-counter-bottom {
+   font-size: 13px;
++  font-variant-numeric: tabular-nums;
+   color: var(--text-muted);
+   min-width: 60px;
+   text-align: center;
+   flex-shrink: 0;
+ }
++
++/* Slider refinado (WebKit) — trilho fino, pingo de cobre */
++.nav-slider {
++  -webkit-appearance: none;
++  appearance: none;
++  background: transparent;
++}
++.nav-slider::-webkit-slider-runnable-track {
++  height: 4px;
++  border-radius: 999px;
++  background: var(--surface-alt);
++}
++.nav-slider::-webkit-slider-thumb {
++  -webkit-appearance: none;
++  appearance: none;
++  width: 16px;
++  height: 16px;
++  margin-top: -6px;
++  border-radius: 50%;
++  background: var(--accent);
++  border: 2px solid var(--surface);
++  box-shadow: var(--shadow-sm);
++  transition: transform var(--transition);
++}
++.nav-slider::-webkit-slider-thumb:hover {
++  transform: scale(1.15);
++}
++.nav-slider::-moz-range-track {
++  height: 4px;
++  border-radius: 999px;
++  background: var(--surface-alt);
++}
++.nav-slider::-moz-range-thumb {
++  width: 14px;
++  height: 14px;
++  border-radius: 50%;
++  background: var(--accent);
++  border: 2px solid var(--surface);
++  box-shadow: var(--shadow-sm);
++}
+diff --git a/apps/web/src/app/layout.tsx b/apps/web/src/app/layout.tsx
+index bea5253..8e9520c 100644
+--- a/apps/web/src/app/layout.tsx
++++ b/apps/web/src/app/layout.tsx
+@@ -1,8 +1,34 @@
+ import type { Metadata, Viewport } from "next";
++import { Fraunces, Literata, Figtree } from "next/font/google";
+ import "./globals.css";
+ import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+ import { I18nProvider } from "@/components/I18nProvider";
+ 
++/*
++ * Tipografia do Moka — três vozes, um só clima:
++ *  - Fraunces  → display (marca, títulos). Serifada "soft", com o calor
++ *                de letreiro de cafeteria antiga. É a personalidade do app.
++ *  - Literata  → leitura (corpo dos livros, respostas da IA). Desenhada
++ *                especificamente pra leitura longa em tela.
++ *  - Figtree   → interface (botões, labels, menus). Sans humanista,
++ *                discreta — a IA e o chrome ficam invisíveis.
++ */
++const fontDisplay = Fraunces({
++  subsets: ["latin"],
++  variable: "--font-display",
++  display: "swap",
++});
++const fontReading = Literata({
++  subsets: ["latin"],
++  variable: "--font-reading",
++  display: "swap",
++});
++const fontUI = Figtree({
++  subsets: ["latin"],
++  variable: "--font-ui",
++  display: "swap",
++});
++
+ export const metadata: Metadata = {
+   title: "Moka — Leia qualquer coisa. Entenda tudo.",
+   description:
+@@ -32,7 +58,7 @@ export const viewport: Viewport = {
+   width: "device-width",
+   initialScale: 1,
+   maximumScale: 5,
+-  themeColor: "#b06a3b",
++  themeColor: "#a35d2f",
+ };
+ 
+ export default function RootLayout({
+@@ -41,17 +67,20 @@ export default function RootLayout({
+   children: React.ReactNode;
+ }) {
+   return (
+-    <html lang="pt-BR">
++    <html
++      lang="pt-BR"
++      className={`${fontDisplay.variable} ${fontReading.variable} ${fontUI.variable}`}
++    >
+       <body>
+         <I18nProvider>
+           {children}
+         </I18nProvider>
+         {/* Selo LAB — difere do site oficial */}
+         <div style={{
+-          position: "fixed", bottom: 4, right: 4, zIndex: 9999,
+-          background: "#e74c3c", color: "white", fontSize: 10,
+-          fontWeight: 700, padding: "3px 8px", borderRadius: 6,
+-          pointerEvents: "none", opacity: 0.8,
++          position: "fixed", bottom: 6, right: 6, zIndex: 9999,
++          background: "#3c2a1b", color: "#e9d9c3", fontSize: 10,
++          fontWeight: 600, letterSpacing: "0.06em", padding: "3px 9px",
++          borderRadius: 999, pointerEvents: "none", opacity: 0.75,
+         }}>🧪 LAB</div>
+         <ServiceWorkerRegister />
+       </body>
+diff --git a/apps/web/src/app/page.tsx b/apps/web/src/app/page.tsx
+index 0117033..eeb6754 100644
+--- a/apps/web/src/app/page.tsx
++++ b/apps/web/src/app/page.tsx
+@@ -300,34 +300,41 @@ export default function HomePage() {
+ 
+       <style jsx>{`
+         .premium-link {
+-          font-size: 22px;
++          font-size: 20px;
+           text-decoration: none;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+           width: 44px;
+           height: 44px;
+-          border-radius: 10px;
+-          transition: all 150ms ease;
++          border-radius: var(--radius);
++          transition: background var(--transition), transform var(--transition);
+         }
+         .premium-link:hover {
+-          transform: scale(1.15);
++          background: var(--accent-soft);
++        }
++        .premium-link:active {
++          transform: scale(0.94);
+         }
+         .shelf-page {
+           flex: 1;
+           overflow-y: auto;
+-          padding: 24px 32px 80px;
++          padding: 32px 40px 100px;
+         }
+         .shelf-header {
+           display: flex;
+           align-items: center;
+           justify-content: space-between;
+-          margin-bottom: 24px;
++          margin-bottom: 28px;
++          gap: 16px;
++          flex-wrap: wrap;
+         }
+         .shelf-header h1 {
+           margin: 0;
+-          font-size: var(--text-xl);
+-          font-weight: 700;
++          font-family: var(--font-brand);
++          font-size: 30px;
++          font-weight: 600;
++          letter-spacing: 0.005em;
+         }
+         .shelf-actions {
+           display: flex;
+@@ -335,51 +342,62 @@ export default function HomePage() {
+           align-items: center;
+         }
+         .add-book-btn {
+-          padding: 8px 16px;
+-          border: 1px solid var(--accent);
+-          background: var(--accent-soft);
+-          color: var(--accent);
+-          border-radius: 8px;
++          padding: 10px 20px;
++          border: none;
++          background: linear-gradient(180deg, var(--accent), var(--accent-dark));
++          color: #fff8ee;
++          border-radius: var(--radius-pill);
+           font-size: var(--text-sm);
+           font-weight: 600;
++          letter-spacing: 0.01em;
+           cursor: pointer;
+-          transition: var(--transition);
++          box-shadow: var(--shadow-sm);
++          transition: box-shadow var(--transition), transform var(--transition),
++            filter var(--transition);
+         }
+         .add-book-btn:hover {
+-          background: var(--accent);
+-          color: white;
++          box-shadow: var(--shadow);
++          transform: translateY(-1px);
++          filter: brightness(1.05);
++        }
++        .add-book-btn:active {
++          transform: translateY(0) scale(0.98);
+         }
+         .clear-shelf-btn {
+-          padding: 8px 14px;
+-          border: 1px solid var(--border);
+-          background: var(--surface);
++          padding: 9px 16px;
++          border: 1px solid transparent;
++          background: transparent;
+           color: var(--text-muted);
+-          border-radius: 8px;
++          border-radius: var(--radius-pill);
+           font-size: var(--text-sm);
+           cursor: pointer;
+-          transition: var(--transition);
++          transition: border-color var(--transition), color var(--transition),
++            background var(--transition);
+         }
+         .clear-shelf-btn:hover {
+-          border-color: #c0392b;
+-          color: #c0392b;
++          border-color: var(--border);
++          background: var(--surface);
++          color: var(--accent-dark);
+         }
+         .book-card-wrapper {
+           position: relative;
+         }
+         .book-delete-btn {
+           position: absolute;
+-          top: 6px;
+-          right: 6px;
++          top: 8px;
++          right: 8px;
+           width: 32px;
+           height: 32px;
+           border: none;
+-          background: rgba(0, 0, 0, 0.55);
+-          color: white;
++          background: rgba(30, 20, 12, 0.55);
++          -webkit-backdrop-filter: blur(4px);
++          backdrop-filter: blur(4px);
++          color: #fff8ee;
+           border-radius: 50%;
+-          font-size: 14px;
++          font-size: 13px;
+           cursor: pointer;
+-          opacity: 0.7; /* sempre visível em touch (sem hover no iPad) */
+-          transition: opacity var(--transition);
++          opacity: 0.65; /* sempre visível em touch (sem hover no iPad) */
++          transition: opacity var(--transition), background var(--transition);
+           z-index: 5;
+           display: flex;
+           align-items: center;
+@@ -387,42 +405,61 @@ export default function HomePage() {
+         }
+         .book-delete-btn:hover {
+           opacity: 1;
+-          background: rgba(192, 57, 43, 0.85);
++          background: rgba(126, 69, 34, 0.9);
+         }
+         .shelf-error {
+-          padding: 10px 14px;
+-          background: #fdecea;
+-          border-radius: 8px;
+-          color: #c0392b;
++          padding: 12px 16px;
++          background: var(--accent-soft);
++          border-radius: var(--radius);
++          color: var(--accent-dark);
+           font-size: var(--text-sm);
+           margin-bottom: 16px;
+-          border: 1px solid #f5b7b1;
++          border: 1px solid var(--gold);
+         }
+         .shelf-grid {
+           display: grid;
+           grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+-          gap: 20px;
++          gap: 32px 24px;
+         }
+         .book-card {
+           text-decoration: none;
+           color: var(--text);
+           display: flex;
+           flex-direction: column;
+-          gap: 8px;
+-          transition: transform var(--transition);
+-        }
+-        .book-card:hover {
+-          transform: translateY(-3px);
++          gap: 12px;
+         }
++        /* Capa como livro de verdade: lombada à esquerda, cantos de folha
++           à direita, sombra que aprofunda no hover (o livro "levanta"). */
+         .book-cover {
++          position: relative;
+           aspect-ratio: 2 / 3;
+           background: var(--surface-alt);
+-          border-radius: 6px;
++          border-radius: 3px 8px 8px 3px;
+           overflow: hidden;
+           box-shadow: var(--shadow);
+           display: flex;
+           align-items: center;
+           justify-content: center;
++          transition: box-shadow 280ms var(--ease), transform 280ms var(--ease);
++        }
++        .book-cover::after {
++          content: "";
++          position: absolute;
++          inset: 0;
++          pointer-events: none;
++          border-radius: inherit;
++          background: linear-gradient(
++            to right,
++            rgba(30, 20, 12, 0.18) 0%,
++            rgba(30, 20, 12, 0.05) 3%,
++            rgba(255, 255, 255, 0.12) 5%,
++            transparent 8%
++          );
++          box-shadow: inset 0 0 0 1px rgba(62, 42, 24, 0.06);
++        }
++        .book-card:hover .book-cover {
++          transform: translateY(-6px) rotate(-0.5deg);
++          box-shadow: var(--shadow-lg);
+         }
+         .book-cover img {
+           width: 100%;
+@@ -433,34 +470,38 @@ export default function HomePage() {
+           display: flex;
+           flex-direction: column;
+           align-items: center;
+-          gap: 8px;
++          gap: 10px;
+           color: var(--text-muted);
+         }
+         .book-cover-icon {
+-          font-size: 36px;
++          font-size: 34px;
++          opacity: 0.75;
+         }
+         .book-cover-format {
+           font-size: 10px;
+           font-weight: 600;
+-          padding: 2px 6px;
++          letter-spacing: 0.08em;
++          padding: 3px 8px;
+           background: var(--surface);
+-          border-radius: 4px;
++          border-radius: var(--radius-pill);
++          box-shadow: var(--shadow-sm);
+         }
+         .book-info {
+           text-align: center;
+         }
+         .book-title {
+           margin: 0;
+-          font-size: var(--text-sm);
++          font-family: var(--font-brand);
++          font-size: 14px;
+           font-weight: 600;
+-          line-height: 1.3;
++          line-height: 1.35;
+           display: -webkit-box;
+           -webkit-line-clamp: 2;
+           -webkit-box-orient: vertical;
+           overflow: hidden;
+         }
+         .book-author {
+-          margin: 2px 0 0;
++          margin: 3px 0 0;
+           font-size: var(--text-xs);
+           color: var(--text-muted);
+           white-space: nowrap;
+@@ -468,10 +509,11 @@ export default function HomePage() {
+           text-overflow: ellipsis;
+         }
+         .book-progress {
+-          margin: 2px 0 0;
+-          font-size: var(--text-xs);
++          margin: 4px 0 0;
++          font-size: 11px;
++          letter-spacing: 0.03em;
+           color: var(--accent);
+-          font-weight: 500;
++          font-weight: 600;
+         }
+       `}</style>
+     </main>
+diff --git a/apps/web/src/app/premium/page.tsx b/apps/web/src/app/premium/page.tsx
+index aebfd13..da00ec2 100644
+--- a/apps/web/src/app/premium/page.tsx
++++ b/apps/web/src/app/premium/page.tsx
+@@ -186,14 +186,15 @@ export default function PremiumPage() {
+ 
+       <style>{`
+         .premium-page { min-height: 100vh; background: var(--bg); padding: 40px 20px; }
+-        .premium-card { max-width: 900px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px; box-shadow: var(--shadow); }
++        .premium-card { max-width: 900px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border-soft); border-radius: var(--radius-lg); padding: 48px 40px; box-shadow: var(--shadow); }
+         .premium-back { color: var(--accent); text-decoration: none; font-size: 14px; }
+         .premium-header { text-align: center; margin: 24px 0 40px; }
+         .premium-logo { font-size: 48px; display: block; margin-bottom: 8px; }
+-        .premium-header h1 { font-size: 32px; font-weight: 700; color: var(--accent); margin: 0 0 8px; }
++        .premium-header h1 { font-family: var(--font-brand); font-size: 34px; font-weight: 600; color: var(--accent-dark); margin: 0 0 8px; }
+         .premium-subtitle { font-size: 16px; color: var(--text-muted); margin: 0; }
+         .plans-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 28px; }
+-        .plan-card { border: 2px solid var(--border); border-radius: 14px; padding: 24px 20px; position: relative; display: flex; flex-direction: column; }
++        .plan-card { border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 28px 22px; position: relative; display: flex; flex-direction: column; box-shadow: var(--shadow-sm); transition: box-shadow var(--transition), transform var(--transition); }
++        .plan-card:hover { box-shadow: var(--shadow); transform: translateY(-2px); }
+         .plan-card.highlighted { border-color: var(--accent); background: var(--accent-soft); }
+         .plan-cappuccino { border-color: var(--accent); }
+         .plan-espresso { border-color: var(--gold, #c89968); }
+@@ -201,7 +202,7 @@ export default function PremiumPage() {
+         .plan-badge { background: var(--accent); color: white; }
+         .plan-badge-edu { background: var(--gold, #c89968); color: white; top: -28px; }
+         .plan-emoji { font-size: 32px; margin-bottom: 4px; }
+-        .plan-card h2 { font-size: 20px; font-weight: 700; margin: 0; }
++        .plan-card h2 { font-family: var(--font-brand); font-size: 21px; font-weight: 600; margin: 0; }
+         .plan-tagline { font-size: 12px; color: var(--text-muted); margin: 4px 0 12px; min-height: 32px; }
+         .plan-price { font-size: 28px; font-weight: 700; color: var(--accent); margin: 0 0 16px; }
+         .plan-period { font-size: 14px; color: var(--text-muted); font-weight: 400; }
+diff --git a/apps/web/src/app/privacidade/page.tsx b/apps/web/src/app/privacidade/page.tsx
+index 3568d4d..a185d57 100644
+--- a/apps/web/src/app/privacidade/page.tsx
++++ b/apps/web/src/app/privacidade/page.tsx
+@@ -130,7 +130,7 @@ export default function PrivacidadePage() {
+           margin-bottom: 24px;
+           font-size: 14px;
+         }
+-        .info-card h1 {
++        .info-card h1 { font-family: var(--font-brand); font-weight: 600;
+           font-size: 28px;
+           font-weight: 700;
+           margin: 0 0 8px;
+diff --git a/apps/web/src/app/sobre/page.tsx b/apps/web/src/app/sobre/page.tsx
+index c107330..2740137 100644
+--- a/apps/web/src/app/sobre/page.tsx
++++ b/apps/web/src/app/sobre/page.tsx
+@@ -103,7 +103,7 @@ export default function SobrePage() {
+           margin-bottom: 24px;
+           font-size: 14px;
+         }
+-        .info-card h1 {
++        .info-card h1 { font-family: var(--font-brand); font-weight: 600;
+           font-size: 28px;
+           font-weight: 700;
+           margin: 0 0 24px;
+diff --git a/apps/web/src/components/AIPanel.tsx b/apps/web/src/components/AIPanel.tsx
+index c717497..1cce0ab 100644
+--- a/apps/web/src/components/AIPanel.tsx
++++ b/apps/web/src/components/AIPanel.tsx
+@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
+ import type { ParsedBook } from "@igot/parser";
+ import type { SelectionAction } from "@/lib/types";
+ import { useI18n } from "./I18nProvider";
++import { CafezinhoLogo } from "./CafezinhoLogo";
+ import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
+ import { translateStream, explainStream, ask, type BookContext } from "@/lib/ai-client";
+ 
+@@ -140,7 +141,10 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
+   return (
+     <aside className="ai-panel">
+       <header className="ai-header">
+-        <span className="ai-title">{action ? title : t("ai_assistant")}</span>
++        <span className="ai-brand">
++          <CafezinhoLogo size={22} opacity={0.9} />
++          <span className="ai-title">{action ? title : t("ai_assistant")}</span>
++        </span>
+         <div className="ai-header-actions">
+           {state.result && action && (
+             <button
+@@ -249,56 +253,80 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
+           align-items: center;
+           justify-content: space-between;
+           padding: 14px 20px;
+-          border-bottom: 1px solid var(--border);
++          border-bottom: 1px solid var(--border-soft);
++          background: linear-gradient(180deg, var(--surface), transparent);
++        }
++        .ai-brand {
++          display: flex;
++          align-items: center;
++          gap: 10px;
++          min-width: 0;
+         }
+         .ai-title {
+           font-weight: 600;
+-          font-size: 15px;
++          font-size: 14px;
++          letter-spacing: 0.01em;
++          white-space: nowrap;
++          overflow: hidden;
++          text-overflow: ellipsis;
+         }
+         .ai-close {
+           border: none;
+           background: transparent;
+           color: var(--text-muted);
+-          font-size: 24px;
++          font-size: 20px;
+           line-height: 1;
+-          padding: 0 4px;
++          padding: 6px;
++          border-radius: 50%;
++          transition: background var(--transition), color var(--transition);
++        }
++        .ai-close:hover {
++          background: var(--accent-soft);
++          color: var(--accent-dark);
+         }
+         .ai-hide {
+           border: none;
+           background: transparent;
+-          font-size: 18px;
++          font-size: 17px;
+           line-height: 1;
+-          padding: 0 4px;
++          padding: 6px;
++          border-radius: 50%;
+           cursor: pointer;
+-          opacity: 0.7;
++          opacity: 0.65;
++          transition: opacity var(--transition), background var(--transition);
+         }
+         .ai-hide:hover {
+           opacity: 1;
++          background: var(--accent-soft);
+         }
+         .ai-header-actions {
+           display: flex;
+           align-items: center;
+-          gap: 6px;
++          gap: 4px;
+         }
+         .ai-save {
+           border: 1px solid var(--border);
+-          background: var(--surface-alt);
++          background: var(--surface);
+           color: var(--text);
+-          border-radius: 6px;
++          border-radius: var(--radius-pill);
+           font-size: 12px;
+-          padding: 4px 10px;
++          font-weight: 500;
++          padding: 5px 12px;
+           cursor: pointer;
++          transition: border-color var(--transition), color var(--transition),
++            box-shadow var(--transition);
+         }
+         .ai-save:hover {
+-          border-color: var(--accent);
+-          color: var(--accent);
++          border-color: var(--gold);
++          color: var(--accent-dark);
++          box-shadow: var(--shadow-sm);
+         }
+         .ai-body {
+           flex: 1;
+           overflow-y: auto;
+           overscroll-behavior: contain;
+           min-height: 0;
+-          padding: 20px;
++          padding: 24px;
+           display: flex;
+           flex-direction: column;
+           gap: 16px;
+@@ -306,13 +334,14 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
+         .ai-empty {
+           color: var(--text-muted);
+           text-align: center;
+-          margin-top: 40px;
++          margin-top: 48px;
+         }
+         .ai-empty p {
+           margin: 0 0 8px;
+         }
+         .ai-empty-sub {
+           font-size: 13px;
++          opacity: 0.8;
+         }
+         .ai-loading {
+           display: flex;
+@@ -330,8 +359,8 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
+           color: var(--text-muted);
+         }
+         .dot {
+-          width: 8px;
+-          height: 8px;
++          width: 7px;
++          height: 7px;
+           border-radius: 50%;
+           background: var(--accent);
+           opacity: 0.4;
+@@ -355,15 +384,17 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
+         }
+         .ai-error {
+           margin: 0;
+-          padding: 12px;
++          padding: 12px 16px;
+           background: var(--accent-soft);
+-          border-radius: 8px;
+-          color: var(--accent);
++          border-radius: var(--radius);
++          color: var(--accent-dark);
+           font-size: 14px;
+         }
++        /* O texto é o protagonista: resposta em serifada de leitura. */
+         .ai-result {
+-          font-size: var(--text-base);
+-          line-height: 1.7;
++          font-family: var(--font-serif);
++          font-size: 16px;
++          line-height: 1.75;
+           white-space: pre-wrap;
+           padding: 4px 0;
+         }
+@@ -379,15 +410,15 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
+           display: flex;
+           align-items: flex-end;
+           gap: 8px;
+-          padding: 14px 20px;
+-          border-top: 1px solid var(--border);
++          padding: 14px 20px 18px;
++          border-top: 1px solid var(--border-soft);
+         }
+         .ai-footer input,
+         .ai-footer textarea {
+           flex: 1;
+-          padding: 10px 14px;
++          padding: 12px 16px;
+           border: 1px solid var(--border);
+-          border-radius: 8px;
++          border-radius: var(--radius-lg);
+           background: var(--bg);
+           color: var(--text);
+           font-size: 14px;
+@@ -395,22 +426,37 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
+           resize: none;
+           min-height: 60px;
+           line-height: 1.5;
++          transition: border-color var(--transition), box-shadow var(--transition);
+         }
+         .ai-footer textarea:focus,
+         .ai-footer input:focus {
+           outline: none;
+           border-color: var(--accent);
++          box-shadow: 0 0 0 3px var(--accent-soft);
+         }
+         .ai-footer button {
+-          width: 40px;
++          width: 42px;
++          height: 42px;
+           border: none;
+-          background: var(--accent);
+-          color: white;
+-          border-radius: 8px;
+-          font-size: 16px;
++          background: linear-gradient(180deg, var(--accent), var(--accent-dark));
++          color: #fff8ee;
++          border-radius: 50%;
++          font-size: 15px;
++          flex-shrink: 0;
++          box-shadow: var(--shadow-sm);
++          transition: transform var(--transition), box-shadow var(--transition),
++            filter var(--transition);
++        }
++        .ai-footer button:not(:disabled):hover {
++          transform: translateY(-1px);
++          box-shadow: var(--shadow);
++          filter: brightness(1.06);
++        }
++        .ai-footer button:not(:disabled):active {
++          transform: scale(0.94);
+         }
+         .ai-footer button:disabled {
+-          opacity: 0.4;
++          opacity: 0.35;
+           cursor: not-allowed;
+         }
+         /* Botão do microfone — diferente do botão de enviar (mais discreto). */
+@@ -418,18 +464,18 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
+           background: var(--surface-alt) !important;
+           color: var(--text) !important;
+           border: 1px solid var(--border) !important;
+-          font-size: 18px !important;
++          font-size: 17px !important;
+           flex-shrink: 0;
+         }
+         .ai-mic.listening {
+-          background: #e74c3c !important;
+-          color: white !important;
+-          border-color: #e74c3c !important;
++          background: var(--accent-dark) !important;
++          color: #fff8ee !important;
++          border-color: var(--accent-dark) !important;
+           animation: pulse 1.2s infinite;
+         }
+         @keyframes pulse {
+           0%, 100% { transform: scale(1); }
+-          50% { transform: scale(1.1); }
++          50% { transform: scale(1.08); }
+         }
+       `}</style>
+     </aside>
+diff --git a/apps/web/src/components/Reader.tsx b/apps/web/src/components/Reader.tsx
+index a0c2c3e..298a36d 100644
+--- a/apps/web/src/components/Reader.tsx
++++ b/apps/web/src/components/Reader.tsx
+@@ -1421,12 +1421,12 @@ export function Reader({
+           display: flex;
+           flex-direction: column;
+           gap: 4px;
+-          padding: 6px 14px;
+-          border-bottom: 1px solid var(--border);
++          padding: 7px 16px;
++          border-bottom: 1px solid var(--border-soft);
+           background: var(--surface);
+           flex-shrink: 0;
+           min-height: 50px;
+-          box-shadow: 0 1px 3px rgba(0,0,0,0.04);
++          box-shadow: var(--shadow-sm);
+           position: relative;
+           z-index: 5;
+         }
+@@ -1486,9 +1486,9 @@ export function Reader({
+           gap: 2px;
+           padding: 4px;
+           background: var(--surface);
+-          border: 1px solid var(--border);
+-          border-radius: 12px;
+-          box-shadow: 0 2px 10px rgba(0,0,0,0.12);
++          border: 1px solid var(--border-soft);
++          border-radius: var(--radius-pill);
++          box-shadow: var(--shadow);
+           z-index: 40;
+           transition: opacity 200ms ease;
+         }
+@@ -1511,7 +1511,7 @@ export function Reader({
+           color: var(--text);
+           font-size: 22px;
+           font-weight: 600;
+-          border-radius: 10px;
++          border-radius: 50%;
+           cursor: pointer;
+           transition: all 120ms ease;
+           display: flex;
+@@ -1530,17 +1530,21 @@ export function Reader({
+           cursor: not-allowed;
+         }
+         .translate-page-btn {
+-          padding: 6px 12px;
+-          border: 1px solid var(--border);
+-          background: var(--surface);
++          padding: 7px 14px;
++          border: 1px solid var(--border-soft);
++          background: var(--bg);
+           color: var(--text);
+-          border-radius: 8px;
++          border-radius: var(--radius-pill);
+           font-size: 13px;
++          font-weight: 500;
+           white-space: nowrap;
++          transition: border-color var(--transition), color var(--transition),
++            background var(--transition);
+         }
+         .translate-page-btn:hover:not(:disabled) {
+-          border-color: var(--accent);
+-          color: var(--accent);
++          border-color: var(--gold);
++          background: var(--accent-soft);
++          color: var(--accent-dark);
+         }
+         .translate-page-btn:disabled {
+           opacity: 0.4;
+@@ -1550,20 +1554,23 @@ export function Reader({
+            No modo NORMAL: texto (padding menor, fonte 13px).
+            No FULLSCREEN: só ícone (44px touch target). */
+         .page-action-btn {
+-          padding: 6px 12px;
+-          border: 1px solid var(--border);
+-          background: var(--surface);
++          padding: 7px 14px;
++          border: 1px solid var(--border-soft);
++          background: var(--bg);
+           color: var(--text);
+-          border-radius: 8px;
++          border-radius: var(--radius-pill);
+           font-size: 13px;
++          font-weight: 500;
+           white-space: nowrap;
+           cursor: pointer;
+-          transition: var(--transition);
++          transition: border-color var(--transition), color var(--transition),
++            background var(--transition);
+           flex-shrink: 0;
+         }
+         .page-action-btn:hover:not(:disabled) {
+-          border-color: var(--accent);
+-          color: var(--accent);
++          border-color: var(--gold);
++          background: var(--accent-soft);
++          color: var(--accent-dark);
+         }
+         .page-action-btn:disabled {
+           opacity: 0.4;
+@@ -1582,22 +1589,27 @@ export function Reader({
+         /* Destaque quando a página está traduzida/explicada (ativo). */
+         .page-action-btn.active {
+           background: var(--accent-soft);
+-          border-color: var(--accent);
++          border-color: var(--gold);
++          color: var(--accent-dark);
+         }
+         .open-other-btn,
+         .notes-btn {
+-          padding: 6px 12px;
+-          border: 1px solid var(--border);
+-          background: var(--surface);
++          padding: 7px 14px;
++          border: 1px solid var(--border-soft);
++          background: var(--bg);
+           color: var(--text);
+-          border-radius: 8px;
++          border-radius: var(--radius-pill);
+           font-size: 13px;
++          font-weight: 500;
+           white-space: nowrap;
++          transition: border-color var(--transition), color var(--transition),
++            background var(--transition);
+         }
+         .open-other-btn:hover,
+         .notes-btn:hover {
+-          border-color: var(--accent);
+-          color: var(--accent);
++          border-color: var(--gold);
++          background: var(--accent-soft);
++          color: var(--accent-dark);
+         }
+         .notes-btn .btn-label {
+           font-size: 11px;
+@@ -1629,27 +1641,28 @@ export function Reader({
+           display: flex;
+           align-items: center;
+           justify-content: center;
+-          border: 1px solid var(--border);
+-          background: var(--surface);
+-          color: var(--text);
+-          border-radius: 10px;
++          border: 1px solid transparent;
++          background: transparent;
++          color: var(--text-muted);
++          border-radius: var(--radius);
+           font-size: 17px;
+           cursor: pointer;
+-          transition: all 150ms ease;
++          transition: background var(--transition), color var(--transition),
++            transform var(--transition);
+           flex-shrink: 0;
+           position: relative;
+         }
+         .icon-btn:hover {
+-          border-color: var(--accent);
+           background: var(--accent-soft);
+-          color: var(--accent);
++          color: var(--accent-dark);
+         }
+         .icon-btn:active {
+           transform: scale(0.92);
+         }
+         .icon-btn.active {
+           background: var(--accent-soft);
+-          border-color: var(--accent);
++          color: var(--accent-dark);
++          border-color: var(--gold);
+         }
+         /* Contador dentro do botão (notas/marcadores) */
+         .icon-btn .badge {
+@@ -1725,17 +1738,17 @@ export function Reader({
+           right: 16px;
+           width: 48px;
+           height: 48px;
+-          border: 1px solid var(--border);
++          border: 1px solid var(--border-soft);
+           background: var(--surface);
+           color: var(--text-muted);
+-          border-radius: 12px;
++          border-radius: 50%;
+           cursor: pointer;
+           display: flex;
+           align-items: center;
+           justify-content: center;
+-          box-shadow: 0 2px 12px rgba(0,0,0,0.12);
++          box-shadow: var(--shadow);
+           z-index: 60;
+-          transition: var(--transition);
++          transition: border-color var(--transition), color var(--transition);
+         }
+         .fs-show-menu-btn:hover {
+           border-color: var(--accent);
+@@ -1750,12 +1763,12 @@ export function Reader({
+           gap: 2px;
+           width: 100%;
+           text-align: left;
+-          padding: 12px 14px;
+-          border: 1px solid var(--border);
++          padding: 13px 16px;
++          border: 1px solid var(--border-soft);
+           background: var(--surface);
+-          border-radius: 10px;
++          border-radius: var(--radius);
+           cursor: pointer;
+-          transition: var(--transition);
++          transition: border-color var(--transition), background var(--transition);
+           color: var(--text);
+         }
+         .bookmark-item:hover {
+@@ -1775,7 +1788,9 @@ export function Reader({
+         .notes-overlay {
+           position: fixed;
+           inset: 0;
+-          background: rgba(0, 0, 0, 0.5);
++          background: rgba(30, 20, 12, 0.4);
++          -webkit-backdrop-filter: blur(5px);
++          backdrop-filter: blur(5px);
+           display: flex;
+           align-items: center;
+           justify-content: center;
+@@ -1784,25 +1799,27 @@ export function Reader({
+         }
+         .notes-modal {
+           background: var(--bg);
+-          border-radius: 14px;
++          border-radius: var(--radius-lg);
+           width: 100%;
+           max-width: 620px;
+           max-height: 85vh;
+           display: flex;
+           flex-direction: column;
+-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
++          box-shadow: var(--shadow-lg);
++          border: 1px solid var(--border-soft);
+         }
+         .notes-header {
+           display: flex;
+           align-items: center;
+           justify-content: space-between;
+           padding: 18px 24px;
+-          border-bottom: 1px solid var(--border);
++          border-bottom: 1px solid var(--border-soft);
+         }
+         .notes-header h2 {
+           margin: 0;
+-          font-size: 18px;
+-          font-weight: 700;
++          font-family: var(--font-brand);
++          font-size: 19px;
++          font-weight: 600;
+         }
+         .notes-header button {
+           border: none;
+@@ -1827,10 +1844,11 @@ export function Reader({
+           margin: 40px 0;
+         }
+         .note-card {
+-          border: 1px solid var(--border);
+-          border-radius: 10px;
+-          padding: 14px;
++          border: 1px solid var(--border-soft);
++          border-radius: var(--radius);
++          padding: 16px;
+           background: var(--surface);
++          box-shadow: var(--shadow-sm);
+         }
+         .note-meta {
+           display: flex;
+@@ -1861,18 +1879,20 @@ export function Reader({
+           opacity: 1;
+         }
+         .note-source {
+-          margin: 0 0 8px;
+-          padding: 8px 10px;
++          margin: 0 0 10px;
++          padding: 10px 12px;
+           background: var(--surface-alt);
+-          border-left: 3px solid var(--accent);
+-          border-radius: 4px;
++          border-left: 3px solid var(--gold);
++          border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
++          font-family: var(--font-serif);
+           font-size: 13px;
+           font-style: italic;
+           white-space: pre-wrap;
+         }
+         .note-result {
++          font-family: var(--font-serif);
+           font-size: 14px;
+-          line-height: 1.6;
++          line-height: 1.65;
+           white-space: pre-wrap;
+           color: var(--text);
+         }
+@@ -1883,8 +1903,10 @@ export function Reader({
+         }
+         .reader-title h1 {
+           margin: 0;
++          font-family: var(--font-brand);
+           font-size: 15px;
+           font-weight: 600;
++          letter-spacing: 0.005em;
+           white-space: nowrap;
+           overflow: hidden;
+           text-overflow: ellipsis;
+@@ -1917,16 +1939,21 @@ export function Reader({
+           gap: 12px;
+         }
+         .reader-nav button {
+-          width: 32px;
+-          height: 32px;
+-          border: 1px solid var(--border);
+-          background: var(--surface);
+-          color: var(--text);
+-          border-radius: 8px;
+-          font-size: 18px;
++          width: 34px;
++          height: 34px;
++          border: none;
++          background: transparent;
++          color: var(--text-muted);
++          border-radius: 50%;
++          font-size: 17px;
+           display: flex;
+           align-items: center;
+           justify-content: center;
++          transition: background var(--transition), color var(--transition);
++        }
++        .reader-nav button:not(:disabled):hover {
++          background: var(--accent-soft);
++          color: var(--accent-dark);
+         }
+         .reader-nav button:disabled {
+           opacity: 0.3;
+@@ -1934,6 +1961,7 @@ export function Reader({
+         }
+         .reader-counter {
+           font-size: 13px;
++          font-variant-numeric: tabular-nums;
+           color: var(--text-muted);
+           min-width: 56px;
+           text-align: center;
+@@ -1949,10 +1977,10 @@ export function Reader({
+         .reader-text {
+           max-width: 680px;
+           margin: 0 auto;
+-          padding: 0 32px;
++          padding: 0 36px;
+           font-family: var(--font-serif);
+           font-size: var(--text-lg);
+-          line-height: 1.8;
++          line-height: 1.85;
+           color: var(--text);
+         }
+         /* Barra de progresso de leitura */
+@@ -1967,8 +1995,8 @@ export function Reader({
+         }
+         .reader-progress-bar {
+           height: 100%;
+-          background: var(--accent);
+-          transition: width 200ms ease;
++          background: linear-gradient(90deg, var(--accent-dark), var(--accent), var(--gold));
++          transition: width 300ms var(--ease);
+           border-radius: 0 2px 2px 0;
+         }
+ 
+@@ -1981,9 +2009,9 @@ export function Reader({
+           max-width: 90vw;
+           max-height: 50vh;
+           background: var(--surface);
+-          border: 1px solid var(--border);
+-          border-radius: 12px;
+-          box-shadow: 0 8px 32px rgba(0,0,0,0.2);
++          border: 1px solid var(--border-soft);
++          border-radius: var(--radius-lg);
++          box-shadow: var(--shadow-lg);
+           z-index: 100;
+           display: flex;
+           flex-direction: column;
+@@ -2006,10 +2034,11 @@ export function Reader({
+           color: var(--text-muted);
+         }
+         .fs-result-body {
+-          padding: 14px;
++          padding: 16px;
+           overflow-y: auto;
++          font-family: var(--font-serif);
+           font-size: var(--text-base);
+-          line-height: 1.7;
++          line-height: 1.75;
+           white-space: pre-wrap;
+         }
+         .reader-text h2 {
+@@ -2081,14 +2110,15 @@ export function Reader({
+         }
+         .selection-menu {
+           position: absolute;
+-          background: var(--accent);
+-          border: 2px solid rgba(255, 255, 255, 0.4);
+-          border-radius: 14px;
+-          box-shadow: 0 6px 24px rgba(0, 0, 0, 0.28);
++          background: linear-gradient(180deg, var(--accent), var(--accent-dark));
++          border: none;
++          border-radius: var(--radius-pill);
++          box-shadow: 0 8px 28px rgba(43, 26, 12, 0.32),
++            inset 0 1px 0 rgba(255, 255, 255, 0.18);
+           display: flex;
+           align-items: center;
+           gap: 2px;
+-          padding: 5px;
++          padding: 4px;
+           z-index: 9999;
+         }
+         /* Acima: sobe o menu pra cima da coordenada (padrão). */
+@@ -2102,17 +2132,19 @@ export function Reader({
+         .selection-menu button {
+           border: none;
+           background: transparent;
+-          color: white;
++          color: #fff8ee;
+           padding: 10px 16px;
+-          border-radius: 10px;
+-          font-size: 15px;
++          border-radius: var(--radius-pill);
++          font-size: 14px;
+           font-weight: 600;
++          letter-spacing: 0.01em;
+           white-space: nowrap;
+           cursor: pointer;
++          transition: background var(--transition);
+         }
+         .selection-menu button:hover,
+         .selection-menu button:active {
+-          background: rgba(255, 255, 255, 0.25);
++          background: rgba(255, 248, 238, 0.2);
+         }
+         .selection-menu-close {
+           width: 36px !important;
+diff --git a/apps/web/src/components/SettingsModal.tsx b/apps/web/src/components/SettingsModal.tsx
+index d7d9f9d..d8ab24c 100644
+--- a/apps/web/src/components/SettingsModal.tsx
++++ b/apps/web/src/components/SettingsModal.tsx
+@@ -79,7 +79,9 @@ export function SettingsModal({ onClose, onSaved }: SettingsModalProps) {
+         .settings-overlay {
+           position: fixed;
+           inset: 0;
+-          background: rgba(0, 0, 0, 0.45);
++          background: rgba(30, 20, 12, 0.4);
++          -webkit-backdrop-filter: blur(5px);
++          backdrop-filter: blur(5px);
+           display: flex;
+           align-items: center;
+           justify-content: center;
+@@ -89,12 +91,13 @@ export function SettingsModal({ onClose, onSaved }: SettingsModalProps) {
+         }
+         .settings-modal {
+           background: var(--bg);
+-          border-radius: 14px;
++          border: 1px solid var(--border-soft);
++          border-radius: var(--radius-lg);
+           width: 100%;
+           max-width: 560px;
+           max-height: 90vh;
+           overflow-y: auto;
+-          box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
++          box-shadow: var(--shadow-lg);
+         }
+         .settings-modal-header {
+           display: flex;
+@@ -109,8 +112,9 @@ export function SettingsModal({ onClose, onSaved }: SettingsModalProps) {
+         }
+         .settings-modal-header h2 {
+           margin: 0;
+-          font-size: 18px;
+-          font-weight: 700;
++          font-family: var(--font-brand);
++          font-size: 19px;
++          font-weight: 600;
+         }
+         .settings-modal-close {
+           width: 32px;
+diff --git a/apps/web/src/components/Uploader.tsx b/apps/web/src/components/Uploader.tsx
+index b2238dd..cc73493 100644
+--- a/apps/web/src/components/Uploader.tsx
++++ b/apps/web/src/components/Uploader.tsx
+@@ -43,9 +43,14 @@ export function Uploader({ onFile, error, configReady = true, onOpenSettings }:
+   return (
+     <div className="uploader-page">
+       <div className="uploader-card">
+-        {/* Hero */}
++        {/* Hero — xícara com vapor subindo (a assinatura do Moka) */}
+         <div className="hero">
+-          <div className="logo">☕</div>
++          <div className="logo" aria-hidden>
++            <span className="steam steam-1" />
++            <span className="steam steam-2" />
++            <span className="steam steam-3" />
++            <span className="logo-cup">☕</span>
++          </div>
+           <h1 className="brand-name">Moka</h1>
+           <p className="tagline">{t("app_tagline")}</p>
+           <p className="subtitle">{t("upload_hero_desc")}</p>
+@@ -132,67 +137,129 @@ export function Uploader({ onFile, error, configReady = true, onOpenSettings }:
+           display: flex;
+           align-items: center;
+           justify-content: center;
+-          padding: 24px;
++          padding: 32px 24px;
+           overflow-y: auto;
+         }
+         .uploader-card {
+-          max-width: 480px;
++          max-width: 500px;
+           width: 100%;
+           text-align: center;
+         }
+ 
+         /* Hero */
+         .hero {
+-          margin-bottom: 28px;
++          margin-bottom: 36px;
++          position: relative;
++        }
++        /* Crema — brilho radial quente atrás da xícara */
++        .hero::before {
++          content: "";
++          position: absolute;
++          top: -60px;
++          left: 50%;
++          transform: translateX(-50%);
++          width: 340px;
++          height: 260px;
++          background: radial-gradient(
++            ellipse at center,
++            var(--accent-soft) 0%,
++            transparent 65%
++          );
++          opacity: 0.9;
++          pointer-events: none;
++          z-index: -1;
+         }
+         .logo {
+-          font-size: 56px;
++          position: relative;
++          display: inline-block;
++          font-size: 58px;
+           line-height: 1;
+-          margin-bottom: 8px;
++          margin-bottom: 12px;
++        }
++        .logo-cup {
++          display: inline-block;
++          filter: drop-shadow(0 6px 14px rgba(62, 42, 24, 0.18));
++        }
++        /* Vapor — três fios sutis subindo da xícara */
++        .steam {
++          position: absolute;
++          bottom: 92%;
++          left: 50%;
++          width: 3px;
++          height: 26px;
++          border-radius: 999px;
++          background: linear-gradient(to top, var(--gold), transparent);
++          opacity: 0;
++          filter: blur(1.5px);
++          animation: steam-rise 3.4s ease-in-out infinite;
++        }
++        .steam-1 { margin-left: -12px; animation-delay: 0s; }
++        .steam-2 { margin-left: -2px; height: 32px; animation-delay: 1.1s; }
++        .steam-3 { margin-left: 8px; animation-delay: 2.2s; }
++        @keyframes steam-rise {
++          0% { transform: translateY(6px) scaleY(0.6); opacity: 0; }
++          30% { opacity: 0.55; }
++          70% { opacity: 0.25; }
++          100% { transform: translateY(-16px) scaleY(1.1); opacity: 0; }
+         }
+         .brand-name {
+-          font-size: var(--text-2xl);
+-          font-weight: 700;
+-          margin: 0 0 4px;
+-          letter-spacing: -0.5px;
+-          background: linear-gradient(135deg, var(--accent), #e8a03d);
++          font-family: var(--font-brand);
++          font-size: 42px;
++          font-weight: 600;
++          margin: 0 0 6px;
++          letter-spacing: 0.005em;
++          background: linear-gradient(
++            160deg,
++            var(--accent-dark) 20%,
++            var(--accent) 65%,
++            var(--gold)
++          );
+           -webkit-background-clip: text;
+           background-clip: text;
+           color: transparent;
+         }
+         .tagline {
++          font-family: var(--font-brand);
++          font-style: italic;
+           color: var(--text-muted);
+-          margin: 0 0 12px;
++          margin: 0 0 14px;
+           font-size: var(--text-lg);
+         }
+         .subtitle {
+           color: var(--text);
+-          margin: 0;
++          margin: 0 auto;
++          max-width: 40ch;
+           font-size: var(--text-base);
+-          line-height: 1.6;
++          line-height: 1.65;
+         }
+ 
+-        /* Features */
++        /* Features — fichas suaves, como etiquetas de pacote de café */
+         .features {
+           display: flex;
+           justify-content: center;
+-          gap: var(--space-5);
+-          margin-bottom: 28px;
++          gap: var(--space-3);
++          margin-bottom: 32px;
+           flex-wrap: wrap;
+         }
+         .feature {
+           display: flex;
+-          flex-direction: column;
++          flex-direction: row;
+           align-items: center;
+-          gap: 4px;
++          gap: 8px;
++          padding: 8px 14px;
++          background: var(--surface);
++          border: 1px solid var(--border-soft);
++          border-radius: var(--radius-pill);
++          box-shadow: var(--shadow-sm);
+         }
+         .feature-icon {
+-          font-size: 24px;
++          font-size: 16px;
+         }
+         .feature-text {
+           font-size: var(--text-sm);
+           color: var(--text-muted);
+           font-weight: 500;
++          white-space: nowrap;
+         }
+ 
+         /* Aviso de configuração */
+@@ -200,13 +267,13 @@ export function Uploader({ onFile, error, configReady = true, onOpenSettings }:
+           display: flex;
+           align-items: center;
+           gap: var(--space-3);
+-          padding: 12px 16px;
+-          background: #faf6ee;
+-          border: 1px solid #e8d090;
++          padding: 14px 18px;
++          background: var(--accent-soft);
++          border: 1px solid var(--gold);
+           border-radius: var(--radius);
+           margin-bottom: 20px;
+           cursor: pointer;
+-          transition: var(--transition);
++          transition: border-color var(--transition), box-shadow var(--transition);
+           text-align: left;
+         }
+         .setup-warning:hover {
+@@ -225,7 +292,7 @@ export function Uploader({ onFile, error, configReady = true, onOpenSettings }:
+         }
+         .setup-content strong {
+           font-size: var(--text-sm);
+-          color: #a04020;
++          color: var(--accent-dark);
+         }
+         .setup-content span {
+           font-size: var(--text-xs);
+@@ -237,29 +304,32 @@ export function Uploader({ onFile, error, configReady = true, onOpenSettings }:
+           flex-shrink: 0;
+         }
+ 
+-        /* Dropzone */
++        /* Dropzone — bandeja acolhedora */
+         .dropzone {
+           display: block;
+-          padding: 40px 24px;
+-          border: 2px dashed var(--border);
+-          border-radius: var(--radius);
++          padding: 52px 28px;
++          border: 1.5px dashed var(--border);
++          border-radius: var(--radius-lg);
+           background: var(--surface);
++          box-shadow: var(--shadow-sm);
+           cursor: pointer;
+           transition: border-color var(--transition), background var(--transition),
+-            transform var(--transition);
++            box-shadow var(--transition), transform var(--transition);
+         }
+         .dropzone:hover,
+         .dropzone.is-dragging {
+           border-color: var(--accent);
+-          background: var(--accent-soft);
+-          transform: scale(1.01);
++          background: linear-gradient(180deg, var(--surface), var(--accent-soft));
++          box-shadow: var(--shadow);
++          transform: translateY(-2px);
+         }
+         .dropzone-icon {
+-          font-size: 36px;
++          font-size: 38px;
+           margin-bottom: var(--space-3);
++          filter: drop-shadow(0 3px 6px rgba(62, 42, 24, 0.12));
+         }
+         .dropzone-title {
+-          margin: 0 0 4px;
++          margin: 0 0 6px;
+           font-size: var(--text-base);
+         }
+         .dropzone-title span {
+@@ -270,32 +340,32 @@ export function Uploader({ onFile, error, configReady = true, onOpenSettings }:
+           margin: 0;
+           color: var(--text-muted);
+           font-size: var(--text-xs);
++          letter-spacing: 0.02em;
+         }
+ 
+         /* Erro */
+         .uploader-error {
+           margin: 16px 0 0;
+-          padding: 10px 14px;
+-          background: #faf0e8;
++          padding: 12px 16px;
++          background: var(--accent-soft);
+           border-radius: var(--radius);
+-          color: #a04020;
++          color: var(--accent-dark);
+           font-size: var(--text-sm);
+           text-align: left;
+-          border: 1px solid #e0c0a8;
++          border: 1px solid var(--gold);
+         }
+ 
+         /* Badge de privacidade */
+         .privacy-badge {
+-          display: flex;
+           align-items: center;
+           justify-content: center;
+           gap: var(--space-2);
+-          margin-top: 28px;
++          margin-top: 32px;
+           color: var(--text-muted);
+           font-size: var(--text-xs);
+-          padding: 8px 14px;
++          padding: 8px 16px;
+           background: var(--surface-alt);
+-          border-radius: 20px;
++          border-radius: var(--radius-pill);
+           display: inline-flex;
+         }
+         .privacy-badge span {
+@@ -304,7 +374,7 @@ export function Uploader({ onFile, error, configReady = true, onOpenSettings }:
+ 
+         @media (max-width: 600px) {
+           .features {
+-            gap: var(--space-4);
++            gap: var(--space-2);
+           }
+         }
+         .uploader-links {
+@@ -316,14 +386,17 @@ export function Uploader({ onFile, error, configReady = true, onOpenSettings }:
+           font-size: 13px;
+         }
+         .uploader-links a {
+-          color: var(--accent);
++          color: var(--text-muted);
+           text-decoration: none;
++          transition: color var(--transition);
+         }
+         .uploader-links a:hover {
++          color: var(--accent);
+           text-decoration: underline;
++          text-underline-offset: 3px;
+         }
+         .uploader-links span {
+-          color: var(--text-muted);
++          color: var(--border);
+         }
+       `}</style>
+     </div>
+-- 
+2.43.0
+

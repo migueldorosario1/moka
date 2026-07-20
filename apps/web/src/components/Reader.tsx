@@ -2851,9 +2851,12 @@ export function Reader({
           position: fixed;
           bottom: 0;
         }
-        /* Padding extra no scroll pra não esconder texto atrás da nav-bar */
+        /* Margem vazia no fim do texto: SEMPRE maior que a bandeja de
+           navegação flutuante (~52px de altura + 12px solta do rodapé +
+           respiro). Assim dá pra subir o texto e ler a página ATÉ O FIM,
+           sem a barra cobrir a última linha. Inclui a safe-area do iPhone. */
         .reader-scroll {
-          padding-bottom: 70px !important;
+          padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)) !important;
         }
         .reader-nav-bar button {
           width: 36px;
