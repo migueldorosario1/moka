@@ -393,6 +393,39 @@ export async function explainStream(
   }
 }
 
+/**
+ * Traduz um texto pra um idioma EXPLÍCITO (não o targetLang da config).
+ * Uso: preparar texto pra LEITURA EM VOZ ALTA — se o idioma da fala
+ * configurado é diferente do idioma do livro, traduzimos primeiro na
+ * nuvem da IA e depois falamos a tradução (ex.: livro em inglês,
+ * fala em português).
+ */
+export async function translateForSpeech(
+  text: string,
+  speechLang: string,
+  ctx: BookContext,
+): Promise<AIActionResult> {
+  if (!text.trim()) return { ok: false, error: "Texto ausente." };
+  const systemPrompt =
+    `Você é um tradutor literário e técnico de excelência. ` +
+    `Traduza o trecho fornecido para ${speechLang}. ` +
+    `A tradução será LIDA EM VOZ ALTA: prefira frases fluídas e naturais ` +
+    `ao ouvido, mantendo o sentido e o tom da obra. ` +
+    `Devolva APENAS a tradução, sem comentários, sem aspas, sem introdução.`;
+
+  try {
+    const { provider } = resolveProvider();
+    const result = await provider.complete(text, {
+      systemPrompt,
+      context: buildContext(ctx),
+      temperature: 0.3,
+    });
+    return { ok: true, text: result.text };
+  } catch (err) {
+    return { ok: false, error: toMessage(err) };
+  }
+}
+
 /** Responde uma pergunta livre sobre o livro (preview do Q&A — sem RAG ainda). */
 export async function ask(
   question: string,
@@ -420,6 +453,107 @@ export async function ask(
 }
 
 /**
+ * Versão STREAMING de ask: a resposta vai aparecendo aos poucos.
+ * Usada pela janela "Pergunte qualquer coisa" do Reader.
+ */
+export async function askStream(
+  question: string,
+  ctx: BookContext,
+  onChunk: StreamCallback,
+): Promise<AIActionResult> {
+  if (!question.trim()) return { ok: false, error: "Pergunta ausente." };
+  const targetLang = getTargetLang();
+  const systemPrompt =
+    `Você é um assistente de leitura ajudando alguém com o livro "${ctx.bookTitle ?? "desconhecido"}"` +
+    (ctx.bookAuthor ? ` de ${ctx.bookAuthor}` : "") + `. ` +
+    `Responda em ${targetLang}, de forma útil, calorosa e honesta. ` +
+    `A pessoa pode perguntar sobre a obra, o autor, o tema, ou pedir pra ` +
+    `saber mais sobre um capítulo ou passagem. ` +
+    `Se não souber algo por falta de contexto do texto, diga — não invente. ` +
+    `Use texto puro, sem markdown.`;
+
+  try {
+    const { provider } = resolveProvider();
+    if (!provider.stream) {
+      const result = await provider.complete(question, {
+        systemPrompt,
+        context: buildContext(ctx),
+        temperature: 0.4,
+      });
+      onChunk(result.text, result.text);
+      return { ok: true, text: result.text };
+    }
+    let full = "";
+    for await (const chunk of provider.stream(question, {
+      systemPrompt,
+      context: buildContext(ctx),
+      temperature: 0.4,
+    })) {
+      full += chunk;
+      onChunk(full, chunk);
+    }
+    return { ok: true, text: full };
+  } catch (err) {
+    return { ok: false, error: toMessage(err) };
+  }
+}
+
+/**
+ * Resume um texto (página ou compilação do livro) com streaming.
+ *
+ * `scope` = "page" (a página na tela — resumo direto e fiel) ou
+ * "book" (compilação de trechos do livro inteiro — resumo panorâmico,
+ * avisando que é baseado numa amostra quando o texto veio truncado).
+ */
+export async function summarizeStream(
+  text: string,
+  scope: "page" | "book",
+  ctx: BookContext,
+  onChunk: StreamCallback,
+): Promise<AIActionResult> {
+  if (!text.trim()) return { ok: false, error: "Texto ausente." };
+  const targetLang = getTargetLang();
+  const systemPrompt =
+    scope === "page"
+      ? `Você é um assistente de leitura. Resuma a página a seguir em ${targetLang}, ` +
+        `de forma clara e fiel: a ideia central, os pontos principais e ` +
+        `qualquer virada importante (3 a 6 frases, ou tópicos curtos se couber melhor). ` +
+        `Não comente fora do texto. Não invente. Texto puro, sem markdown.`
+      : `Você é um assistente de leitura. A seguir vai uma COMPILAÇÃO de trechos ` +
+        `do livro "${ctx.bookTitle ?? "desconhecido"}" (títulos de capítulos e ` +
+        `passagens representativas — possivelmente truncada). ` +
+        `Escreva em ${targetLang} um resumo panorâmico da obra: tema, enredo ou ` +
+        `argumento central, personagens/ideias principais e tom geral. ` +
+        `Se a amostra for claramente parcial, diga isso numa frase final honesta. ` +
+        `Texto puro, sem markdown. Não invente fatos que não estejam na amostra.`;
+
+  try {
+    const { provider } = resolveProvider();
+    if (!provider.stream) {
+      const result = await provider.complete(text, {
+        systemPrompt,
+        context: buildContext(ctx),
+        temperature: 0.4,
+      });
+      onChunk(result.text, result.text);
+      return { ok: true, text: result.text };
+    }
+    let full = "";
+    for await (const chunk of provider.stream(text, {
+      systemPrompt,
+      context: buildContext(ctx),
+      temperature: 0.4,
+    })) {
+      full += chunk;
+      onChunk(full, chunk);
+    }
+    return { ok: true, text: full };
+  } catch (err) {
+    return { ok: false, error: toMessage(err) };
+  }
+}
+
+/**
  * Teste de conexão: faz uma chamada mínima ao provider escolhido.
  * Usado pela tela de Configurações pra validar chave + provedor.
  */
@@ -431,7 +565,9 @@ export async function testConnection(
     const provider = getProvider(config, transport);
     const result = await provider.complete("Diga apenas: OK", {
       temperature: 0,
-      maxTokens: 16,
+      // 100 tokens: modelos de raciocínio (gpt-5.5, o-series) consomem
+      // reasoning_tokens antes de responder — 16 não sobrava nada pro "OK".
+      maxTokens: 100,
     });
     return {
       ok: true,

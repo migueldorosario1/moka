@@ -129,10 +129,9 @@ export default function BookPage({ params }: { params: { id: string } }) {
           onSettingsSaved={() => setConfigReady(hasConfig())}
           configReady={configReady}
           translations={session.translations ?? {}}
-          onPageTranslation={(chapIdx, text) => {
-            const key = String(chapIdx + 1);
+          onPageTranslation={(pageKey, text) => {
             updateSession({
-              translations: { ...(session.translations ?? {}), [key]: text },
+              translations: { ...(session.translations ?? {}), [pageKey]: text },
             });
           }}
           notes={session.notes ?? []}

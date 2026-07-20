@@ -42,6 +42,27 @@ export function isReasoningModel(model: string): boolean {
   );
 }
 
+/**
+ * Detecta modelos OpenAI da "nova geração" (gpt-5*, o1, o3, o4*) que mudaram
+ * o contrato da API:
+ *   - NÃO aceitam `max_tokens` — exigem `max_completion_tokens`
+ *     (erro 400: "Unsupported parameter: 'max_tokens'");
+ *   - NÃO aceitam `temperature` customizada (só o default 1).
+ *
+ * A detecção é por NOME de modelo (não por provedor), porque este adapter
+ * serve vários provedores compatíveis (Z.ai, DeepSeek...) que seguem o
+ * contrato antigo e não podem receber `max_completion_tokens`.
+ */
+export function isNewOpenAiModel(model: string): boolean {
+  const m = model.toLowerCase();
+  return (
+    m.includes("gpt-5") ||
+    m.startsWith("o1") || m.includes("/o1") || m.includes("o1-") ||
+    m.startsWith("o3") || m.includes("/o3") || m.includes("o3-") ||
+    m.startsWith("o4") || m.includes("/o4") || m.includes("o4-")
+  );
+}
+
 export interface OpenAICompatibleConfig {
   id: string;
   name: string;
@@ -98,6 +119,7 @@ export class OpenAICompatibleProvider implements AIProvider {
   ): Promise<CompleteResult> {
     const model = opts.model ?? this.defaultModel;
     const messages = this.buildMessages(prompt, opts);
+    const newOpenAi = isNewOpenAiModel(model);
 
     const { status, body } = await this.transport.request(
       `${this.baseUrl}/chat/completions`,
@@ -110,12 +132,17 @@ export class OpenAICompatibleProvider implements AIProvider {
         body: JSON.stringify({
           model,
           messages,
-          // Modelos de raciocínio (Kimi K3, DeepSeek-R1, o1...) não aceitam
-          // temperature — mandar causa erro 400. Omitimos nesses casos.
-          ...(!isReasoningModel(model) && {
+          // Modelos de raciocínio (Kimi K3, DeepSeek-R1, o1...) e a família
+          // GPT-5 não aceitam temperature — mandar causa erro 400. Omitimos.
+          ...(!isReasoningModel(model) && !newOpenAi && {
             temperature: opts.temperature ?? 0.3,
           }),
-          ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
+          // GPT-5/o-series exigem max_completion_tokens (max_tokens → 400).
+          ...(opts.maxTokens
+            ? newOpenAi
+              ? { max_completion_tokens: opts.maxTokens }
+              : { max_tokens: opts.maxTokens }
+            : {}),
         }),
       },
     );
@@ -171,6 +198,7 @@ export class OpenAICompatibleProvider implements AIProvider {
 
     const model = opts.model ?? this.defaultModel;
     const messages = this.buildMessages(prompt, opts);
+    const newOpenAi = isNewOpenAiModel(model);
 
     const res = await this.transport.stream(
       `${this.baseUrl}/chat/completions`,
@@ -183,11 +211,16 @@ export class OpenAICompatibleProvider implements AIProvider {
         body: JSON.stringify({
           model,
           messages,
-          // Modelos de raciocínio não aceitam temperature.
-          ...(!isReasoningModel(model) && {
+          // Modelos de raciocínio e a família GPT-5 não aceitam temperature.
+          ...(!isReasoningModel(model) && !newOpenAi && {
             temperature: opts.temperature ?? 0.3,
           }),
-          ...(opts.maxTokens ? { max_tokens: opts.maxTokens } : {}),
+          // GPT-5/o-series exigem max_completion_tokens (max_tokens → 400).
+          ...(opts.maxTokens
+            ? newOpenAi
+              ? { max_completion_tokens: opts.maxTokens }
+              : { max_tokens: opts.maxTokens }
+            : {}),
           stream: true, // habilita SSE
         }),
       },

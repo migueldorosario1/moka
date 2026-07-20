@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
-import type { ParsedBook } from "@igot/parser";
+import type { Block, ParsedBook } from "@igot/parser";
 import type { SelectionAction } from "@/lib/types";
 import { PdfPageCanvas } from "./PdfPageCanvas";
 import { CafezinhoLogo } from "./CafezinhoLogo";
@@ -10,7 +10,9 @@ import { useI18n } from "./I18nProvider";
 import { useTTS } from "@/hooks/useTTS";
 import { getTargetLang, getAudioLang, getConfigSync } from "@/lib/config";
 import { SettingsModal } from "./SettingsModal";
-import { translatePageStream, explainPageStream, translateStream, explainStream } from "@/lib/ai-client";
+import { AskModal } from "./AskModal";
+import { SummaryModal } from "./SummaryModal";
+import { translatePageStream, explainPageStream, translateStream, explainStream, translateForSpeech } from "@/lib/ai-client";
 
 interface ReaderProps {
   book: ParsedBook;
@@ -37,16 +39,16 @@ interface ReaderProps {
   onSettingsSaved?: () => void;
   /** True se já tem configuração de IA salva (mostra indicador se falso). */
   configReady?: boolean;
-  /** Traduções já prontas (chave = String(chapterIdx+1)). */
+  /** Traduções já prontas (chave = pageKey: "N" no PDF, "cap.pag" no EPUB). */
   translations?: Record<string, string>;
-  /** Persiste a tradução de uma página. */
-  onPageTranslation?: (chapterIdx: number, text: string) => void;
+  /** Persiste a tradução de uma página (chaveada por pageKey). */
+  onPageTranslation?: (pageKey: string, text: string) => void;
   /** Anotações salvas (pra abrir o modal de Notas). */
   notes?: Array<{ id: string; kind: string; source: string; result: string; savedAt: number }>;
   /** Remove uma anotação. */
   onRemoveNote?: (id: string) => void;
   /** Salva uma nota (auto-save de tradução/explicação em fullscreen). */
-  onSaveNote?: (entry: { kind: "translate" | "explain" | "ask"; source: string; result: string; chapterId?: string }) => void;
+  onSaveNote?: (entry: { kind: "translate" | "explain" | "ask" | "summary"; source: string; result: string; chapterId?: string }) => void;
   /** Marcadores salvos (chapterIdx + timestamp). */
   bookmarks?: Array<{ chapterIdx: number; savedAt: number }>;
   /** Adiciona/remove um marcador da página atual. */
@@ -64,6 +66,100 @@ interface ReaderProps {
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3.0;
 const ZOOM_STEP = 0.2;
+
+/**
+ * Alvo de caracteres por PÁGINA de EPUB.
+ * EPUB não tem páginas por natureza (cada item do spine é um "capítulo"
+ * contínuo) — sem isso, o texto vinha "corrido" num scroll infinito.
+ * ~2200 chars ≈ uma tela confortável de leitura (300-350 palavras).
+ */
+const EPUB_PAGE_CHARS = 2200;
+
+/** Extrai o texto "falável/imprimível" de um bloco. */
+function blockText(b: Block): string {
+  if (b.type === "list") return (b.items ?? []).join(", ");
+  return b.text ?? "";
+}
+
+/** Junta o texto de vários blocos (pra TTS, tradução de página, resumo). */
+function blocksToText(blocks: Block[], sep: string): string {
+  return blocks.map(blockText).filter(Boolean).join(sep);
+}
+
+/** "Tamanho" de um bloco pra efeito de paginação. */
+function blockLength(b: Block): number {
+  if (b.type === "image") return 400; // imagem ocupa espaço visual da página
+  return blockText(b).length;
+}
+
+/**
+ * Fatia um texto longo em pedaços de até `max` chars, cortando de
+ * preferência no fim de uma frase (". ") ou num espaço — nunca no
+ * meio de uma palavra.
+ */
+function splitLongText(text: string, max: number): string[] {
+  const parts: string[] = [];
+  let rest = text;
+  while (rest.length > max) {
+    let cut = rest.lastIndexOf(". ", max);
+    if (cut < max * 0.5) cut = rest.lastIndexOf(" ", max);
+    if (cut <= 0) cut = max;
+    parts.push(rest.slice(0, cut + 1).trim());
+    rest = rest.slice(cut + 1).trim();
+  }
+  if (rest) parts.push(rest);
+  return parts;
+}
+
+/**
+ * Quebra os blocos de um capítulo EPUB em PÁGINAS.
+ *
+ * Regras:
+ *   - "page-break" explícito (do livro) força página nova;
+ *   - heading começa página nova (se a atual já tem conteúdo) — seção nova;
+ *   - encheu ~EPUB_PAGE_CHARS → página nova (sem cortar bloco no meio);
+ *   - bloco sozinho maior que uma página → fatiado em frases (splitLongText).
+ */
+function paginateBlocks(blocks: Block[]): Block[][] {
+  const pages: Block[][] = [];
+  let current: Block[] = [];
+  let count = 0;
+  const flush = () => {
+    if (current.length > 0) {
+      pages.push(current);
+      current = [];
+      count = 0;
+    }
+  };
+  for (const b of blocks) {
+    if (b.type === "page-break") {
+      flush();
+      continue;
+    }
+    if (b.type === "heading" && count > 0) flush();
+    const len = blockLength(b);
+    if (len > EPUB_PAGE_CHARS && b.text) {
+      const chunks = splitLongText(b.text, EPUB_PAGE_CHARS);
+      chunks.forEach((chunk, i) => {
+        if (count > 0 && count + chunk.length > EPUB_PAGE_CHARS) flush();
+        current.push({ ...b, id: `${b.id}-s${i}`, text: chunk });
+        count += chunk.length;
+      });
+      continue;
+    }
+    if (count > 0 && count + len > EPUB_PAGE_CHARS) flush();
+    current.push(b);
+    count += len;
+  }
+  flush();
+  return pages.length > 0 ? pages : [[]];
+}
+
+/** Limites do controle de tamanho da fonte de leitura (A−/A+). */
+const FONT_SCALE_MIN = 0.7;
+const FONT_SCALE_MAX = 1.8;
+const FONT_SCALE_STEP = 0.1;
+const FONT_SCALE_KEY = "moka.fontScale";
 
 /**
  * Painel de leitura.
@@ -107,6 +203,78 @@ export function Reader({
 
   /** Lê a página atual em voz alta (na língua do livro). */
   const [ttsLoading, setTtsLoading] = useState(false);
+  /**
+   * Etapa da PREPARAÇÃO do áudio (mostrada no balão central):
+   * "translate" = traduzindo o trecho pro idioma da fala;
+   * "voice" = gerando a voz (TTS neural).
+   */
+  const [ttsPrep, setTtsPrep] = useState<null | "translate" | "voice">(null);
+  /** Cronômetro da preparação (noção de quanto tá demorando). */
+  const [ttsPrepSecs, setTtsPrepSecs] = useState(0);
+  /** Geração da preparação: se mudar, o processo em andamento foi cancelado. */
+  const ttsPrepGen = useRef(0);
+
+  // Cronômetro do balão de preparação (roda enquanto ttsPrep != null).
+  useEffect(() => {
+    if (!ttsPrep) {
+      setTtsPrepSecs(0);
+      return;
+    }
+    const start = Date.now();
+    const id = setInterval(
+      () => setTtsPrepSecs(Math.floor((Date.now() - start) / 1000)),
+      500,
+    );
+    return () => clearInterval(id);
+  }, [ttsPrep]);
+
+  /** Cancela a preparação do áudio (balão some, nada toca). */
+  const cancelTtsPrep = () => {
+    ttsPrepGen.current++;
+    setTtsPrep(null);
+    setTtsLoading(false);
+    tts.stop();
+  };
+
+  /**
+   * Prepara o texto pra FALA conforme o idioma do áudio (⚙️ Config):
+   *   - "original" (ou igual ao idioma do texto) → fala como está;
+   *   - idioma diferente → TRADUZ PRIMEIRO na nuvem da IA e fala a
+   *     tradução (ex.: livro em inglês, fala em português).
+   * Devolve null se cancelado ou se a tradução falhou.
+   */
+  const prepareSpeech = async (
+    text: string,
+    textLang: string,
+  ): Promise<{ text: string; lang: string } | null> => {
+    const audioLang = getAudioLang();
+    if (audioLang === "original" || audioLang === textLang) {
+      return { text, lang: audioLang === "original" ? textLang : audioLang };
+    }
+    const gen = ttsPrepGen.current;
+    setTtsPrep("translate");
+    setTtsLoading(true);
+    const res = await translateForSpeech(text, audioLang, {
+      bookTitle: book.title,
+      bookAuthor: book.author,
+      bookLanguage: book.language,
+    });
+    if (gen !== ttsPrepGen.current) return null; // cancelado durante a tradução
+    if (!res.ok || !res.text) {
+      setTtsPrep(null);
+      setTtsLoading(false);
+      alert(`⚠️ ${res.error ?? "Erro."}`);
+      return null;
+    }
+    // AUTO-SAVE: a tradução gerada pra fala também vira nota.
+    onSaveNote?.({
+      kind: "translate",
+      source: text.length > 500 ? `${text.slice(0, 500)}…` : text,
+      result: res.text,
+      chapterId: chapter?.id,
+    });
+    return { text: res.text, lang: audioLang };
+  };
 
   const readPageAloud = async () => {
     // Se tá pausado, CONTINUA de onde parou.
@@ -120,100 +288,55 @@ export function Reader({
       return;
     }
     if (ttsLoading) {
-      tts.stop();
-      setTtsLoading(false);
+      cancelTtsPrep();
       return;
     }
 
-    // Idioma do áudio — "original" = língua do livro, senão o escolhido.
-    const audioLang = getAudioLang();
+    // Determina o texto a ler e o IDIOMA DELE (original do livro ou a
+    // tradução visível na tela — cada um tem sua língua).
+    let rawText = "";
+    let textLang = "";
 
-    // Determina o texto a ler.
-    let text = "";
-    let speakLang = "";
-
-    // Se tem tradução visível na tela, lê ela.
     if (showTranslation && pageTranslation && overlayMode === "translate") {
-      text = pageTranslation;
-      speakLang = audioLang === "original" ? getTargetLang() : audioLang;
-    } else if (audioLang !== "original") {
-      // IDIOMA DO ÁUDIO = um idioma específico → SEMPRE traduz pra esse idioma e fala.
-      // Ex: livro em inglês, áudio em português → traduz pra PT e lê em PT.
-      // Ex: livro em inglês, áudio em português → traduz a página pra PT e lê.
-      const targetLang = getTargetLang();
-      if (book.sourceFormat === "pdf") {
-        text = currentPageText || chapter?.blocks.map((b) => b.text ?? "").join(" ") || "";
-      } else {
-        text = chapter?.blocks
-          .map((b) => {
-            if (b.type === "heading" || b.type === "quote") return b.text ?? "";
-            if (b.type === "list") return (b.items ?? []).join(", ");
-            return b.text ?? "";
-          })
-          .join(". ") ?? "";
-      }
-      if (!text.trim()) return;
-      // Traduz a página no idioma do áudio e depois lê.
-      setTtsLoading(true);
-      const ctx = { bookTitle: book.title, bookAuthor: book.author, bookLanguage: book.language };
-      const result = await translatePageStream(text, ctx, (full) => { /* streaming */ });
-      setTtsLoading(false);
-      if (result.ok && result.text) {
-        const config = getConfigSync();
-        if (config && config.providerId === "openai") {
-          await tts.speakNeural(result.text, audioLang, {
-            baseUrl: "https://api.openai.com/v1",
-            apiKey: config.apiKey,
-            model: "tts-1",
-            voice: "nova",
-          });
-        } else {
-          tts.speak(result.text, audioLang);
-        }
-        // Salva a tradução gerada nas notas.
-        onSaveNote?.({
-          kind: "translate",
-          source: text.slice(0, 500),
-          result: result.text,
-          chapterId: chapter?.id,
-        });
-        return;
-      } else {
-        alert(result.error ?? "Erro ao traduzir.");
-        return;
-      }
+      rawText = pageTranslation;
+      textLang = getTargetLang();
     } else {
-      // Lê no idioma original do livro.
       if (book.sourceFormat === "pdf") {
-        text = currentPageText || chapter?.blocks.map((b) => b.text ?? "").join(" ") || "";
+        rawText = currentPageText || chapter?.blocks.map((b) => b.text ?? "").join(" ") || "";
       } else {
-        text = chapter?.blocks
-          .map((b) => {
-            if (b.type === "heading" || b.type === "quote") return b.text ?? "";
-            if (b.type === "list") return (b.items ?? []).join(", ");
-            return b.text ?? "";
-          })
-          .join(". ") ?? "";
+        // EPUB: lê só a PÁGINA visível (não o capítulo corrido inteiro).
+        rawText = blocksToText(currentBlocks, ". ");
       }
-      speakLang = audioLang === "original" ? (book.language || "en") : audioLang;
+      textLang = book.language || "en";
     }
 
-    if (!text.trim()) {
+    if (!rawText.trim()) {
       alert(t("reader_no_text"));
       return;
     }
 
+    // Se o idioma da FALA (⚙️) é diferente do idioma do texto, TRADUZ
+    // PRIMEIRO na nuvem da IA — aí fala a tradução (ex.: livro em inglês,
+    // fala em português). Com "original", fala no idioma do texto mesmo.
+    const prepared = await prepareSpeech(rawText, textLang);
+    if (!prepared) return;
+
     // Tenta voz NEURAL primeiro (se o provedor ativo for OpenAI — tem TTS).
     const config = getConfigSync();
     if (config && config.providerId === "openai") {
+      const gen = ttsPrepGen.current;
+      setTtsPrep("voice");
       setTtsLoading(true);
-      await tts.speakNeural(text, speakLang, {
+      await tts.speakNeural(prepared.text, prepared.lang, {
         baseUrl: "https://api.openai.com/v1",
         apiKey: config.apiKey,
         model: "tts-1",
         voice: "nova",
       });
-      setTtsLoading(false);
+      if (gen === ttsPrepGen.current) {
+        setTtsLoading(false);
+        setTtsPrep(null);
+      }
       return;
     }
 
@@ -229,9 +352,24 @@ export function Reader({
     }
 
     // Senão, usa voz NATIVA do dispositivo.
-    tts.speak(text, speakLang);
+    setTtsPrep(null);
+    setTtsLoading(false);
+    tts.speak(prepared.text, prepared.lang);
   };
   const [chapterIdx, setChapterIdxState] = useState(initialChapterIdx);
+  /** Página LOCAL dentro do capítulo (só EPUB — PDF tem 1 página por índice). */
+  const [pageIdx, setPageIdx] = useState(0);
+  /** Pulo pendente: ao trocar de capítulo, abre nesta página local (ex.: última ao voltar). */
+  const pendingPage = useRef<number | null>(null);
+  /** Janelas "Pergunte qualquer coisa" e "Resumo". */
+  const [askOpen, setAskOpen] = useState(false);
+  const [summaryOpen, setSummaryOpen] = useState(false);
+  /** Escala da fonte de leitura (A−/A+) — persistida no localStorage. */
+  const [fontScale, setFontScale] = useState(() => {
+    if (typeof window === "undefined") return 1;
+    const saved = Number(window.localStorage.getItem(FONT_SCALE_KEY));
+    return saved >= FONT_SCALE_MIN && saved <= FONT_SCALE_MAX ? saved : 1;
+  });
   // Dica inicial (só 1x por livro, guardado no localStorage por título)
   const [showTip, setShowTip] = useState(false);
   const [tipStep, setTipStep] = useState(0);
@@ -330,13 +468,14 @@ export function Reader({
         ? t("reader_page_n", { n: chapterIdx + 1 })
         : chapter?.title || t("reader_chapter_n", { n: chapterIdx + 1 })
     }`;
-    // Coleta o texto: do currentPageText (PDF extraído) ou dos blocos (EPUB).
+    // Coleta o texto: do currentPageText (PDF extraído) ou dos blocos da
+    // página visível (EPUB paginado).
     const textContent =
       book.sourceFormat === "pdf"
         ? currentPageText ||
           chapter?.blocks.map((b) => b.text ?? b.items?.join(" ") ?? "").join("\n\n") ||
           ""
-        : chapter?.blocks
+        : currentBlocks
             .map((b) => {
               if (b.type === "heading") return `${"#".repeat(b.level || 1)} ${b.text}`;
               if (b.type === "list") return (b.items ?? []).map((i) => `• ${i}`).join("\n");
@@ -344,7 +483,7 @@ export function Reader({
               if (b.type === "page-break") return "---";
               return b.text ?? "";
             })
-            .join("\n\n") ?? "";
+            .join("\n\n");
 
     const html = `<!DOCTYPE html><html lang="pt-BR"><head><meta charset="utf-8"><title>${titleText}</title>
       <style>
@@ -436,6 +575,8 @@ export function Reader({
   const renderEpubToCanvas = (): HTMLCanvasElement | null => {
     const ch = chapter;
     if (!ch) return null;
+    // A "foto" é da PÁGINA visível (EPUB paginado), não do capítulo inteiro.
+    const pageBlocks = currentBlocks;
 
     // Configurações tipográficas (espelham o .reader-text).
     const PAGE_W = 1000; // largura fixa em px (depois escala no CSS)
@@ -475,7 +616,7 @@ export function Reader({
     const blocks: Block[] = [];
     let totalLines = 0;
 
-    for (const b of ch.blocks) {
+    for (const b of pageBlocks) {
       let lines: string[] = [];
       let type = "p";
       if (b.type === "heading") {
@@ -738,6 +879,62 @@ export function Reader({
     pdfNumPages,
   );
 
+  // ── Paginação do EPUB ─────────────────────────────────────────────
+  // PDF já é paginado por natureza (1 chapterIdx = 1 página). EPUB vinha
+  // "correndo" (capítulo inteiro num scroll só) — aqui quebramos os blocos
+  // de cada capítulo em páginas de ~EPUB_PAGE_CHARS caracteres.
+  const isEpub = book.sourceFormat !== "pdf";
+  const chapterPages = useMemo(
+    () => (isEpub ? book.chapters.map((ch) => paginateBlocks(ch.blocks)) : null),
+    [book, isEpub],
+  );
+  const pages = chapterPages ? chapterPages[chapterIdx] ?? [[]] : null;
+  const safePageIdx = pages ? Math.min(pageIdx, pages.length - 1) : 0;
+  /** Blocos da PÁGINA visível (EPUB: fatia do capítulo; PDF: capítulo todo). */
+  const currentBlocks = pages ? pages[safePageIdx] ?? [] : chapter?.blocks ?? [];
+  // Índice GLOBAL de página (soma das páginas de todos os capítulos) —
+  // usado no slider, no contador e na barra de progresso.
+  const pageOffsets = useMemo(() => {
+    if (!chapterPages) return null;
+    const offsets: number[] = [];
+    let acc = 0;
+    for (const p of chapterPages) {
+      offsets.push(acc);
+      acc += p.length;
+    }
+    return { offsets, total: acc };
+  }, [chapterPages]);
+  const totalPages = pageOffsets?.total ?? totalChapters;
+  const globalPageIdx = pageOffsets ? pageOffsets.offsets[chapterIdx] + safePageIdx : chapterIdx;
+  /** Chave da página pra mapa de traduções: "3" (PDF) ou "2.4" (EPUB cap.pag). */
+  const pageKey = isEpub ? `${chapterIdx + 1}.${safePageIdx + 1}` : String(chapterIdx + 1);
+  /** Rótulo amigável da página (pra modais de resumo/foto). */
+  const pageLabel =
+    book.sourceFormat === "pdf"
+      ? t("reader_page_n", { n: chapterIdx + 1 })
+      : `${chapter?.title || t("reader_chapter_n", { n: chapterIdx + 1 })} · ${t("reader_page_n", { n: safePageIdx + 1 })}`;
+
+  /**
+   * Compilação de trechos do livro inteiro (pro resumo 📚): título de cada
+   * capítulo + o começo do seu texto, limitado a ~12k chars totais pra não
+   * explodir o gasto de tokens. O prompt avisa que é uma amostra.
+   */
+  const buildBookCompilation = (): string => {
+    const MAX_TOTAL = 12000;
+    const PER_CHAPTER = 900;
+    const parts: string[] = [];
+    let size = 0;
+    for (const ch of book.chapters) {
+      const text = blocksToText(ch.blocks, " ").trim();
+      if (!text) continue;
+      const part = `### ${ch.title}\n${text.slice(0, PER_CHAPTER)}`;
+      if (size + part.length > MAX_TOTAL) break;
+      parts.push(part);
+      size += part.length;
+    }
+    return parts.join("\n\n");
+  };
+
   // Wrappers que atualizam o estado E avisam o pai (pra persistir).
   const setChapterIdx = (n: number | ((prev: number) => number)) => {
     setChapterIdxState((prev) => {
@@ -754,15 +951,64 @@ export function Reader({
     });
   };
 
-  const goPrev = () => setChapterIdx((i) => Math.max(0, i - 1));
-  const goNext = () =>
+  // Navegação por PÁGINA: no EPUB anda primeiro pelas páginas locais do
+  // capítulo; na fronteira, troca de capítulo (indo pro fim/início dele).
+  const goPrev = () => {
+    if (pages && safePageIdx > 0) {
+      setPageIdx((p) => p - 1);
+      return;
+    }
+    if (chapterIdx > 0) {
+      if (pages && chapterPages) {
+        pendingPage.current = chapterPages[chapterIdx - 1].length - 1;
+      }
+      setChapterIdx((i) => Math.max(0, i - 1));
+    }
+  };
+  const goNext = () => {
+    if (pages && safePageIdx < pages.length - 1) {
+      setPageIdx((p) => p + 1);
+      return;
+    }
     setChapterIdx((i) => Math.min(totalChapters - 1, i + 1));
+  };
 
-  // Ao trocar de página: RESTAURA do mapa de traduções se houver tradução
-  // salva pra essa página (não re-traduz). Limpa o texto extraído antigo.
+  /** Slider global: converte o índice global de página em (capítulo, página local). */
+  const goToGlobalPage = (g: number) => {
+    if (!chapterPages || !pageOffsets) {
+      setChapterIdx(g);
+      return;
+    }
+    let target = chapterPages.length - 1;
+    for (let i = 0; i < chapterPages.length; i++) {
+      if (g < pageOffsets.offsets[i] + chapterPages[i].length) {
+        target = i;
+        break;
+      }
+    }
+    const local = g - pageOffsets.offsets[target];
+    if (target === chapterIdx) {
+      setPageIdx(local);
+    } else {
+      pendingPage.current = local;
+      setChapterIdx(target);
+    }
+  };
+
+  // Ao trocar de CAPÍTULO: abre na página local pendente (navegação entre
+  // capítulos) ou recomeça da primeira.
   useEffect(() => {
-    const key = String(chapterIdx + 1);
-    const saved = translations[key];
+    setPageIdx(pendingPage.current ?? 0);
+    pendingPage.current = null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chapterIdx]);
+
+  // Ao trocar de PÁGINA (capítulo ou página local): RESTAURA do mapa de
+  // traduções se houver tradução salva pra essa página (não re-traduz).
+  // No EPUB, também define o "texto da página" = só o que está na tela
+  // (alimenta traduzir/explicar página, TTS e resumo) e rola pro topo.
+  useEffect(() => {
+    const saved = translations[pageKey];
     if (saved) {
       setPageTranslation(saved);
       setShowTranslation(false);
@@ -771,11 +1017,16 @@ export function Reader({
       setShowTranslation(false);
     }
     setOverlayMode(null);
-    setCurrentPageText("");
+    if (isEpub) {
+      setCurrentPageText(blocksToText(currentBlocks, "\n\n"));
+      scrollRef.current?.scrollTo({ top: 0 });
+    } else {
+      setCurrentPageText("");
+    }
     setMenu(null);
     clearCustomHighlight(); // limpa highlight ao trocar de página
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chapterIdx]);
+  }, [chapterIdx, safePageIdx]);
 
   const zoomIn = () => setZoom((z) => Math.min(MAX_ZOOM, +(z + ZOOM_STEP).toFixed(2)));
   const zoomOut = () => setZoom((z) => Math.max(MIN_ZOOM, +(z - ZOOM_STEP).toFixed(2)));
@@ -818,7 +1069,7 @@ export function Reader({
     if (result.ok && result.text) {
       setPageTranslation(result.text);
       if (action === "translate") {
-        onPageTranslation?.(chapterIdx, result.text);
+        onPageTranslation?.(pageKey, result.text);
       }
       // AUTO-SAVE: toda tradução/explicação de página inteira vai pra notas.
       // O source traz o trecho original da página (truncado pra não ficar enorme).
@@ -1023,33 +1274,40 @@ export function Reader({
     window.getSelection()?.removeAllRanges();
     if (tts.state === "playing") tts.stop();
 
-    const audioLang = getAudioLang();
-    const speakLang = audioLang === "original" ? (book.language || "en") : audioLang;
-    const config = getConfigSync();
+    // Respeita o idioma da fala: se for diferente do livro, traduz antes.
+    const prepared = await prepareSpeech(text, book.language || "en");
+    if (!prepared) return;
 
+    const config = getConfigSync();
     if (config && config.providerId === "openai") {
+      const gen = ttsPrepGen.current;
+      setTtsPrep("voice");
       setTtsLoading(true);
-      await tts.speakNeural(text, speakLang, {
+      await tts.speakNeural(prepared.text, prepared.lang, {
         baseUrl: "https://api.openai.com/v1",
         apiKey: config.apiKey,
         model: "tts-1",
         voice: "nova",
       });
-      setTtsLoading(false);
+      if (gen === ttsPrepGen.current) {
+        setTtsLoading(false);
+        setTtsPrep(null);
+      }
     } else {
-      tts.speak(text, speakLang);
+      setTtsPrep(null);
+      setTtsLoading(false);
+      tts.speak(prepared.text, prepared.lang);
     }
   };
 
   /** Para o áudio completamente (diferente de pausar). */
   const stopTTS = () => {
-    tts.stop();
-    setTtsLoading(false);
+    cancelTtsPrep();
   };
 
   const renderedBlocks = useMemo(
-    () => chapter?.blocks.map((b) => <BlockView key={b.id} block={b} />),
-    [chapter],
+    () => currentBlocks.map((b) => <BlockView key={b.id} block={b} />),
+    [currentBlocks],
   );
 
   return (
@@ -1105,9 +1363,13 @@ export function Reader({
           >
             {isBookmarked ? "🔖" : "🏷"}
           </button>
-          {/* 📸 Foto */}
+          {/* 📸 Foto (com confirmação antes de baixar) */}
           <button
-            onClick={savePageAsImage}
+            onClick={() => {
+              if (confirm(t("reader_confirm_photo", { page: pageLabel }))) {
+                savePageAsImage();
+              }
+            }}
             className="icon-btn"
             title={t("reader_photo")}
             aria-label={t("reader_photo")}
@@ -1137,17 +1399,76 @@ export function Reader({
           >
             {ttsLoading ? "⏳" : tts.state === "playing" ? "⏸" : tts.state === "paused" ? "▶️" : "🔊"}
           </button>
-          {/* 🎤 Perguntar por voz — abre o painel da IA pra você falar */}
+          {/* 🎤✒️ Perguntar qualquer coisa — abre a janelinha de pergunta
+              (por voz OU escrevendo) sobre o livro. Funciona até em fullscreen. */}
           <button
-            onClick={() => onSelection?.({ type: "ask", text: "", chapterId: chapter?.id })}
+            onClick={() => setAskOpen(true)}
             className="icon-btn"
-            title={t("reader_ask")}
-            aria-label={t("reader_ask")}
+            title={t("reader_ask_anything")}
+            aria-label={t("reader_ask_anything")}
           >
-            🎤
+            <svg
+              width="21"
+              height="21"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.8"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden
+            >
+              {/* microfone */}
+              <rect x="6" y="2" width="6" height="10.5" rx="3" />
+              <path d="M3.5 10.5a5.5 5.5 0 0 0 9.4 3.9" />
+              {/* caneta (canto inferior direito) */}
+              <path
+                d="M14.2 20.4l4.9-4.9a1.56 1.56 0 0 1 2.2 2.2l-4.9 4.9-2.9.7z"
+                fill="currentColor"
+                stroke="none"
+              />
+            </svg>
           </button>
-          {/* 🌐/🧠 Traduzir/Explicar página (só ícone + confirmação) */}
-          {book.sourceFormat === "pdf" && pdfSource && (
+          {/* 📝 Resumo — da página na tela ou do livro inteiro (com aviso de tokens) */}
+          <button
+            onClick={() => setSummaryOpen(true)}
+            className="icon-btn"
+            title={t("reader_summarize")}
+            aria-label={t("reader_summarize")}
+          >
+            📝
+          </button>
+          {/* A−/A+ Tamanho da fonte de leitura (persiste no aparelho) */}
+          <button
+            onClick={() => {
+              const next = Math.max(FONT_SCALE_MIN, +(fontScale - FONT_SCALE_STEP).toFixed(2));
+              setFontScale(next);
+              window.localStorage.setItem(FONT_SCALE_KEY, String(next));
+            }}
+            disabled={fontScale <= FONT_SCALE_MIN}
+            className="icon-btn"
+            title={t("reader_font_decrease")}
+            aria-label={t("reader_font_decrease")}
+          >
+            <span style={{ fontSize: 13, fontWeight: 700 }}>A−</span>
+          </button>
+          <button
+            onClick={() => {
+              const next = Math.min(FONT_SCALE_MAX, +(fontScale + FONT_SCALE_STEP).toFixed(2));
+              setFontScale(next);
+              window.localStorage.setItem(FONT_SCALE_KEY, String(next));
+            }}
+            disabled={fontScale >= FONT_SCALE_MAX}
+            className="icon-btn"
+            title={t("reader_font_increase")}
+            aria-label={t("reader_font_increase")}
+          >
+            <span style={{ fontSize: 16, fontWeight: 700 }}>A+</span>
+          </button>
+          {/* 🌐/🧠 Traduzir/Explicar a PÁGINA NA TELA (só ícone + confirmação).
+              PDF: texto extraído da página renderizada.
+              EPUB: texto da página local visível (nunca o livro inteiro). */}
+          {(isEpub || pdfSource) && (
             <>
               <button
                 onClick={() => {
@@ -1259,7 +1580,7 @@ export function Reader({
         <div className="reader-progress" aria-hidden>
           <div
             className="reader-progress-bar"
-            style={{ width: `${totalChapters > 0 ? ((chapterIdx + 1) / totalChapters) * 100 : 0}%` }}
+            style={{ width: `${totalPages > 0 ? ((globalPageIdx + 1) / totalPages) * 100 : 0}%` }}
           />
         </div>
       </header>
@@ -1310,7 +1631,10 @@ export function Reader({
             onNumPages={setPdfNumPages}
           />
         ) : (
-          <article className="reader-text">
+          <article
+            className="reader-text"
+            style={{ fontSize: `calc(var(--text-lg) * ${fontScale})` }}
+          >
             {renderedBlocks}
           </article>
         )}
@@ -1318,29 +1642,29 @@ export function Reader({
 
       {/* Barra de navegação rápida — slider horizontal pra pular páginas.
           Sempre mostra (mesmo com 1 página) pra não sumir em nenhum caso. */}
-      {totalChapters >= 1 && (
+      {totalPages >= 1 && (
         <div className="reader-nav-bar">
-          <button onClick={goPrev} disabled={chapterIdx === 0} aria-label={t("reader_nav_prev")}>
+          <button onClick={goPrev} disabled={globalPageIdx === 0} aria-label={t("reader_nav_prev")}>
             ‹
           </button>
           <input
             type="range"
             min={0}
-            max={totalChapters - 1}
-            value={chapterIdx}
-            onChange={(e) => setChapterIdx(Number(e.target.value))}
+            max={totalPages - 1}
+            value={globalPageIdx}
+            onChange={(e) => goToGlobalPage(Number(e.target.value))}
             className="nav-slider"
             aria-label={t("reader_nav_label")}
           />
           <button
             onClick={goNext}
-            disabled={chapterIdx >= totalChapters - 1}
+            disabled={globalPageIdx >= totalPages - 1}
             aria-label={t("reader_nav_next")}
           >
             ›
           </button>
           <span className="nav-counter-bottom">
-            {chapterIdx + 1}/{totalChapters}
+            {globalPageIdx + 1}/{totalPages}
           </span>
         </div>
       )}
@@ -1422,7 +1746,9 @@ export function Reader({
         </div>
       )}
 
-      {/* BALÃO CENTRAL de loading do áudio — chama atenção, some quando entra */}
+      {/* BALÃO CENTRAL de loading do áudio — chama atenção, some quando entra.
+          Mostra a ETAPA (traduzindo pra falar / gerando voz), o cronômetro
+          e um botão de cancelar. */}
       {ttsLoading && (
         <div className="tts-loading-overlay">
           <div className="tts-loading-balloon">
@@ -1432,8 +1758,17 @@ export function Reader({
               <span className="tts-dot" />
             </div>
             <p className="tts-loading-text">
-              {t("reader_preparing_audio")}
+              {ttsPrep === "translate" ? t("reader_tts_translating") : t("reader_preparing_audio")}
             </p>
+            <span className="tts-loading-secs">{ttsPrepSecs}s</span>
+            <button
+              className="tts-loading-cancel"
+              onClick={cancelTtsPrep}
+              aria-label={t("cancel")}
+              title={t("cancel")}
+            >
+              ✕
+            </button>
           </div>
         </div>
       )}
@@ -1506,7 +1841,7 @@ export function Reader({
                       <div key={n.id} className="note-card">
                         <div className="note-meta">
                           <span className={`note-kind note-${n.kind}`}>
-                            {n.kind === "translate" ? t("reader_note_translate") : n.kind === "explain" ? t("reader_note_explain") : t("reader_note_question")}
+                            {n.kind === "translate" ? t("reader_note_translate") : n.kind === "explain" ? t("reader_note_explain") : n.kind === "summary" ? t("reader_note_summary") : t("reader_note_question")}
                           </span>
                           <time>{new Date(n.savedAt).toLocaleString(lang)}</time>
                           <button
@@ -2395,6 +2730,29 @@ export function Reader({
           align-items: center;
           gap: 12px;
           animation: tts-pop 300ms ease;
+          position: relative;
+        }
+        .tts-loading-secs {
+          font-size: 12px;
+          color: var(--text-muted);
+          font-variant-numeric: tabular-nums;
+        }
+        .tts-loading-cancel {
+          position: absolute;
+          top: 8px;
+          right: 8px;
+          border: none;
+          background: var(--surface-alt);
+          color: var(--text-muted);
+          width: 26px;
+          height: 26px;
+          border-radius: 50%;
+          cursor: pointer;
+          font-size: 13px;
+        }
+        .tts-loading-cancel:hover {
+          background: var(--accent-soft);
+          color: var(--accent);
         }
         @keyframes tts-pop {
           0% { transform: scale(0.8); opacity: 0; }
@@ -2611,6 +2969,31 @@ export function Reader({
         <SettingsModal
           onClose={() => onCloseSettings?.()}
           onSaved={() => onSettingsSaved?.()}
+        />
+      )}
+
+      {/* Janela "Pergunte qualquer coisa" (ícone microfone+caneta) —
+          pergunta por voz ou escrita, resposta com streaming na janela. */}
+      {askOpen && (
+        <AskModal
+          book={book}
+          chapterId={chapter?.id}
+          onClose={() => setAskOpen(false)}
+          onSaveNote={onSaveNote}
+        />
+      )}
+
+      {/* Janela de Resumo (📝) — página na tela ou livro inteiro,
+          com aviso de gasto de tokens no escopo "livro". */}
+      {summaryOpen && (
+        <SummaryModal
+          book={book}
+          pageText={currentPageText || blocksToText(currentBlocks, "\n\n")}
+          pageLabel={pageLabel}
+          totalPages={totalPages}
+          buildBookCompilation={buildBookCompilation}
+          onClose={() => setSummaryOpen(false)}
+          onSaveNote={onSaveNote}
         />
       )}
 

@@ -18,8 +18,8 @@ const DB_VERSION = 1;
 const STORE = "sessions";
 const SESSION_KEY = "current";
 
-/** Tipo de nota salva (tradução, explicação ou pergunta livre). */
-export type NoteKind = "translate" | "explain" | "ask";
+/** Tipo de nota salva (tradução, explicação, pergunta livre ou resumo). */
+export type NoteKind = "translate" | "explain" | "ask" | "summary";
 
 /** Uma anotação persistida pelo usuário. */
 export interface SavedNote {
