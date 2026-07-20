@@ -1032,6 +1032,16 @@ export function Reader({
   const zoomOut = () => setZoom((z) => Math.max(MIN_ZOOM, +(z - ZOOM_STEP).toFixed(2)));
   const zoomReset = () => setZoom(1);
 
+  /** A−/A+ da FONTE (EPUB): a "chave de zoom" do canto superior direito. */
+  const bumpFont = (dir: 1 | -1) => {
+    const next = +Math.min(
+      FONT_SCALE_MAX,
+      Math.max(FONT_SCALE_MIN, fontScale + dir * FONT_SCALE_STEP),
+    ).toFixed(2);
+    setFontScale(next);
+    window.localStorage.setItem(FONT_SCALE_KEY, String(next));
+  };
+
   // Traduz OU explica a página inteira. Estados SEPARADOS — um botão não
   // ativa o outro. overlayMode rastreia qual ação está sendo mostrada.
   const handlePageAction = async (action: "translate" | "explain") => {
@@ -1399,34 +1409,6 @@ export function Reader({
           >
             {ttsLoading ? "⏳" : tts.state === "playing" ? "⏸" : tts.state === "paused" ? "▶️" : "🔊"}
           </button>
-          {/* A−/A+ Tamanho da fonte de leitura (persiste no aparelho) —
-              logo depois do 🔊 pra ficar sempre visível, sem scroll do menu */}
-          <button
-            onClick={() => {
-              const next = Math.max(FONT_SCALE_MIN, +(fontScale - FONT_SCALE_STEP).toFixed(2));
-              setFontScale(next);
-              window.localStorage.setItem(FONT_SCALE_KEY, String(next));
-            }}
-            disabled={fontScale <= FONT_SCALE_MIN}
-            className="icon-btn"
-            title={t("reader_font_decrease")}
-            aria-label={t("reader_font_decrease")}
-          >
-            <span style={{ fontSize: 13, fontWeight: 700 }}>A−</span>
-          </button>
-          <button
-            onClick={() => {
-              const next = Math.min(FONT_SCALE_MAX, +(fontScale + FONT_SCALE_STEP).toFixed(2));
-              setFontScale(next);
-              window.localStorage.setItem(FONT_SCALE_KEY, String(next));
-            }}
-            disabled={fontScale >= FONT_SCALE_MAX}
-            className="icon-btn"
-            title={t("reader_font_increase")}
-            aria-label={t("reader_font_increase")}
-          >
-            <span style={{ fontSize: 16, fontWeight: 700 }}>A+</span>
-          </button>
           {/* 🎤✒️ Perguntar qualquer coisa — abre a janelinha de pergunta
               (por voz OU escrevendo) sobre o livro. Funciona até em fullscreen. */}
           <button
@@ -1586,30 +1568,29 @@ export function Reader({
         </div>
       </header>
 
-      {/* Zoom VERTICAL no topo da lateral direita (só PDF).
-          Só + e − (sem %, mais limpo). Some quando o menu é ocultado. */}
-      {book.sourceFormat === "pdf" && pdfSource && (
-        <div className="zoom-rail" data-hidden={!menuVisible} title={t("reader_zoom")}>
-          <button
-            onClick={zoomIn}
-            disabled={zoom >= MAX_ZOOM}
-            aria-label={t("reader_zoom_in")}
-            title={t("reader_zoom_in")}
-            className="zoom-rail-btn"
-          >
-            +
-          </button>
-          <button
-            onClick={zoomOut}
-            disabled={zoom <= MIN_ZOOM}
-            aria-label={t("reader_zoom_out")}
-            title={t("reader_zoom_out")}
-            className="zoom-rail-btn"
-          >
-            −
-          </button>
-        </div>
-      )}
+      {/* Zoom VERTICAL no canto superior direito — pra TODO livro:
+          PDF: +/− dão zoom na página. EPUB: +/− aumentam/reduzem a FONTE.
+          Some quando o menu é ocultado (fullscreen). */}
+      <div className="zoom-rail" data-hidden={!menuVisible} title={t("reader_zoom")}>
+        <button
+          onClick={() => (isEpub ? bumpFont(1) : zoomIn())}
+          disabled={isEpub ? fontScale >= FONT_SCALE_MAX : zoom >= MAX_ZOOM}
+          aria-label={isEpub ? t("reader_font_increase") : t("reader_zoom_in")}
+          title={isEpub ? t("reader_font_increase") : t("reader_zoom_in")}
+          className="zoom-rail-btn"
+        >
+          +
+        </button>
+        <button
+          onClick={() => (isEpub ? bumpFont(-1) : zoomOut())}
+          disabled={isEpub ? fontScale <= FONT_SCALE_MIN : zoom <= MIN_ZOOM}
+          aria-label={isEpub ? t("reader_font_decrease") : t("reader_zoom_out")}
+          title={isEpub ? t("reader_font_decrease") : t("reader_zoom_out")}
+          className="zoom-rail-btn"
+        >
+          −
+        </button>
+      </div>
 
       <div
         ref={scrollRef}
