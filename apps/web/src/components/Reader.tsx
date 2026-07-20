@@ -784,13 +784,6 @@ export function Reader({
   const pinchStartZoom = useRef<number>(1);
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    // Se o toque começou sobre TEXTO, não captura swipe (deixa seleção nativa).
-    // Solução ChatGPT: swipe só nas margens vazias, não sobre o texto.
-    const target = e.target as Element;
-    if (target?.closest(".reader-text, .pdf-text-layer, .reader-text p, .reader-text span")) {
-      touchStart.current = null;
-      return;
-    }
     // PINCH: se tem 2 dedos na tela, captura a distância inicial.
     if (e.touches.length === 2) {
       const t1 = e.touches[0];
@@ -807,6 +800,10 @@ export function Reader({
     if (t.clientX < EDGE_MARGIN || t.clientX > window.innerWidth - EDGE_MARGIN) {
       return;
     }
+    // Registra SEMPRE (mesmo sobre o texto). A decisão swipe-vs-seleção
+    // acontece no touchend: se há texto selecionado, era seleção; senão,
+    // gesto claramente horizontal = virar página. Com a página paginada,
+    // a tela é quase toda texto — travar o swipe aqui matava o gesto.
     touchStart.current = { x: t.clientX, y: t.clientY };
   };
 
@@ -844,6 +841,9 @@ export function Reader({
     if (absDx < SWIPE_MIN) return;
     if (absDy > SWIPE_MAX_VERTICAL) return;
     if (absDx < absDy * 2) return;
+    // Se o gesto SELECIONOU texto, era seleção — não vira página.
+    const sel = window.getSelection();
+    if (sel && !sel.isCollapsed && sel.toString().trim().length > 0) return;
     if (dx > 0) goPrev(); // dedo da esquerda pra direita = anterior
     else goNext(); // dedo da direita pra esquerda = próxima
   };
@@ -1399,6 +1399,34 @@ export function Reader({
           >
             {ttsLoading ? "⏳" : tts.state === "playing" ? "⏸" : tts.state === "paused" ? "▶️" : "🔊"}
           </button>
+          {/* A−/A+ Tamanho da fonte de leitura (persiste no aparelho) —
+              logo depois do 🔊 pra ficar sempre visível, sem scroll do menu */}
+          <button
+            onClick={() => {
+              const next = Math.max(FONT_SCALE_MIN, +(fontScale - FONT_SCALE_STEP).toFixed(2));
+              setFontScale(next);
+              window.localStorage.setItem(FONT_SCALE_KEY, String(next));
+            }}
+            disabled={fontScale <= FONT_SCALE_MIN}
+            className="icon-btn"
+            title={t("reader_font_decrease")}
+            aria-label={t("reader_font_decrease")}
+          >
+            <span style={{ fontSize: 13, fontWeight: 700 }}>A−</span>
+          </button>
+          <button
+            onClick={() => {
+              const next = Math.min(FONT_SCALE_MAX, +(fontScale + FONT_SCALE_STEP).toFixed(2));
+              setFontScale(next);
+              window.localStorage.setItem(FONT_SCALE_KEY, String(next));
+            }}
+            disabled={fontScale >= FONT_SCALE_MAX}
+            className="icon-btn"
+            title={t("reader_font_increase")}
+            aria-label={t("reader_font_increase")}
+          >
+            <span style={{ fontSize: 16, fontWeight: 700 }}>A+</span>
+          </button>
           {/* 🎤✒️ Perguntar qualquer coisa — abre a janelinha de pergunta
               (por voz OU escrevendo) sobre o livro. Funciona até em fullscreen. */}
           <button
@@ -1437,33 +1465,6 @@ export function Reader({
             aria-label={t("reader_summarize")}
           >
             📝
-          </button>
-          {/* A−/A+ Tamanho da fonte de leitura (persiste no aparelho) */}
-          <button
-            onClick={() => {
-              const next = Math.max(FONT_SCALE_MIN, +(fontScale - FONT_SCALE_STEP).toFixed(2));
-              setFontScale(next);
-              window.localStorage.setItem(FONT_SCALE_KEY, String(next));
-            }}
-            disabled={fontScale <= FONT_SCALE_MIN}
-            className="icon-btn"
-            title={t("reader_font_decrease")}
-            aria-label={t("reader_font_decrease")}
-          >
-            <span style={{ fontSize: 13, fontWeight: 700 }}>A−</span>
-          </button>
-          <button
-            onClick={() => {
-              const next = Math.min(FONT_SCALE_MAX, +(fontScale + FONT_SCALE_STEP).toFixed(2));
-              setFontScale(next);
-              window.localStorage.setItem(FONT_SCALE_KEY, String(next));
-            }}
-            disabled={fontScale >= FONT_SCALE_MAX}
-            className="icon-btn"
-            title={t("reader_font_increase")}
-            aria-label={t("reader_font_increase")}
-          >
-            <span style={{ fontSize: 16, fontWeight: 700 }}>A+</span>
           </button>
           {/* 🌐/🧠 Traduzir/Explicar a PÁGINA NA TELA (só ícone + confirmação).
               PDF: texto extraído da página renderizada.
