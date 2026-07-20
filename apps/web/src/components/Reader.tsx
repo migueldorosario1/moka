@@ -2851,12 +2851,13 @@ export function Reader({
           position: fixed;
           bottom: 0;
         }
-        /* Margem vazia no fim do texto: SEMPRE maior que a bandeja de
+        /* Margem vazia no fim do texto: SEMPRE bem maior que a bandeja de
            navegação flutuante (~52px de altura + 12px solta do rodapé +
-           respiro). Assim dá pra subir o texto e ler a página ATÉ O FIM,
-           sem a barra cobrir a última linha. Inclui a safe-area do iPhone. */
+           respiro generoso pro iPad). Assim dá pra subir o texto e ler a
+           página ATÉ O FIM, sem a barra cobrir a última linha.
+           Inclui a safe-area do iPhone/iPad. */
         .reader-scroll {
-          padding-bottom: calc(110px + env(safe-area-inset-bottom, 0px)) !important;
+          padding-bottom: calc(150px + env(safe-area-inset-bottom, 0px)) !important;
         }
         .reader-nav-bar button {
           width: 36px;

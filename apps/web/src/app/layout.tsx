@@ -75,13 +75,6 @@ export default function RootLayout({
         <I18nProvider>
           {children}
         </I18nProvider>
-        {/* Selo LAB — difere do site oficial */}
-        <div style={{
-          position: "fixed", bottom: 6, right: 6, zIndex: 9999,
-          background: "#3c2a1b", color: "#e9d9c3", fontSize: 10,
-          fontWeight: 600, letterSpacing: "0.06em", padding: "3px 9px",
-          borderRadius: 999, pointerEvents: "none", opacity: 0.75,
-        }}>🧪 LAB</div>
         <ServiceWorkerRegister />
       </body>
     </html>
