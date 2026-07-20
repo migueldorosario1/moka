@@ -231,6 +231,23 @@ export function Reader({
     tts.speak(text, speakLang);
   };
   const [chapterIdx, setChapterIdxState] = useState(initialChapterIdx);
+  // Dica inicial (só 1x por livro, guardado no localStorage por book ID)
+  const [showTip, setShowTip] = useState(false);
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const tipKey = `moka.tipShown.${book.id}`;
+    if (!window.localStorage.getItem(tipKey)) {
+      // Mostra a dica após 1.5s (deixa a página carregar primeiro).
+      const timer = setTimeout(() => setShowTip(true), 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [book.id]);
+  const dismissTip = () => {
+    setShowTip(false);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(`moka.tipShown.${book.id}`, "1");
+    }
+  };
   const [menu, setMenu] = useState<{
     x: number;
     y: number;
@@ -1352,6 +1369,24 @@ export function Reader({
         </div>
       )}
 
+      {/* DICA INICIAL — só 1x por livro (guardado no localStorage) */}
+      {showTip && (
+        <div className="tip-overlay" onClick={dismissTip}>
+          <div className="tip-balloon" onClick={(e) => e.stopPropagation()}>
+            <span className="tip-emoji">👆</span>
+            <p className="tip-text">
+              {t("reader_tip_selection")}
+            </p>
+            <p className="tip-subtext">
+              {t("reader_tip_selection_sub")}
+            </p>
+            <button className="tip-btn" onClick={dismissTip}>
+              {t("reader_tip_ok")}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* BALÃO CENTRAL de loading do áudio — chama atenção, some quando entra */}
       {ttsLoading && (
         <div className="tts-loading-overlay">
@@ -2216,6 +2251,65 @@ export function Reader({
 
         /* Painel flutuante de resultado em fullscreen */
         /* BALÃO CENTRAL de loading do áudio */
+        /* DICA INICIAL (1x por livro) */
+        .tip-overlay {
+          position: fixed;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9500;
+          background: rgba(43, 32, 21, 0.3);
+          backdrop-filter: blur(3px);
+        }
+        .tip-balloon {
+          background: var(--surface);
+          border: 2px solid var(--accent);
+          border-radius: 20px;
+          padding: 28px 32px;
+          max-width: 360px;
+          box-shadow: 0 8px 40px rgba(62, 42, 24, 0.25);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          text-align: center;
+          animation: tts-pop 350ms ease;
+        }
+        .tip-emoji {
+          font-size: 40px;
+          margin-bottom: 4px;
+        }
+        .tip-text {
+          margin: 0;
+          font-size: 16px;
+          font-weight: 600;
+          color: var(--text);
+          line-height: 1.5;
+        }
+        .tip-subtext {
+          margin: 0;
+          font-size: 13px;
+          color: var(--text-muted);
+          line-height: 1.5;
+        }
+        .tip-btn {
+          margin-top: 10px;
+          padding: 10px 28px;
+          border: none;
+          background: var(--accent);
+          color: white;
+          border-radius: 12px;
+          font-size: 15px;
+          font-weight: 600;
+          cursor: pointer;
+          transition: all 150ms ease;
+        }
+        .tip-btn:hover {
+          background: var(--accent-dark);
+          transform: scale(1.05);
+        }
+
         .tts-loading-overlay {
           position: fixed;
           inset: 0;
