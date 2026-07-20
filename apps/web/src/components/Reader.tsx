@@ -136,8 +136,9 @@ export function Reader({
     if (showTranslation && pageTranslation && overlayMode === "translate") {
       text = pageTranslation;
       speakLang = audioLang === "original" ? getTargetLang() : audioLang;
-    } else if (audioLang !== "original" && audioLang !== (book.language || "en")) {
-      // IDIOMA DO ÁUDIO DIFERENTE DO ORIGINAL → traduz e fala!
+    } else if (audioLang !== "original") {
+      // IDIOMA DO ÁUDIO = um idioma específico → SEMPRE traduz pra esse idioma e fala.
+      // Ex: livro em inglês, áudio em português → traduz pra PT e lê em PT.
       // Ex: livro em inglês, áudio em português → traduz a página pra PT e lê.
       const targetLang = getTargetLang();
       if (book.sourceFormat === "pdf") {
