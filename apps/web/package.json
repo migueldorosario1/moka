@@ -4,6 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "predev": "node scripts/stamp-sw.mjs",
+    "prebuild": "node scripts/stamp-sw.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
