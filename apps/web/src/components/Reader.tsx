@@ -231,21 +231,33 @@ export function Reader({
     tts.speak(text, speakLang);
   };
   const [chapterIdx, setChapterIdxState] = useState(initialChapterIdx);
-  // Dica inicial (só 1x por livro, guardado no localStorage por book ID)
+  // Dica inicial (só 1x por livro, guardado no localStorage por título)
   const [showTip, setShowTip] = useState(false);
+  const [tipStep, setTipStep] = useState(0);
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const tipKey = `moka.tipShown.${book.id}`;
+    const tipKey = `moka.tipShown.${book.title}`;
     if (!window.localStorage.getItem(tipKey)) {
-      // Mostra a dica após 1.5s (deixa a página carregar primeiro).
-      const timer = setTimeout(() => setShowTip(true), 1500);
+      // Mostra a primeira dica após 1.5s (deixa a página carregar primeiro).
+      const timer = setTimeout(() => { setShowTip(true); setTipStep(0); }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [book.id]);
+  }, [book.title]);
+  const nextTip = () => {
+    if (tipStep < 2) {
+      setTipStep(tipStep + 1);
+    } else {
+      setShowTip(false);
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem(`moka.tipShown.${book.title}`, "1");
+      }
+    }
+  };
   const dismissTip = () => {
     setShowTip(false);
+    setTipStep(0);
     if (typeof window !== "undefined") {
-      window.localStorage.setItem(`moka.tipShown.${book.id}`, "1");
+      window.localStorage.setItem(`moka.tipShown.${book.title}`, "1");
     }
   };
   const [menu, setMenu] = useState<{
@@ -1369,20 +1381,42 @@ export function Reader({
         </div>
       )}
 
-      {/* DICA INICIAL — só 1x por livro (guardado no localStorage) */}
+      {/* DICA INICIAL — só 1x por livro, 3 passos */}
       {showTip && (
         <div className="tip-overlay" onClick={dismissTip}>
           <div className="tip-balloon" onClick={(e) => e.stopPropagation()}>
-            <span className="tip-emoji">👆</span>
-            <p className="tip-text">
-              {t("reader_tip_selection")}
-            </p>
-            <p className="tip-subtext">
-              {t("reader_tip_selection_sub")}
-            </p>
-            <button className="tip-btn" onClick={dismissTip}>
-              {t("reader_tip_ok")}
-            </button>
+            {tipStep === 0 && (
+              <>
+                <span className="tip-emoji">👆</span>
+                <p className="tip-text">{t("reader_tip_selection")}</p>
+                <p className="tip-subtext">{t("reader_tip_selection_sub")}</p>
+              </>
+            )}
+            {tipStep === 1 && (
+              <>
+                <span className="tip-emoji">🔊</span>
+                <p className="tip-text">{t("reader_tip_audio")}</p>
+                <p className="tip-subtext">{t("reader_tip_audio_sub")}</p>
+              </>
+            )}
+            {tipStep === 2 && (
+              <>
+                <span className="tip-emoji">🌐</span>
+                <p className="tip-text">{t("reader_tip_translate")}</p>
+                <p className="tip-subtext">{t("reader_tip_translate_sub")}</p>
+              </>
+            )}
+            <div className="tip-dots">
+              <span className={tipStep === 0 ? "tip-dot active" : "tip-dot"} />
+              <span className={tipStep === 1 ? "tip-dot active" : "tip-dot"} />
+              <span className={tipStep === 2 ? "tip-dot active" : "tip-dot"} />
+            </div>
+            <div className="tip-buttons">
+              <button className="tip-skip" onClick={dismissTip}>{t("reader_tip_skip")}</button>
+              <button className="tip-btn" onClick={nextTip}>
+                {tipStep < 2 ? t("reader_tip_next") : t("reader_tip_ok")}
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -2294,7 +2328,7 @@ export function Reader({
           line-height: 1.5;
         }
         .tip-btn {
-          margin-top: 10px;
+          margin-top: 4px;
           padding: 10px 28px;
           border: none;
           background: var(--accent);
@@ -2308,6 +2342,34 @@ export function Reader({
         .tip-btn:hover {
           background: var(--accent-dark);
           transform: scale(1.05);
+        }
+        .tip-skip {
+          border: none;
+          background: transparent;
+          color: var(--text-muted);
+          font-size: 14px;
+          cursor: pointer;
+          padding: 10px 16px;
+        }
+        .tip-buttons {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          margin-top: 12px;
+        }
+        .tip-dots {
+          display: flex;
+          gap: 6px;
+          margin-top: 4px;
+        }
+        .tip-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: var(--border);
+        }
+        .tip-dot.active {
+          background: var(--accent);
         }
 
         .tts-loading-overlay {
