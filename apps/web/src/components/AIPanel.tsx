@@ -38,6 +38,7 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
     error: null,
   });
   const [query, setQuery] = useState("");
+  const [panelSize, setPanelSize] = useState<"small" | "half" | "full">("small");
   const resultRef = useRef<HTMLDivElement>(null);
 
   // Reconhecimento de voz: quando termina uma frase, preenche o input.
@@ -139,13 +140,34 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
         : t("reader_note_question");
 
   return (
-    <aside className="ai-panel">
+    <aside className={`ai-panel ai-size-${panelSize}`}>
       <header className="ai-header">
         <span className="ai-brand">
           <CafezinhoLogo size={22} opacity={0.9} />
           <span className="ai-title">{action ? title : t("ai_assistant")}</span>
         </span>
         <div className="ai-header-actions">
+          {/* Botões de tamanho do painel: ▫ menor, ▫ meio, ⛶ tela cheia */}
+          <div className="ai-size-btns">
+            <button
+              className={`ai-size-btn ${panelSize === "small" ? "active" : ""}`}
+              onClick={() => setPanelSize("small")}
+              title={t("ai_size_small")}
+              aria-label={t("ai_size_small")}
+            >▫</button>
+            <button
+              className={`ai-size-btn ${panelSize === "half" ? "active" : ""}`}
+              onClick={() => setPanelSize("half")}
+              title={t("ai_size_half")}
+              aria-label={t("ai_size_half")}
+            >▭</button>
+            <button
+              className={`ai-size-btn ${panelSize === "full" ? "active" : ""}`}
+              onClick={() => setPanelSize("full")}
+              title={t("ai_size_full")}
+              aria-label={t("ai_size_full")}
+            >⛶</button>
+          </div>
           {state.result && action && (
             <button
               className="ai-save"
@@ -247,6 +269,43 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
           flex-direction: column;
           height: 100%;
           background: var(--surface);
+          transition: width 200ms ease, max-height 200ms ease;
+        }
+        /* 3 tamanhos do painel (desktop) */
+        .ai-panel.ai-size-small { width: 420px; }
+        .ai-panel.ai-size-half { width: 50%; }
+        .ai-panel.ai-size-full { width: 100%; }
+        /* No overlay (mobile/fixed): 3 alturas */
+        .ai-panel-overlay .ai-panel.ai-size-small { width: 100%; max-height: 240px; }
+        .ai-panel-overlay .ai-panel.ai-size-half { width: 100%; max-height: 50vh; }
+        .ai-panel-overlay .ai-panel.ai-size-full { width: 100%; max-height: 100vh; height: 100vh; }
+        /* Botões de tamanho */
+        .ai-size-btns {
+          display: flex;
+          gap: 2px;
+          margin-right: 4px;
+        }
+        .ai-size-btn {
+          width: 30px;
+          height: 30px;
+          border: 1px solid var(--border);
+          background: transparent;
+          color: var(--text-muted);
+          border-radius: 6px;
+          font-size: 14px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .ai-size-btn:hover {
+          background: var(--accent-soft);
+          color: var(--accent);
+        }
+        .ai-size-btn.active {
+          background: var(--accent-soft);
+          border-color: var(--accent);
+          color: var(--accent);
         }
         .ai-header {
           display: flex;
