@@ -1352,6 +1352,22 @@ export function Reader({
         </div>
       )}
 
+      {/* BALÃO CENTRAL de loading do áudio — chama atenção, some quando entra */}
+      {ttsLoading && (
+        <div className="tts-loading-overlay">
+          <div className="tts-loading-balloon">
+            <div className="tts-loading-anim">
+              <span className="tts-dot" />
+              <span className="tts-dot" />
+              <span className="tts-dot" />
+            </div>
+            <p className="tts-loading-text">
+              {t("reader_preparing_audio")}
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Painel flutuante de resultado em FULLSCREEN (tradução/explicação de trecho) */}
       {isFullscreen && (fsResult !== null || fsLoading) && (
         <div className="fs-result-panel">
@@ -2199,6 +2215,58 @@ export function Reader({
         }
 
         /* Painel flutuante de resultado em fullscreen */
+        /* BALÃO CENTRAL de loading do áudio */
+        .tts-loading-overlay {
+          position: fixed;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          z-index: 9000;
+          pointer-events: none;
+          background: rgba(43, 32, 21, 0.15);
+          backdrop-filter: blur(2px);
+        }
+        .tts-loading-balloon {
+          background: var(--surface);
+          border: 2px solid var(--accent);
+          border-radius: 20px;
+          padding: 24px 36px;
+          box-shadow: 0 8px 40px rgba(62, 42, 24, 0.2);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 12px;
+          animation: tts-pop 300ms ease;
+        }
+        @keyframes tts-pop {
+          0% { transform: scale(0.8); opacity: 0; }
+          100% { transform: scale(1); opacity: 1; }
+        }
+        .tts-loading-anim {
+          display: flex;
+          gap: 8px;
+        }
+        .tts-dot {
+          width: 14px;
+          height: 14px;
+          border-radius: 50%;
+          background: var(--accent);
+          animation: tts-bounce 1s infinite ease-in-out;
+        }
+        .tts-dot:nth-child(2) { animation-delay: 0.15s; }
+        .tts-dot:nth-child(3) { animation-delay: 0.3s; }
+        @keyframes tts-bounce {
+          0%, 80%, 100% { transform: scale(0.5); opacity: 0.4; }
+          40% { transform: scale(1.2); opacity: 1; }
+        }
+        .tts-loading-text {
+          margin: 0;
+          font-size: 15px;
+          font-weight: 600;
+          color: var(--text);
+        }
+
         .fs-result-panel {
           position: absolute;
           bottom: 80px;
