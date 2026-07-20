@@ -12,7 +12,7 @@
  * carregados, mas a IA continua exigindo conexão (esperado).
  */
 
-const VERSION = "moka-v3";
+const VERSION = "moka-v4";
 const SHELL_CACHE = `${VERSION}-shell`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
 
