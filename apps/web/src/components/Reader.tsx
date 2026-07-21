@@ -1155,6 +1155,30 @@ export function Reader({
   };
 
   /**
+   * Botão "⇤" do menu de seleção: move o INÍCIO da seleção pro começo do
+   * parágrafo onde ela começa, mantendo o fim. Saída determinística pra
+   * quando a alça do iOS escorrega — não depende de heurística nenhuma.
+   */
+  const snapSelectionStartToParagraph = () => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    const startEl =
+      range.startContainer.nodeType === 1
+        ? (range.startContainer as Element)
+        : range.startContainer.parentElement;
+    const startBlock = startEl?.closest(
+      "p, h1, h2, h3, h4, h5, h6, blockquote, li",
+    );
+    if (!startBlock) return;
+    const newRange = range.cloneRange();
+    newRange.setStart(startBlock, 0);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+    handleSelection(); // reabre o menu com o texto corrigido
+  };
+
+  /**
    * Botão "¶" do menu de seleção: expande a seleção pro(s) parágrafo(s)
    * inteiro(s) que ela toca. Útil no iOS, onde a alça inicial às vezes
    * "escorrega" pra segunda linha — um toque corrige sem brigar com a alça.
@@ -1277,13 +1301,33 @@ export function Reader({
         pre.selectNodeContents(block);
         pre.setEnd(range.startContainer, range.startOffset);
         const prefix = pre.toString();
-        // Só corrige o deslize clássico: ficou de fora só a 1ª palavra.
+        // Caso 1 — deslize clássico: ficou de fora só a 1ª palavra.
         if (/^\S+\s+$/.test(prefix)) {
           const fixed = range.cloneRange();
           fixed.setStart(block, 0);
           sel.removeAllRanges();
           sel.addRange(fixed);
           handleSelection(); // reabre o menu com o texto corrigido
+          return;
+        }
+        // Caso 2 — a âncora caiu no FIM do parágrafo ANTERIOR (arrastou
+        // pro vão e o iOS ancorou pra cima) e a seleção segue pro bloco
+        // seguinte. Mover o início pro começo do próximo bloco não perde
+        // texto nenhum (do bloco atual nada foi selecionado).
+        const post = document.createRange();
+        post.selectNodeContents(block);
+        post.setStart(range.startContainer, range.startOffset);
+        const next = block.nextElementSibling;
+        if (
+          post.toString().trim() === "" &&
+          next?.matches("p, h1, h2, h3, h4, h5, h6, blockquote, li") &&
+          !block.contains(range.endContainer)
+        ) {
+          const fixed = range.cloneRange();
+          fixed.setStart(next, 0);
+          sel.removeAllRanges();
+          sel.addRange(fixed);
+          handleSelection();
         }
       }, 60);
     };
@@ -1730,6 +1774,9 @@ export function Reader({
           style={{ left: menu.x, top: menu.y }}
           role="menu"
         >
+          <button onClick={snapSelectionStartToParagraph} role="menuitem">
+            {t("reader_sel_from_start")}
+          </button>
           <button onClick={expandSelectionToParagraph} role="menuitem">
             {t("reader_sel_paragraph")}
           </button>

@@ -90,6 +90,7 @@ export type UIStringKey =
   | "reader_confirm_translate_page"
   | "reader_sel_speak"
   | "reader_sel_paragraph"
+  | "reader_sel_from_start"
   | "reader_sel_copy"
   | "reader_no_text"
   | "reader_translate_page"
@@ -315,6 +316,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
     reader_sel_paragraph: "¶ Parágrafo",
+    reader_sel_from_start: "⇤ Do começo",
     reader_sel_copy: "Copiar",
     reader_confirm_translate_page: "Quer traduzir a página inteira?",
     reader_confirm_explain_page: "Quer explicar a página inteira?",
@@ -521,6 +523,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_preparing_audio: "Preparando áudio…",
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
+    reader_sel_from_start: "⇤ From start",
     reader_sel_paragraph: "¶ Paragraph",
     reader_sel_speak: "Falar",
     reader_sel_copy: "Copiar",
@@ -723,6 +726,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_read_aloud: "Ler em voz alta",
     reader_stop_reading: "Parar leitura",
     reader_preparing_audio: "Preparando áudio…",
+    reader_sel_from_start: "⇤ Desde el inicio",
     reader_pause: "Pausar leitura",
     reader_sel_paragraph: "¶ Párrafo",
     reader_resume: "Continuar leitura",
@@ -925,6 +929,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     summary_source_book: "Résumé du livre « {title} »",
     reader_photo_error: "Impossible d'enregistrer l'image de cette page dans ce navigateur.",
     reader_read_aloud: "Ler em voz alta",
+    reader_sel_from_start: "⇤ Du début",
     reader_stop_reading: "Parar leitura",
     reader_preparing_audio: "Preparando áudio…",
     reader_sel_paragraph: "¶ Paragraphe",
@@ -1127,6 +1132,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     summary_running: "Fasse zusammen…",
     summary_change_scope: "Umfang ändern",
     summary_source_book: "Zusammenfassung von \"{title}\"",
+    reader_sel_from_start: "⇤ Von Anfang",
     reader_photo_error: "Das Bild dieser Seite konnte in diesem Browser nicht gespeichert werden.",
     reader_read_aloud: "Ler em voz alta",
     reader_stop_reading: "Parar leitura",
@@ -1329,6 +1335,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     summary_scope_book: "Riassumi l'intero libro",
     summary_token_warning: "Il libro ha {n} pagine — più pagine, più token IA consuma.",
     summary_running: "Riassunto in corso…",
+    reader_sel_from_start: "⇤ Dall'inizio",
     summary_change_scope: "cambia ambito",
     summary_source_book: "Riassunto del libro \"{title}\"",
     reader_photo_error: "Impossibile salvare l'immagine di questa pagina in questo browser.",
@@ -1531,6 +1538,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     summary_modal_title: "📝 Резюме",
     summary_scope_page: "Резюме этой страницы",
     summary_scope_book: "Резюме всей книги",
+    reader_sel_from_start: "⇤ С начала",
     summary_token_warning: "В книге {n} страниц — чем больше страниц, тем больше тратится токенов ИИ.",
     summary_running: "Резюмирую…",
     summary_change_scope: "изменить охват",
@@ -1733,6 +1741,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ask_suggestion_theme: "核心主题是什么？",
     ask_web_search: "🔎 在网上搜索本书 ↗",
     summary_modal_title: "📝 摘要",
+    reader_sel_from_start: "⇤ 从开头",
     summary_scope_page: "总结本页",
     summary_scope_book: "总结整本书",
     summary_token_warning: "本书共 {n} 页 — 页数越多，消耗的 AI 令牌越多。",
@@ -1935,6 +1944,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ask_suggestion_book: "この本は何について？",
     ask_suggestion_author: "著者は誰？",
     ask_suggestion_theme: "中心的なテーマは？",
+    reader_sel_from_start: "⇤ 先頭から",
     ask_web_search: "🔎 この本をウェブで検索 ↗",
     summary_modal_title: "📝 要約",
     summary_scope_page: "このページを要約",
@@ -2137,6 +2147,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ask_intro: "『{title}』에 대해 무엇이 궁금하신가요? 줄거리, 특정 장이나 페이지, 저자, 주제에 대해 이야기할 수 있어요. 아래에 입력하거나 마이크를 눌러 말씀하세요.",
     ask_send: "질문 별내기",
     ask_suggestion_book: "이 책은 무슨 내용인가요?",
+    reader_sel_from_start: "⇤ 처음부터",
     ask_suggestion_author: "저자는 누구인가요?",
     ask_suggestion_theme: "핵심 주제는 무엇인가요?",
     ask_web_search: "🔎 웹에서 이 책 검색 ↗",
@@ -2339,6 +2350,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_note_summary: "📝 ملخص",
     ask_modal_title: "❓ اسأل ما تشاء",
     ask_intro: "ماذا تريد أن تعرف عن \"{title}\"؟ يمكنني الحديث عن الحبكة أو فصل معيّن أو صفحة محددة أو المؤلف أو الموضوع. اكتب أدناه أو اضغط على الميكروفون وتحدّث.",
+    reader_sel_from_start: "⇤ من البداية",
     ask_send: "إرسال السؤال",
     ask_suggestion_book: "عمّ يتحدث هذا الكتاب؟",
     ask_suggestion_author: "من هو المؤلف؟",
@@ -2541,6 +2553,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_ask_anything: "किताब के बारे में कुछ भी पूछें (आवाज़ या लिखकर)",
     reader_summarize: "इस पृष्ठ या पूरी किताब का सारांश",
     reader_note_summary: "📝 सारांश",
+    reader_sel_from_start: "⇤ शुरुआत से",
     ask_modal_title: "❓ कुछ भी पूछें",
     ask_intro: "\"{title}\" के बारे में क्या जानना चाहते हैं? मैं कथानक, कोई अध्याय, कोई खास पृष्ठ, लेखक या विषय के बारे में बता सकता हूँ। नीचे लिखें या माइक पर टैप करके बोलें।",
     ask_send: "प्रश्न भेजें",
