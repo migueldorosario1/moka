@@ -224,6 +224,20 @@ a:hover {
   font-style: italic;
 }
 
+/* Imagens do EPUB (capa, folha de rosto, figuras): sempre cabem na tela,
+   mantendo a proporção. Sem essa regra o <img> renderiza no tamanho natural
+   (ex.: capa de 1522×2298px), estoura a página e o zoom A−/A+ não alcança,
+   porque ele só escala o font-size do texto. */
+.reader-text img {
+  display: block;
+  max-width: 100%;
+  max-height: 62vh; /* deixa espaço pro header e pra barra de navegação */
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  margin: 0.5em auto 1.1em;
+}
+
 /* Seleção de texto — amarelo marca-texto (acompanha dark mode via variável). */
 .reader-text ::selection,
 .pdf-text-layer ::selection {
