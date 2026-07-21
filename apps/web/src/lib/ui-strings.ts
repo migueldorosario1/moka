@@ -89,6 +89,7 @@ export type UIStringKey =
   | "reader_confirm_explain_page"
   | "reader_confirm_translate_page"
   | "reader_sel_speak"
+  | "reader_sel_paragraph"
   | "reader_sel_copy"
   | "reader_no_text"
   | "reader_translate_page"
@@ -313,6 +314,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
+    reader_sel_paragraph: "¶ Parágrafo",
     reader_sel_copy: "Copiar",
     reader_confirm_translate_page: "Quer traduzir a página inteira?",
     reader_confirm_explain_page: "Quer explicar a página inteira?",
@@ -519,6 +521,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_preparing_audio: "Preparando áudio…",
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
+    reader_sel_paragraph: "¶ Paragraph",
     reader_sel_speak: "Falar",
     reader_sel_copy: "Copiar",
     reader_confirm_translate_page: "Quer traduzir a página inteira?",
@@ -721,6 +724,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_stop_reading: "Parar leitura",
     reader_preparing_audio: "Preparando áudio…",
     reader_pause: "Pausar leitura",
+    reader_sel_paragraph: "¶ Párrafo",
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
     reader_sel_copy: "Copiar",
@@ -923,6 +927,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_read_aloud: "Ler em voz alta",
     reader_stop_reading: "Parar leitura",
     reader_preparing_audio: "Preparando áudio…",
+    reader_sel_paragraph: "¶ Paragraphe",
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
     reader_sel_speak: "Falar",
@@ -1125,6 +1130,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_photo_error: "Das Bild dieser Seite konnte in diesem Browser nicht gespeichert werden.",
     reader_read_aloud: "Ler em voz alta",
     reader_stop_reading: "Parar leitura",
+    reader_sel_paragraph: "¶ Absatz",
     reader_preparing_audio: "Preparando áudio…",
     reader_pause: "Pausar leitura",
     reader_resume: "Continuar leitura",
@@ -1327,6 +1333,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     summary_source_book: "Riassunto del libro \"{title}\"",
     reader_photo_error: "Impossibile salvare l'immagine di questa pagina in questo browser.",
     reader_read_aloud: "Ler em voz alta",
+    reader_sel_paragraph: "¶ Paragrafo",
     reader_stop_reading: "Parar leitura",
     reader_preparing_audio: "Preparando áudio…",
     reader_pause: "Pausar leitura",
@@ -1529,6 +1536,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     summary_change_scope: "изменить охват",
     summary_source_book: "Резюме книги «{title}»",
     reader_photo_error: "Не удалось сохранить изображение этой страницы в этом браузере.",
+    reader_sel_paragraph: "¶ Абзац",
     reader_read_aloud: "Ler em voz alta",
     reader_stop_reading: "Parar leitura",
     reader_preparing_audio: "Preparando áudio…",
@@ -1731,6 +1739,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     summary_running: "正在总结…",
     summary_change_scope: "更改范围",
     summary_source_book: "《{title}》全书摘要",
+    reader_sel_paragraph: "¶ 段落",
     reader_photo_error: "无法在此浏览器中保存本页的图片。",
     reader_read_aloud: "Ler em voz alta",
     reader_stop_reading: "Parar leitura",
@@ -1933,6 +1942,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     summary_token_warning: "この本は {n} ページあります — ページ数が多いほどAIトークンの消費が増えます。",
     summary_running: "要約中…",
     summary_change_scope: "範囲を変更",
+    reader_sel_paragraph: "¶ 段落",
     summary_source_book: "『{title}』の要約",
     reader_photo_error: "このブラウザではこのページの画像を保存できませんでした。",
     reader_read_aloud: "Ler em voz alta",
@@ -2135,6 +2145,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     summary_scope_book: "책 전체 요약",
     summary_token_warning: "이 책은 {n}페이지입니다 — 페이지가 많을수록 AI 토큰 소비가 늘어납니다.",
     summary_running: "요약 중…",
+    reader_sel_paragraph: "¶ 단락",
     summary_change_scope: "범위 변경",
     summary_source_book: "『{title}』 요약",
     reader_photo_error: "이 브라우저에서는 이 페이지의 이미지를 저장할 수 없습니다.",
@@ -2337,6 +2348,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     summary_scope_page: "تلخيص هذه الصفحة",
     summary_scope_book: "تلخيص الكتاب كله",
     summary_token_warning: "الكتاب يحتوي على {n} صفحة — كلما زادت الصفحات زاد استهلاك رموز الذكاء الاصطناعي.",
+    reader_sel_paragraph: "¶ فقرة",
     summary_running: "جارٍ التلخيص…",
     summary_change_scope: "تغيير النطاق",
     summary_source_book: "ملخص كتاب \"{title}\"",
@@ -2539,6 +2551,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     summary_modal_title: "📝 सारांश",
     summary_scope_page: "इस पृष्ठ का सारांश",
     summary_scope_book: "पूरी किताब का सारांश",
+    reader_sel_paragraph: "¶ अनुच्छेद",
     summary_token_warning: "किताब में {n} पृष्ठ हैं — जितने अधिक पृष्ठ, उतना अधिक AI टोकन खर्च।",
     summary_running: "सारांश बन रहा है…",
     summary_change_scope: "दायरा बदलें",

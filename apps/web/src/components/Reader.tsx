@@ -1155,6 +1155,31 @@ export function Reader({
   };
 
   /**
+   * Botão "¶" do menu de seleção: expande a seleção pro(s) parágrafo(s)
+   * inteiro(s) que ela toca. Útil no iOS, onde a alça inicial às vezes
+   * "escorrega" pra segunda linha — um toque corrige sem brigar com a alça.
+   */
+  const expandSelectionToParagraph = () => {
+    const sel = window.getSelection();
+    if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+    const range = sel.getRangeAt(0);
+    const asEl = (n: Node) => (n.nodeType === 1 ? (n as Element) : n.parentElement);
+    const startBlock = asEl(range.startContainer)?.closest(
+      "p, h1, h2, h3, h4, h5, h6, blockquote, li",
+    );
+    const endBlock = asEl(range.endContainer)?.closest(
+      "p, h1, h2, h3, h4, h5, h6, blockquote, li",
+    );
+    if (!startBlock || !endBlock) return;
+    const newRange = document.createRange();
+    newRange.setStart(startBlock, 0);
+    newRange.setEnd(endBlock, endBlock.childNodes.length);
+    sel.removeAllRanges();
+    sel.addRange(newRange);
+    handleSelection(); // reabre o menu já com o texto completo
+  };
+
+  /**
    * Escuta mudanças de seleção no documento (funciona em mouse E touch).
    * No iPad/touch puro, o onMouseUp às vezes não dispara depois de arrastar
    * pra selecionar — o selectionchange é o evento confiável. Mostra o menu
@@ -1657,6 +1682,9 @@ export function Reader({
           style={{ left: menu.x, top: menu.y }}
           role="menu"
         >
+          <button onClick={expandSelectionToParagraph} role="menuitem">
+            {t("reader_sel_paragraph")}
+          </button>
           <button onClick={() => fire("translate")} role="menuitem">
             {t("reader_sel_translate")}
           </button>

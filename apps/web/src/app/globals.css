@@ -201,9 +201,16 @@ a:hover {
 /* ── Tipografia do leitor ─────────────────────────────────────────── */
 
 .reader-text p {
-  margin: 0 0 1.1em;
+  margin: 0;
   text-align: justify;
   hyphens: auto;
+}
+/* Espaço entre parágrafos via padding-top (e não margin-bottom): o vão
+   passa a pertencer ao parágrafo SEGUINTE. No iOS, um toque nesse vão
+   ancora a seleção no INÍCIO da 1ª linha dele — com margin, caía no fim
+   do parágrafo anterior e a seleção "escorregava" pra linha de baixo. */
+.reader-text p + p {
+  padding-top: 1.1em;
 }
 
 .reader-text h1,
