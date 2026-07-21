@@ -1249,6 +1249,54 @@ export function Reader({
   }, [clearCustomHighlight]);
 
   /**
+   * ASSISTENTE anti-escorregão (iOS): ao SOLTAR o dedo, se a seleção
+   * começou logo depois da 1ª palavra do parágrafo (assinatura clássica
+   * do deslize: o iOS re-ancora a alça no começo da palavra 2 por causa
+   * das caixas de linha altas), estica o início de volta pro começo do
+   * parágrafo. Só age no FIM do gesto — mexer na seleção DURANTE o
+   * arraste quebra a alça do iOS. Se o usuário realmente quiser começar
+   * na 2ª palavra, o botão ¶ e um novo arraste continuam disponíveis.
+   */
+  useEffect(() => {
+    const fixSlippedStart = () => {
+      // Pequeno atraso: no touchend a seleção ainda está assentando.
+      setTimeout(() => {
+        const sel = window.getSelection();
+        if (!sel || sel.isCollapsed || sel.rangeCount === 0) return;
+        const range = sel.getRangeAt(0);
+        const startEl =
+          range.startContainer.nodeType === 1
+            ? (range.startContainer as Element)
+            : range.startContainer.parentElement;
+        const block = startEl?.closest(
+          "p, h1, h2, h3, h4, h5, h6, blockquote, li",
+        );
+        if (!block || !containerRef.current?.contains(block)) return;
+        // Texto entre o começo do parágrafo e o começo da seleção.
+        const pre = document.createRange();
+        pre.selectNodeContents(block);
+        pre.setEnd(range.startContainer, range.startOffset);
+        const prefix = pre.toString();
+        // Só corrige o deslize clássico: ficou de fora só a 1ª palavra.
+        if (/^\S+\s+$/.test(prefix)) {
+          const fixed = range.cloneRange();
+          fixed.setStart(block, 0);
+          sel.removeAllRanges();
+          sel.addRange(fixed);
+          handleSelection(); // reabre o menu com o texto corrigido
+        }
+      }, 60);
+    };
+    document.addEventListener("touchend", fixSlippedStart, { passive: true });
+    document.addEventListener("mouseup", fixSlippedStart);
+    return () => {
+      document.removeEventListener("touchend", fixSlippedStart);
+      document.removeEventListener("mouseup", fixSlippedStart);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  /**
    * Toque duplo (double-click/double-tap): seleciona o parágrafo inteiro
    * sob o cursor. Muito útil em touch, onde arrastar pra selecionar é
    * impreciso. Encontra o ancestral <p> (ou block mais próximo) e seleciona
