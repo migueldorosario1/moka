@@ -17,6 +17,9 @@ export type {
   ParseResult,
 } from "./types";
 
+export { buildEpub } from "./epub-writer";
+export type { EpubBuildInput, EpubChapterInput } from "./epub-writer";
+
 export interface ParseBookInput {
   /** Conteúdo do arquivo. */
   data: ArrayBuffer;

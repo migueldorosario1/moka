@@ -12,7 +12,9 @@ import { getTargetLang, getAudioLang, getConfigSync } from "@/lib/config";
 import { SettingsModal } from "./SettingsModal";
 import { AskModal } from "./AskModal";
 import { SummaryModal } from "./SummaryModal";
+import { TranslateBookModal } from "./TranslateBookModal";
 import { translatePageStream, explainPageStream, translateStream, explainStream, translateForSpeech } from "@/lib/ai-client";
+import { blocksToText, paginateBlocks } from "@/lib/paginate";
 
 interface ReaderProps {
   book: ParsedBook;
@@ -66,94 +68,6 @@ interface ReaderProps {
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 3.0;
 const ZOOM_STEP = 0.2;
-
-/**
- * Alvo de caracteres por PÁGINA de EPUB.
- * EPUB não tem páginas por natureza (cada item do spine é um "capítulo"
- * contínuo) — sem isso, o texto vinha "corrido" num scroll infinito.
- * ~2200 chars ≈ uma tela confortável de leitura (300-350 palavras).
- */
-const EPUB_PAGE_CHARS = 2200;
-
-/** Extrai o texto "falável/imprimível" de um bloco. */
-function blockText(b: Block): string {
-  if (b.type === "list") return (b.items ?? []).join(", ");
-  return b.text ?? "";
-}
-
-/** Junta o texto de vários blocos (pra TTS, tradução de página, resumo). */
-function blocksToText(blocks: Block[], sep: string): string {
-  return blocks.map(blockText).filter(Boolean).join(sep);
-}
-
-/** "Tamanho" de um bloco pra efeito de paginação. */
-function blockLength(b: Block): number {
-  if (b.type === "image") return 400; // imagem ocupa espaço visual da página
-  return blockText(b).length;
-}
-
-/**
- * Fatia um texto longo em pedaços de até `max` chars, cortando de
- * preferência no fim de uma frase (". ") ou num espaço — nunca no
- * meio de uma palavra.
- */
-function splitLongText(text: string, max: number): string[] {
-  const parts: string[] = [];
-  let rest = text;
-  while (rest.length > max) {
-    let cut = rest.lastIndexOf(". ", max);
-    if (cut < max * 0.5) cut = rest.lastIndexOf(" ", max);
-    if (cut <= 0) cut = max;
-    parts.push(rest.slice(0, cut + 1).trim());
-    rest = rest.slice(cut + 1).trim();
-  }
-  if (rest) parts.push(rest);
-  return parts;
-}
-
-/**
- * Quebra os blocos de um capítulo EPUB em PÁGINAS.
- *
- * Regras:
- *   - "page-break" explícito (do livro) força página nova;
- *   - heading começa página nova (se a atual já tem conteúdo) — seção nova;
- *   - encheu ~EPUB_PAGE_CHARS → página nova (sem cortar bloco no meio);
- *   - bloco sozinho maior que uma página → fatiado em frases (splitLongText).
- */
-function paginateBlocks(blocks: Block[]): Block[][] {
-  const pages: Block[][] = [];
-  let current: Block[] = [];
-  let count = 0;
-  const flush = () => {
-    if (current.length > 0) {
-      pages.push(current);
-      current = [];
-      count = 0;
-    }
-  };
-  for (const b of blocks) {
-    if (b.type === "page-break") {
-      flush();
-      continue;
-    }
-    if (b.type === "heading" && count > 0) flush();
-    const len = blockLength(b);
-    if (len > EPUB_PAGE_CHARS && b.text) {
-      const chunks = splitLongText(b.text, EPUB_PAGE_CHARS);
-      chunks.forEach((chunk, i) => {
-        if (count > 0 && count + chunk.length > EPUB_PAGE_CHARS) flush();
-        current.push({ ...b, id: `${b.id}-s${i}`, text: chunk });
-        count += chunk.length;
-      });
-      continue;
-    }
-    if (count > 0 && count + len > EPUB_PAGE_CHARS) flush();
-    current.push(b);
-    count += len;
-  }
-  flush();
-  return pages.length > 0 ? pages : [[]];
-}
 
 /** Limites do controle de tamanho da fonte de leitura (A−/A+). */
 const FONT_SCALE_MIN = 0.7;
@@ -364,6 +278,7 @@ export function Reader({
   /** Janelas "Pergunte qualquer coisa" e "Resumo". */
   const [askOpen, setAskOpen] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
+  const [transBookOpen, setTransBookOpen] = useState(false);
   /** Escala da fonte de leitura (A−/A+) — persistida no localStorage. */
   const [fontScale, setFontScale] = useState(() => {
     if (typeof window === "undefined") return 1;
@@ -1605,6 +1520,19 @@ export function Reader({
                 {translatingPage && overlayMode === "explain" ? "⏳" : "🧠"}
               </button>
             </>
+          )}
+          {/* 🌍 Traduzir o LIVRO INTEIRO em volumes de ~50 páginas.
+              Cada volume vira um EPUB (baixado) + livro na estante;
+              depois dá pra integrar tudo num livro único. Só EPUB. */}
+          {isEpub && (
+            <button
+              onClick={() => setTransBookOpen(true)}
+              className="icon-btn"
+              title={t("tb_icon")}
+              aria-label={t("tb_icon")}
+            >
+              🌍
+            </button>
           )}
           {/* ⏹ Stop áudio (só aparece quando tem áudio rolando) */}
           {(tts.state !== "idle" || ttsLoading) && (
@@ -3089,6 +3017,16 @@ export function Reader({
           chapterId={chapter?.id}
           onClose={() => setAskOpen(false)}
           onSaveNote={onSaveNote}
+        />
+      )}
+
+      {/* Janela "Traduzir livro inteiro" (🌍) — volumes de ~50 páginas,
+          EPUB baixado + estante, com retomada e integrador de volumes. */}
+      {transBookOpen && (
+        <TranslateBookModal
+          book={book}
+          userId={auth?.user?.id ?? null}
+          onClose={() => setTransBookOpen(false)}
         />
       )}
 
