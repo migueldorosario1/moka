@@ -407,7 +407,12 @@ function splitParagraphs(text: string): string[] {
  */
 async function loadDoc(data: ArrayBuffer) {
   const pdfjs = await import("pdfjs-dist");
-  pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
+  // Worker LOCAL (embutido no app, /pdf.worker.min.mjs) — antes vinha do
+  // CDN cdnjs.cloudflare.com: se o CDN engasgava ou estava fora/bloqueado,
+  // o livro travava em "lendo" pra sempre (travamento reportado pelo Miguel).
+  // O arquivo é copiado de node_modules/pdfjs-dist/build — se atualizar o
+  // pacote, re-copiar pra manter a versão casada.
+  pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
   const owned = data.slice(0);
   const loadingTask = pdfjs.getDocument({ data: new Uint8Array(owned) });
   const doc = await loadingTask.promise;
