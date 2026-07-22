@@ -29,6 +29,10 @@ export default function BookPage({ params }: { params: { id: string } }) {
   const [panelVisible, setPanelVisible] = useState(false);
   const [configReady, setConfigReady] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // Proteção contra travamento (pedido do Miguel, 2026-07-22):
+  // "tem que ter um botão de parar, pra proteger o usuário".
+  const [slowLoad, setSlowLoad] = useState(false);
+  const [loadStuck, setLoadStuck] = useState(false);
 
   // Reconstrói o ArrayBuffer a partir do Uint8Array (cópia defensiva).
   // MEMOIZADO: deve vir ANTES de TODOS os early returns (Rules of Hooks).
@@ -43,6 +47,21 @@ export default function BookPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     loadConfigCache().then(() => setConfigReady(hasConfig())).catch(() => {});
     let cancelled = false;
+
+    // ESCOTILHA DE FUGA: se o carregamento passar de 6s, mostra o botão
+    // "✕ Parar"; se passar de 60s, para sozinho com mensagem amigável —
+    // nunca mais spinner infinito num livro grande.
+    const slowTimer = setTimeout(() => {
+      if (!cancelled) setSlowLoad(true);
+    }, 6_000);
+    const stuckTimer = setTimeout(() => {
+      if (!cancelled) {
+        cancelled = true;
+        setLoadStuck(true);
+        setLoading(false);
+      }
+    }, 60_000);
+
     (async () => {
       try {
         const book = await getBook(params.id);
@@ -56,10 +75,12 @@ export default function BookPage({ params }: { params: { id: string } }) {
         console.error("[moka] Erro ao carregar livro:", err);
         setNotFound(true);
       }
-      setLoading(false);
+      if (!cancelled) setLoading(false);
     })();
     return () => {
       cancelled = true;
+      clearTimeout(slowTimer);
+      clearTimeout(stuckTimer);
     };
   }, [params.id]);
 
@@ -84,12 +105,44 @@ export default function BookPage({ params }: { params: { id: string } }) {
   const updateSession = (patch: Partial<Session>) =>
     setSession((prev) => (prev ? { ...prev, ...patch } : prev));
 
+  if (loadStuck) {
+    return (
+      <main className="igot-shell">
+        <div className="igot-loading">
+          <p>
+            ⏱️ Este livro demorou demais pra abrir e eu parei pra você não
+            ficar esperando. Tente de novo — ou abra outro livro e volte depois.
+          </p>
+          <div style={{ display: "flex", gap: 10 }}>
+            <button onClick={() => window.location.reload()} className="back-btn">
+              ↻ Tentar de novo
+            </button>
+            <button onClick={() => router.push("/")} className="back-btn">
+              {t("err_back_shelf")}
+            </button>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
   if (loading) {
     return (
       <main className="igot-shell">
         <div className="igot-loading">
           <div className="spinner" />
           <p>{t("err_opening_book")}</p>
+          {/* BOTÃO DE PARAR (pedido do Miguel): depois de 6s de espera,
+              o usuário pode cancelar e voltar — nunca fica refém do spinner. */}
+          {slowLoad && (
+            <button
+              onClick={() => router.push("/")}
+              className="back-btn"
+              style={{ marginTop: 8 }}
+            >
+              ✕ Parar e voltar pra estante
+            </button>
+          )}
         </div>
       </main>
     );

@@ -169,8 +169,20 @@ export function PdfPageCanvas({
     setDocReady(false);
     setPageReady(false);
 
+    // WATCHDOG (pedido do Miguel, 2026-07-22): se o pdfjs travar (worker do
+    // CDN lento/bloqueado, PDF gigante ou corrompido), o spinner rodava PRA
+    // SEMPRE. Agora: 30s sem carregar → erro amigável em vez de espera infinita.
+    const watchdog = setTimeout(() => {
+      if (!cancelled && !docRef.current) {
+        setError(
+          "o PDF demorou demais pra abrir (rede lenta ou arquivo muito grande). Tente de novo, ou abra outro livro e volte depois.",
+        );
+      }
+    }, 30_000);
+
     loadDoc(data)
       .then((doc) => {
+        clearTimeout(watchdog);
         if (cancelled) {
           doc.destroy();
           return;
@@ -183,12 +195,14 @@ export function PdfPageCanvas({
         }
       })
       .catch((err) => {
+        clearTimeout(watchdog);
         if (cancelled) return;
         setError(err instanceof Error ? err.message : String(err));
       });
 
     return () => {
       cancelled = true;
+      clearTimeout(watchdog);
       renderTaskRef.current?.cancel();
       textLayerHandleRef.current?.cancel();
       docRef.current?.destroy();
