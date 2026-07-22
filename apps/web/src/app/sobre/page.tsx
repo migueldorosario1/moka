@@ -84,6 +84,7 @@ export default function SobrePage() {
         </p>
 
         <p className="info-footer">
+          <a href="/socios">🤝 Painel de Sócios →</a>{"  ·  "}
           <a href="/privacidade">Política de Privacidade →</a>
         </p>
       </article>

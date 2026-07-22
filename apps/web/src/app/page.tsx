@@ -10,6 +10,7 @@ import { useI18n } from "@/components/I18nProvider";
 import { SettingsModal } from "@/components/SettingsModal";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
 import { CloseAppButton } from "@/components/CloseAppButton";
+import { VisitPing } from "@/components/VisitPing";
 import { AuthButton } from "@/components/AuthButton";
 import { hasConfig, loadConfigCache } from "@/lib/config";
 import { useAuth } from "@/lib/auth";
@@ -169,6 +170,7 @@ export default function HomePage() {
 
   return (
     <main className="igot-shell">
+      <VisitPing />
       {/* TopBar com logo clicável */}
       <div className="igot-topbar">
         <div className="igot-topbar-left">

@@ -540,6 +540,8 @@ export default function HomePage() {
         <span className="footer-sep">·</span>
         <Link href="/sobre">Quem somos</Link>
         <span className="footer-sep">·</span>
+        <Link href="/socios">🤝 Sócios</Link>
+        <span className="footer-sep">·</span>
         <Link href="/ajuda">Ajuda</Link>
       </footer>
 
