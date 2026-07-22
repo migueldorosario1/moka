@@ -696,7 +696,7 @@ export function SettingsForm({ initial, onSaved }: SettingsFormProps) {
         <p className="donate-title">{t("donate_title")}</p>
         <div className="donate-options">
           <a
-            href="https://www.paypal.com/donate?hosted_button_id=migueldorosario@gmail.com"
+            href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=migueldorosario%40gmail.com&item_name=Moka+Reader&currency_code=BRL"
             target="_blank"
             rel="noreferrer"
             className="donate-btn paypal"
