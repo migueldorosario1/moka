@@ -77,10 +77,10 @@ export const PRESETS: ProviderPreset[] = [
     id: "anthropic",
     name: "Anthropic",
     baseUrl: "https://api.anthropic.com/v1",
-    defaultModel: "claude-3-5-haiku-latest",
+    defaultModel: "claude-haiku-4-5",
     adapter: "anthropic",
     keyUrl: "https://console.anthropic.com/settings/keys",
-    description: "Modelos Claude. Forte em escrita e explicação.",
+    description: "Modelos Claude (Haiku rápido, Sonnet equilibrado, Opus máximo). Forte em escrita e explicação.",
   },
   {
     id: "gemini",
