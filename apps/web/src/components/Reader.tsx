@@ -2964,6 +2964,20 @@ export function Reader({
             max-width: calc(100vw - 24px);
             justify-content: center;
             z-index: 2000;
+            /* Celular estreito: deixa quebrar em DUAS LINHAS pra não cortar
+               os botões (bug reportado pelo Miguel no celular). */
+            flex-wrap: wrap;
+            row-gap: 4px;
+            border-radius: var(--radius-lg);
+            padding: 6px;
+          }
+        }
+        /* Telas bem estreitas (celular): botões um pouco menores pra
+           caber tudo em no máximo duas linhas. */
+        @media (hover: none) and (pointer: coarse) and (max-width: 430px) {
+          .selection-menu button {
+            padding: 9px 12px;
+            font-size: 13px;
           }
         }
         .selection-menu button {

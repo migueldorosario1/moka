@@ -47,15 +47,19 @@ export default function BookPage({ params }: { params: { id: string } }) {
   useEffect(() => {
     loadConfigCache().then(() => setConfigReady(hasConfig())).catch(() => {});
     let cancelled = false;
+    // Marca quando o carregamento TERMINA (sucesso ou erro) — os timers de
+    // proteção NÃO podem disparar depois disso. Bug da V 1.5 (reportado
+    // pelo Miguel no celular): o timer de 60s disparava mesmo com o livro
+    // já aberto e derrubava a tela com a mensagem de "demorou demais".
+    let finished = false;
 
     // ESCOTILHA DE FUGA: se o carregamento passar de 6s, mostra o botão
-    // "✕ Parar"; se passar de 60s, para sozinho com mensagem amigável —
-    // nunca mais spinner infinito num livro grande.
+    // "✕ Parar"; se passar de 60s SEM TERMINAR, para sozinho com mensagem.
     const slowTimer = setTimeout(() => {
-      if (!cancelled) setSlowLoad(true);
+      if (!cancelled && !finished) setSlowLoad(true);
     }, 6_000);
     const stuckTimer = setTimeout(() => {
-      if (!cancelled) {
+      if (!cancelled && !finished) {
         cancelled = true;
         setLoadStuck(true);
         setLoading(false);
@@ -65,6 +69,9 @@ export default function BookPage({ params }: { params: { id: string } }) {
     (async () => {
       try {
         const book = await getBook(params.id);
+        finished = true;
+        clearTimeout(slowTimer);
+        clearTimeout(stuckTimer);
         if (cancelled) return;
         if (book) {
           setSession(book);
@@ -72,6 +79,9 @@ export default function BookPage({ params }: { params: { id: string } }) {
           setNotFound(true);
         }
       } catch (err) {
+        finished = true;
+        clearTimeout(slowTimer);
+        clearTimeout(stuckTimer);
         console.error("[moka] Erro ao carregar livro:", err);
         setNotFound(true);
       }
