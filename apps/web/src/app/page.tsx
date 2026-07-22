@@ -8,6 +8,7 @@ import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { useI18n } from "@/components/I18nProvider";
 import { SettingsModal } from "@/components/SettingsModal";
+import { SectionSwitcher } from "@/components/SectionSwitcher";
 import { AuthButton } from "@/components/AuthButton";
 import { hasConfig, loadConfigCache } from "@/lib/config";
 import { useAuth } from "@/lib/auth";
@@ -169,8 +170,11 @@ export default function HomePage() {
     <main className="igot-shell">
       {/* TopBar com logo clicável */}
       <div className="igot-topbar">
-        <div className="brand" title="Estante">
-          <CafezinhoLogo size={26} opacity={0.85} /> <span>Moka</span>
+        <div className="igot-topbar-left">
+          <div className="brand" title="Moka — livros e vídeos">
+            <CafezinhoLogo size={26} opacity={0.85} /> <span>Moka</span>
+          </div>
+          <SectionSwitcher active="reader" />
         </div>
         <div className="igot-topbar-actions">
           <a href="/premium" className="premium-link" title="Moka Premium">⭐</a>

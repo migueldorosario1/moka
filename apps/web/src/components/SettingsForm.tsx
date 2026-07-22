@@ -7,6 +7,8 @@ import {
   clearConfig, getTargetLang, setTargetLang,
   getAudioLang, setAudioLang,
   listAllEntriesSync, getConfigById,
+  setWhisperKey, getWhisperKeyMasked,
+  getIngestServer, setIngestServer,
 } from "@/lib/config";
 import { testConnection, listModels } from "@/lib/ai-client";
 import { useI18n } from "./I18nProvider";
@@ -28,8 +30,16 @@ interface TestState {
  * O usuário escolhe o provedor, cola a chave (opcionalmente sobrescreve
  * modelo/baseUrl), testa a conexão e salva. Tudo no navegador.
  */
-export function SettingsForm({ initial, onSaved }: SettingsFormProps) {
+export function SettingsForm({
+ initial, onSaved }: SettingsFormProps) {
   const { t, lang: uiLang, setLang: setUILang } = useI18n();
+
+  // ── Seção de vídeo (fusão V 2.0): chave Whisper + servidor próprio ──
+  const [whisperDraft, setWhisperDraft] = useState("");
+  const [whisperMasked, setWhisperMasked] = useState<string | null>(null);
+  const [ingestDraft, setIngestDraft] = useState("");
+  const [videoMsg, setVideoMsg] = useState<string | null>(null);
+  const [testingVideo, setTestingVideo] = useState(false);
 
   // Rascunho persistente: salva o que o usuário digitou no localStorage pra
   // não perder se fechar o modal sem salvar. Limpo após salvar com sucesso.
@@ -73,6 +83,11 @@ export function SettingsForm({ initial, onSaved }: SettingsFormProps) {
 
   // Salva o rascunho no localStorage sempre que os campos mudam.
   // Assim, se o usuário fechar o modal sem salvar, não perde o que digitou.
+  useEffect(() => {
+    getWhisperKeyMasked().then(setWhisperMasked).catch(() => {});
+    setIngestDraft(getIngestServer());
+  }, []);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
     const draft = { providerId, apiKey, model, baseUrl, label };
@@ -656,6 +671,126 @@ export function SettingsForm({ initial, onSaved }: SettingsFormProps) {
 
       {/* Quem somos */}
       <div className="about-section">
+        <details className="settings-section">
+          <summary>🎬 Moka Video — transcrição e servidor</summary>
+          <div className="about-content">
+            <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>
+              <strong>🎙 Chave OpenAI (Whisper)</strong> — opcional. Só é usada
+              pra transcrever vídeos <em>sem legendas</em> (o Moka ouve o áudio).
+              {whisperMasked ? ` Salva: ${whisperMasked}.` : ""}
+            </p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <input
+                type="password"
+                value={whisperDraft}
+                onChange={(e) => setWhisperDraft(e.target.value)}
+                placeholder={whisperMasked ?? "sk-…"}
+                autoComplete="off"
+                style={{ flex: 1, minWidth: 180, padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
+              />
+              <button
+                type="button"
+                className="btn-ghost"
+                onClick={async () => {
+                  await setWhisperKey(whisperDraft.trim());
+                  setWhisperDraft("");
+                  setWhisperMasked(await getWhisperKeyMasked());
+                  setVideoMsg(whisperDraft.trim() ? "✅ Chave Whisper salva." : "🗑 Chave Whisper removida.");
+                }}
+              >
+                💾 Salvar
+              </button>
+              <button
+                type="button"
+                className="btn-ghost"
+                disabled={testingVideo}
+                onClick={async () => {
+                  setTestingVideo(true);
+                  setVideoMsg(null);
+                  try {
+                    const key = whisperDraft.trim() || (await (await import("@/lib/config")).getWhisperKey()) || "";
+                    if (!key) throw new Error("Cole a chave pra testar.");
+                    const res = await fetch("/api/proxy", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        url: "https://api.openai.com/v1/models",
+                        method: "GET",
+                        headers: { Authorization: `Bearer ${key}` },
+                        body: "",
+                      }),
+                    });
+                    const env = await res.json();
+                    if ((env.status ?? 200) >= 400) throw new Error(`OpenAI respondeu ${env.status}.`);
+                    setVideoMsg("✅ Chave OpenAI válida — Whisper pronto.");
+                  } catch (err) {
+                    setVideoMsg(`❌ ${err instanceof Error ? err.message : String(err)}`);
+                  } finally {
+                    setTestingVideo(false);
+                  }
+                }}
+              >
+                {testingVideo ? "Testando…" : "🔌 Testar"}
+              </button>
+            </div>
+
+            <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: 16 }}>
+              <strong>🖥️ Servidor próprio</strong> — avançado, pode deixar vazio.
+              Se você tiver o Moka Video rodando num servidor seu, cole o
+              endereço pra ler vídeos por ele (Whisper, X/Twitter, Instagram).
+            </p>
+            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+              <input
+                type="url"
+                value={ingestDraft}
+                onChange={(e) => setIngestDraft(e.target.value)}
+                placeholder="https://video.seuservidor.com"
+                autoComplete="off"
+                style={{ flex: 1, minWidth: 180, padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
+              />
+              <button
+                type="button"
+                className="btn-ghost"
+                disabled={testingVideo}
+                onClick={async () => {
+                  const clean = ingestDraft.trim();
+                  if (!clean) {
+                    setIngestServer("");
+                    setVideoMsg("🗑 Servidor removido — detecção automática do motor local.");
+                    return;
+                  }
+                  setTestingVideo(true);
+                  setVideoMsg("🔍 Testando o endereço…");
+                  try {
+                    const ctrl = new AbortController();
+                    const timer = setTimeout(() => ctrl.abort(), 5000);
+                    const res = await fetch(`${clean.replace(/\/$/, "")}/api/ingest`, { signal: ctrl.signal });
+                    clearTimeout(timer);
+                    const data = await res.json();
+                    if (data?.ok && data?.server === "moka-video") {
+                      setIngestServer(clean);
+                      setVideoMsg(data.full ? "✅ Servidor válido e completo! Salvo." : "✅ Servidor válido (limitado). Salvo.");
+                    } else {
+                      setVideoMsg("❌ Respondeu, mas não é um motor Moka Video. Não salvei.");
+                    }
+                  } catch {
+                    setVideoMsg("❌ Não consegui falar com esse endereço. Não salvei.");
+                  } finally {
+                    setTestingVideo(false);
+                  }
+                }}
+              >
+                {testingVideo ? "Testando…" : "💾 Salvar (com teste)"}
+              </button>
+            </div>
+            {videoMsg && (
+              <p style={{ marginTop: 10, fontSize: 13, padding: "8px 12px", background: "var(--surface)", border: "1px solid var(--border-soft)", borderRadius: 8 }}>
+                {videoMsg}
+              </p>
+            )}
+          </div>
+        </details>
+
         <details>
           <summary>{t("about_title")}</summary>
           <div className="about-content">

@@ -451,3 +451,100 @@ export function setAudioLang(lang: string): void {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(AUDIO_LANG_KEY, lang);
 }
+
+// ─── Seção de VÍDEO (fusão Moka Reader + Moka Video, V 2.0) ────────────
+// Funções trazidas do app Moka Video: chave Whisper, servidor próprio de
+// ingestão e auto-detecção do motor local (lê vídeos pelo IP do usuário).
+
+const WHISPER_KEY = "mokavideo.whisperKey";
+const INGEST_SERVER_KEY = "mokavideo.ingestServer";
+const LOCAL_INGEST = "http://localhost:3100";
+
+/** Salva a chave OpenAI usada SÓ pra Whisper (criptografada). */
+export async function setWhisperKey(key: string): Promise<void> {
+  if (typeof window === "undefined") return;
+  if (!key) {
+    window.localStorage.removeItem(WHISPER_KEY);
+    return;
+  }
+  window.localStorage.setItem(WHISPER_KEY, await encrypt(key));
+}
+
+/** Lê a chave Whisper (descriptografada). Null se não configurada. */
+export async function getWhisperKey(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  const raw = window.localStorage.getItem(WHISPER_KEY);
+  if (!raw) return null;
+  const key = await decrypt(raw);
+  return key || null;
+}
+
+/** Versão mascarada da chave Whisper pra UI. */
+export async function getWhisperKeyMasked(): Promise<string | null> {
+  const key = await getWhisperKey();
+  return key ? maskKey(key) : null;
+}
+
+export function getIngestServer(): string {
+  if (typeof window === "undefined") return "";
+  return (window.localStorage.getItem(INGEST_SERVER_KEY) ?? "").replace(/\/$/, "");
+}
+
+export function setIngestServer(url: string): void {
+  if (typeof window === "undefined") return;
+  const clean = url.trim().replace(/\/$/, "");
+  if (clean) window.localStorage.setItem(INGEST_SERVER_KEY, clean);
+  else window.localStorage.removeItem(INGEST_SERVER_KEY);
+}
+
+let probedLocal: boolean | null = null;
+
+/** Sonda o localhost:3100 (motor Moka Video local). `force` ignora o cache. */
+export async function probeLocalIngest(force = false): Promise<boolean> {
+  if (typeof window === "undefined") return false;
+  if (!force && probedLocal !== null) return probedLocal;
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 1500);
+    const res = await fetch(`${LOCAL_INGEST}/api/ingest`, {
+      signal: ctrl.signal,
+    });
+    clearTimeout(timer);
+    const data = (await res.json()) as { ok?: boolean; server?: string };
+    probedLocal = data?.ok === true && data?.server === "moka-video";
+  } catch {
+    probedLocal = false;
+  }
+  return probedLocal;
+}
+
+/**
+ * Estado da permissão "Local Network Access" do navegador (Chrome 139+).
+ * Sem ela, o Chrome bloqueia a ligação site→localhost.
+ */
+export async function getLocalNetPermission(): Promise<
+  "granted" | "denied" | "prompt" | "unknown"
+> {
+  if (typeof navigator === "undefined" || !("permissions" in navigator)) {
+    return "unknown";
+  }
+  try {
+    const p = await navigator.permissions.query({
+      name: "local-network-access" as PermissionName,
+    });
+    return p.state as "granted" | "denied" | "prompt";
+  } catch {
+    return "unknown";
+  }
+}
+
+/**
+ * Base de ingestão efetiva: servidor configurado nas ⚙️ > motor local
+ * auto-detectado > o próprio site (caminho serverless, limitado).
+ */
+export function ingestBaseAuto(localDetected: boolean): string {
+  const custom = getIngestServer();
+  if (custom) return custom;
+  if (localDetected) return LOCAL_INGEST;
+  return "";
+}
