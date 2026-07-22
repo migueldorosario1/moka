@@ -33,7 +33,10 @@ export async function parsePDF(input: PDFParseInput): Promise<ParsedBook> {
   // Worker só no navegador; em Node não usamos worker.
   const isBrowser = typeof window !== "undefined";
   if (isBrowser) {
-    pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.mjs`;
+    // Worker LOCAL (embutido no app) — o CDN cdnjs.cloudflare.com deixava a
+    // primeira abertura lenta (1,4 MB externos) e, se engasgava, travava o
+    // livro em "lendo" (travamento reportado pelo Miguel, 2026-07-22).
+    pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
   }
 
   const loadingTask = pdfjs.getDocument({
