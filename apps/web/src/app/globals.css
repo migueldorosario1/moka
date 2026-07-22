@@ -1562,3 +1562,50 @@ a:hover {
   background: var(--surface);
   box-shadow: var(--shadow-sm);
 }
+
+/* ── Botão ✕ Fechar (pedido do Miguel — claro e visível) ────────────── */
+.close-app-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  border-radius: var(--radius-pill);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color var(--transition), color var(--transition),
+    background var(--transition);
+}
+.close-app-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent-dark);
+  background: var(--accent-soft);
+}
+.close-app-toast {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: min(480px, calc(100vw - 32px));
+  padding: 14px 20px;
+  background: var(--surface);
+  border: 1px solid var(--gold);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  font-size: 14.5px;
+  line-height: 1.5;
+  text-align: center;
+  z-index: 3000;
+}
+@media (max-width: 560px) {
+  .close-app-label {
+    display: none; /* no celular fica só o ✕ grande */
+  }
+  .close-app-btn {
+    font-size: 17px;
+    padding: 8px 12px;
+  }
+}

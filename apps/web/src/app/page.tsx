@@ -9,6 +9,7 @@ import { LangSwitcher } from "@/components/LangSwitcher";
 import { useI18n } from "@/components/I18nProvider";
 import { SettingsModal } from "@/components/SettingsModal";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
+import { CloseAppButton } from "@/components/CloseAppButton";
 import { AuthButton } from "@/components/AuthButton";
 import { hasConfig, loadConfigCache } from "@/lib/config";
 import { useAuth } from "@/lib/auth";
@@ -177,6 +178,7 @@ export default function HomePage() {
           <SectionSwitcher active="reader" />
         </div>
         <div className="igot-topbar-actions">
+          <CloseAppButton />
           <a href="/premium" className="premium-link" title="Moka Premium">⭐</a>
           <LangSwitcher />
           <AuthButton

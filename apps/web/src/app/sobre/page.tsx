@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { LangSwitcher } from "@/components/LangSwitcher";
 
 export const metadata: Metadata = {
   title: "Quem Somos — Moka",
@@ -14,17 +15,23 @@ export const metadata: Metadata = {
 export default function SobrePage() {
   return (
     <main className="info-page">
-      <article className="info-card">
+      <div className="info-topbar">
         <a href="/" className="info-back">← Moka</a>
+        <LangSwitcher />
+      </div>
+      <article className="info-card">
 
         <h1>Quem Somos</h1>
 
-        <h2>Moka</h2>
+        <h2>Moka — dois em um 📖🎬</h2>
         <p>
-          O <strong>Moka</strong> é um leitor de livros e documentos em formato
-          PDF e EPUB com auxílio de inteligência artificial. Ele traduz e
-          explica qualquer trecho de um livro, em qualquer idioma, durante a
-          leitura — sem precisar sair da página.
+          O <strong>Moka</strong> é um aplicativo <strong>dois em um</strong>:
+          o <strong>Moka Reader</strong> 📖 lê livros e documentos (PDF e EPUB)
+          e o <strong>Moka Video</strong> 🎬 assiste vídeos por você (YouTube,
+          X/Twitter, Instagram) — transcrevendo, identificando personagens,
+          dando o contexto político, fazendo a crítica e resumindo de 1 a 10
+          minutos de leitura. Tudo com inteligência artificial, em qualquer
+          idioma, sem sair da página.
         </p>
         <p>
           O Moka permite que o usuário converse com o texto: peça explicações,
@@ -62,7 +69,9 @@ export default function SobrePage() {
           informação e ao conhecimento.
         </p>
         <p>
-          <strong>Contato:</strong> migueldorosario@gmail.com<br />
+          <strong>Fundador:</strong> Miguel do Rosário<br />
+          <strong>Contato:</strong>{" "}
+          <a href="mailto:migueldorosario@ocafezinho.com">migueldorosario@ocafezinho.com</a><br />
           <strong>Sede:</strong> Niterói, RJ — Brasil
         </p>
 
@@ -96,11 +105,17 @@ export default function SobrePage() {
           padding: 40px 48px;
           box-shadow: var(--shadow);
         }
+        .info-topbar {
+          max-width: 680px;
+          margin: 0 auto 16px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+        }
         .info-back {
           display: inline-block;
           color: var(--accent);
           text-decoration: none;
-          margin-bottom: 24px;
           font-size: 14px;
         }
         .info-card h1 { font-family: var(--font-brand); font-weight: 600;

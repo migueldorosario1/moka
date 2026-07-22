@@ -7,6 +7,8 @@ import { SettingsModal } from "@/components/SettingsModal";
 import { AuthButton } from "@/components/AuthButton";
 import { VideoAskModal } from "@/components/VideoAskModal";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
+import { CloseAppButton } from "@/components/CloseAppButton";
+import { LangSwitcher } from "@/components/LangSwitcher";
 import { useAuth } from "@/lib/auth";
 import { Markdown } from "@/components/Markdown";
 import { hasConfig, loadConfigCache } from "@/lib/config";
@@ -246,6 +248,8 @@ export default function VideoPage() {
           <SectionSwitcher active="video" />
         </div>
         <div className="igot-topbar-actions">
+          <CloseAppButton />
+          <LangSwitcher />
           <button
             className="gear"
             onClick={handleShare}

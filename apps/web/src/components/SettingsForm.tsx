@@ -798,15 +798,16 @@ export function SettingsForm({
               <strong>Moka</strong> — "Leia qualquer coisa. Entenda tudo."
             </p>
             <p>
-              Um leitor de e-books com IA que traduz e explica qualquer trecho,
-              em qualquer idioma. Desenvolvido por:
+              Um aplicativo dois em um (📖 livros + 🎬 vídeos) com IA que
+              traduz, explica, transcreve e resume qualquer conteúdo, em
+              qualquer idioma. Desenvolvido por:
             </p>
             <p>
               <strong>Miguel Gomes Barbosa do Rosário</strong><br />
               Cafezinho Media Group<br />
               Produtora de conteúdo e aplicativos<br />
               Niterói, RJ — Brasil<br />
-              migueldorosario@gmail.com
+              migueldorosario@ocafezinho.com
             </p>
             <p style={{ marginTop: "12px" }}>
               <a href="/sobre" target="_blank" rel="noreferrer" style={{ color: "var(--accent)", textDecoration: "none" }}>

@@ -8,6 +8,8 @@ import { SettingsModal } from "@/components/SettingsModal";
 import { AuthButton } from "@/components/AuthButton";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
+import { CloseAppButton } from "@/components/CloseAppButton";
+import { LangSwitcher } from "@/components/LangSwitcher";
 import { useAuth } from "@/lib/auth";
 import {
   hasConfig,
@@ -288,6 +290,8 @@ export default function HomePage() {
           <SectionSwitcher active="video" />
         </div>
         <div className="igot-topbar-actions">
+          <CloseAppButton />
+          <LangSwitcher />
           <AuthButton
             status={auth.status}
             userName={auth.user?.user_metadata?.full_name ?? null}
@@ -314,9 +318,11 @@ export default function HomePage() {
         </h1>
         <p className="hero-sub">
           Cole o link de um vídeo do YouTube, X/Twitter ou Instagram.
-          O Moka assiste por você: transcreve, identifica os personagens,
-          dá o contexto político, faz a crítica e resume no tamanho que
-          você quiser — de 1 a 10 minutos de leitura.
+          O Moka é dois em um: 📖 livros e 🎬 vídeos, no mesmo aplicativo.
+          Você está na seção de vídeos. Ele assiste por você: transcreve,
+          identifica os personagens, dá o contexto político, faz a crítica
+          e resume no tamanho que você quiser — de 1 a 10 minutos de leitura.
+          Os livros estão no 📖 lá em cima.
         </p>
         <p className="hero-install-note">
           📱 O Moka Video é um <strong>aplicativo</strong>: pra ler os vídeos,

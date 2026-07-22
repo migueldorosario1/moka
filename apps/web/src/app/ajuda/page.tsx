@@ -1,4 +1,5 @@
 import { Metadata } from "next";
+import { LangSwitcher } from "@/components/LangSwitcher";
 
 export const metadata: Metadata = {
   title: "Ajuda — Moka",
@@ -15,7 +16,7 @@ export default function AjudaPage() {
   return (
     <main className="info-page">
       <article className="info-card">
-        <a href="/" className="info-back">← Moka</a>
+        <div className="info-topbar"><a href="/" className="info-back">← Moka</a><LangSwitcher /></div>
 
         <h1>❓ Ajuda — Tutorial do Moka</h1>
 
