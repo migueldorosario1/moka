@@ -51,3 +51,6 @@ __pycache__/
 .venv/
 venv/
 .vercel
+
+# backups locais de segurança (ZCode)
+*.bak_zcode_*
