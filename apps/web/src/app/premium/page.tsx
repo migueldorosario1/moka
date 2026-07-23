@@ -4,11 +4,13 @@ import { useState } from "react";
 import {
   PLAN_PRICES,
   PLAN_DETAILS,
+  formatPlanPrice,
   getPlan,
   activatePlan,
   deactivatePlan,
   type PlanTier,
 } from "@/lib/subscription";
+import { getUILang } from "@/lib/i18n";
 
 /**
  * Página /premium — vitrine de assinatura do Moka.
@@ -22,6 +24,7 @@ export default function PremiumPage() {
   const [plan, setPlan] = useState<PlanTier>(getPlan().tier);
   const [selectedTier, setSelectedTier] = useState<"cappuccino" | "espresso">("cappuccino");
   const [period, setPeriod] = useState<"monthly" | "quarterly" | "yearly">("monthly");
+  const uiLang = getUILang();
 
   const handleSubscribe = () => {
     const days = period === "monthly" ? 30 : period === "quarterly" ? 90 : 365;
@@ -75,10 +78,10 @@ export default function PremiumPage() {
                     <p className="plan-tagline">{d.tagline}</p>
                     {tier === "free" && <p className="plan-price">Grátis</p>}
                     {tier === "cappuccino" && (
-                      <p className="plan-price">{PLAN_PRICES.cappuccino[period].price}<span className="plan-period">{PLAN_PRICES.cappuccino[period].period}</span></p>
+                      <p className="plan-price">{formatPlanPrice(PLAN_PRICES.cappuccino[period], uiLang).price}<span className="plan-period">{formatPlanPrice(PLAN_PRICES.cappuccino[period], uiLang).period}</span></p>
                     )}
                     {tier === "espresso" && (
-                      <p className="plan-price">{PLAN_PRICES.espresso[period].price}<span className="plan-period">{PLAN_PRICES.espresso[period].period}</span></p>
+                      <p className="plan-price">{formatPlanPrice(PLAN_PRICES.espresso[period], uiLang).price}<span className="plan-period">{formatPlanPrice(PLAN_PRICES.espresso[period], uiLang).period}</span></p>
                     )}
                     <ul className="plan-features">
                       {d.features.map((f, i) => (

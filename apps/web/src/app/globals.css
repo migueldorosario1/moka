@@ -85,6 +85,27 @@
   }
 }
 
+/* ─── Seção 🎬 Vídeo — matiz sutilmente esverdeado (sala de cinema) ────
+   Só fundos e superfícies mudam; o cobre da marca permanece.
+   A classe é aplicada ao <body> pelo layout da rota /video. */
+body.section-video {
+  /* LIGHT: porcelana com um véu verde-sálvia, quase imperceptível */
+  --bg: #edf1e8;
+  --surface: #fcfdf7;
+  --surface-alt: #e4ead9;
+  --accent-soft: #e8edd9;
+}
+
+@media (prefers-color-scheme: dark) {
+  body.section-video {
+    /* DARK: madeira com um véu verde-noite */
+    --bg: #141a15;
+    --surface: #1b241d;
+    --surface-alt: #263026;
+    --accent-soft: #22301f;
+  }
+}
+
 * {
   box-sizing: border-box;
 }

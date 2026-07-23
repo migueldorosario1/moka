@@ -76,22 +76,49 @@ export function deactivatePlan(): void {
 }
 
 /**
- * Preços dos planos (em USD — alinha com Google Play / App Store).
+ * Preços dos planos, por moeda (regra do Miguel, 2026-07-23):
+ * nunca só "$" — interface em português mostra R$, em inglês mostra US$.
+ * USD alinha com Google Play / App Store; BRL arredondado p/ loja brasileira.
  * Cappuccino = mais acessível (plano principal).
  * Espresso = premium completo (com Dante).
  */
-export const PLAN_PRICES = {
+export interface PlanPrice {
+  usd: string;
+  brl: string;
+  periodPt: string;
+  periodEn: string;
+}
+
+export const PLAN_PRICES: Record<
+  "cappuccino" | "espresso",
+  Record<"monthly" | "quarterly" | "yearly", PlanPrice>
+> = {
   cappuccino: {
-    monthly: { price: "$3.99", period: "/mês" },
-    quarterly: { price: "$9.99", period: "/trimestre" },
-    yearly: { price: "$29.99", period: "/ano" },
+    monthly: { usd: "US$ 3.99", brl: "R$ 19,90", periodPt: "/mês", periodEn: "/month" },
+    quarterly: { usd: "US$ 9.99", brl: "R$ 49,90", periodPt: "/trimestre", periodEn: "/quarter" },
+    yearly: { usd: "US$ 29.99", brl: "R$ 149,90", periodPt: "/ano", periodEn: "/year" },
   },
   espresso: {
-    monthly: { price: "$9.99", period: "/mês" },
-    quarterly: { price: "$24.99", period: "/trimestre" },
-    yearly: { price: "$79.99", period: "/ano" },
+    monthly: { usd: "US$ 9.99", brl: "R$ 49,90", periodPt: "/mês", periodEn: "/month" },
+    quarterly: { usd: "US$ 24.99", brl: "R$ 124,90", periodPt: "/trimestre", periodEn: "/quarter" },
+    yearly: { usd: "US$ 79.99", brl: "R$ 399,90", periodPt: "/ano", periodEn: "/year" },
   },
 };
+
+/**
+ * Formata o preço conforme o idioma da interface:
+ * pt-* → "R$ 19,90/mês" · demais → "US$ 3.99/month".
+ */
+export function formatPlanPrice(
+  entry: PlanPrice,
+  lang: string,
+): { price: string; period: string } {
+  const isPt = lang.toLowerCase().startsWith("pt");
+  return {
+    price: isPt ? entry.brl : entry.usd,
+    period: isPt ? entry.periodPt : entry.periodEn,
+  };
+}
 
 /**
  * Recursos de cada plano — pra mostrar na página /premium.

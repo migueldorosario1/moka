@@ -525,7 +525,7 @@ export function SettingsForm({
             type="button"
             className="ghost"
             onClick={handleListModels}
-            disabled={modelsLoading || !apiKey.trim()}
+            disabled={modelsLoading}
             title={t("set_search_models")}
           >
             {modelsLoading ? "⏳" : "🔍"}
