@@ -12,7 +12,7 @@ export function SectionSwitcher({ active }: { active: "reader" | "video" }) {
   return (
     <nav className="section-switch" aria-label="Seções do Moka">
       <Link
-        href="/"
+        href="/estante"
         className={`section-switch-btn ${active === "reader" ? "active" : ""}`}
         title="Moka Reader — seus livros"
         aria-label="Livros"

@@ -253,8 +253,8 @@ export default function VideoPage() {
       <main className="igot-shell">
         <div className="igot-loading">
           <p>😕 Vídeo não encontrado na videoteca.</p>
-          <button className="btn-home" onClick={() => router.push("/")}>
-            ← Voltar pro início
+          <button className="btn-home" onClick={() => router.push("/video")}>
+            ← Voltar pra videoteca
           </button>
         </div>
 </main>

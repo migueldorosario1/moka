@@ -127,7 +127,7 @@ export default function BookPage({ params }: { params: { id: string } }) {
             <button onClick={() => window.location.reload()} className="back-btn">
               ↻ Tentar de novo
             </button>
-            <button onClick={() => router.push("/")} className="back-btn">
+            <button onClick={() => router.push("/estante")} className="back-btn">
               {t("err_back_shelf")}
             </button>
           </div>
@@ -146,7 +146,7 @@ export default function BookPage({ params }: { params: { id: string } }) {
               o usuário pode cancelar e voltar — nunca fica refém do spinner. */}
           {slowLoad && (
             <button
-              onClick={() => router.push("/")}
+              onClick={() => router.push("/estante")}
               className="back-btn"
               style={{ marginTop: 8 }}
             >
@@ -163,7 +163,7 @@ export default function BookPage({ params }: { params: { id: string } }) {
       <main className="igot-shell">
         <div className="igot-loading">
           <p>{t("err_book_not_found")}</p>
-          <button onClick={() => router.push("/")} className="back-btn">
+          <button onClick={() => router.push("/estante")} className="back-btn">
             {t("err_back_shelf")}
           </button>
         </div>
@@ -184,7 +184,7 @@ export default function BookPage({ params }: { params: { id: string } }) {
           initialZoom={session.zoom}
           onChapterChange={(n) => updateSession({ chapterIdx: n })}
           onZoomChange={(z) => updateSession({ zoom: z })}
-          onCloseBook={() => router.push("/")}
+          onCloseBook={() => router.push("/estante")}
           auth={auth}
           onOpenSettings={() => setSettingsOpen(true)}
           settingsOpen={settingsOpen}
@@ -228,7 +228,7 @@ export default function BookPage({ params }: { params: { id: string } }) {
           onGoToShelf={() => {
             // Avisa a home que viemos clicando em "estante" (não auto-abre livro).
             sessionStorage.setItem("igot.backToEstante", "1");
-            router.push("/");
+            router.push("/estante");
           }}
         />
       </div>

@@ -1377,7 +1377,7 @@ export function Reader({
         <div className="reader-row-scroll">
           {/* Logo Cafezinho — canto esquerdo, vazada */}
           <a
-            href="/"
+            href="/estante"
             onClick={(e) => { if (onGoToShelf) { e.preventDefault(); onGoToShelf(); } }}
             className="cafezinho-mark"
             title="Cafezinho Media Group"
