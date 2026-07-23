@@ -42,6 +42,9 @@ export function VideoAskModal({
   const [question, setQuestion] = useState("");
   const [answer, setAnswer] = useState("");
   const [asking, setAsking] = useState(false);
+  // Chip clicado — acende em dourado pulsante enquanto a IA trabalha
+  // (pedido do Miguel 23/07: feedback visual forte de "pesquisando").
+  const [activeChip, setActiveChip] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -78,6 +81,7 @@ export function VideoAskModal({
         setError(err instanceof Error ? err.message : String(err));
       } finally {
         setAsking(false);
+        setActiveChip(null);
       }
     },
     [asking, meta, segments, onSaveAsk, onClose, onOpenSettings],
@@ -101,8 +105,13 @@ export function VideoAskModal({
 
           <div className="ask-chips">
             {SUGGESTIONS.map((s) => (
-              <button key={s} className="ask-chip" onClick={() => void ask(s)} disabled={asking}>
-                {s}
+              <button
+                key={s}
+                className={`ask-chip ${asking && activeChip === s ? "working" : ""}`}
+                onClick={() => { setActiveChip(s); void ask(s); }}
+                disabled={asking}
+              >
+                {asking && activeChip === s ? "⏳ " : ""}{s}
               </button>
             ))}
           </div>
@@ -122,8 +131,8 @@ export function VideoAskModal({
               placeholder="Escreva sua pergunta…"
               disabled={asking}
             />
-            <button type="submit" className="ask-send" disabled={asking || !question.trim()}>
-              {asking ? "Pesquisando…" : "Perguntar"}
+            <button type="submit" className={`ask-send ${asking ? "working" : ""}`} disabled={asking || !question.trim()}>
+              {asking ? "⏳ Pesquisando…" : "Perguntar"}
             </button>
           </form>
 
@@ -239,6 +248,19 @@ export function VideoAskModal({
         .ask-chip:disabled {
           opacity: 0.5;
         }
+        .ask-chip.working {
+          opacity: 1;
+          background: linear-gradient(180deg, var(--gold), #e6b800);
+          border-color: var(--gold);
+          color: #3a2c00;
+          font-weight: 700;
+          cursor: wait;
+          animation: askPulse 1.2s ease-in-out infinite;
+        }
+        @keyframes askPulse {
+          0%, 100% { box-shadow: 0 0 0 0 rgba(255, 210, 0, 0.55); }
+          50% { box-shadow: 0 0 0 9px rgba(255, 210, 0, 0); }
+        }
         .ask-form {
           display: flex;
           gap: 10px;
@@ -274,6 +296,10 @@ export function VideoAskModal({
         .ask-send:disabled {
           opacity: 0.6;
           cursor: wait;
+        }
+        .ask-send.working {
+          opacity: 1;
+          animation: askPulse 1.2s ease-in-out infinite;
         }
         .ask-error {
           padding: 10px 14px;
