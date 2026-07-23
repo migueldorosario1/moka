@@ -465,14 +465,13 @@ a:hover {
   box-shadow: 0 0 0 2px var(--surface);
 }
 
-/* A marca — sans bold (pedido do Miguel 23/07: "sem serifa e mais bold").
-   Fraunces segue só nos títulos de CONTEÚDO (livros). */
+/* A marca — Fraunces, tinta de cobre. Elegante, sem gradiente berrante. */
 .igot-topbar .brand {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--font-sans);
-  font-weight: 800;
+  font-family: var(--font-brand);
+  font-weight: 600;
   font-size: 22px;
   letter-spacing: 0.01em;
   cursor: pointer;
@@ -912,9 +911,9 @@ a:hover {
           text-align: center;
         }
         .hero-title {
-          font-family: var(--font-sans);
+          font-family: var(--font-brand);
           font-size: clamp(30px, 5vw, 44px);
-          font-weight: 800;
+          font-weight: 600;
           line-height: 1.15;
           letter-spacing: 0.005em;
           margin: 0 0 16px;
@@ -1273,10 +1272,6 @@ a:hover {
           width: 100%;
           margin: 0 auto;
           padding: 24px 24px 80px;
-          /* BUG-20260723-VIDEO-SCROLL: a página mora dentro de .igot-shell
-             (100vh, overflow:hidden) — sem isto o fim cortava sem scroll. */
-          min-height: 0;
-          overflow-y: auto;
         }
         .video-header {
           display: flex;

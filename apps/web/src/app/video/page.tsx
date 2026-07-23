@@ -11,6 +11,7 @@ import { SectionSwitcher } from "@/components/SectionSwitcher";
 import { CloseAppButton } from "@/components/CloseAppButton";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { useAuth } from "@/lib/auth";
+import { useI18n } from "@/components/I18nProvider";
 import {
   hasConfig,
   loadConfigCache,
@@ -73,6 +74,7 @@ async function safeJson(res: Response): Promise<Record<string, unknown>> {
  * cards na prateleira — local-first, tudo no IndexedDB do navegador.
  */
 export default function HomePage() {
+  const { t } = useI18n();
   const router = useRouter();
   const auth = useAuth();
   const [videos, setVideos] = useState<VideoRecord[]>([]);
@@ -346,11 +348,11 @@ export default function HomePage() {
             disabled={busy || !url.trim()}
             title="Ler o vídeo"
           >
-            {busy ? "Lendo…" : "▶ Ler vídeo"}
+            {busy ? t("video_reading") : t("video_read")}
           </button>
         </form>
         <button className="paste-btn" onClick={handlePasteFromClipboard} disabled={busy}>
-          📋 Colar da área de transferência
+          {t("video_paste")}
         </button>
 
         {/* Selo: o site está lendo através do computador do usuário

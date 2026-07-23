@@ -30,6 +30,8 @@ import {
 } from "@/lib/video/ai-client";
 import { detectContentLang, LANG_NOMES } from "@/lib/lang-detect";
 import { getTargetLang } from "@/lib/config";
+import { useI18n } from "@/components/I18nProvider";
+import type { UIStringKey } from "@/lib/ui-strings";
 
 /** Pseudo-tipo: "summary" abre o seletor de minutos; o kind real é summary-N. */
 type ToolKind = AnalysisKind | "transcript" | "summary" | "ask";
@@ -50,6 +52,17 @@ const TOOLS: Array<{
   { kind: "transcript", icon: "📜", label: "Transcrição", title: "Transcrição completa, com tempos" },
 ];
 
+/** Rótulos das ferramentas via i18n (bandeirinha traduz — pedido do Miguel). */
+const TOOL_LABEL_KEYS: Record<ToolKind, UIStringKey> = {
+  quick: "video_tool_quick",
+  summary: "video_tool_summary",
+  characters: "video_tool_characters",
+  politics: "video_tool_politics",
+  critique: "video_tool_critique",
+  ask: "video_tool_ask",
+  transcript: "video_tool_transcript",
+};
+
 type PanelState =
   | { kind: AnalysisKind | "transcript"; text: string; streaming: boolean }
   | null;
@@ -63,6 +76,7 @@ type PanelState =
  * já começa sozinha — é o "em um minuto você entende" do Miguel.
  */
 export default function VideoPage() {
+  const { t } = useI18n();
   const params = useParams();
   const router = useRouter();
   const auth = useAuth();
@@ -263,6 +277,14 @@ export default function VideoPage() {
           <SectionSwitcher active="video" />
         </div>
         <div className="igot-topbar-actions">
+          <a
+            className="gear"
+            href="/video"
+            title={t("video_add_new")}
+            aria-label={t("video_add_new")}
+          >
+            ＋
+          </a>
           <CloseAppButton />
           <LangSwitcher />
           <button
@@ -322,29 +344,29 @@ export default function VideoPage() {
               target="_blank"
               rel="noreferrer"
             >
-              🔗 assistir no original ↗
+              🔗 {t("video_watch_original")}
             </a>
           </div>
         </header>
 
         {/* Barra de ferramentas — ícones, como no Moka Reader */}
         <nav className="tool-bar" aria-label="Análises">
-          {TOOLS.map((t) => (
+          {TOOLS.map((tool) => (
             <button
-              key={String(t.kind)}
+              key={String(tool.kind)}
               className={`tool-btn ${
-                activeKind === t.kind ||
-                (t.kind === "summary" && String(activeKind ?? "").startsWith("summary")) ||
-                (t.kind === "summary" && summaryPickerOpen)
+                activeKind === tool.kind ||
+                (tool.kind === "summary" && String(activeKind ?? "").startsWith("summary")) ||
+                (tool.kind === "summary" && summaryPickerOpen)
                   ? "active"
                   : ""
               }`}
-              onClick={() => handleTool(t.kind)}
-              title={t.title}
-              aria-label={t.title}
+              onClick={() => handleTool(tool.kind)}
+              title={tool.title}
+              aria-label={tool.title}
             >
-              <span className="tool-icon">{t.icon}</span>
-              <span className="tool-label">{t.label}</span>
+              <span className="tool-icon">{tool.icon}</span>
+              <span className="tool-label">{t(TOOL_LABEL_KEYS[tool.kind])}</span>
             </button>
           ))}
         </nav>
