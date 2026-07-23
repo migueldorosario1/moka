@@ -253,6 +253,60 @@ export function SettingsForm({
 
   return (
     <form className="settings-form" onSubmit={handleSave}>
+      {/* ═══ V3 (mirror): MODO SIMPLES — pra quem NÃO sabe o que é API ═══
+          O default é o Premium (IA incluída, sem chave). BYOK vira opção
+          avançada lá embaixo. (Pedido do Miguel, 23/07 — espelho V3.) */}
+      <div className="v3-simple">
+        <h3 className="v3-simple-title">✨ Você não precisa configurar nada</h3>
+        <p className="v3-simple-sub">
+          O <strong>Moka Premium</strong> já vem com a inteligência artificial
+          incluída: é só assinar e usar. A maioria das pessoas usa o Moka
+          assim — sem chave, sem configuração.
+        </p>
+        <div className="v3-plans">
+          <a
+            className="v3-plan v3-plan-featured"
+            href="https://43.156.151.165.sslip.io/experimente"
+            target="_blank"
+            rel="noreferrer"
+          >
+            <span className="v3-plan-badge">comece aqui</span>
+            <b>🎣 Teste</b>
+            <span className="v3-plan-price">R$ 5</span>
+            <span className="v3-plan-desc">200 pontos pra experimentar tudo</span>
+          </a>
+          <div className="v3-plan">
+            <b>⭐ Premium</b>
+            <span className="v3-plan-price">R$ 24,90/mês</span>
+            <span className="v3-plan-desc">
+              Tudo incluído, sem chave, com painel de pontos
+            </span>
+            <span className="v3-plan-soon">em breve</span>
+          </div>
+          <div className="v3-plan">
+            <b>🔑 BYOK</b>
+            <span className="v3-plan-price">R$ 15/mês</span>
+            <span className="v3-plan-desc">
+              Pra quem tem a própria chave de IA, com painel de gastos
+            </span>
+            <span className="v3-plan-soon">em breve</span>
+          </div>
+        </div>
+        <p className="v3-simple-note">
+          Já comprou ou tem cupom? <a href="https://43.156.151.165.sslip.io/painel" target="_blank" rel="noreferrer">Entre no seu painel de pontos →</a>
+        </p>
+      </div>
+
+      {/* ═══ V3: daqui pra baixo é AVANÇADO (BYOK — usar a própria chave) ═══ */}
+      <details className="v3-advanced">
+        <summary>
+          🔧 <strong>Configurações avançadas</strong> — usar minha própria chave de IA
+          <span className="v3-advanced-hint">
+            Só mexa aqui se você sabe o que é uma API key. Sua chave fica salva
+            no seu navegador — nunca vai pro nosso servidor.
+          </span>
+        </summary>
+
       {/* Minhas chaves cadastradas — cada uma com provedor + MODELO visível */}
       {entries.length > 0 && (
         <div className="saved-providers">
@@ -640,6 +694,110 @@ export function SettingsForm({
           {test.message}
         </p>
       )}
+
+      </details>
+
+      <style jsx>{`
+        .v3-simple {
+          background: linear-gradient(160deg, var(--accent-soft), var(--surface));
+          border: 1px solid var(--gold);
+          border-radius: 16px;
+          padding: 22px 20px;
+          margin-bottom: 18px;
+        }
+        .v3-simple-title {
+          margin: 0 0 8px;
+          font-family: var(--font-sans);
+          font-weight: 800;
+          font-size: 19px;
+          color: var(--accent-dark);
+        }
+        .v3-simple-sub {
+          margin: 0 0 16px;
+          color: var(--text);
+          font-size: 14.5px;
+          line-height: 1.55;
+        }
+        .v3-plans {
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        .v3-plan {
+          position: relative;
+          flex: 1;
+          min-width: 150px;
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          padding: 16px 14px;
+          text-decoration: none;
+          color: var(--text);
+        }
+        .v3-plan b { font-size: 16px; font-weight: 800; }
+        .v3-plan-price { color: var(--accent-dark); font-weight: 800; font-size: 15px; }
+        .v3-plan-desc { color: var(--text-muted); font-size: 12.5px; line-height: 1.4; }
+        .v3-plan-featured {
+          border-color: var(--gold);
+          box-shadow: 0 0 0 1px var(--gold), var(--shadow-sm);
+        }
+        .v3-plan-featured:hover { transform: translateY(-2px); }
+        .v3-plan-badge {
+          position: absolute;
+          top: -10px;
+          left: 12px;
+          background: var(--gold);
+          color: #3a2c00;
+          font-size: 11px;
+          font-weight: 800;
+          padding: 2px 10px;
+          border-radius: 999px;
+        }
+        .v3-plan-soon {
+          align-self: flex-start;
+          margin-top: 2px;
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--text-muted);
+          border: 1px dashed var(--border);
+          padding: 2px 8px;
+          border-radius: 999px;
+        }
+        .v3-simple-note {
+          margin: 14px 0 0;
+          font-size: 13px;
+          color: var(--text-muted);
+        }
+        .v3-simple-note a { color: var(--accent-dark); font-weight: 700; }
+        .v3-advanced {
+          border: 1px solid var(--border);
+          border-radius: 14px;
+          padding: 0 16px 16px;
+          margin-bottom: 14px;
+          background: var(--surface);
+        }
+        .v3-advanced summary {
+          cursor: pointer;
+          padding: 14px 0;
+          font-size: 14.5px;
+          color: var(--text);
+          list-style: none;
+        }
+        .v3-advanced summary::-webkit-details-marker { display: none; }
+        .v3-advanced summary::before { content: "▸ "; color: var(--accent); }
+        .v3-advanced[open] summary::before { content: "▾ "; }
+        .v3-advanced-hint {
+          display: block;
+          margin-top: 4px;
+          font-size: 12.5px;
+          font-weight: 400;
+          color: var(--text-muted);
+          line-height: 1.45;
+        }
+      `}</style>
 
       {/* Link pra tutorial completo */}
       <a href="/ajuda" target="_blank" rel="noreferrer" className="help-link-banner">
