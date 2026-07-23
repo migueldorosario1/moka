@@ -299,24 +299,32 @@ function retrieveContext(
     .filter((x) => x.score > 0)
     .sort((a, b) => b.score - a.score);
 
-  // Sem nada relevante: manda o miolo do vídeo (começo + meio) como contexto.
-  const chosen = picked.length
-    ? picked
-    : scored.slice(0, Math.min(40, scored.length));
+  // Estrutura SEMPRE presente: começo (tese) + FIM (conclusão).
+  // BUG-20260723-ASK-CONCLUSAO: perguntas tipo "qual a conclusão?" não têm
+  // keyword no texto → caíam no fallback que mandava só o início do vídeo,
+  // e a IA respondia que a transcrição "terminava de forma abrupta".
+  const head = scored.slice(0, Math.min(8, scored.length));
+  const tail = scored.slice(Math.max(head.length, scored.length - 15));
+  const mustIdx = new Set([...head, ...tail].map((x) => x.i));
+  const middle = picked
+    .filter((x) => !mustIdx.has(x.i))
+    .sort((a, b) => a.i - b.i);
 
-  const ordered = chosen
-    .sort((a, b) => a.i - b.i)
-    .map((x) => x.s);
+  const toLine = (x: { s: TranscriptSegment }) =>
+    `[${formatTime(x.s.start)}] ${x.s.text}`;
+  const tailLines = tail.map(toLine);
+  const tailText = tailLines.join("\n");
+  // O fim tem orçamento reservado: nunca é cortado pelo limite de chars.
+  const budget = Math.max(2000, maxChars - tailText.length - 1);
 
   const out: string[] = [];
   let total = 0;
-  for (const s of ordered) {
-    const line = `[${formatTime(s.start)}] ${s.text}`;
-    if (total + line.length > maxChars) break;
+  for (const line of [...head.map(toLine), ...middle.map(toLine)]) {
+    if (total + line.length > budget) break;
     out.push(line);
     total += line.length;
   }
-  return out.join("\n");
+  return out.join("\n") + "\n" + tailText;
 }
 
 /** ❓ Responde uma pergunta do usuário citando trechos da transcrição. */
