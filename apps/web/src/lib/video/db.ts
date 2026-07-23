@@ -52,6 +52,8 @@ export interface VideoRecord {
   analyses: Partial<Record<AnalysisKind, string>>;
   /** Perguntas já feitas sobre o vídeo (material salvo automaticamente). */
   asks?: AskRecord[];
+  /** Idioma auto-detectado da transcrição (V2.4 — pedido do Miguel 23/07). */
+  detectedLang?: string;
   createdAt: number;
   savedAt: number;
 }

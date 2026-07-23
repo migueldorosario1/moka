@@ -16,6 +16,7 @@ import {
   getVideo,
   saveVideo,
   formatTime,
+  transcriptText,
   type VideoRecord,
   type AnalysisKind,
 } from "@/lib/video/db";
@@ -25,7 +26,10 @@ import {
   characters,
   politicalContext,
   critique,
+  setVideoContentLang,
 } from "@/lib/video/ai-client";
+import { detectContentLang, LANG_NOMES } from "@/lib/lang-detect";
+import { getTargetLang } from "@/lib/config";
 
 /** Pseudo-tipo: "summary" abre o seletor de minutos; o kind real é summary-N. */
 type ToolKind = AnalysisKind | "transcript" | "summary" | "ask";
@@ -85,6 +89,17 @@ export default function VideoPage() {
     getVideo(id)
       .then((rec) => {
         if (cancelled) return;
+        // V2.4: auto-detecta o idioma da transcrição (pedido do Miguel).
+        // O selo 🌐 no cabeçalho avisa se o conteúdo é de outro idioma.
+        if (rec && rec.segments?.length) {
+          if (!rec.detectedLang) {
+            const amostra = transcriptText(rec.segments).slice(0, 8000);
+            const det = detectContentLang(amostra);
+            rec = { ...rec, detectedLang: det.code };
+            void saveVideo(rec);
+          }
+          setVideoContentLang(rec.detectedLang ?? "pt");
+        }
         setVideo(rec);
         setLoading(false);
         // Reabre a última análise cacheada, se houver.
@@ -290,6 +305,16 @@ export default function VideoPage() {
               {video.meta.channel} · {formatTime(video.meta.durationSec)} ·{" "}
               {video.transcriptSource === "captions" ? "💬 legendas" : "🎙 transcrição Whisper"} ·{" "}
               ~{words.toLocaleString("pt-BR")} palavras
+              {video.detectedLang && (
+                <span title="Idioma detectado automaticamente">
+                  {" · 🌐 "}
+                  {LANG_NOMES[video.detectedLang] ?? video.detectedLang}
+                  {video.detectedLang !== getTargetLang().split("-")[0] &&
+                    ` · respostas em ${
+                      LANG_NOMES[getTargetLang().split("-")[0]] ?? "português"
+                    }`}
+                </span>
+              )}
             </p>
             <a
               className="video-header-link"

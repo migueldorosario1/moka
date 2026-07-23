@@ -15,15 +15,45 @@
 import type { VideoMeta } from "./db";
 import { transcriptText, formatTime } from "./db";
 import type { TranscriptSegment } from "./db";
-import { getConfig } from "@/lib/config";
+import { getConfig, getTargetLang } from "@/lib/config";
 import { getProvider } from "@igot/ai-providers";
 import { createProxyTransport } from "@igot/ai-providers";
 
 const SYSTEM_BASE =
   "Você é o Moka Video, analista de vídeos do Cafezinho Media Group. " +
-  "Responda sempre em português brasileiro, com clareza e elegância. " +
+  "Escreva com clareza e elegância. " +
   "Use markdown leve (parágrafos, **negrito**, listas) — nunca tabelas. " +
   "Baseie-se APENAS na transcrição fornecida; se algo não estiver nela, diga.";
+
+// ─── Idioma do conteúdo (auto-detectado na página, V2.4) ────────────────
+// Default: o vídeo é auto-detectado; a resposta segue o idioma do USUÁRIO
+// (getTargetLang). Vídeo em inglês → resumo em português, sem configurar nada.
+let CONTENT_LANG = "pt";
+export function setVideoContentLang(code: string): void {
+  CONTENT_LANG = code || "pt";
+}
+
+const PROMPT_LANGS: Record<string, string> = {
+  pt: "português brasileiro", en: "English", es: "español",
+  fr: "français", de: "Deutsch", it: "italiano",
+};
+
+function langNome(code: string): string {
+  return PROMPT_LANGS[code] ?? PROMPT_LANGS[code.split("-")[0]] ?? code;
+}
+
+function systemPrompt(): string {
+  const target = langNome(getTargetLang());
+  const content = langNome(CONTENT_LANG);
+  return (
+    SYSTEM_BASE +
+    ` O conteúdo do vídeo está em ${content} (auto-detectado). ` +
+    `Responda SEMPRE em ${target} — o idioma do usuário — mesmo que o ` +
+    `conteúdo esteja em outro idioma. NUNCA misture idiomas na resposta. ` +
+    `Se a transcrição parecer estar em idioma diferente de ${content}, ` +
+    `avise no início da resposta.`
+  );
+}
 
 /** ~150 palavras/min de leitura em pt-BR (ritmo confortável). */
 const WORDS_PER_MIN = 150;
@@ -76,7 +106,7 @@ async function runStream(
   let acc = "";
   if (p.stream) {
     for await (const chunk of p.stream(prompt, {
-      systemPrompt: SYSTEM_BASE,
+      systemPrompt: systemPrompt(),
       context: opts.context,
       maxTokens: opts.maxTokens,
       temperature: opts.temperature,
@@ -86,7 +116,7 @@ async function runStream(
     }
   } else {
     const r = await p.complete(prompt, {
-      systemPrompt: SYSTEM_BASE,
+      systemPrompt: systemPrompt(),
       context: opts.context,
       maxTokens: opts.maxTokens,
       temperature: opts.temperature,
@@ -161,7 +191,7 @@ export async function summarize(
         "Extraia os pontos essenciais desta parte em até 10 bullets concisos " +
         "(fatos, teses, nomes, números). Sem introdução, só os bullets.",
       {
-        systemPrompt: SYSTEM_BASE,
+        systemPrompt: systemPrompt(),
         context: chunks[i],
         maxTokens: 900,
       },
