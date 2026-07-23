@@ -220,16 +220,18 @@ export function SettingsForm({
 
   /** Carrega uma entry pra edição. */
   const handleEdit = (id: string) => {
-    // Como não temos a chave descriptografada aqui, só setamos provider/model/label.
-    // O usuário cola a chave nova (ou pode ver a mascarada na lista).
+    // Carrega a entrada completa (chave real já descriptografada do cofre local)
+    // para permitir trocar o MODELO sem re-digitar a chave — o campo continua
+    // mascarado (type=password) e a chave nunca sai do dispositivo.
     const entry = entries.find((e) => e.id === id);
     if (!entry) return;
+    const cfg = getConfigById(id);
     setEditingId(id);
     setProviderId(entry.providerId);
-    setApiKey(""); // por segurança, não pré-preenche a chave
+    setApiKey(cfg?.apiKey ?? "");
     setModel(entry.model ?? "");
     setLabel(entry.label ?? "");
-    setBaseUrl("");
+    setBaseUrl(cfg?.baseUrl ?? "");
     setAdvancedOpen(true);
   };
 
