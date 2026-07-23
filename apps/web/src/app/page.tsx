@@ -102,6 +102,31 @@ export default function HomePage() {
     };
   }, [authResolved, auth.userId]);
 
+  // PRÉ-AQUECIMENTO do pdfjs (BUG-20260723-IPAD-PRIMEIRO-UPLOAD): baixa o
+  // chunk do pdfjs-dist (~1,4 MB) e o worker local em idle, pra PRIMEIRA
+  // tentativa de adicionar um PDF não ser a fria — era o motivo de só
+  // funcionar na segunda tentativa no iPad.
+  useEffect(() => {
+    const warm = () => {
+      void import("pdfjs-dist")
+        .then((pdfjs) => {
+          pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+        })
+        .catch(() => { /* pré-aquecer é best-effort */ });
+      void fetch("/pdf.worker.min.mjs").catch(() => {});
+    };
+    const w = window as unknown as {
+      requestIdleCallback?: (cb: () => void) => number;
+      cancelIdleCallback?: (id: number) => void;
+    };
+    if (w.requestIdleCallback) {
+      const id = w.requestIdleCallback(warm);
+      return () => w.cancelIdleCallback?.(id);
+    }
+    const id = window.setTimeout(warm, 1500);
+    return () => window.clearTimeout(id);
+  }, []);
+
   // Abre um arquivo: se JÁ EXISTE na estante (mesmo título ou tamanho),
   // abre o livro existente (com progresso salvo). Senão, cria novo.
   const handleFile = useCallback(

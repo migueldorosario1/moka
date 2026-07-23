@@ -685,6 +685,10 @@ export function Reader({
   // Threshold GENEROSO pra evitar trocas acidentais durante scroll/seleção.
   // Só vira "passar página" se o gesto for longo E claramente horizontal.
   const touchStart = useRef<{ x: number; y: number } | null>(null);
+  // BUG-20260723-IPAD-PAN: guarda o scrollLeft no início do gesto — se o
+  // contêiner rolou na horizontal, o gesto era PAN do PDF (zoom), não
+  // intenção de virar página.
+  const panStartX = useRef<number | null>(null);
   const SWIPE_MIN = 80;         // mínimo de 80px pra contar como swipe
   const SWIPE_MAX_VERTICAL = 50; // se scrollou >50px na vertical, ignora (era scroll)
   // Em tela pequena (celular), só conta swipe se começou no centro da tela
@@ -720,6 +724,7 @@ export function Reader({
     // gesto claramente horizontal = virar página. Com a página paginada,
     // a tela é quase toda texto — travar o swipe aqui matava o gesto.
     touchStart.current = { x: t.clientX, y: t.clientY };
+    panStartX.current = scrollRef.current ? scrollRef.current.scrollLeft : null;
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
@@ -756,6 +761,16 @@ export function Reader({
     if (absDx < SWIPE_MIN) return;
     if (absDy > SWIPE_MAX_VERTICAL) return;
     if (absDx < absDy * 2) return;
+    // Se o contêiner ROLou na horizontal durante o gesto, era PAN do PDF
+    // com zoom — não vira página (BUG-20260723-IPAD-PAN). Se já estava
+    // colado na borda, o scrollLeft não muda e o swipe vira página normal.
+    const scrollEl = scrollRef.current;
+    if (scrollEl && panStartX.current !== null &&
+        Math.abs(scrollEl.scrollLeft - panStartX.current) > 5) {
+      panStartX.current = null;
+      return;
+    }
+    panStartX.current = null;
     // Se o gesto SELECIONOU texto, era seleção — não vira página.
     const sel = window.getSelection();
     if (sel && !sel.isCollapsed && sel.toString().trim().length > 0) return;
