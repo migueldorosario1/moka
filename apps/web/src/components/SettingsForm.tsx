@@ -699,18 +699,18 @@ export function SettingsForm({
 
       <style jsx>{`
         .v3-simple {
-          background: linear-gradient(160deg, var(--accent-soft), var(--surface));
-          border: 1px solid var(--gold);
-          border-radius: 16px;
+          background: #f7e7d7;
+          border: 1px solid #191919;
+          border-radius: 0;
           padding: 22px 20px;
           margin-bottom: 18px;
         }
         .v3-simple-title {
           margin: 0 0 8px;
-          font-family: var(--font-sans);
-          font-weight: 800;
-          font-size: 19px;
-          color: var(--accent-dark);
+          font-family: var(--font-brand);
+          font-weight: 600;
+          font-size: 21px;
+          color: #191919;
         }
         .v3-simple-sub {
           margin: 0 0 16px;
@@ -730,41 +730,43 @@ export function SettingsForm({
           display: flex;
           flex-direction: column;
           gap: 5px;
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: 14px;
+          background: #fff;
+          border: 1px solid #d9c8b8;
+          border-radius: 0;
           padding: 16px 14px;
           text-decoration: none;
-          color: var(--text);
+          color: #191919;
         }
-        .v3-plan b { font-size: 16px; font-weight: 800; }
-        .v3-plan-price { color: var(--accent-dark); font-weight: 800; font-size: 15px; }
+        .v3-plan b { font-family: var(--font-brand); font-size: 17px; font-weight: 600; }
+        .v3-plan-price { font-family: var(--font-brand); color: #191919; font-weight: 600; font-size: 16px; }
         .v3-plan-desc { color: var(--text-muted); font-size: 12.5px; line-height: 1.4; }
         .v3-plan-featured {
-          border-color: var(--gold);
-          box-shadow: 0 0 0 1px var(--gold), var(--shadow-sm);
+          border-color: #191919;
+          background: #fff1e5;
         }
-        .v3-plan-featured:hover { transform: translateY(-2px); }
+        .v3-plan-featured:hover { background: #f5e0cb; }
         .v3-plan-badge {
           position: absolute;
           top: -10px;
           left: 12px;
-          background: var(--gold);
-          color: #3a2c00;
-          font-size: 11px;
-          font-weight: 800;
-          padding: 2px 10px;
-          border-radius: 999px;
+          background: #0f7680;
+          color: #fff;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          font-size: 10px;
+          font-weight: 700;
+          padding: 3px 10px;
         }
         .v3-plan-soon {
           align-self: flex-start;
           margin-top: 2px;
-          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          font-size: 10px;
           font-weight: 700;
           color: var(--text-muted);
-          border: 1px dashed var(--border);
-          padding: 2px 8px;
-          border-radius: 999px;
+          border: 1px solid var(--border);
+          padding: 3px 10px;
         }
         .v3-simple-note {
           margin: 14px 0 0;
@@ -774,7 +776,7 @@ export function SettingsForm({
         .v3-simple-note a { color: var(--accent-dark); font-weight: 700; }
         .v3-advanced {
           border: 1px solid var(--border);
-          border-radius: 14px;
+          border-radius: 0;
           padding: 0 16px 16px;
           margin-bottom: 14px;
           background: var(--surface);

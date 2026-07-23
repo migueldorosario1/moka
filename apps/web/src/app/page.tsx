@@ -34,7 +34,7 @@ export default function Capa() {
   }, []);
 
   return (
-    <main className="igot-shell">
+    <main className="igot-shell ft">
       <div className="igot-topbar">
         <div className="igot-topbar-left">
           <div className="brand" title="Moka — livros e vídeos">
@@ -49,6 +49,7 @@ export default function Capa() {
       </div>
 
       <div className="capa-body">
+        <p className="capa-kicker">O Cafezinho apresenta</p>
         <div className="capa-logo">Moka</div>
         <h1 className="capa-tagline">{t("app_tagline")}</h1>
 
@@ -74,6 +75,7 @@ export default function Capa() {
 
         {/* ── Preços: os 3 planos explicados ── */}
         <h2 className="capa-plans-title">{t("capa_plans_title")}</h2>
+        <div className="capa-plans-rule" />
         <div className="capa-plans">
           <a className="capa-plan featured" href={CHECKOUT_URL} target="_blank" rel="noreferrer">
             <b>🎣 Teste</b>
@@ -120,6 +122,22 @@ export default function Capa() {
       </div>
 
       <style jsx>{`
+        /* ── Financial Times: papel salmão, tinta preta, serifa editorial,
+              filetes finos, cantos retos. Elegância por subtração. ── */
+        .ft {
+          --ft-paper: #fff1e5;
+          --ft-paper-deep: #f7e7d7;
+          --ft-ink: #191919;
+          --ft-ink-soft: #66605a;
+          --ft-hairline: #d9c8b8;
+          --ft-teal: #0f7680;
+          background: var(--ft-paper);
+          color: var(--ft-ink);
+        }
+        .ft :global(.igot-topbar) {
+          background: var(--ft-paper);
+          border-bottom: 1px solid var(--ft-hairline);
+        }
         .capa-body {
           flex: 1;
           overflow-y: auto;
@@ -127,189 +145,218 @@ export default function Capa() {
           flex-direction: column;
           align-items: center;
           text-align: center;
-          padding: 36px 24px 64px;
+          padding: 44px 24px 72px;
+          background: var(--ft-paper);
+        }
+        .capa-kicker {
+          text-transform: uppercase;
+          letter-spacing: 0.16em;
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--ft-teal);
+          margin: 0 0 10px;
         }
         .capa-logo {
-          font-family: var(--font-sans);
-          font-size: 56px;
-          font-weight: 800;
-          letter-spacing: -0.02em;
-          color: var(--accent-dark);
+          font-family: var(--font-brand);
+          font-size: 68px;
+          font-weight: 600;
+          letter-spacing: -0.01em;
+          color: var(--ft-ink);
           line-height: 1;
-          margin-bottom: 6px;
+          margin-bottom: 8px;
         }
         .capa-tagline {
-          font-family: var(--font-sans);
-          font-size: clamp(19px, 3.2vw, 27px);
-          font-weight: 800;
-          color: var(--text);
-          margin: 0 0 26px;
+          font-family: var(--font-brand);
+          font-size: clamp(21px, 3.4vw, 30px);
+          font-weight: 500;
+          color: var(--ft-ink);
+          margin: 0 0 34px;
+          max-width: 560px;
+          line-height: 1.25;
         }
 
-        /* ── Oferta R$5 em destaque ── */
+        /* ── Oferta R$5 — bloco editorial, sem grito ── */
         .capa-offer {
           display: flex;
           flex-direction: column;
           align-items: center;
-          gap: 8px;
-          width: min(480px, 94vw);
-          padding: 30px 26px 26px;
-          margin-bottom: 34px;
-          background: linear-gradient(160deg, var(--accent-soft), var(--surface));
-          border: 2px solid var(--gold);
-          border-radius: 22px;
+          gap: 10px;
+          width: min(500px, 94vw);
+          padding: 34px 30px 30px;
+          margin-bottom: 40px;
+          background: var(--ft-paper-deep);
+          border: 1px solid var(--ft-ink);
           text-decoration: none;
-          color: var(--text);
-          box-shadow: 0 8px 30px rgba(255, 210, 0, 0.18);
+          color: var(--ft-ink);
           position: relative;
-          transition: transform 0.15s ease;
         }
-        .capa-offer:hover { transform: translateY(-3px); }
+        .capa-offer:hover { background: #f5e0cb; }
         .capa-offer-badge {
-          position: absolute;
-          top: -13px;
-          background: var(--gold);
-          color: #3a2c00;
-          font-size: 12.5px;
-          font-weight: 800;
-          padding: 4px 14px;
-          border-radius: 999px;
+          text-transform: uppercase;
+          letter-spacing: 0.14em;
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--ft-teal);
         }
         .capa-offer-price {
-          font-family: var(--font-sans);
-          font-size: 72px;
-          font-weight: 800;
+          font-family: var(--font-brand);
+          font-size: 88px;
+          font-weight: 600;
           line-height: 1;
-          color: var(--accent-dark);
+          color: var(--ft-ink);
         }
-        .capa-offer-price small { font-size: 26px; font-weight: 700; }
+        .capa-offer-price small { font-size: 28px; font-weight: 500; }
         .capa-offer-desc {
-          color: var(--text);
+          color: var(--ft-ink-soft);
           font-size: 15px;
-          line-height: 1.5;
+          line-height: 1.55;
           max-width: 380px;
         }
         .capa-offer-cta {
-          margin-top: 8px;
-          background: var(--gold);
-          color: #3a2c00;
-          font-weight: 800;
-          font-size: 17px;
-          padding: 13px 34px;
-          border-radius: 999px;
+          margin-top: 10px;
+          background: var(--ft-ink);
+          color: #fff;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          font-weight: 700;
+          font-size: 13px;
+          padding: 15px 34px;
         }
 
         /* ── Vídeo ── */
         .capa-video-title {
-          font-family: var(--font-sans);
-          font-weight: 800;
-          font-size: 18px;
-          color: var(--text);
-          margin: 0 0 12px;
+          font-family: var(--font-brand);
+          font-weight: 600;
+          font-size: 22px;
+          color: var(--ft-ink);
+          margin: 0 0 14px;
         }
         .capa-video {
           width: min(640px, 94vw);
           aspect-ratio: 16 / 9;
           background: #000;
-          border-radius: 16px;
-          box-shadow: var(--shadow-sm);
-          margin-bottom: 36px;
+          border: 1px solid var(--ft-ink);
+          margin-bottom: 42px;
         }
 
         /* ── Planos ── */
         .capa-plans-title {
-          font-family: var(--font-sans);
-          font-weight: 800;
-          font-size: 18px;
-          color: var(--text);
-          margin: 0 0 14px;
+          font-family: var(--font-brand);
+          font-weight: 600;
+          font-size: 22px;
+          color: var(--ft-ink);
+          margin: 0 0 6px;
+        }
+        .capa-plans-rule {
+          width: 64px;
+          height: 1px;
+          background: var(--ft-ink);
+          margin-bottom: 20px;
         }
         .capa-plans {
           display: flex;
-          gap: 14px;
+          gap: 0;
           flex-wrap: wrap;
           justify-content: center;
-          margin-bottom: 30px;
+          margin-bottom: 36px;
+          border: 1px solid var(--ft-hairline);
+          background: #fff;
         }
         .capa-plan {
           display: flex;
           flex-direction: column;
-          gap: 6px;
-          width: 210px;
-          padding: 18px 16px;
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: 16px;
+          gap: 8px;
+          width: 230px;
+          padding: 22px 20px;
+          background: transparent;
+          border: none;
+          border-right: 1px solid var(--ft-hairline);
           text-decoration: none;
-          color: var(--text);
+          color: var(--ft-ink);
           text-align: center;
         }
-        .capa-plan.featured { border-color: var(--gold); box-shadow: 0 0 0 1px var(--gold); }
-        .capa-plan b { font-size: 16px; font-weight: 800; }
-        .capa-plan .price { color: var(--accent-dark); font-weight: 800; font-size: 15px; }
-        .capa-plan .desc { color: var(--text-muted); font-size: 12.5px; line-height: 1.45; }
+        .capa-plan:last-child { border-right: none; }
+        .capa-plan b {
+          font-family: var(--font-brand);
+          font-size: 19px;
+          font-weight: 600;
+        }
+        .capa-plan .price {
+          font-family: var(--font-brand);
+          color: var(--ft-ink);
+          font-weight: 600;
+          font-size: 17px;
+        }
+        .capa-plan .desc { color: var(--ft-ink-soft); font-size: 13px; line-height: 1.5; }
+        .capa-plan.featured { background: var(--ft-paper); }
         .capa-plan .soon {
           align-self: center;
-          font-size: 11px;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          font-size: 10px;
           font-weight: 700;
-          color: var(--text-muted);
-          border: 1px dashed var(--border);
-          padding: 2px 10px;
-          border-radius: 999px;
+          color: var(--ft-ink-soft);
+          border: 1px solid var(--ft-hairline);
+          padding: 3px 10px;
         }
 
         /* ── Cards de seção + estante + footer ── */
         .capa-cards {
           display: flex;
-          gap: 14px;
+          gap: 0;
           flex-wrap: wrap;
           justify-content: center;
-          margin-bottom: 24px;
+          margin-bottom: 26px;
+          border: 1px solid var(--ft-hairline);
+          background: #fff;
         }
         .capa-card {
           display: flex;
           flex-direction: column;
           gap: 6px;
-          width: 230px;
-          padding: 18px 18px;
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: 16px;
+          width: 250px;
+          padding: 20px;
+          background: transparent;
+          border: none;
+          border-right: 1px solid var(--ft-hairline);
           text-decoration: none;
-          color: var(--text);
-          box-shadow: var(--shadow-sm);
-          transition: transform 0.15s ease, border-color 0.15s ease;
+          color: var(--ft-ink);
+          transition: background 0.15s ease;
         }
-        .capa-card:hover { transform: translateY(-2px); border-color: var(--gold); }
-        .capa-card b { font-size: 16px; font-weight: 800; }
-        .capa-card span { color: var(--text-muted); font-size: 13px; line-height: 1.45; }
+        .capa-card:last-child { border-right: none; }
+        .capa-card:hover { background: var(--ft-paper); }
+        .capa-card b { font-family: var(--font-brand); font-size: 17px; font-weight: 600; }
+        .capa-card span { color: var(--ft-ink-soft); font-size: 13px; line-height: 1.5; }
         .capa-continue {
           display: inline-block;
-          margin-bottom: 12px;
-          padding: 12px 22px;
-          border-radius: var(--radius-pill);
-          background: linear-gradient(180deg, var(--accent), var(--accent-dark));
-          color: #fff8ee;
+          margin-bottom: 14px;
+          padding: 13px 26px;
+          background: var(--ft-ink);
+          color: #fff;
           text-decoration: none;
-          font-size: 15px;
-          box-shadow: var(--shadow-sm);
+          font-size: 14px;
           max-width: 90vw;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
         .capa-shelf {
-          color: var(--accent-dark);
+          color: var(--ft-teal);
           text-decoration: none;
           font-weight: 700;
-          margin-bottom: 30px;
+          font-size: 14px;
+          margin-bottom: 34px;
+          border-bottom: 1px solid var(--ft-teal);
+          padding-bottom: 1px;
         }
-        .capa-shelf:hover { text-decoration: underline; }
+        .capa-shelf:hover { color: var(--ft-ink); border-color: var(--ft-ink); }
         .capa-footer {
-          color: var(--text-muted);
-          font-size: 13px;
+          color: var(--ft-ink-soft);
+          font-size: 12.5px;
           max-width: 460px;
-          line-height: 1.5;
+          line-height: 1.55;
+          border-top: 1px solid var(--ft-hairline);
+          padding-top: 18px;
         }
       `}</style>
     </main>
