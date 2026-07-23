@@ -1272,6 +1272,10 @@ a:hover {
           width: 100%;
           margin: 0 auto;
           padding: 24px 24px 80px;
+          /* BUG-20260723-VIDEO-SCROLL: a página mora dentro de .igot-shell
+             (100vh, overflow:hidden) — sem isto o fim cortava sem scroll. */
+          min-height: 0;
+          overflow-y: auto;
         }
         .video-header {
           display: flex;
