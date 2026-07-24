@@ -260,8 +260,8 @@ export function SettingsForm({
         <h3 className="v3-simple-title">✨ Você não precisa configurar nada</h3>
         <p className="v3-simple-sub">
           Com o <strong>Espresso</strong>, a inteligência artificial já vem
-          incluída: é só assinar e usar. A maioria das pessoas usa o Moka
-          assim — sem chave, sem configuração.
+          incluída: é só assinar e usar, sem chave e sem configuração —
+          dá pra uns 60 livros ou 80 vídeos por semana.
         </p>
         <div className="v3-plans">
           <a
@@ -287,7 +287,7 @@ export function SettingsForm({
             <b>🤎 Latte</b>
             <span className="v3-plan-price">R$ 45/mês</span>
             <span className="v3-plan-desc">
-              IA incluída — 1.000 pontos por mês
+              IA incluída — ~6 livros ou ~8 vídeos por semana
             </span>
             <span className="v3-plan-soon">em breve</span>
           </div>
@@ -295,7 +295,7 @@ export function SettingsForm({
             <b>⚫ Espresso</b>
             <span className="v3-plan-price">R$ 70/mês</span>
             <span className="v3-plan-desc">
-              IA incluída e ilimitada — você não precisa configurar nada
+              IA incluída — ~60 livros ou ~80 vídeos por semana
             </span>
             <span className="v3-plan-soon">em breve</span>
           </div>
