@@ -77,6 +77,11 @@ export default function Capa() {
         <h2 className="capa-plans-title">{t("capa_plans_title")}</h2>
         <div className="capa-plans-rule" />
         <div className="capa-plans">
+          <a className="capa-plan livre" href="/estante">
+            <b>🆓 Livre</b>
+            <span className="price">R$ 0</span>
+            <span className="desc">{t("capa_plan_livre_desc")}</span>
+          </a>
           <a className="capa-plan featured" href={CHECKOUT_URL} target="_blank" rel="noreferrer">
             <b>🎣 Teste</b>
             <span className="price">R$ 5</span>
@@ -296,6 +301,10 @@ export default function Capa() {
         }
         .capa-plan .desc { color: var(--ft-ink-soft); font-size: 13px; line-height: 1.5; }
         .capa-plan.featured { background: var(--ft-paper); }
+        .capa-plan.livre {
+          background: #eef7ee;
+          border-top: 3px solid #2c7a2c;
+        }
         /* BYOK (Cappuccino) com cor de diferenciação — pedido do Miguel:
            "usar sua própria tem que ser com uma cor diferente" */
         .capa-plan.byok {

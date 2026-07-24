@@ -62,6 +62,7 @@ export type UIStringKey =
   | "capa_plan_latte_desc"
   | "capa_plan_espresso_desc"
   | "capa_plans_note"
+  | "capa_plan_livre_desc"
   // ── Home (estante) ──
   | "shelf_loading"
   | "shelf_title"
@@ -325,6 +326,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_plan_latte_desc: "2.000 pontos — ~50 livros ou ~66 vídeos",
     capa_plan_espresso_desc: "3.500 pontos — ~87 livros ou ~116 vídeos",
     capa_plans_note: "Pacotes únicos — seus pontos não expiram. Vale para livros E vídeos.",
+    capa_plan_livre_desc: "Use com a SUA chave de IA — grátis pra sempre",
     save: "Salvar",
     cancel: "Cancelar",
     remove: "Remover",
@@ -592,6 +594,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_plan_latte_desc: "2,000 points — ~50 books or ~66 videos",
     capa_plan_espresso_desc: "3,500 points — ~87 books or ~116 videos",
     capa_plans_note: "One-time packages — your points never expire. Covers books AND videos.",
+    capa_plan_livre_desc: "Use with YOUR own AI key — free forever",
     save: "Save",
     cancel: "Cancel",
     remove: "Remove",
@@ -851,6 +854,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_plan_latte_desc: "2.000 puntos — ~50 libros o ~66 videos",
     capa_plan_espresso_desc: "3.500 puntos — ~87 libros o ~116 videos",
     capa_plans_note: "Paquetes únicos — tus puntos no caducan. Vale para libros Y videos.",
+    capa_plan_livre_desc: "Usa tu propia clave de IA — gratis para siempre",
     save: "Guardar",
     cancel: "Cancelar",
     remove: "Quitar",
@@ -1110,6 +1114,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_plan_latte_desc: "2 000 points — ~50 livres ou ~66 vidéos",
     capa_plan_espresso_desc: "3 500 points — ~87 livres ou ~116 vidéos",
     capa_plans_note: "Packs uniques — vos points n'expirent pas. Livres ET vidéos inclus.",
+    capa_plan_livre_desc: "Utilisez votre propre clé IA — gratuit pour toujours",
     save: "Enregistrer",
     cancel: "Annuler",
     remove: "Retirer",
@@ -1369,6 +1374,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_plan_latte_desc: "2.000 Punkte — ~50 Bücher oder ~66 Videos",
     capa_plan_espresso_desc: "3.500 Punkte — ~87 Bücher oder ~116 Videos",
     capa_plans_note: "Einmalpakete — Punkte verfallen nicht. Gilt für Bücher UND Videos.",
+    capa_plan_livre_desc: "Mit Ihrem eigenen KI-Schlüssel — für immer kostenlos",
     save: "Speichern",
     cancel: "Abbrechen",
     remove: "Entfernen",
@@ -1628,6 +1634,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_plan_latte_desc: "2.000 punti — ~50 libri o ~66 video",
     capa_plan_espresso_desc: "3.500 punti — ~87 libri o ~116 video",
     capa_plans_note: "Pacchetti una tantum — i punti non scadono. Vale per libri E video.",
+    capa_plan_livre_desc: "Usa la tua chiave IA — gratis per sempre",
     save: "Salva",
     cancel: "Annulla",
     remove: "Rimuovi",
@@ -1887,6 +1894,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_plan_latte_desc: "2.000 баллов — ~50 книг или ~66 видео",
     capa_plan_espresso_desc: "3.500 баллов — ~87 книг или ~116 видео",
     capa_plans_note: "Разовые пакеты — баллы не сгорают. Книги И видео.",
+    capa_plan_livre_desc: "Со своим ключом ИИ — бесплатно навсегда",
     save: "Сохранить",
     cancel: "Отмена",
     remove: "Удалить",
@@ -2146,6 +2154,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_plan_latte_desc: "2,000 积分——约 50 本书或 66 个视频",
     capa_plan_espresso_desc: "3,500 积分——约 87 本书或 116 个视频",
     capa_plans_note: "一次性积分包——积分不过期。图书和视频通用。",
+    capa_plan_livre_desc: "使用您自己的 AI 密钥——永久免费",
     save: "保存",
     cancel: "取消",
     remove: "移除",
@@ -2405,6 +2414,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_plan_latte_desc: "2,000ポイント——本約50冊または動画約66本",
     capa_plan_espresso_desc: "3,500ポイント——本約87冊または動画約116本",
     capa_plans_note: "買い切りパック——ポイントに期限なし。本と動画の両方に。",
+    capa_plan_livre_desc: "自分のAIキーで利用——ずっと無料",
     save: "保存",
     cancel: "キャンセル",
     remove: "削除",
@@ -2664,6 +2674,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_plan_latte_desc: "2,000포인트 — 책 약 50권 또는 동영상 약 66개",
     capa_plan_espresso_desc: "3,500포인트 — 책 약 87권 또는 동영상 약 116개",
     capa_plans_note: "일회성 패키지 — 포인트 만료 없음. 책과 동영상 모두 사용 가능.",
+    capa_plan_livre_desc: "본인 AI 키로 사용 — 평생 료",
     save: "저장",
     cancel: "취소",
     remove: "제거",
@@ -2923,6 +2934,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_plan_latte_desc: "2,000 نقطة — ~50 كتابًا أو ~66 فيديو",
     capa_plan_espresso_desc: "3,500 نقطة — ~87 كتابًا أو ~116 فيديو",
     capa_plans_note: "باقات لمرة واحدة — نقاطك لا تنتهي صلاحيتها. تشمل الكتب والفيديوهات.",
+    capa_plan_livre_desc: "استخدم مفتاح الذكاء الاصطناعي الخاص بك — مجانًا للأبد",
     save: "حفظ",
     cancel: "إلغاء",
     remove: "إزالة",
@@ -3182,6 +3194,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_plan_latte_desc: "2,000 पॉइंट — ~50 किताबें या ~66 वीडियो",
     capa_plan_espresso_desc: "3,500 पॉइंट — ~87 किताबें या ~116 वीडियो",
     capa_plans_note: "एक-बार के पैकेज — आपके पॉइंट कभी समाप्त नहीं होते। किताबों और वीडियो दोनों के लिए।",
+    capa_plan_livre_desc: "अपनी AI कुंजी से उपयोग करें — हमेशा के लिए मुफ़्त",
     save: "सहेजें",
     cancel: "रद्द करें",
     remove: "हटाएँ",

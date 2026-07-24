@@ -264,6 +264,13 @@ export function SettingsForm({
           Sem mensalidade — seus pontos não expiram.
         </p>
         <div className="v3-plans">
+          <div className="v3-plan v3-plan-livre">
+            <b>🆓 Livre</b>
+            <span className="v3-plan-price">R$ 0</span>
+            <span className="v3-plan-desc">
+              Use com a SUA chave de IA — grátis pra sempre
+            </span>
+          </div>
           <a
             className="v3-plan v3-plan-featured"
             href="https://43.156.151.165.sslip.io/experimente"
@@ -758,6 +765,10 @@ export function SettingsForm({
         .v3-plan-byok {
           background: #eaf3f4;
           border-top: 3px solid #0f7680;
+        }
+        .v3-plan-livre {
+          background: #eef7ee;
+          border-top: 3px solid #2c7a2c;
         }
         .v3-plan-featured:hover { background: #f5e0cb; }
         .v3-plan-badge {
