@@ -259,7 +259,7 @@ export function SettingsForm({
       <div className="v3-simple">
         <h3 className="v3-simple-title">✨ Você não precisa configurar nada</h3>
         <p className="v3-simple-sub">
-          O <strong>Moka Premium</strong> já vem com a inteligência artificial
+          Com o <strong>Espresso</strong>, a inteligência artificial já vem
           incluída: é só assinar e usar. A maioria das pessoas usa o Moka
           assim — sem chave, sem configuração.
         </p>
@@ -275,23 +275,34 @@ export function SettingsForm({
             <span className="v3-plan-price">R$ 5</span>
             <span className="v3-plan-desc">200 pontos pra experimentar tudo</span>
           </a>
-          <div className="v3-plan">
-            <b>⭐ Premium</b>
-            <span className="v3-plan-price">R$ 24,90/mês</span>
+          <div className="v3-plan v3-plan-byok">
+            <b>☕ Cappuccino</b>
+            <span className="v3-plan-price">R$ 25/mês</span>
             <span className="v3-plan-desc">
-              Tudo incluído, sem chave, com painel de pontos
+              Sua própria chave de IA, com painel de gastos
             </span>
             <span className="v3-plan-soon">em breve</span>
           </div>
           <div className="v3-plan">
-            <b>🔑 BYOK</b>
-            <span className="v3-plan-price">R$ 15/mês</span>
+            <b>🤎 Latte</b>
+            <span className="v3-plan-price">R$ 45/mês</span>
             <span className="v3-plan-desc">
-              Pra quem tem a própria chave de IA, com painel de gastos
+              IA incluída — 1.000 pontos por mês
+            </span>
+            <span className="v3-plan-soon">em breve</span>
+          </div>
+          <div className="v3-plan">
+            <b>⚫ Espresso</b>
+            <span className="v3-plan-price">R$ 70/mês</span>
+            <span className="v3-plan-desc">
+              IA incluída e ilimitada — você não precisa configurar nada
             </span>
             <span className="v3-plan-soon">em breve</span>
           </div>
         </div>
+        <p className="v3-simple-note" style={{ marginTop: 10 }}>
+          Toda assinatura vale para livros E vídeos.
+        </p>
         <p className="v3-simple-note">
           Já comprou ou tem cupom? <a href="https://43.156.151.165.sslip.io/painel" target="_blank" rel="noreferrer">Entre no seu painel de pontos →</a>
         </p>
@@ -743,6 +754,10 @@ export function SettingsForm({
         .v3-plan-featured {
           border-color: #191919;
           background: #fff1e5;
+        }
+        .v3-plan-byok {
+          background: #eaf3f4;
+          border-top: 3px solid #0f7680;
         }
         .v3-plan-featured:hover { background: #f5e0cb; }
         .v3-plan-badge {

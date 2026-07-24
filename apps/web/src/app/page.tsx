@@ -82,19 +82,26 @@ export default function Capa() {
             <span className="price">R$ 5</span>
             <span className="desc">{t("capa_plan_test_desc")}</span>
           </a>
-          <div className="capa-plan">
-            <b>⭐ Premium</b>
-            <span className="price">R$ 24,90/mês</span>
-            <span className="desc">{t("capa_plan_premium_desc")}</span>
+          <div className="capa-plan byok">
+            <b>☕ Cappuccino</b>
+            <span className="price">R$ 25/mês</span>
+            <span className="desc">{t("capa_plan_cappuccino_desc")}</span>
             <span className="soon">{t("capa_plan_soon")}</span>
           </div>
           <div className="capa-plan">
-            <b>🔑 BYOK</b>
-            <span className="price">R$ 15/mês</span>
-            <span className="desc">{t("capa_plan_byok_desc")}</span>
+            <b>🤎 Latte</b>
+            <span className="price">R$ 45/mês</span>
+            <span className="desc">{t("capa_plan_latte_desc")}</span>
+            <span className="soon">{t("capa_plan_soon")}</span>
+          </div>
+          <div className="capa-plan">
+            <b>⚫ Espresso</b>
+            <span className="price">R$ 70/mês</span>
+            <span className="desc">{t("capa_plan_espresso_desc")}</span>
             <span className="soon">{t("capa_plan_soon")}</span>
           </div>
         </div>
+        <p className="capa-plans-note">{t("capa_plans_note")}</p>
 
         {/* ── Entradas do app ── */}
         <div className="capa-cards">
@@ -289,6 +296,17 @@ export default function Capa() {
         }
         .capa-plan .desc { color: var(--ft-ink-soft); font-size: 13px; line-height: 1.5; }
         .capa-plan.featured { background: var(--ft-paper); }
+        /* BYOK (Cappuccino) com cor de diferenciação — pedido do Miguel:
+           "usar sua própria tem que ser com uma cor diferente" */
+        .capa-plan.byok {
+          background: #eaf3f4;
+          border-top: 3px solid var(--ft-teal);
+        }
+        .capa-plans-note {
+          color: var(--ft-ink-soft);
+          font-size: 13px;
+          margin: -22px 0 30px;
+        }
         .capa-plan .soon {
           align-self: center;
           text-transform: uppercase;
