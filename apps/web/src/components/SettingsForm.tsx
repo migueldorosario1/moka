@@ -513,7 +513,12 @@ export function SettingsForm({
           <select
             id="lang"
             value={targetLang}
-            onChange={(e) => setLang(e.target.value)}
+            onChange={(e) => {
+              setLang(e.target.value);
+              // BUG-20260724-LANG-REVERT: persistir NA HORA (antes só salvava
+              // no handleSave, que exige chave — fechar revertia a escolha).
+              setTargetLang(e.target.value);
+            }}
           >
             <optgroup label="Mais comuns">
               <option value="pt-BR">🇧🇷 Português (Brasil)</option>
@@ -578,6 +583,11 @@ export function SettingsForm({
             </optgroup>
           </select>
         </div>
+        {/* 4. Idioma do CONTEÚDO — automático (detectado ao abrir, V2.4+).
+            Os 4 papéis: interface / traduções / áudio / conteúdo (auto). */}
+        <p className="hint" style={{ marginTop: "4px" }}>
+          {t("set_content_lang")}
+        </p>
       </div>
 
       {/* Modelo — SEMPRE VISÍVEL (é o que diferencia múltiplas entries) */}

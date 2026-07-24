@@ -73,6 +73,13 @@ export function SettingsModal({ onClose, onSaved }: SettingsModalProps) {
             }}
           />
         </div>
+        <footer className="settings-modal-footer">
+          <span className="settings-modal-version">Moka V 2.7.1</span>
+          <span className="settings-modal-autosave">{t("set_autosave_note")}</span>
+          <button className="settings-modal-done" onClick={onClose}>
+            ✓ {t("close")}
+          </button>
+        </footer>
       </div>
 
       <style jsx>{`
@@ -115,6 +122,33 @@ export function SettingsModal({ onClose, onSaved }: SettingsModalProps) {
           font-family: var(--font-brand);
           font-size: 19px;
           font-weight: 600;
+        }
+        .settings-modal-footer {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          padding: 12px 20px;
+          border-top: 1px solid var(--border-soft);
+        }
+        .settings-modal-version {
+          font-size: 12px;
+          color: var(--text-muted);
+          font-weight: 700;
+        }
+        .settings-modal-autosave {
+          flex: 1;
+          font-size: 12px;
+          color: var(--text-muted);
+        }
+        .settings-modal-done {
+          background: var(--accent);
+          color: #fff8ee;
+          border: none;
+          border-radius: var(--radius-pill);
+          padding: 10px 22px;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
         }
         .settings-modal-close {
           width: 32px;
