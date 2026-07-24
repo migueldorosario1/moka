@@ -315,28 +315,17 @@ export default function HomePage() {
       {/* Herói: cola o link */}
       <section className="hero">
         <h1 className="hero-title">
-          Assista em <em>um minuto</em>.<br />
-          Entenda tudo.
+          {t("video_hero_1")} <em>{t("video_hero_em")}</em>.<br />
+          {t("video_hero_2")}
         </h1>
-        <p className="hero-sub">
-          Cole o link de um vídeo do YouTube, X/Twitter ou Instagram.
-          O Moka é dois em um: 📖 livros e 🎬 vídeos, no mesmo aplicativo.
-          Você está na seção de vídeos. Ele assiste por você: transcreve,
-          identifica os personagens, dá o contexto político, faz a crítica
-          e resume no tamanho que você quiser — de 1 a 10 minutos de leitura.
-          Os livros estão no 📖 lá em cima.
-        </p>
-        <p className="hero-install-note">
-          📱 O Moka Video é um <strong>aplicativo</strong>: pra ler os vídeos,
-          instale no seu aparelho (o botão aparece aqui embaixo — é grátis
-          e não passa por loja).
-        </p>
+        <p className="hero-sub">{t("video_hero_sub")}</p>
+        <p className="hero-install-note">{t("video_install_note")}</p>
 
         <form className="link-form" onSubmit={handleSubmit}>
           <input
             type="url"
             className="link-input"
-            placeholder="Cole o link do vídeo aqui…"
+            placeholder={t("video_input_ph")}
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             disabled={busy}
@@ -409,25 +398,25 @@ export default function HomePage() {
             <div className="stage-text">
               {stage.kind === "meta" && (
                 <>
-                  <strong>Conectando ao vídeo…</strong>
+                  <strong>{t("video_step_connect")}</strong>
                   <span>lendo título, canal e duração</span>
                 </>
               )}
               {stage.kind === "captions" && (
                 <>
-                  <strong>Capturando as legendas…</strong>
+                  <strong>{t("video_step_captions")}</strong>
                   <span>o vídeo tem legendas — é rapidinho</span>
                 </>
               )}
               {stage.kind === "whisper" && (
                 <>
-                  <strong>Transcrevendo o áudio…</strong>
+                  <strong>{t("video_step_transcribe")}</strong>
                   <span>sem legendas — o Moka está ouvindo o vídeo (pode levar alguns minutos)</span>
                 </>
               )}
               {stage.kind === "saving" && (
                 <>
-                  <strong>Guardando na sua videoteca…</strong>
+                  <strong>{t("video_step_save")}</strong>
                   <span>quase lá</span>
                 </>
               )}
@@ -440,10 +429,9 @@ export default function HomePage() {
 
         {!configReady && (
           <div className="config-callout">
-            <strong>👋 Primeiro passo:</strong> pra o Moka analisar os vídeos,
-            você precisa ligar ele à sua inteligência artificial.
+            <strong>{t("video_config_first")}</strong>
             <button className="config-callout-btn" onClick={() => setSettingsOpen(true)}>
-              ⚙️ Abrir configurações
+              {t("video_config_btn")}
             </button>
             <span>
               (é o botão de engrenagem lá em cima, no canto direito — a chave
@@ -462,22 +450,18 @@ export default function HomePage() {
         ) : videos.length > 0 ? (
           <>
             <div className="shelf-header">
-              <h2 className="shelf-title">Sua videoteca</h2>
+              <h2 className="shelf-title">{t("video_shelf")}</h2>
               <button
                 className="clear-shelf-btn"
                 onClick={async () => {
-                  if (
-                    confirm(
-                      `Apagar TODOS os ${videos.length} vídeos da videoteca?\n\nIsso remove vídeos, transcrições e análises. Não tem volta.`,
-                    )
-                  ) {
+                  if (confirm(t("video_clear_confirm", { n: videos.length }))) {
                     await clearAllVideos();
                     setVideos([]);
                   }
                 }}
-                title="Apagar todos os vídeos da videoteca"
+                title={t("video_clear_all")}
               >
-                🗑 Limpar tudo
+                {t("video_clear_all")}
               </button>
             </div>
             <div className="shelf-grid">
@@ -504,7 +488,7 @@ export default function HomePage() {
                       <h3 className="video-title">{v.meta.title}</h3>
                       <p className="video-channel">{v.meta.channel}</p>
                       <p className="video-flags">
-                        {v.transcriptSource === "captions" ? "💬 legendas" : "🎙 whisper"}
+                        {v.transcriptSource === "captions" ? t("video_captions") : t("video_whisper")}
                         {Object.keys(v.analyses).length > 0 &&
                           ` · ${Object.keys(v.analyses).length} análise${Object.keys(v.analyses).length > 1 ? "s" : ""}`}
                       </p>
@@ -512,11 +496,11 @@ export default function HomePage() {
                   </Link>
                   <button
                     className="video-delete-btn"
-                    title="Remover da videoteca"
+                    title={t("video_remove_title")}
                     onClick={async (e) => {
                       e.preventDefault();
                       e.stopPropagation();
-                      if (confirm(`Remover "${v.meta.title}" da videoteca?`)) {
+                      if (confirm(t("video_remove_confirm", { title: v.meta.title }))) {
                         await deleteVideo(v.id);
                         setVideos((prev) => prev.filter((x) => x.id !== v.id));
                       }

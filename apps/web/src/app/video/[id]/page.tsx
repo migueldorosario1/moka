@@ -325,7 +325,7 @@ export default function VideoPage() {
             <h1>{video.meta.title}</h1>
             <p className="video-header-meta">
               {video.meta.channel} · {formatTime(video.meta.durationSec)} ·{" "}
-              {video.transcriptSource === "captions" ? "💬 legendas" : "🎙 transcrição Whisper"} ·{" "}
+              {video.transcriptSource === "captions" ? t("video_captions") : t("video_whisper")} ·{" "}
               ~{words.toLocaleString("pt-BR")} palavras
               {video.detectedLang && (
                 <span title="Idioma detectado automaticamente">
