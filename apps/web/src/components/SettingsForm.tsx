@@ -257,11 +257,11 @@ export function SettingsForm({
           O default é o Premium (IA incluída, sem chave). BYOK vira opção
           avançada lá embaixo. (Pedido do Miguel, 23/07 — espelho V3.) */}
       <div className="v3-simple">
-        <h3 className="v3-simple-title">✨ Você não precisa configurar nada</h3>
+        <h3 className="v3-simple-title">✨ Compre pontos e use — sem configurar nada</h3>
         <p className="v3-simple-sub">
-          Com o <strong>Espresso</strong>, a inteligência artificial já vem
-          incluída: é só assinar e usar, sem chave e sem configuração —
-          dá pra uns 60 livros ou 80 vídeos por semana.
+          Com os pacotes de pontos, a inteligência artificial já vem
+          incluída: é só comprar e usar, sem chave e sem configuração.
+          Sem mensalidade — seus pontos não expiram.
         </p>
         <div className="v3-plans">
           <a
@@ -277,31 +277,31 @@ export function SettingsForm({
           </a>
           <div className="v3-plan v3-plan-byok">
             <b>☕ Cappuccino</b>
-            <span className="v3-plan-price">R$ 25/mês</span>
+            <span className="v3-plan-price">R$ 25</span>
             <span className="v3-plan-desc">
-              Sua própria chave de IA, com painel de gastos
+              1.000 pontos — ~25 livros ou ~33 vídeos
             </span>
             <span className="v3-plan-soon">em breve</span>
           </div>
           <div className="v3-plan">
             <b>🤎 Latte</b>
-            <span className="v3-plan-price">R$ 45/mês</span>
+            <span className="v3-plan-price">R$ 45</span>
             <span className="v3-plan-desc">
-              IA incluída — ~6 livros ou ~8 vídeos por semana
+              2.000 pontos — ~50 livros ou ~66 vídeos
             </span>
             <span className="v3-plan-soon">em breve</span>
           </div>
           <div className="v3-plan">
             <b>⚫ Espresso</b>
-            <span className="v3-plan-price">R$ 70/mês</span>
+            <span className="v3-plan-price">R$ 70</span>
             <span className="v3-plan-desc">
-              IA incluída — ~60 livros ou ~80 vídeos por semana
+              3.500 pontos — ~87 livros ou ~116 vídeos
             </span>
             <span className="v3-plan-soon">em breve</span>
           </div>
         </div>
         <p className="v3-simple-note" style={{ marginTop: 10 }}>
-          Toda assinatura vale para livros E vídeos.
+          Pacotes únicos — seus pontos não expiram. Vale para livros E vídeos.
         </p>
         <p className="v3-simple-note">
           Já comprou ou tem cupom? <a href="https://43.156.151.165.sslip.io/painel" target="_blank" rel="noreferrer">Entre no seu painel de pontos →</a>

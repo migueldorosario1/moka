@@ -84,19 +84,19 @@ export default function Capa() {
           </a>
           <div className="capa-plan byok">
             <b>☕ Cappuccino</b>
-            <span className="price">R$ 25/mês</span>
+            <span className="price">R$ 25</span>
             <span className="desc">{t("capa_plan_cappuccino_desc")}</span>
             <span className="soon">{t("capa_plan_soon")}</span>
           </div>
           <div className="capa-plan">
             <b>🤎 Latte</b>
-            <span className="price">R$ 45/mês</span>
+            <span className="price">R$ 45</span>
             <span className="desc">{t("capa_plan_latte_desc")}</span>
             <span className="soon">{t("capa_plan_soon")}</span>
           </div>
           <div className="capa-plan">
             <b>⚫ Espresso</b>
-            <span className="price">R$ 70/mês</span>
+            <span className="price">R$ 70</span>
             <span className="desc">{t("capa_plan_espresso_desc")}</span>
             <span className="soon">{t("capa_plan_soon")}</span>
           </div>
