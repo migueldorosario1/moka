@@ -16,6 +16,7 @@ import type { VideoMeta } from "./db";
 import { transcriptText, formatTime } from "./db";
 import type { TranscriptSegment } from "./db";
 import { getConfig, getTargetLang } from "@/lib/config";
+import { gatewayProvider } from "@/lib/moka-conta";
 import { getProvider } from "@igot/ai-providers";
 import { createProxyTransport } from "@igot/ai-providers";
 
@@ -70,13 +71,11 @@ function videoHeader(meta: VideoMeta): string {
   );
 }
 
-/** Monta o provedor BYOK do usuário (ou erro amigável). */
+/** Provedor de IA: BYOK se o usuário tem chave; senão, a IA da casa (pontos, V3). */
 async function provider() {
   const config = await getConfig();
   if (!config) {
-    throw new Error(
-      "Configure sua chave de IA primeiro (botão ⚙️ no topo). O Moka é BYOK: a chave fica só no seu navegador.",
-    );
+    return gatewayProvider("resumo_video");
   }
   return getProvider(config, createProxyTransport());
 }

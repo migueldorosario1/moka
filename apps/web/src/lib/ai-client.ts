@@ -17,6 +17,7 @@ import {
   type AIConfig,
 } from "@igot/ai-providers";
 import { getConfigSync, getTargetLang } from "./config";
+import { gatewayProvider } from "./moka-conta";
 import { t } from "./messages";
 
 /** Contexto da obra relevante para as ações. */
@@ -46,13 +47,11 @@ function buildContext(ctx: BookContext): string | undefined {
   return parts.length ? parts.join("\n") : undefined;
 }
 
-/** Instancia o provider a partir da config do usuário (ou lança erro legível). */
+/** Instancia o provider: BYOK se há chave; senão, a IA da casa (pontos, V3). */
 function resolveProvider() {
   const config = getConfigSync();
   if (!config) {
-    throw new Error(
-      "IA não configurada. Abra Configurações e escolha um provedor.",
-    );
+    return { provider: gatewayProvider("resumo_livro"), config: null };
   }
   const transport = createProxyTransport("/api/proxy");
   return { provider: getProvider(config as AIConfig, transport), config };

@@ -10,6 +10,7 @@ import {
   setWhisperKey, getWhisperKeyMasked,
   getIngestServer, setIngestServer,
 } from "@/lib/config";
+import { getConta, setConta, verificarConta, licencaAtiva } from "@/lib/moka-conta";
 import { testConnection, listModels } from "@/lib/ai-client";
 import { useI18n } from "./I18nProvider";
 
@@ -71,6 +72,46 @@ export function SettingsForm({
     message: "",
   });
   const [saved, setSaved] = useState(false);
+  // V3: conta de pontos (IA da casa) + licença do modo avançado
+  const [contaInfo, setContaInfo] = useState<{ email: string; nome: string; saldo: number } | null>(null);
+  const [contaEmail, setContaEmail] = useState("");
+  const [contaSenha, setContaSenha] = useState("");
+  const [contaErro, setContaErro] = useState("");
+  const [contaLoading, setContaLoading] = useState(false);
+  const [licenca, setLicenca] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const c = getConta();
+    if (c) {
+      setContaLoading(true);
+      Promise.all([verificarConta(c.email, c.senha), licencaAtiva(c.email, c.senha)])
+        .then(([info, lic]) => {
+          setContaInfo({ email: c.email, nome: info.nome, saldo: info.saldo });
+          setLicenca(lic);
+        })
+        .catch(() => setConta(null))
+        .finally(() => setContaLoading(false));
+    }
+  }, []);
+
+  const entrarConta = async () => {
+    setContaErro("");
+    setContaLoading(true);
+    try {
+      const [info, lic] = await Promise.all([
+        verificarConta(contaEmail.trim(), contaSenha),
+        licencaAtiva(contaEmail.trim(), contaSenha),
+      ]);
+      setConta({ email: contaEmail.trim(), senha: contaSenha });
+      setContaInfo({ email: contaEmail.trim(), nome: info.nome, saldo: info.saldo });
+      setLicenca(lic);
+      setContaSenha("");
+    } catch (err) {
+      setContaErro(err instanceof Error ? err.message : String(err));
+    } finally {
+      setContaLoading(false);
+    }
+  };
   // Busca de modelos disponíveis do provedor.
   const [modelsList, setModelsList] = useState<string[] | null>(null);
   const [modelsLoading, setModelsLoading] = useState(false);
@@ -284,6 +325,57 @@ export function SettingsForm({
         <p className="v3-simple-note" style={{ marginTop: 10 }}>
           Vale para livros E vídeos. Seus pontos não expiram.
         </p>
+
+        {/* V3: entrar com a conta de pontos (a IA da casa funciona na hora) */}
+        <div className="v3-conta">
+          {contaInfo ? (
+            <div className="v3-conta-logado">
+              <p>
+                ✅ <strong>{contaInfo.nome}</strong> conectado —{" "}
+                <strong>{contaInfo.saldo.toLocaleString("pt-BR")} pontos</strong>
+                {licenca === true && " · 💼 licença avançada ativa"}
+                {licenca === false && " · sem licença avançada"}
+              </p>
+              <button
+                type="button"
+                className="mini-btn"
+                onClick={() => { setConta(null); setContaInfo(null); setLicenca(null); }}
+              >
+                Sair da conta
+              </button>
+            </div>
+          ) : (
+            <div className="v3-conta-form">
+              <p className="v3-conta-titulo">🔑 Entrar com sua conta de pontos</p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <input
+                  type="email" placeholder="seu e-mail da compra" value={contaEmail}
+                  onChange={(e) => setContaEmail(e.target.value)}
+                  style={{ flex: 1, minWidth: 160, padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
+                />
+                <input
+                  type="password" placeholder="senha (veio por e-mail)" value={contaSenha}
+                  onChange={(e) => setContaSenha(e.target.value)}
+                  style={{ flex: 1, minWidth: 140, padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
+                />
+                <button
+                  type="button" className="mini-btn use-btn"
+                  onClick={() => void entrarConta()}
+                  disabled={contaLoading || !contaEmail.trim() || !contaSenha}
+                >
+                  {contaLoading ? "⏳" : "Entrar"}
+                </button>
+              </div>
+              {contaErro && <p className="feedback err">{contaErro}</p>}
+              <p className="hint">
+                Comprou pontos? A senha foi pro seu e-mail. Ainda não tem?{" "}
+                <a href="/experimente" style={{ color: "var(--accent-dark)", fontWeight: 700 }}>
+                  Compre em /experimente →
+                </a>
+              </p>
+            </div>
+          )}
+        </div>
         <p className="v3-simple-note">
           Já comprou ou tem cupom? <a href="https://43.156.151.165.sslip.io/painel" target="_blank" rel="noreferrer">Entre no seu painel de pontos →</a>
         </p>
@@ -801,6 +893,13 @@ export function SettingsForm({
         .v3-advanced summary::-webkit-details-marker { display: none; }
         .v3-advanced summary::before { content: "▸ "; color: var(--accent); }
         .v3-advanced[open] summary::before { content: "▾ "; }
+        .v3-conta {
+          margin-top: 14px; padding: 14px; border: 1px dashed var(--border);
+          border-radius: 10px; background: var(--surface);
+        }
+        .v3-conta-titulo { font-weight: 700; font-size: 13.5px; margin: 0 0 8px; }
+        .v3-conta-logado { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+        .v3-conta-logado p { margin: 0; font-size: 14px; }
         .v3-advanced-hint {
           display: block;
           margin-top: 4px;
