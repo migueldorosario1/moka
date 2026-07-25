@@ -13,7 +13,7 @@ import type { Session } from "@/lib/db";
  * Ordem: oferta R$5 grande → vídeo do anúncio explicando → preços.
  * O checkout R$5 aponta pro funil real (Pix na API de pontos).
  */
-const CHECKOUT_URL = "https://43.156.151.165.sslip.io/experimente";
+// (a compra agora é interna: /experimente — doc 15)
 const VIDEO_URL =
   "https://pub-7c53d388419e4d44b17eace540ae7e22.r2.dev/moka/anuncio/moka_anuncio_bbc.mp4";
 
@@ -53,15 +53,17 @@ export default function Capa() {
         <div className="capa-logo">Moka</div>
         <h1 className="capa-tagline">{t("app_tagline")}</h1>
 
-        {/* ── OFERTA R$5 — bem grande, o coração da página ── */}
-        <a className="capa-offer" href={CHECKOUT_URL} target="_blank" rel="noreferrer">
-          <span className="capa-offer-badge">{t("capa_offer_badge")}</span>
-          <span className="capa-offer-price">
-            <small>R$</small> 5
-          </span>
-          <span className="capa-offer-desc">{t("capa_offer_desc")}</span>
-          <span className="capa-offer-cta">{t("capa_offer_cta")}</span>
-        </a>
+        {/* ── V3: os 2 caminhos — pontos (IA da casa) × licença (BYOK) ── */}
+        <div className="capa-paths">
+          <a className="capa-path" href="/experimente">
+            <b>{t("capa_path_points_title")}</b>
+            <span>{t("capa_path_points_desc")}</span>
+          </a>
+          <a className="capa-path" href="/experimente?plano=avancado">
+            <b>{t("capa_path_adv_title")}</b>
+            <span>{t("capa_path_adv_desc")}</span>
+          </a>
+        </div>
 
         {/* ── Vídeo do anúncio: explica o que é ── */}
         <h2 className="capa-video-title">{t("capa_video_title")}</h2>
@@ -73,37 +75,25 @@ export default function Capa() {
           preload="metadata"
         />
 
-        {/* ── Preços: os 3 planos explicados ── */}
-        <h2 className="capa-plans-title">{t("capa_plans_title")}</h2>
+        {/* ── O que os pontos compram (equivalências honestas) ── */}
+        <h2 className="capa-plans-title">{t("capa_how_title")}</h2>
         <div className="capa-plans-rule" />
         <div className="capa-plans">
-          <a className="capa-plan livre" href="/estante">
-            <b>🆓 Livre</b>
-            <span className="price">R$ 0</span>
-            <span className="desc">{t("capa_plan_livre_desc")}</span>
-          </a>
-          <a className="capa-plan featured" href={CHECKOUT_URL} target="_blank" rel="noreferrer">
-            <b>🎣 Teste</b>
-            <span className="price">R$ 5</span>
-            <span className="desc">{t("capa_plan_test_desc")}</span>
-          </a>
-          <div className="capa-plan byok">
-            <b>☕ Cappuccino</b>
-            <span className="price">R$ 25</span>
-            <span className="desc">{t("capa_plan_cappuccino_desc")}</span>
-            <span className="soon">{t("capa_plan_soon")}</span>
+          <div className="capa-plan">
+            <b>🎬 30 pts</b>
+            <span className="desc">1 {t("exp_videos")} (resumo)</span>
           </div>
           <div className="capa-plan">
-            <b>🤎 Latte</b>
-            <span className="price">R$ 45</span>
-            <span className="desc">{t("capa_plan_latte_desc")}</span>
-            <span className="soon">{t("capa_plan_soon")}</span>
+            <b>📖 40 pts</b>
+            <span className="desc">1 {t("exp_books")} (resumo)</span>
           </div>
           <div className="capa-plan">
-            <b>⚫ Espresso</b>
-            <span className="price">R$ 70</span>
-            <span className="desc">{t("capa_plan_espresso_desc")}</span>
-            <span className="soon">{t("capa_plan_soon")}</span>
+            <b>🌍 80 pts</b>
+            <span className="desc">1 {t("exp_translations")} (livro inteiro)</span>
+          </div>
+          <div className="capa-plan">
+            <b>🎧 40 pts</b>
+            <span className="desc">1 {t("exp_audios")} (10 min)</span>
           </div>
         </div>
         <p className="capa-plans-note">{t("capa_plans_note")}</p>

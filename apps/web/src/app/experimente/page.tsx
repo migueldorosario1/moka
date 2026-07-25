@@ -16,8 +16,30 @@ const TAXA = 0.1; // R$ por ponto (doc 15, opção A)
 
 type Etapa = "form" | "pix" | "ok";
 
+type Modo = "pontos" | "teste" | "avancado";
+
+const MODOS: Record<Modo, { titulo: string; preco: string; desc: string }> = {
+  pontos: { titulo: "⚡ Pontos", preco: "", desc: "" },
+  teste: {
+    titulo: "🎣 Teste",
+    preco: "R$ 5",
+    desc: "200 pontos na hora, pra experimentar tudo — sem compromisso.",
+  },
+  avancado: {
+    titulo: "💼 Licença avançada",
+    preco: "R$ 50",
+    desc: "6 meses usando a SUA chave de IA (BYOK), com painel de gastos.",
+  },
+};
+
 export default function Experimente() {
   const { t } = useI18n();
+  const [modo, setModo] = useState<Modo>(() =>
+    typeof window !== "undefined" &&
+    new URLSearchParams(window.location.search).get("plano") === "avancado"
+      ? "avancado"
+      : "pontos",
+  );
   const [pontos, setPontos] = useState(400);
   const [etapa, setEtapa] = useState<Etapa>("form");
   const [email, setEmail] = useState("");
@@ -42,10 +64,16 @@ export default function Experimente() {
     setErro("");
     setGerando(true);
     try {
+      const corpo =
+        modo === "teste"
+          ? { email: email.trim(), nome: nome.trim(), pacote: "r5_200" }
+          : modo === "avancado"
+            ? { email: email.trim(), nome: nome.trim(), pacote: "avancado_6m" }
+            : { email: email.trim(), nome: nome.trim(), pontos_custom: pontos };
       const r = await fetch(`${API}/compras/criar`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), nome: nome.trim(), pontos_custom: pontos }),
+        body: JSON.stringify(corpo),
       });
       const d = await r.json();
       if (!r.ok) throw new Error(d.detail || "erro ao gerar o Pix");
@@ -93,16 +121,38 @@ export default function Experimente() {
 
         {etapa === "form" && (
           <form className="exp-form" onSubmit={gerarPix}>
-            <label className="exp-label">{t("exp_howmuch")}</label>
-            <div className="exp-slider-row">
-              <input
-                type="range" min={400} max={10000} step={100} value={pontos}
-                onChange={(e) => setPontos(parseInt(e.target.value, 10))}
-              />
-              <div className="exp-pontos">{pontos.toLocaleString("pt-BR")} pts</div>
+            <div className="exp-modos">
+              {(["pontos", "teste", "avancado"] as Modo[]).map((m) => (
+                <button
+                  key={m} type="button"
+                  className={`exp-modo ${modo === m ? "ativo" : ""}`}
+                  onClick={() => setModo(m)}
+                >
+                  {MODOS[m].titulo}
+                </button>
+              ))}
             </div>
-            <div className="exp-preco">R$ {preco}</div>
-            <div className="exp-estimativa">≈ {estimativa}</div>
+
+            {modo === "pontos" && (
+              <>
+                <label className="exp-label">{t("exp_howmuch")}</label>
+                <div className="exp-slider-row">
+                  <input
+                    type="range" min={400} max={10000} step={100} value={pontos}
+                    onChange={(e) => setPontos(parseInt(e.target.value, 10))}
+                  />
+                  <div className="exp-pontos">{pontos.toLocaleString("pt-BR")} pts</div>
+                </div>
+                <div className="exp-preco">R$ {preco}</div>
+                <div className="exp-estimativa">≈ {estimativa}</div>
+              </>
+            )}
+            {modo !== "pontos" && (
+              <>
+                <div className="exp-preco">{MODOS[modo].preco}</div>
+                <div className="exp-estimativa">{MODOS[modo].desc}</div>
+              </>
+            )}
 
             <input
               type="email" required placeholder={t("exp_email")}
@@ -182,6 +232,13 @@ export default function Experimente() {
         .exp-pontos { font-weight: 800; font-variant-numeric: tabular-nums; }
         .exp-preco { font-family: var(--font-brand); font-size: 44px; font-weight: 600; }
         .exp-estimativa { color: #66605a; font-size: 13px; margin-bottom: 8px; }
+        .exp-modos { display: flex; gap: 8px; margin-bottom: 6px; }
+        .exp-modo {
+          flex: 1; padding: 9px 6px; background: #fff; border: 1px solid #d9c8b8;
+          font-size: 12.5px; font-weight: 700; cursor: pointer; border-radius: 2px;
+          color: #66605a;
+        }
+        .exp-modo.ativo { border-color: #1a1a1a; color: #1a1a1a; background: #f7e7d7; }
         .exp-form input {
           padding: 13px 14px; border: 1px solid #d9c8b8; background: #fff;
           font-size: 15px; color: #1a1a1a; border-radius: 2px;
