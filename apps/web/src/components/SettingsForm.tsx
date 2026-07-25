@@ -264,51 +264,25 @@ export function SettingsForm({
           Sem mensalidade — seus pontos não expiram.
         </p>
         <div className="v3-plans">
-          <div className="v3-plan v3-plan-livre">
-            <b>🆓 Livre</b>
-            <span className="v3-plan-price">R$ 0</span>
-            <span className="v3-plan-desc">
-              Use com a SUA chave de IA — grátis pra sempre
-            </span>
-          </div>
-          <a
-            className="v3-plan v3-plan-featured"
-            href="https://43.156.151.165.sslip.io/experimente"
-            target="_blank"
-            rel="noreferrer"
-          >
+          <a className="v3-plan v3-plan-featured" href="/experimente">
             <span className="v3-plan-badge">comece aqui</span>
-            <b>🎣 Teste</b>
-            <span className="v3-plan-price">R$ 5</span>
-            <span className="v3-plan-desc">200 pontos pra experimentar tudo</span>
+            <b>⚡ Pontos</b>
+            <span className="v3-plan-price">a partir de R$ 40</span>
+            <span className="v3-plan-desc">
+              IA da casa incluída. 400 pontos ≈ 13 vídeos ou 10 livros.
+              Sem mensalidade — não expiram.
+            </span>
           </a>
-          <div className="v3-plan v3-plan-byok">
-            <b>☕ Cappuccino</b>
-            <span className="v3-plan-price">R$ 25</span>
+          <a className="v3-plan v3-plan-byok" href="/experimente?plano=avancado">
+            <b>💼 Modo avançado</b>
+            <span className="v3-plan-price">R$ 50 / 6 meses</span>
             <span className="v3-plan-desc">
-              1.000 pontos — ~25 livros ou ~33 vídeos
+              Licença para usar a SUA chave de IA, com painel de gastos.
             </span>
-            <span className="v3-plan-soon">em breve</span>
-          </div>
-          <div className="v3-plan">
-            <b>🤎 Latte</b>
-            <span className="v3-plan-price">R$ 45</span>
-            <span className="v3-plan-desc">
-              2.000 pontos — ~50 livros ou ~66 vídeos
-            </span>
-            <span className="v3-plan-soon">em breve</span>
-          </div>
-          <div className="v3-plan">
-            <b>⚫ Espresso</b>
-            <span className="v3-plan-price">R$ 70</span>
-            <span className="v3-plan-desc">
-              3.500 pontos — ~87 livros ou ~116 vídeos
-            </span>
-            <span className="v3-plan-soon">em breve</span>
-          </div>
+          </a>
         </div>
         <p className="v3-simple-note" style={{ marginTop: 10 }}>
-          Pacotes únicos — seus pontos não expiram. Vale para livros E vídeos.
+          Vale para livros E vídeos. Seus pontos não expiram.
         </p>
         <p className="v3-simple-note">
           Já comprou ou tem cupom? <a href="https://43.156.151.165.sslip.io/painel" target="_blank" rel="noreferrer">Entre no seu painel de pontos →</a>
