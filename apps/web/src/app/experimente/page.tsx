@@ -213,58 +213,242 @@ export default function Experimente() {
       </div>
 
       <style jsx>{`
-        .exp { min-height: 100vh; background: #fff6ee; color: #1a1a1a; }
-        .exp-topbar { background: #fff6ee; border-bottom: 1px solid #d9c8b8; }
+        .exp {
+          min-height: 100vh;
+          background: linear-gradient(180deg, #faf8f5 0%, #f6efe3 100%);
+          color: #2b2015;
+        }
+        .exp-topbar {
+          background: rgba(250, 248, 245, 0.92);
+          backdrop-filter: blur(12px);
+          -webkit-backdrop-filter: blur(12px);
+          border-bottom: 1px solid #ede3d2;
+        }
         .exp-body {
-          max-width: 520px; margin: 0 auto; padding: 44px 22px 64px;
-          display: flex; flex-direction: column; align-items: center; text-align: center;
+          max-width: 540px;
+          margin: 0 auto;
+          padding: 48px 24px 72px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          text-align: center;
         }
         .exp-kicker {
-          text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px;
-          font-weight: 700; color: #0f7680; margin-bottom: 10px;
+          text-transform: uppercase;
+          letter-spacing: 0.18em;
+          font-size: 11px;
+          font-weight: 700;
+          color: #a35d2f;
+          background: #f3e4d0;
+          border: 1px solid rgba(163, 93, 47, 0.2);
+          padding: 4px 14px;
+          border-radius: 999px;
+          margin-bottom: 12px;
         }
-        .exp-title { font-family: var(--font-brand); font-weight: 600; font-size: 30px; margin: 0 0 10px; }
-        .exp-sub { color: #66605a; font-size: 14.5px; line-height: 1.55; margin-bottom: 26px; }
-        .exp-form { display: flex; flex-direction: column; gap: 12px; width: 100%; }
-        .exp-label { font-size: 13px; font-weight: 700; text-align: left; }
-        .exp-slider-row { display: flex; align-items: center; gap: 14px; }
-        .exp-slider-row input[type="range"] { flex: 1; accent-color: #0f7680; }
-        .exp-pontos { font-weight: 800; font-variant-numeric: tabular-nums; }
-        .exp-preco { font-family: var(--font-brand); font-size: 44px; font-weight: 600; }
-        .exp-estimativa { color: #66605a; font-size: 13px; margin-bottom: 8px; }
-        .exp-modos { display: flex; gap: 8px; margin-bottom: 6px; }
+        .exp-title {
+          font-family: var(--font-brand);
+          font-weight: 600;
+          font-size: 32px;
+          margin: 0 0 10px;
+          color: #2b2015;
+        }
+        .exp-sub {
+          color: #7c6856;
+          font-size: 15px;
+          line-height: 1.55;
+          margin-bottom: 28px;
+        }
+        .exp-form {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          width: 100%;
+          background: #fffcf5;
+          border: 1px solid #e3d6c1;
+          border-radius: 16px;
+          padding: 28px;
+          box-shadow: 0 4px 16px rgba(43, 32, 21, 0.05);
+        }
+        .exp-label {
+          font-size: 13.5px;
+          font-weight: 700;
+          text-align: left;
+          color: #2b2015;
+        }
+        .exp-slider-row {
+          display: flex;
+          align-items: center;
+          gap: 14px;
+        }
+        .exp-slider-row input[type="range"] {
+          flex: 1;
+          accent-color: #a35d2f;
+        }
+        .exp-pontos {
+          font-weight: 800;
+          font-variant-numeric: tabular-nums;
+          color: #a35d2f;
+          font-size: 16px;
+        }
+        .exp-preco {
+          font-family: var(--font-brand);
+          font-size: 46px;
+          font-weight: 600;
+          color: #2b2015;
+          line-height: 1;
+          margin: 6px 0 2px;
+        }
+        .exp-estimativa {
+          color: #7c6856;
+          font-size: 13.5px;
+          margin-bottom: 10px;
+        }
+        .exp-modos {
+          display: flex;
+          gap: 8px;
+          margin-bottom: 8px;
+        }
         .exp-modo {
-          flex: 1; padding: 9px 6px; background: #fff; border: 1px solid #d9c8b8;
-          font-size: 12.5px; font-weight: 700; cursor: pointer; border-radius: 2px;
-          color: #66605a;
+          flex: 1;
+          padding: 10px 8px;
+          background: #faf8f5;
+          border: 1px solid #e3d6c1;
+          font-size: 13px;
+          font-weight: 700;
+          cursor: pointer;
+          border-radius: 8px;
+          color: #7c6856;
+          transition: all 0.15s ease;
         }
-        .exp-modo.ativo { border-color: #1a1a1a; color: #1a1a1a; background: #f7e7d7; }
-        .exp-form input {
-          padding: 13px 14px; border: 1px solid #d9c8b8; background: #fff;
-          font-size: 15px; color: #1a1a1a; border-radius: 2px;
+        .exp-modo.ativo {
+          border-color: #a35d2f;
+          color: #2b2015;
+          background: #f3e4d0;
+          box-shadow: 0 1px 4px rgba(43, 32, 21, 0.06);
+        }
+        .exp-form input[type="email"],
+        .exp-form input[type="text"] {
+          padding: 14px 16px;
+          border: 1px solid #e3d6c1;
+          background: #faf8f5;
+          font-size: 15px;
+          color: #2b2015;
+          border-radius: 8px;
+          outline: none;
+          transition: border-color 0.15s ease;
+        }
+        .exp-form input:focus {
+          border-color: #a35d2f;
+          background: #fff;
         }
         .exp-cta {
-          background: #1a1a1a; color: #fff; border: none; padding: 15px;
-          text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700;
-          font-size: 13px; cursor: pointer; border-radius: 2px;
+          background: linear-gradient(135deg, #a35d2f 0%, #7e4522 100%);
+          color: #fffcf5;
+          border: none;
+          padding: 16px;
+          text-transform: uppercase;
+          letter-spacing: 0.12em;
+          font-weight: 700;
+          font-size: 13.5px;
+          cursor: pointer;
+          border-radius: 10px;
+          box-shadow: 0 4px 12px rgba(163, 93, 47, 0.25);
+          transition: all 0.18s ease;
+          margin-top: 4px;
         }
-        .exp-cta:disabled { opacity: 0.6; cursor: wait; }
-        .exp-erro { color: #b3261e; font-size: 13.5px; }
-        .exp-pix { display: flex; flex-direction: column; gap: 12px; width: 100%; align-items: center; }
-        .exp-pix-title { font-weight: 700; font-size: 15px; }
+        .exp-cta:hover:not(:disabled) {
+          transform: translateY(-1px);
+          box-shadow: 0 6px 18px rgba(163, 93, 47, 0.35);
+        }
+        .exp-cta:disabled {
+          opacity: 0.6;
+          cursor: wait;
+        }
+        .exp-erro {
+          color: #b3261e;
+          font-size: 13.5px;
+        }
+        .exp-pix {
+          display: flex;
+          flex-direction: column;
+          gap: 14px;
+          width: 100%;
+          align-items: center;
+          background: #fffcf5;
+          border: 1px solid #e3d6c1;
+          border-radius: 16px;
+          padding: 28px;
+          box-shadow: 0 4px 16px rgba(43, 32, 21, 0.05);
+        }
+        .exp-pix-title {
+          font-weight: 700;
+          font-size: 16px;
+          color: #2b2015;
+        }
         .exp-cola {
-          width: 100%; font-size: 12px; padding: 12px; border: 1px solid #d9c8b8;
-          background: #fff; color: #1a1a1a; resize: none; border-radius: 2px;
+          width: 100%;
+          font-size: 12.5px;
+          padding: 14px;
+          border: 1px solid #e3d6c1;
+          background: #faf8f5;
+          color: #2b2015;
+          resize: none;
+          border-radius: 8px;
+          font-family: var(--font-mono);
         }
-        .exp-qr { width: 200px; height: 200px; border: 1px solid #d9c8b8; }
-        .exp-link { color: #0f7680; font-size: 13px; }
-        .exp-aguardando { color: #0f7680; font-weight: 700; font-size: 14px; }
-        .exp-ok h2 { font-family: var(--font-brand); font-weight: 600; margin-bottom: 8px; }
+        .exp-qr {
+          width: 210px;
+          height: 210px;
+          border: 1px solid #e3d6c1;
+          border-radius: 12px;
+          padding: 8px;
+          background: #fff;
+        }
+        .exp-link {
+          color: #0f7680;
+          font-size: 13.5px;
+          text-decoration: none;
+          font-weight: 500;
+        }
+        .exp-link:hover {
+          text-decoration: underline;
+        }
+        .exp-aguardando {
+          color: #0f7680;
+          font-weight: 700;
+          font-size: 14.5px;
+        }
+        .exp-ok {
+          background: #fffcf5;
+          border: 1px solid #e3d6c1;
+          border-radius: 16px;
+          padding: 32px 24px;
+          width: 100%;
+          box-shadow: 0 4px 16px rgba(43, 32, 21, 0.05);
+        }
+        .exp-ok h2 {
+          font-family: var(--font-brand);
+          font-weight: 600;
+          margin-bottom: 8px;
+          color: #2b2015;
+        }
         .exp-senha {
-          font-size: 22px; font-weight: 800; background: #f7e7d7; border: 1px solid #1a1a1a;
-          padding: 12px 18px; margin: 10px 0 18px; letter-spacing: 1px;
+          font-size: 24px;
+          font-weight: 800;
+          background: #f3e4d0;
+          border: 1px solid #a35d2f;
+          color: #2b2015;
+          padding: 14px 20px;
+          margin: 12px 0 20px;
+          letter-spacing: 1px;
+          border-radius: 10px;
+          font-family: var(--font-mono);
         }
-        .exp-cta-link { display: inline-block; text-decoration: none; padding: 15px 30px; }
+        .exp-cta-link {
+          display: inline-block;
+          text-decoration: none;
+          padding: 15px 30px;
+        }
       `}</style>
     </main>
   );
