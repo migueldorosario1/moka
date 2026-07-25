@@ -381,7 +381,24 @@ export function SettingsForm({
         </p>
       </div>
 
-      {/* ═══ V3: daqui pra baixo é AVANÇADO (BYOK — usar a própria chave) ═══ */}
+      {/* ═══ V3: daqui pra baixo é AVANÇADO (BYOK — usar a própria chave) ═══
+          Só aparece o seletor de provedor se a LICENÇA estiver ativa
+          (pedido do Miguel: nada de "escolher provedor" pra usuário comum). */}
+      {licenca === false ? (
+        <div className="v3-advanced v3-advanced-locked">
+          <p>
+            🔒 <strong>Modo avançado</strong> — usar a própria chave de IA é um
+            recurso da <strong>licença</strong> (R$ 50 / 6 meses).{" "}
+            <a href="/experimente?plano=avancado" style={{ color: "var(--accent-dark)", fontWeight: 700 }}>
+              Ativar licença →
+            </a>
+          </p>
+          <p className="hint" style={{ marginTop: 6 }}>
+            Sem licença você nem vê esta área: é só comprar pontos e usar —
+            a IA da casa já está pronta, sem configurar nada.
+          </p>
+        </div>
+      ) : (
       <details className="v3-advanced">
         <summary>
           🔧 <strong>Configurações avançadas</strong> — usar minha própria chave de IA
@@ -790,6 +807,7 @@ export function SettingsForm({
       )}
 
       </details>
+      )}
 
       <style jsx>{`
         .v3-simple {
@@ -876,6 +894,12 @@ export function SettingsForm({
           color: var(--text-muted);
         }
         .v3-simple-note a { color: var(--accent-dark); font-weight: 700; }
+        .v3-advanced-locked {
+          padding: 14px 16px;
+          background: var(--surface);
+          font-size: 14px;
+        }
+        .v3-advanced-locked p { margin: 0; line-height: 1.55; }
         .v3-advanced {
           border: 1px solid var(--border);
           border-radius: 0;
