@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
-import { CloseAppButton } from "@/components/CloseAppButton";
+import { ContaButton } from "@/components/ContaButton";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { useI18n } from "@/components/I18nProvider";
 import { listLibrary } from "@/lib/repository";
@@ -43,7 +43,7 @@ export default function Capa() {
           </div>
         </div>
         <div className="igot-topbar-actions">
-          <CloseAppButton />
+          <ContaButton />
           <LangSwitcher />
         </div>
       </div>
@@ -111,11 +111,11 @@ export default function Capa() {
         {/* ── Entradas do app ── */}
         <div className="capa-cards">
           <a className="capa-card" href="/estante">
-            <b>{t("capa_books_title")}</b>
+            <b>📖 {t("capa_shelf_books")}</b>
             <span>{t("capa_books_desc")}</span>
           </a>
           <a className="capa-card" href="/video">
-            <b>{t("capa_videos_title")}</b>
+            <b>🎬 {t("capa_shelf_videos")}</b>
             <span>{t("capa_videos_desc")}</span>
           </a>
         </div>

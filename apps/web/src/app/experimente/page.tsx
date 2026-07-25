@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
-import { CloseAppButton } from "@/components/CloseAppButton";
+import { ContaButton } from "@/components/ContaButton";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { useI18n } from "@/components/I18nProvider";
 
@@ -81,7 +81,7 @@ export default function Experimente() {
           </a>
         </div>
         <div className="igot-topbar-actions">
-          <CloseAppButton />
+          <ContaButton />
           <LangSwitcher />
         </div>
       </div>

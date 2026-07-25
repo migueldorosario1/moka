@@ -20,6 +20,7 @@ import {
   type Session,
 } from "@/lib/db";
 import { parseBook } from "@igot/parser";
+import { renderPdfCover } from "@/lib/pdf-cover";
 
 /**
  * Home = ESTANTE.
@@ -159,11 +160,18 @@ export default function HomePage() {
 
           // Livro NOVO — cria entry na estante.
           const bookId = `b${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+          // Capa (V3 — pedido do Miguel): EPUB traz extraída; PDF renderiza pág. 1.
+          const coverImage =
+            result.book.coverImage ??
+            (result.book.sourceFormat === "pdf"
+              ? await renderPdfCover(data) ?? undefined
+              : undefined);
           const session: Session = {
             id: bookId,
             fileName: file.name,
             fileSize: file.size,
             book: result.book,
+            coverImage,
             pdfSource: result.book.sourceFormat === "pdf" ? new Uint8Array(data) : null,
             chapterIdx: 0,
             zoom: 1,

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
-import { CloseAppButton } from "@/components/CloseAppButton";
+import { ContaButton } from "@/components/ContaButton";
 import { LangSwitcher } from "@/components/LangSwitcher";
 
 /**
@@ -31,7 +31,7 @@ const FAQ: Faq[] = [
   { q: "O que é uma chave de API?", tags: ["api", "chave", "key", "o que é"],
     a: "É como uma senha que permite a um programa usar uma inteligência artificial (como a DeepSeek ou a OpenAI). Quem tem uma, pode usar o modo avançado. Quem não tem, simplesmente compra pontos — a IA da casa já está incluída, sem configurar nada." },
   { q: "Qual IA o Moka usa?", tags: ["ia", "llm", "modelo", "deepseek", "openai", "groq"],
-    a: "A mesma família de modelos que roda 7 portais de notícias todos os dias: DeepSeek V4 para texto, Groq Whisper para transcrição de áudio e OpenAI para voz. Tudo medido para custar pouco e funcionar bem em português." },
+    a: "Uma cascata de modelos escolhidos a dedo para custar pouco e funcionar muito bem em português: DeepSeek V4 para texto, Groq Whisper para transcrição de áudio e OpenAI para voz." },
   { q: "O Moka funciona em outros idiomas?", tags: ["idioma", "língua", "inglês", "espanhol", "tradução"],
     a: "Sim. A interface fala 12 idiomas (bandeirinha no topo), o Moka detecta automaticamente o idioma do vídeo ou livro e responde no SEU idioma. Um vídeo em inglês vira resumo em português sem você configurar nada." },
   { q: "E se o pagamento não cair?", tags: ["pagamento", "não caiu", "problema", "pix", "erro"],
@@ -39,7 +39,7 @@ const FAQ: Faq[] = [
   { q: "Como vejo meu saldo e histórico?", tags: ["saldo", "painel", "histórico", "extrato"],
     a: "No seu painel (/painel na página de compra): entre com o e-mail e a senha que você recebeu na compra. Lá aparecem saldo, pontos consumidos e as últimas ações." },
   { q: "Quem faz o Moka?", tags: ["quem", "cafezinho", "empresa", "time"],
-    a: "O Moka é do time de O Cafezinho — a mesma IA que roda 7 portais de notícias todos os dias (riocarta.com, globalsouth.news e outros)." },
+    a: "O Moka é feito pelo time de O Cafezinho, com carinho de jornalista e precisão de engenharia." },
   { q: "Meus dados ficam seguros?", tags: ["dados", "privacidade", "segurança", "seguro"],
     a: "Sim. Seus livros e vídeos ficam no seu navegador. No modo avançado, sua chave nunca sai do seu aparelho. Nos pagamentos, só guardamos e-mail, nome e pontos — o dinheiro é do Mercado Pago, não passa pelas nossas mãos." },
 ];
@@ -89,7 +89,7 @@ export default function Ajuda() {
           </a>
         </div>
         <div className="igot-topbar-actions">
-          <CloseAppButton />
+          <ContaButton />
           <LangSwitcher />
         </div>
       </div>

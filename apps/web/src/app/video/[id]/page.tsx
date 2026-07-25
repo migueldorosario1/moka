@@ -7,7 +7,7 @@ import { SettingsModal } from "@/components/SettingsModal";
 import { AuthButton } from "@/components/AuthButton";
 import { VideoAskModal } from "@/components/VideoAskModal";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
-import { CloseAppButton } from "@/components/CloseAppButton";
+import { ContaButton } from "@/components/ContaButton";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { useAuth } from "@/lib/auth";
 import { Markdown } from "@/components/Markdown";
@@ -285,7 +285,7 @@ export default function VideoPage() {
           >
             ＋
           </a>
-          <CloseAppButton />
+          <ContaButton />
           <LangSwitcher />
           <button
             className="gear"

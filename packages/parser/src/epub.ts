@@ -51,6 +51,35 @@ export async function parseEPUB(input: EPUBParseInput): Promise<ParsedBook> {
 
   const metadata = extractOPFMetadata(opfDoc);
   const { manifest, manifestByHref } = buildManifest(opfDoc, opfDir);
+
+  // Capa (V3 — pedido do Miguel: a estante mostra capas bonitas).
+  // Duas formas comuns no EPUB: <meta name="cover" content="ID"> ou
+  // item do manifest com properties="cover-image".
+  let coverImage: string | undefined;
+  try {
+    let coverHref: string | undefined;
+    const metas = Array.from(opfDoc.getElementsByTagNameNS("*", "meta"));
+    const metaCover = metas.find((m) => m.getAttribute("name") === "cover");
+    const coverId = metaCover?.getAttribute("content");
+    if (coverId && manifest[coverId]) coverHref = manifest[coverId].zipPath;
+    if (!coverHref) {
+      const items = Array.from(opfDoc.getElementsByTagNameNS("*", "item"));
+      const item = items.find(
+        (i) => (i.getAttribute("properties") ?? "").includes("cover-image"),
+      );
+      const href = item?.getAttribute("href");
+      if (href) coverHref = decodeURIComponent(resolveRelative(opfDir, href));
+    }
+    if (coverHref) {
+      const file = zip.file(coverHref) ?? zip.file(decodeURIComponent(coverHref));
+      if (file) {
+        const b64 = await file.async("base64");
+        const ext = coverHref.split(".").pop()?.toLowerCase() ?? "jpeg";
+        const mime = ext === "png" ? "image/png" : ext === "gif" ? "image/gif" : ext === "svg" ? "image/svg+xml" : "image/jpeg";
+        coverImage = `data:${mime};base64,${b64}`;
+      }
+    }
+  } catch { /* capa é best-effort */ }
   const spineItemrefs = Array.from(opfDoc.getElementsByTagNameNS("*", "itemref"));
 
   // --- 3. Para cada item do spine, extrair blocos ---
@@ -132,6 +161,7 @@ export async function parseEPUB(input: EPUBParseInput): Promise<ParsedBook> {
     sourceFormat: "epub",
     chapters,
     metadata,
+    coverImage,
   };
 }
 
