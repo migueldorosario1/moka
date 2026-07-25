@@ -187,6 +187,35 @@ export default function Capa() {
           line-height: 1.25;
         }
 
+        .capa-paths {
+          display: flex;
+          gap: 0;
+          flex-wrap: wrap;
+          justify-content: center;
+          margin-bottom: 40px;
+          border: 1px solid var(--ft-ink);
+          background: var(--ft-paper-deep);
+        }
+        .capa-path {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          width: min(300px, 94vw);
+          padding: 26px 24px;
+          text-decoration: none;
+          color: var(--ft-ink);
+          border-right: 1px solid var(--ft-hairline);
+          transition: background 0.15s ease;
+        }
+        .capa-path:last-child { border-right: none; }
+        .capa-path:hover { background: #f5e0cb; }
+        .capa-path b {
+          font-family: var(--font-brand);
+          font-size: 21px;
+          font-weight: 600;
+        }
+        .capa-path span { color: var(--ft-ink-soft); font-size: 14px; line-height: 1.5; }
+
         /* ── Oferta R$5 — bloco editorial, sem grito ── */
         .capa-offer {
           display: flex;
