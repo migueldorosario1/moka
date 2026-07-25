@@ -8,7 +8,7 @@ import { SettingsModal } from "@/components/SettingsModal";
 import { AuthButton } from "@/components/AuthButton";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
-import { CloseAppButton } from "@/components/CloseAppButton";
+import { ContaButton } from "@/components/ContaButton";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/components/I18nProvider";
@@ -292,7 +292,7 @@ export default function HomePage() {
           <SectionSwitcher active="video" />
         </div>
         <div className="igot-topbar-actions">
-          <CloseAppButton />
+          <ContaButton />
           <LangSwitcher />
           <AuthButton
             status={auth.status}
@@ -441,6 +441,8 @@ export default function HomePage() {
         )}
       </section>
 
+      <InstallPrompt />
+
       {/* Videoteca */}
       <section className="shelf">
         {loading ? (
@@ -538,7 +540,6 @@ export default function HomePage() {
         />
       )}
 
-      <InstallPrompt />
     </main>
   );
 }

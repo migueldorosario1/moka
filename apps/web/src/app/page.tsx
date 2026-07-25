@@ -2,22 +2,25 @@
 
 import { useEffect, useState } from "react";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
-import { CloseAppButton } from "@/components/CloseAppButton";
+import { ContaButton } from "@/components/ContaButton";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { useI18n } from "@/components/I18nProvider";
 import { listLibrary } from "@/lib/repository";
 import type { Session } from "@/lib/db";
 
 /**
- * CAPA do Moka (V2.6 — pedido do Miguel 23/07): a home é uma página de
- * boas-vindas que EXPLICA o que é o app — não a estante. A estante virou
- * link (/estante) e o último lido aparece como atalho "continuar lendo".
+ * CAPA V3 (espelho — pedido do Miguel 23/07): a home VENDE.
+ * Ordem: oferta R$5 grande → vídeo do anúncio explicando → preços.
+ * O checkout R$5 aponta pro funil real (Pix na API de pontos).
  */
+// (a compra agora é interna: /experimente — doc 15)
+const VIDEO_URL =
+  "https://pub-7c53d388419e4d44b17eace540ae7e22.r2.dev/moka/anuncio/moka_anuncio_bbc.mp4";
+
 export default function Capa() {
   const { t } = useI18n();
   const [last, setLast] = useState<Session | null>(null);
 
-  // Último livro lido (atalho "continuar lendo" — best-effort, local).
   useEffect(() => {
     listLibrary(null)
       .then((list) => {
@@ -31,7 +34,7 @@ export default function Capa() {
   }, []);
 
   return (
-    <main className="igot-shell">
+    <main className="igot-shell ft">
       <div className="igot-topbar">
         <div className="igot-topbar-left">
           <div className="brand" title="Moka — livros e vídeos">
@@ -40,23 +43,69 @@ export default function Capa() {
           </div>
         </div>
         <div className="igot-topbar-actions">
-          <CloseAppButton />
+          <ContaButton />
           <LangSwitcher />
         </div>
       </div>
 
       <div className="capa-body">
+        <p className="capa-kicker">O Cafezinho apresenta</p>
         <div className="capa-logo">Moka</div>
         <h1 className="capa-tagline">{t("app_tagline")}</h1>
-        <p className="capa-sub">{t("capa_hero_sub")}</p>
 
+        {/* ── V3: os 2 caminhos — pontos (IA da casa) × licença (BYOK) ── */}
+        <div className="capa-paths">
+          <a className="capa-path" href="/experimente">
+            <b>{t("capa_path_points_title")}</b>
+            <span>{t("capa_path_points_desc")}</span>
+          </a>
+          <a className="capa-path" href="/experimente?plano=avancado">
+            <b>{t("capa_path_adv_title")}</b>
+            <span>{t("capa_path_adv_desc")}</span>
+          </a>
+        </div>
+
+        {/* ── Vídeo do anúncio: explica o que é ── */}
+        <h2 className="capa-video-title">{t("capa_video_title")}</h2>
+        <video
+          className="capa-video"
+          src={VIDEO_URL}
+          controls
+          playsInline
+          preload="metadata"
+        />
+
+        {/* ── O que os pontos compram (equivalências honestas) ── */}
+        <h2 className="capa-plans-title">{t("capa_how_title")}</h2>
+        <div className="capa-plans-rule" />
+        <div className="capa-plans">
+          <div className="capa-plan">
+            <b>🎬 30 pts</b>
+            <span className="desc">1 {t("exp_videos")} (resumo)</span>
+          </div>
+          <div className="capa-plan">
+            <b>📖 40 pts</b>
+            <span className="desc">1 {t("exp_books")} (resumo)</span>
+          </div>
+          <div className="capa-plan">
+            <b>🌍 80 pts</b>
+            <span className="desc">1 {t("exp_translations")} (livro inteiro)</span>
+          </div>
+          <div className="capa-plan">
+            <b>🎧 40 pts</b>
+            <span className="desc">1 {t("exp_audios")} (10 min)</span>
+          </div>
+        </div>
+        <p className="capa-plans-note">{t("capa_plans_note")}</p>
+
+        {/* ── Entradas do app ── */}
         <div className="capa-cards">
           <a className="capa-card" href="/estante">
-            <b>{t("capa_books_title")}</b>
+            <b>📖 {t("capa_shelf_books")}</b>
             <span>{t("capa_books_desc")}</span>
           </a>
           <a className="capa-card" href="/video">
-            <b>{t("capa_videos_title")}</b>
+            <b>🎬 {t("capa_shelf_videos")}</b>
             <span>{t("capa_videos_desc")}</span>
           </a>
         </div>
@@ -75,102 +124,285 @@ export default function Capa() {
       </div>
 
       <style jsx>{`
+        /* ── Financial Times: papel salmão, tinta preta, serifa editorial,
+              filetes finos, cantos retos. Elegância por subtração. ── */
+        .ft {
+          --ft-paper: #fff1e5;
+          --ft-paper-deep: #f7e7d7;
+          --ft-ink: #191919;
+          --ft-ink-soft: #66605a;
+          --ft-hairline: #d9c8b8;
+          --ft-teal: #0f7680;
+          background: var(--ft-paper);
+          color: var(--ft-ink);
+        }
+        .ft :global(.igot-topbar) {
+          background: var(--ft-paper);
+          border-bottom: 1px solid var(--ft-hairline);
+        }
         .capa-body {
           flex: 1;
           overflow-y: auto;
           display: flex;
           flex-direction: column;
           align-items: center;
-          justify-content: center;
           text-align: center;
-          padding: 40px 24px 64px;
+          padding: 44px 24px 72px;
+          background: var(--ft-paper);
+        }
+        .capa-kicker {
+          text-transform: uppercase;
+          letter-spacing: 0.16em;
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--ft-teal);
+          margin: 0 0 10px;
         }
         .capa-logo {
-          font-family: var(--font-sans);
-          font-size: 64px;
-          font-weight: 800;
-          letter-spacing: -0.02em;
-          color: var(--accent-dark);
+          font-family: var(--font-brand);
+          font-size: 68px;
+          font-weight: 600;
+          letter-spacing: -0.01em;
+          color: var(--ft-ink);
           line-height: 1;
-          margin-bottom: 10px;
+          margin-bottom: 8px;
         }
         .capa-tagline {
-          font-family: var(--font-sans);
-          font-size: clamp(20px, 3.4vw, 30px);
-          font-weight: 800;
-          color: var(--text);
-          margin: 0 0 12px;
+          font-family: var(--font-brand);
+          font-size: clamp(21px, 3.4vw, 30px);
+          font-weight: 500;
+          color: var(--ft-ink);
+          margin: 0 0 34px;
+          max-width: 560px;
+          line-height: 1.25;
         }
-        .capa-sub {
-          color: var(--text-muted);
-          max-width: 520px;
-          margin: 0 0 36px;
-          font-size: 16px;
+
+        .capa-paths {
+          display: flex;
+          gap: 0;
+          flex-wrap: wrap;
+          justify-content: center;
+          margin-bottom: 40px;
+          border: 1px solid var(--ft-ink);
+          background: var(--ft-paper-deep);
+        }
+        .capa-path {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+          width: min(300px, 94vw);
+          padding: 26px 24px;
+          text-decoration: none;
+          color: var(--ft-ink);
+          border-right: 1px solid var(--ft-hairline);
+          transition: background 0.15s ease;
+        }
+        .capa-path:last-child { border-right: none; }
+        .capa-path:hover { background: #f5e0cb; }
+        .capa-path b {
+          font-family: var(--font-brand);
+          font-size: 21px;
+          font-weight: 600;
+        }
+        .capa-path span { color: var(--ft-ink-soft); font-size: 14px; line-height: 1.5; }
+
+        /* ── Oferta R$5 — bloco editorial, sem grito ── */
+        .capa-offer {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 10px;
+          width: min(500px, 94vw);
+          padding: 34px 30px 30px;
+          margin-bottom: 40px;
+          background: var(--ft-paper-deep);
+          border: 1px solid var(--ft-ink);
+          text-decoration: none;
+          color: var(--ft-ink);
+          position: relative;
+        }
+        .capa-offer:hover { background: #f5e0cb; }
+        .capa-offer-badge {
+          text-transform: uppercase;
+          letter-spacing: 0.14em;
+          font-size: 11px;
+          font-weight: 700;
+          color: var(--ft-teal);
+        }
+        .capa-offer-price {
+          font-family: var(--font-brand);
+          font-size: 88px;
+          font-weight: 600;
+          line-height: 1;
+          color: var(--ft-ink);
+        }
+        .capa-offer-price small { font-size: 28px; font-weight: 500; }
+        .capa-offer-desc {
+          color: var(--ft-ink-soft);
+          font-size: 15px;
           line-height: 1.55;
+          max-width: 380px;
         }
+        .capa-offer-cta {
+          margin-top: 10px;
+          background: var(--ft-ink);
+          color: #fff;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          font-weight: 700;
+          font-size: 13px;
+          padding: 15px 34px;
+        }
+
+        /* ── Vídeo ── */
+        .capa-video-title {
+          font-family: var(--font-brand);
+          font-weight: 600;
+          font-size: 22px;
+          color: var(--ft-ink);
+          margin: 0 0 14px;
+        }
+        .capa-video {
+          width: min(640px, 94vw);
+          aspect-ratio: 16 / 9;
+          background: #000;
+          border: 1px solid var(--ft-ink);
+          margin-bottom: 42px;
+        }
+
+        /* ── Planos ── */
+        .capa-plans-title {
+          font-family: var(--font-brand);
+          font-weight: 600;
+          font-size: 22px;
+          color: var(--ft-ink);
+          margin: 0 0 6px;
+        }
+        .capa-plans-rule {
+          width: 64px;
+          height: 1px;
+          background: var(--ft-ink);
+          margin-bottom: 20px;
+        }
+        .capa-plans {
+          display: flex;
+          gap: 0;
+          flex-wrap: wrap;
+          justify-content: center;
+          margin-bottom: 36px;
+          border: 1px solid var(--ft-hairline);
+          background: #fff;
+        }
+        .capa-plan {
+          display: flex;
+          flex-direction: column;
+          gap: 8px;
+          width: 230px;
+          padding: 22px 20px;
+          background: transparent;
+          border: none;
+          border-right: 1px solid var(--ft-hairline);
+          text-decoration: none;
+          color: var(--ft-ink);
+          text-align: center;
+        }
+        .capa-plan:last-child { border-right: none; }
+        .capa-plan b {
+          font-family: var(--font-brand);
+          font-size: 19px;
+          font-weight: 600;
+        }
+        .capa-plan .price {
+          font-family: var(--font-brand);
+          color: var(--ft-ink);
+          font-weight: 600;
+          font-size: 17px;
+        }
+        .capa-plan .desc { color: var(--ft-ink-soft); font-size: 13px; line-height: 1.5; }
+        .capa-plan.featured { background: var(--ft-paper); }
+        .capa-plan.livre {
+          background: #eef7ee;
+          border-top: 3px solid #2c7a2c;
+        }
+        /* BYOK (Cappuccino) com cor de diferenciação — pedido do Miguel:
+           "usar sua própria tem que ser com uma cor diferente" */
+        .capa-plan.byok {
+          background: #eaf3f4;
+          border-top: 3px solid var(--ft-teal);
+        }
+        .capa-plans-note {
+          color: var(--ft-ink-soft);
+          font-size: 13px;
+          margin: -22px 0 30px;
+        }
+        .capa-plan .soon {
+          align-self: center;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          font-size: 10px;
+          font-weight: 700;
+          color: var(--ft-ink-soft);
+          border: 1px solid var(--ft-hairline);
+          padding: 3px 10px;
+        }
+
+        /* ── Cards de seção + estante + footer ── */
         .capa-cards {
           display: flex;
-          gap: 16px;
+          gap: 0;
           flex-wrap: wrap;
           justify-content: center;
           margin-bottom: 26px;
+          border: 1px solid var(--ft-hairline);
+          background: #fff;
         }
         .capa-card {
           display: flex;
           flex-direction: column;
-          gap: 8px;
-          width: 264px;
-          padding: 24px 22px;
-          background: var(--surface);
-          border: 1px solid var(--border);
-          border-radius: 18px;
+          gap: 6px;
+          width: 250px;
+          padding: 20px;
+          background: transparent;
+          border: none;
+          border-right: 1px solid var(--ft-hairline);
           text-decoration: none;
-          color: var(--text);
-          box-shadow: var(--shadow-sm);
-          transition: transform 0.15s ease, border-color 0.15s ease;
+          color: var(--ft-ink);
+          transition: background 0.15s ease;
         }
-        .capa-card:hover {
-          transform: translateY(-3px);
-          border-color: var(--gold);
-        }
-        .capa-card b {
-          font-size: 19px;
-          font-weight: 800;
-        }
-        .capa-card span {
-          color: var(--text-muted);
-          font-size: 14px;
-          line-height: 1.45;
-        }
+        .capa-card:last-child { border-right: none; }
+        .capa-card:hover { background: var(--ft-paper); }
+        .capa-card b { font-family: var(--font-brand); font-size: 17px; font-weight: 600; }
+        .capa-card span { color: var(--ft-ink-soft); font-size: 13px; line-height: 1.5; }
         .capa-continue {
           display: inline-block;
           margin-bottom: 14px;
-          padding: 13px 24px;
-          border-radius: var(--radius-pill);
-          background: linear-gradient(180deg, var(--accent), var(--accent-dark));
-          color: #fff8ee;
+          padding: 13px 26px;
+          background: var(--ft-ink);
+          color: #fff;
           text-decoration: none;
-          font-size: 15px;
-          box-shadow: var(--shadow-sm);
+          font-size: 14px;
           max-width: 90vw;
           overflow: hidden;
           text-overflow: ellipsis;
           white-space: nowrap;
         }
         .capa-shelf {
-          color: var(--accent-dark);
+          color: var(--ft-teal);
           text-decoration: none;
           font-weight: 700;
+          font-size: 14px;
           margin-bottom: 34px;
+          border-bottom: 1px solid var(--ft-teal);
+          padding-bottom: 1px;
         }
-        .capa-shelf:hover {
-          text-decoration: underline;
-        }
+        .capa-shelf:hover { color: var(--ft-ink); border-color: var(--ft-ink); }
         .capa-footer {
-          color: var(--text-muted);
-          font-size: 13px;
+          color: var(--ft-ink-soft);
+          font-size: 12.5px;
           max-width: 460px;
-          line-height: 1.5;
+          line-height: 1.55;
+          border-top: 1px solid var(--ft-hairline);
+          padding-top: 18px;
         }
       `}</style>
     </main>

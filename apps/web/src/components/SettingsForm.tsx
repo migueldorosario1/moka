@@ -10,6 +10,7 @@ import {
   setWhisperKey, getWhisperKeyMasked,
   getIngestServer, setIngestServer,
 } from "@/lib/config";
+import { getConta, setConta, verificarConta, licencaAtiva } from "@/lib/moka-conta";
 import { testConnection, listModels } from "@/lib/ai-client";
 import { useI18n } from "./I18nProvider";
 
@@ -71,6 +72,46 @@ export function SettingsForm({
     message: "",
   });
   const [saved, setSaved] = useState(false);
+  // V3: conta de pontos (IA da casa) + licença do modo avançado
+  const [contaInfo, setContaInfo] = useState<{ email: string; nome: string; saldo: number } | null>(null);
+  const [contaEmail, setContaEmail] = useState("");
+  const [contaSenha, setContaSenha] = useState("");
+  const [contaErro, setContaErro] = useState("");
+  const [contaLoading, setContaLoading] = useState(false);
+  const [licenca, setLicenca] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    const c = getConta();
+    if (c) {
+      setContaLoading(true);
+      Promise.all([verificarConta(c.email, c.senha), licencaAtiva(c.email, c.senha)])
+        .then(([info, lic]) => {
+          setContaInfo({ email: c.email, nome: info.nome, saldo: info.saldo });
+          setLicenca(lic);
+        })
+        .catch(() => setConta(null))
+        .finally(() => setContaLoading(false));
+    }
+  }, []);
+
+  const entrarConta = async () => {
+    setContaErro("");
+    setContaLoading(true);
+    try {
+      const [info, lic] = await Promise.all([
+        verificarConta(contaEmail.trim(), contaSenha),
+        licencaAtiva(contaEmail.trim(), contaSenha),
+      ]);
+      setConta({ email: contaEmail.trim(), senha: contaSenha });
+      setContaInfo({ email: contaEmail.trim(), nome: info.nome, saldo: info.saldo });
+      setLicenca(lic);
+      setContaSenha("");
+    } catch (err) {
+      setContaErro(err instanceof Error ? err.message : String(err));
+    } finally {
+      setContaLoading(false);
+    }
+  };
   // Busca de modelos disponíveis do provedor.
   const [modelsList, setModelsList] = useState<string[] | null>(null);
   const [modelsLoading, setModelsLoading] = useState(false);
@@ -253,6 +294,120 @@ export function SettingsForm({
 
   return (
     <form className="settings-form" onSubmit={handleSave}>
+      {/* ═══ V3 (mirror): MODO SIMPLES — pra quem NÃO sabe o que é API ═══
+          O default é o Premium (IA incluída, sem chave). BYOK vira opção
+          avançada lá embaixo. (Pedido do Miguel, 23/07 — espelho V3.) */}
+      <div className="v3-simple">
+        <h3 className="v3-simple-title">✨ Compre pontos e use — sem configurar nada</h3>
+        <p className="v3-simple-sub">
+          Com os pacotes de pontos, a inteligência artificial já vem
+          incluída: é só comprar e usar, sem chave e sem configuração.
+          Sem mensalidade — seus pontos não expiram.
+        </p>
+        <div className="v3-plans">
+          <a className="v3-plan v3-plan-featured" href="/experimente">
+            <span className="v3-plan-badge">comece aqui</span>
+            <b>⚡ Pontos</b>
+            <span className="v3-plan-price">a partir de R$ 40</span>
+            <span className="v3-plan-desc">
+              IA da casa incluída. 400 pontos ≈ 13 vídeos ou 10 livros.
+              Sem mensalidade — não expiram.
+            </span>
+          </a>
+          <a className="v3-plan v3-plan-byok" href="/experimente?plano=avancado">
+            <b>💼 Modo avançado</b>
+            <span className="v3-plan-price">R$ 50 / 6 meses</span>
+            <span className="v3-plan-desc">
+              Licença para usar a SUA chave de IA, com painel de gastos.
+            </span>
+          </a>
+        </div>
+        <p className="v3-simple-note" style={{ marginTop: 10 }}>
+          Vale para livros E vídeos. Seus pontos não expiram.
+        </p>
+
+        {/* V3: entrar com a conta de pontos (a IA da casa funciona na hora) */}
+        <div className="v3-conta">
+          {contaInfo ? (
+            <div className="v3-conta-logado">
+              <p>
+                ✅ <strong>{contaInfo.nome}</strong> conectado —{" "}
+                <strong>{contaInfo.saldo.toLocaleString("pt-BR")} pontos</strong>
+                {licenca === true && " · 💼 licença avançada ativa"}
+                {licenca === false && " · sem licença avançada"}
+              </p>
+              <button
+                type="button"
+                className="mini-btn"
+                onClick={() => { setConta(null); setContaInfo(null); setLicenca(null); }}
+              >
+                Sair da conta
+              </button>
+            </div>
+          ) : (
+            <div className="v3-conta-form">
+              <p className="v3-conta-titulo">🔑 Entrar com sua conta de pontos</p>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                <input
+                  type="email" placeholder="seu e-mail da compra" value={contaEmail}
+                  onChange={(e) => setContaEmail(e.target.value)}
+                  style={{ flex: 1, minWidth: 160, padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
+                />
+                <input
+                  type="password" placeholder="senha (veio por e-mail)" value={contaSenha}
+                  onChange={(e) => setContaSenha(e.target.value)}
+                  style={{ flex: 1, minWidth: 140, padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
+                />
+                <button
+                  type="button" className="mini-btn use-btn"
+                  onClick={() => void entrarConta()}
+                  disabled={contaLoading || !contaEmail.trim() || !contaSenha}
+                >
+                  {contaLoading ? "⏳" : "Entrar"}
+                </button>
+              </div>
+              {contaErro && <p className="feedback err">{contaErro}</p>}
+              <p className="hint">
+                Comprou pontos? A senha foi pro seu e-mail. Ainda não tem?{" "}
+                <a href="/experimente" style={{ color: "var(--accent-dark)", fontWeight: 700 }}>
+                  Compre em /experimente →
+                </a>
+              </p>
+            </div>
+          )}
+        </div>
+        <p className="v3-simple-note">
+          Já comprou ou tem cupom? <a href="https://43.156.151.165.sslip.io/painel" target="_blank" rel="noreferrer">Entre no seu painel de pontos →</a>
+        </p>
+      </div>
+
+      {/* ═══ V3: daqui pra baixo é AVANÇADO (BYOK — usar a própria chave) ═══
+          Só aparece o seletor de provedor se a LICENÇA estiver ativa
+          (pedido do Miguel: nada de "escolher provedor" pra usuário comum). */}
+      {licenca === false ? (
+        <div className="v3-advanced v3-advanced-locked">
+          <p>
+            🔒 <strong>Modo avançado</strong> — usar a própria chave de IA é um
+            recurso da <strong>licença</strong> (R$ 50 / 6 meses).{" "}
+            <a href="/experimente?plano=avancado" style={{ color: "var(--accent-dark)", fontWeight: 700 }}>
+              Ativar licença →
+            </a>
+          </p>
+          <p className="hint" style={{ marginTop: 6 }}>
+            Sem licença você nem vê esta área: é só comprar pontos e usar —
+            a IA da casa já está pronta, sem configurar nada.
+          </p>
+        </div>
+      ) : (
+      <details className="v3-advanced">
+        <summary>
+          🔧 <strong>Configurações avançadas</strong> — usar minha própria chave de IA
+          <span className="v3-advanced-hint">
+            Só mexa aqui se você sabe o que é uma API key. Sua chave fica salva
+            no seu navegador — nunca vai pro nosso servidor.
+          </span>
+        </summary>
+
       {/* Minhas chaves cadastradas — cada uma com provedor + MODELO visível */}
       {entries.length > 0 && (
         <div className="saved-providers">
@@ -650,6 +805,134 @@ export function SettingsForm({
           {test.message}
         </p>
       )}
+
+      </details>
+      )}
+
+      <style jsx>{`
+        .v3-simple {
+          background: #f7e7d7;
+          border: 1px solid #191919;
+          border-radius: 0;
+          padding: 22px 20px;
+          margin-bottom: 18px;
+        }
+        .v3-simple-title {
+          margin: 0 0 8px;
+          font-family: var(--font-brand);
+          font-weight: 600;
+          font-size: 21px;
+          color: #191919;
+        }
+        .v3-simple-sub {
+          margin: 0 0 16px;
+          color: var(--text);
+          font-size: 14.5px;
+          line-height: 1.55;
+        }
+        .v3-plans {
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+        .v3-plan {
+          position: relative;
+          flex: 1;
+          min-width: 150px;
+          display: flex;
+          flex-direction: column;
+          gap: 5px;
+          background: #fff;
+          border: 1px solid #d9c8b8;
+          border-radius: 0;
+          padding: 16px 14px;
+          text-decoration: none;
+          color: #191919;
+        }
+        .v3-plan b { font-family: var(--font-brand); font-size: 17px; font-weight: 600; }
+        .v3-plan-price { font-family: var(--font-brand); color: #191919; font-weight: 600; font-size: 16px; }
+        .v3-plan-desc { color: var(--text-muted); font-size: 12.5px; line-height: 1.4; }
+        .v3-plan-featured {
+          border-color: #191919;
+          background: #fff1e5;
+        }
+        .v3-plan-byok {
+          background: #eaf3f4;
+          border-top: 3px solid #0f7680;
+        }
+        .v3-plan-livre {
+          background: #eef7ee;
+          border-top: 3px solid #2c7a2c;
+        }
+        .v3-plan-featured:hover { background: #f5e0cb; }
+        .v3-plan-badge {
+          position: absolute;
+          top: -10px;
+          left: 12px;
+          background: #0f7680;
+          color: #fff;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          font-size: 10px;
+          font-weight: 700;
+          padding: 3px 10px;
+        }
+        .v3-plan-soon {
+          align-self: flex-start;
+          margin-top: 2px;
+          text-transform: uppercase;
+          letter-spacing: 0.1em;
+          font-size: 10px;
+          font-weight: 700;
+          color: var(--text-muted);
+          border: 1px solid var(--border);
+          padding: 3px 10px;
+        }
+        .v3-simple-note {
+          margin: 14px 0 0;
+          font-size: 13px;
+          color: var(--text-muted);
+        }
+        .v3-simple-note a { color: var(--accent-dark); font-weight: 700; }
+        .v3-advanced-locked {
+          padding: 14px 16px;
+          background: var(--surface);
+          font-size: 14px;
+        }
+        .v3-advanced-locked p { margin: 0; line-height: 1.55; }
+        .v3-advanced {
+          border: 1px solid var(--border);
+          border-radius: 0;
+          padding: 0 16px 16px;
+          margin-bottom: 14px;
+          background: var(--surface);
+        }
+        .v3-advanced summary {
+          cursor: pointer;
+          padding: 14px 0;
+          font-size: 14.5px;
+          color: var(--text);
+          list-style: none;
+        }
+        .v3-advanced summary::-webkit-details-marker { display: none; }
+        .v3-advanced summary::before { content: "▸ "; color: var(--accent); }
+        .v3-advanced[open] summary::before { content: "▾ "; }
+        .v3-conta {
+          margin-top: 14px; padding: 14px; border: 1px dashed var(--border);
+          border-radius: 10px; background: var(--surface);
+        }
+        .v3-conta-titulo { font-weight: 700; font-size: 13.5px; margin: 0 0 8px; }
+        .v3-conta-logado { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+        .v3-conta-logado p { margin: 0; font-size: 14px; }
+        .v3-advanced-hint {
+          display: block;
+          margin-top: 4px;
+          font-size: 12.5px;
+          font-weight: 400;
+          color: var(--text-muted);
+          line-height: 1.45;
+        }
+      `}</style>
 
       {/* Link pra tutorial completo */}
       <a href="/ajuda" target="_blank" rel="noreferrer" className="help-link-banner">

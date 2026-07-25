@@ -49,6 +49,8 @@ export interface ParsedBook {
   chapters: Chapter[];
   /** Metadados brutos do arquivo original. */
   metadata: Record<string, string>;
+  /** Capa do livro (data URL) — extraída do EPUB ou render do PDF (V3). */
+  coverImage?: string;
 }
 
 /** Resultado da tentativa de parse. */

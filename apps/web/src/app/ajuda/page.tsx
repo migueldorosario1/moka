@@ -1,291 +1,198 @@
-import { Metadata } from "next";
+"use client";
+
+import { useMemo, useState } from "react";
+import { CafezinhoLogo } from "@/components/CafezinhoLogo";
+import { ContaButton } from "@/components/ContaButton";
 import { LangSwitcher } from "@/components/LangSwitcher";
 
-export const metadata: Metadata = {
-  title: "Ajuda — Moka",
-  description: "Tutorial completo: ícones, funcionalidades e planos do Moka.",
-};
-
 /**
- * Página /ajuda — Tutorial completo do Moka.
- *
- * Explica cada ícone, cada funcionalidade, como configurar a IA,
- * e os planos (Free, Cappuccino, Espresso).
+ * /ajuda — HELP do V3 (doc 15): página bem explicativa para quem nunca
+ * viu "API", com busca e robô de dúvidas (responde do FAQ por palavras-chave;
+ * funciona offline, sem gastar IA). Substitui o tutorial antigo (backup local).
  */
-export default function AjudaPage() {
+
+interface Faq { q: string; a: string; tags: string[] }
+
+const FAQ: Faq[] = [
+  { q: "O que é o Moka?", tags: ["moka", "que", "é", "app", "aplicativo"],
+    a: "O Moka é um leitor com inteligência artificial: ele resume vídeos do YouTube e livros (EPUB/PDF) em minutos, traduz, explica, identifica personagens e responde perguntas sobre o conteúdo — no seu idioma." },
+  { q: "O que são pontos?", tags: ["pontos", "ponto", "créditos", "saldo"],
+    a: "Pontos são a moeda do Moka. Cada ação da IA custa pontos: resumir um vídeo custa 30, resumir um livro custa 40, traduzir um livro inteiro custa 80 e um áudio de 10 minutos custa 40. Você compra pontos uma vez e gasta quando quiser — eles não expiram." },
+  { q: "Quanto custa cada coisa?", tags: ["preço", "custa", "valor", "quanto"],
+    a: "O ponto custa R$ 0,10. Então: resumo de vídeo = R$ 3,00 · resumo de livro = R$ 4,00 · tradução de livro inteiro = R$ 8,00 · áudio de 10 min = R$ 4,00. A compra mínima é R$ 40 (400 pontos)." },
+  { q: "Como compro pontos?", tags: ["comprar", "compra", "pix", "pagar", "pagamento"],
+    a: "Na página Comprar pontos (/experimente): escolha a quantidade (mínimo 400), informe e-mail e nome, pague o Pix. Os pontos caem na sua conta em segundos, junto com uma senha de acesso que também vai por e-mail." },
+  { q: "Os pontos expiram?", tags: ["expira", "expiram", "validade", "prazo"],
+    a: "Não. Seus pontos são seus para sempre: use hoje, amanhã ou daqui a um ano." },
+  { q: "Preciso instalar alguma coisa?", tags: ["instalar", "baixar", "download", "app"],
+    a: "Não. O Moka funciona no navegador, no celular e no computador. Se quiser, dá pra instalar como aplicativo (o botão aparece na página inicial) — é grátis e não passa por loja." },
+  { q: "O que é o modo avançado (BYOK)?", tags: ["avançado", "byok", "chave", "api", "licença"],
+    a: "É o modo para quem já tem a própria chave de IA (OpenAI, DeepSeek etc.). Com a licença de R$ 50 por 6 meses, você usa o Moka inteiro com a SUA chave — os gastos de IA saem da sua conta do provedor, não dos pontos. A chave fica salva só no seu navegador." },
+  { q: "O que é uma chave de API?", tags: ["api", "chave", "key", "o que é"],
+    a: "É como uma senha que permite a um programa usar uma inteligência artificial (como a DeepSeek ou a OpenAI). Quem tem uma, pode usar o modo avançado. Quem não tem, simplesmente compra pontos — a IA da casa já está incluída, sem configurar nada." },
+  { q: "Qual IA o Moka usa?", tags: ["ia", "llm", "modelo", "deepseek", "openai", "groq"],
+    a: "Uma cascata de modelos escolhidos a dedo para custar pouco e funcionar muito bem em português: DeepSeek V4 para texto, Groq Whisper para transcrição de áudio e OpenAI para voz." },
+  { q: "O Moka funciona em outros idiomas?", tags: ["idioma", "língua", "inglês", "espanhol", "tradução"],
+    a: "Sim. A interface fala 12 idiomas (bandeirinha no topo), o Moka detecta automaticamente o idioma do vídeo ou livro e responde no SEU idioma. Um vídeo em inglês vira resumo em português sem você configurar nada." },
+  { q: "E se o pagamento não cair?", tags: ["pagamento", "não caiu", "problema", "pix", "erro"],
+    a: "O Pix confirma em segundos, mas se algo travar, os pontos são reconciliados automaticamente (nosso sistema confere com o Mercado Pago). Persistindo, fale com a gente na comunidade que resolvemos na hora." },
+  { q: "Como vejo meu saldo e histórico?", tags: ["saldo", "painel", "histórico", "extrato"],
+    a: "No seu painel (/painel na página de compra): entre com o e-mail e a senha que você recebeu na compra. Lá aparecem saldo, pontos consumidos e as últimas ações." },
+  { q: "Quem faz o Moka?", tags: ["quem", "cafezinho", "empresa", "time"],
+    a: "O Moka é feito pelo time de O Cafezinho, com carinho de jornalista e precisão de engenharia." },
+  { q: "Meus dados ficam seguros?", tags: ["dados", "privacidade", "segurança", "seguro"],
+    a: "Sim. Seus livros e vídeos ficam no seu navegador. No modo avançado, sua chave nunca sai do seu aparelho. Nos pagamentos, só guardamos e-mail, nome e pontos — o dinheiro é do Mercado Pago, não passa pelas nossas mãos." },
+];
+
+/** Normaliza (minúsculas, sem acento) pra busca e pro robô. */
+function norm(s: string): string {
+  return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "");
+}
+
+/** Robô de dúvidas: pontua cada item do FAQ por palavras da pergunta. */
+function responder(pergunta: string): string {
+  const palavras = norm(pergunta).split(/[^a-z0-9]+/).filter((w) => w.length > 2);
+  let melhor: Faq | null = null;
+  let melhorScore = 0;
+  for (const item of FAQ) {
+    const alvo = norm(item.q + " " + item.tags.join(" "));
+    let score = 0;
+    for (const p of palavras) if (alvo.includes(p)) score += p.length > 5 ? 2 : 1;
+    if (score > melhorScore) { melhorScore = score; melhor = item; }
+  }
+  if (!melhor || melhorScore < 2) {
+    return "Hmm, não tenho certeza da resposta pra essa. Tenta perguntar de outro jeito — ou traz pra comunidade, que a gente responde rapidinho. Enquanto isso, os tópicos abaixo cobrem o essencial. 👇";
+  }
+  return melhor.a;
+}
+
+export default function Ajuda() {
+  const [busca, setBusca] = useState("");
+  const [pergunta, setPergunta] = useState("");
+  const [resposta, setResposta] = useState("");
+
+  const filtrados = useMemo(() => {
+    const q = norm(busca);
+    if (!q) return FAQ;
+    return FAQ.filter(
+      (f) => norm(f.q).includes(q) || f.tags.some((tg) => norm(tg).includes(q)) || norm(f.a).includes(q),
+    );
+  }, [busca]);
+
   return (
-    <main className="info-page">
-      <article className="info-card">
-        <div className="info-topbar"><a href="/" className="info-back">← Moka</a><LangSwitcher /></div>
+    <main className="help">
+      <div className="igot-topbar help-topbar">
+        <div className="igot-topbar-left">
+          <a className="brand" href="/">
+            <CafezinhoLogo size={26} opacity={0.85} />
+            <span>Moka</span>
+          </a>
+        </div>
+        <div className="igot-topbar-actions">
+          <ContaButton />
+          <LangSwitcher />
+        </div>
+      </div>
 
-        <h1>❓ Ajuda — Tutorial do Moka</h1>
+      <div className="help-body">
+        <p className="help-kicker">Central de ajuda</p>
+        <h1 className="help-title">Como o Moka funciona</h1>
 
-        <p className="info-intro">
-          Bem-vindo ao <strong>Moka</strong>! Este guia explica tudo o que você
-          precisa saber para aproveitar ao máximo seu leitor inteligente.
-        </p>
+        {/* Robô de dúvidas */}
+        <section className="help-robo">
+          <h2>🤖 Pergunte ao robô</h2>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (pergunta.trim()) setResposta(responder(pergunta));
+            }}
+          >
+            <input
+              value={pergunta}
+              onChange={(e) => setPergunta(e.target.value)}
+              placeholder="Ex.: quanto custa traduzir um livro?"
+            />
+            <button type="submit">Perguntar</button>
+          </form>
+          {resposta && <p className="help-resposta">{resposta}</p>}
+        </section>
 
-        {/* ─── ÍCONES DO MENU ─── */}
-        <h2>📖 Ícones do menu superior</h2>
-        <p>Cada ícone no menu do leitor tem uma função específica:</p>
+        {/* Busca */}
+        <input
+          className="help-busca"
+          value={busca}
+          onChange={(e) => setBusca(e.target.value)}
+          placeholder="🔍 Buscar na ajuda (ex.: pontos, Pix, licença…)"
+        />
 
-        <div className="icon-guide">
-          <div className="icon-row">
-            <span className="icon-emoji">☕</span>
-            <div>
-              <strong>Prateleira</strong> — Volta para a sua estante de livros
-              (página inicial).
-            </div>
-          </div>
-          <div className="icon-row">
-            <span className="icon-emoji">➕</span>
-            <div>
-              <strong>Abrir novo</strong> — Abre um novo arquivo PDF ou EPUB
-              direto do seu dispositivo.
-            </div>
-          </div>
-          <div className="icon-row">
-            <span className="icon-emoji">📚</span>
-            <div>
-              <strong>Estante</strong> — Mesma função do ☕: volta pra prateleira.
-            </div>
-          </div>
-          <div className="icon-row">
-            <span className="icon-emoji">📓</span>
-            <div>
-              <strong>Anotações</strong> — Abre suas anotações salvas: traduções,
-              explicações, perguntas e marcadores da página.
-            </div>
-          </div>
-          <div className="icon-row">
-            <span className="icon-emoji">🏷</span>
-            <div>
-              <strong>Marcar página</strong> — Cria um marcador (bookmark) na
-              página atual. Fica salvo para você voltar depois.
-            </div>
-          </div>
-          <div className="icon-row">
-            <span className="icon-emoji">🔖</span>
-            <div>
-              <strong>Marcadores</strong> — Lista todos os marcadores do livro.
-              Clica num marcador pra ir direto praquela página.
-            </div>
-          </div>
-          <div className="icon-row">
-            <span className="icon-emoji">📸</span>
-            <div>
-              <strong>Foto da página</strong> — Salva uma imagem (PNG) da página
-              atual no seu dispositivo. Ótimo para guardar citações.
-            </div>
-          </div>
-          <div className="icon-row">
-            <span className="icon-emoji">🔊</span>
-            <div>
-              <strong>Ler em voz alta</strong> — O Moka lê a página em voz alta.
-              Com OpenAI, usa voz neural natural (qualidade de pessoa). Sem
-              OpenAI, usa a voz do dispositivo. <br />
-              <em>Controles: 🔊 tocar · ⏸ pausar · ▶️ continuar · ⏹ parar</em>
-            </div>
-          </div>
-          <div className="icon-row">
-            <span className="icon-emoji">🎤</span>
-            <div>
-              <strong>Perguntar por voz</strong> — Abre o painel da IA para você
-              <strong> falar</strong> sua pergunta sobre o livro (em vez de
-              digitar). O Moka transcreve sua voz e a IA responde.
-            </div>
-          </div>
-          <div className="icon-row">
-            <span className="icon-emoji">🌐</span>
-            <div>
-              <strong>Traduzir página</strong> — Traduz a página inteira para o
-              idioma escolhido nas Configurações. Mostra confirmação antes de
-              traduzir.
-            </div>
-          </div>
-          <div className="icon-row">
-            <span className="icon-emoji">🧠</span>
-            <div>
-              <strong>Explicar página</strong> — A IA explica o conteúdo da
-              página inteira. Mostra confirmação antes de explicar.
-            </div>
-          </div>
-          <div className="icon-row">
-            <span className="icon-emoji">⚙️</span>
-            <div>
-              <strong>Configurações</strong> — Abre as configurações de IA:
-              provedor, chave de API, modelo, idiomas e planos.
-            </div>
-          </div>
-          <div className="icon-row">
-            <span className="icon-emoji">⛶</span>
-            <div>
-              <strong>Tela cheia</strong> — Entra no modo leitura em tela cheia.
-              Todos os botões continuam acessíveis.
-            </div>
-          </div>
-          <div className="icon-row">
-            <span className="icon-emoji">👁</span>
-            <div>
-              <strong>Ocultar/Mostrar menu</strong> — (Só em tela cheia) Esconde
-              o menu para leitura sem distrações. Clica de novo pra reabrir.
-            </div>
-          </div>
+        {/* Tópicos */}
+        <div className="help-lista">
+          {filtrados.map((f) => (
+            <details key={f.q} className="help-item">
+              <summary>{f.q}</summary>
+              <p>{f.a}</p>
+            </details>
+          ))}
+          {filtrados.length === 0 && (
+            <p className="help-vazio">Nada encontrado — pergunta pro robô ali em cima 🤖</p>
+          )}
         </div>
 
-        {/* ─── MENU DE SELEÇÃO ─── */}
-        <h2>✏️ Selecionar texto</h2>
-        <p>
-          Quando você seleciona um trecho do texto (arrastando o dedo ou o
-          mouse), aparece um menu com <strong>3 opções</strong>:
-        </p>
-        <ul>
-          <li><strong>🌐 Traduzir</strong> — Traduz só o trecho selecionado</li>
-          <li><strong>🧠 Explicar</strong> — Explica só o trecho selecionado</li>
-          <li><strong>🔊 Falar</strong> — Lê o trecho selecionado em voz alta</li>
-        </ul>
-
-        {/* ─── ZOOM ─── */}
-        <h2>🔍 Zoom</h2>
-        <p>
-          Na lateral direita, há um controle vertical com <strong>+</strong> e
-          <strong> −</strong> para ajustar o zoom do PDF. Você também pode
-          <strong> pinçar com 2 dedos</strong> (afastar para aumentar, juntar
-          para diminuir) — igual a qualquer app do iPad.
-        </p>
-
-        {/* ─── NAVEGAÇÃO ─── */}
-        <h2>↔️ Passar páginas</h2>
-        <p>Existem 3 formas de navegar entre páginas:</p>
-        <ul>
-          <li><strong>Slider inferior</strong> — arraste a barra horizontal embaixo pra pular páginas</li>
-          <li><strong>Swipe</strong> — deslize o dedo da direita pra esquerda (próxima) ou esquerda pra direita (anterior)</li>
-          <li><strong>Setas</strong> — use ‹ › no slider inferior</li>
-        </ul>
-
-        {/* ─── CONFIGURAÇÕES DE IA ─── */}
-        <h2>🤖 Configurando a IA (plano Free)</h2>
-        <p>
-          No plano <strong>Free</strong>, você traz sua própria chave de API
-          (BYOK). Veja como:
-        </p>
-        <ol>
-          <li>Clica em <strong>⚙️ Configurações</strong></li>
-          <li>Escolha um <strong>provedor</strong> (DeepSeek, OpenAI, Kimi, etc)</li>
-          <li>Cole sua <strong>chave de API</strong> (obtida no site do provedor)</li>
-          <li>Opcional: escolha um <strong>modelo</strong> específico</li>
-          <li>Clique em <strong>Adicionar chave</strong></li>
-          <li>Pode cadastrar vários provedores e alternar entre eles</li>
-        </ol>
-        <p>
-          Suas chaves ficam <strong>criptografadas</strong> no seu dispositivo.
-          Nunca saem do seu navegador (exceto para repassar ao provedor).
-        </p>
-
-        {/* ─── 3 IDIOMAS ─── */}
-        <h2>🌐 Os 3 idiomas</h2>
-        <p>O Moka tem 3 idiomas independentes nas Configurações:</p>
-        <ul>
-          <li><strong>🖥️ Idioma da interface</strong> — botões, menus e textos do app (12 idiomas)</li>
-          <li><strong>📝 Idioma das traduções</strong> — para qual idioma a IA traduz e explica</li>
-          <li><strong>🔊 Idioma do áudio</strong> — em qual idioma o Moka lê em voz alta ("Original" = idioma do livro)</li>
-        </ul>
-
-        {/* ─── PLANOS ─── */}
-        <h2>☕ Planos do Moka</h2>
-        <div className="plans-help">
-          <div className="plan-help-card">
-            <h3>☕ Free (Grátis)</h3>
-            <p>
-              Você traz sua própria chave de API. Todas as funcionalidades
-              funcionam — tradução, explicação, voz, perguntas. A voz neural
-              (natural) só funciona com OpenAI.
-            </p>
-          </div>
-          <div className="plan-help-card">
-            <h3>🥛 Cappuccino ($3.99/mês)</h3>
-            <p>
-              IA inclusa — não precisa configurar nada. Voz neural natural,
-              traduzir livro inteiro, biblioteca na nuvem. O plano principal.
-            </p>
-          </div>
-          <div className="plan-help-card">
-            <h3>☕ Espresso ($9.99/mês)</h3>
-            <p>
-              Tudo do Cappuccino + Dante, o tutor de leitura. Dante lê o livro
-              em vídeo, explica e conversa com você. Ideal para educação.
-            </p>
-          </div>
-        </div>
-
-        {/* ─── DICAS ─── */}
-        <h2>💡 Dicas</h2>
-        <ul>
-          <li><strong>Toque duplo</strong> num parágrafo seleciona ele inteiro</li>
-          <li><strong>Pinça com 2 dedos</strong> no PDF para dar zoom</li>
-          <li><strong>Swipe horizontal</strong> para passar páginas</li>
-          <li><strong>Clique no canto superior direito</strong> da página para marcar (atalho invisível)</li>
-          <li>Todas as traduções e explicações são <strong>salvas automaticamente</strong> nas anotações</li>
-        </ul>
-
-        {/* ─── FAQ RÁPIDO ─── */}
-        <h2>❓ Perguntas rápidas</h2>
-        <details>
-          <summary>Não consigo ouvir a voz neural natural</summary>
-          <p>A voz neural (qualidade de pessoa) requer uma chave da OpenAI configurada. Vá em ⚙️ Configurações, adicione a OpenAI como provedor. Sem OpenAI, usa a voz do dispositivo.</p>
-        </details>
-        <details>
-          <summary>Meus livros somem quando troco de aparelho</summary>
-          <p>Faça login com o Google (botão Entrar). Suas anotações, marcadores e progresso sincronizam. PDFs ficam só no dispositivo (são grandes). EPUBs sincronizam completo.</p>
-        </details>
-        <details>
-          <summary>O microfone não funciona</summary>
-          <p>O microfone precisa de permissão do navegador. Na primeira vez, o Safari/Chrome pede permissão. Verifique nas configurações do navegador se o Moka tem acesso ao microfone.</p>
-        </details>
-
-        <p className="info-footer" style={{ marginTop: "32px" }}>
-          <a href="/sobre">Quem Somos →</a>
-          <span style={{ margin: "0 8px" }}>·</span>
-          <a href="/privacidade">Privacidade →</a>
-          <span style={{ margin: "0 8px" }}>·</span>
-          <a href="/premium">Planos →</a>
-        </p>
-
-        <div className="premium-footer">
+        {/* Comunidade */}
+        <section className="help-comunidade">
+          <h2>💬 Comunidade</h2>
           <p>
-            <strong>Moka</strong> — Leia qualquer coisa. Entenda tudo.<br />
-            Um produto do Cafezinho Media Group — Niterói, RJ — Brasil
+            Dúvidas, ideias e conversa direta com o time:{" "}
+            <a href="https://t.me/mokacomunidade" target="_blank" rel="noreferrer">
+              entre na comunidade do Moka no Telegram →
+            </a>
           </p>
-        </div>
-      </article>
+        </section>
+      </div>
 
-      <style>{`
-        .info-page { min-height: 100vh; background: var(--bg); padding: 40px 20px; }
-        .info-card { max-width: 680px; margin: 0 auto; background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 40px 48px; box-shadow: var(--shadow); }
-        .info-back { color: var(--accent); text-decoration: none; margin-bottom: 24px; font-size: 14px; display: inline-block; }
-        .info-card h1 { font-family: var(--font-brand); font-weight: 600; font-size: 26px; font-weight: 700; color: var(--accent); margin: 0 0 16px; }
-        .info-intro { font-size: 15px; line-height: 1.7; color: var(--text); margin: 0 0 24px; }
-        .info-card h2 { font-size: 19px; font-weight: 600; margin: 32px 0 12px; color: var(--text); }
-        .info-card p { font-size: 15px; line-height: 1.7; margin: 0 0 12px; }
-        .info-card ul, .info-card ol { margin: 0 0 16px; padding-left: 24px; }
-        .info-card li { font-size: 14px; line-height: 1.8; margin-bottom: 6px; }
-        .info-card strong { font-weight: 600; }
-        .info-card em { color: var(--text-muted); }
-        .icon-guide { display: flex; flex-direction: column; gap: 14px; margin: 16px 0 24px; }
-        .icon-row { display: flex; gap: 14px; align-items: flex-start; padding: 12px; background: var(--surface-alt); border-radius: 10px; }
-        .icon-emoji { font-size: 26px; flex-shrink: 0; width: 40px; text-align: center; }
-        .icon-row div { font-size: 14px; line-height: 1.6; }
-        .plans-help { display: flex; flex-direction: column; gap: 12px; margin: 16px 0; }
-        .plan-help-card { padding: 16px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface-alt); }
-        .plan-help-card h3 { margin: 0 0 8px; font-size: 16px; color: var(--accent); }
-        .plan-help-card p { margin: 0; font-size: 14px; line-height: 1.6; }
-        .info-card details { margin-bottom: 12px; }
-        .info-card summary { cursor: pointer; font-size: 15px; font-weight: 500; padding: 8px 0; }
-        .info-card details[open] summary { color: var(--accent); }
-        .info-footer { text-align: center; margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--border); }
-        .info-footer a { color: var(--accent); text-decoration: none; font-size: 14px; }
-        .premium-footer { text-align: center; margin-top: 20px; font-size: 12px; color: var(--text-muted); line-height: 1.6; }
-        @media (max-width: 600px) { .info-card { padding: 24px 20px; } }
+      <style jsx>{`
+        .help { min-height: 100vh; background: #fff6ee; color: #1a1a1a; }
+        .help-topbar { background: #fff6ee; border-bottom: 1px solid #d9c8b8; }
+        .help-body { max-width: 640px; margin: 0 auto; padding: 40px 22px 64px; }
+        .help-kicker {
+          text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px;
+          font-weight: 700; color: #0f7680; margin-bottom: 8px; text-align: center;
+        }
+        .help-title {
+          font-family: var(--font-brand); font-weight: 600; font-size: 28px;
+          text-align: center; margin: 0 0 26px;
+        }
+        .help-robo {
+          border: 1px solid #1a1a1a; background: #f7e7d7; padding: 18px; margin-bottom: 22px;
+        }
+        .help-robo h2 { font-family: var(--font-brand); font-weight: 600; font-size: 19px; margin: 0 0 12px; }
+        .help-robo form { display: flex; gap: 8px; }
+        .help-robo input {
+          flex: 1; padding: 12px; border: 1px solid #d9c8b8; background: #fff;
+          font-size: 14px; border-radius: 2px;
+        }
+        .help-robo button {
+          background: #1a1a1a; color: #fff; border: none; padding: 12px 18px;
+          font-weight: 700; font-size: 13px; cursor: pointer; border-radius: 2px;
+        }
+        .help-resposta { margin-top: 12px; font-size: 14px; line-height: 1.6; }
+        .help-busca {
+          width: 100%; padding: 13px 14px; border: 1px solid #d9c8b8; background: #fff;
+          font-size: 14.5px; border-radius: 2px; margin-bottom: 18px;
+        }
+        .help-lista { display: flex; flex-direction: column; gap: 0; border-top: 1px solid #d9c8b8; }
+        .help-item { border-bottom: 1px solid #d9c8b8; }
+        .help-item summary {
+          cursor: pointer; padding: 14px 4px; font-weight: 700; font-size: 15px; list-style: none;
+        }
+        .help-item summary::before { content: "▸ "; color: #0f7680; }
+        .help-item[open] summary::before { content: "▾ "; }
+        .help-item p { padding: 0 4px 16px; color: #66605a; font-size: 14px; line-height: 1.65; }
+        .help-vazio { color: #66605a; padding: 18px 4px; }
+        .help-comunidade { margin-top: 30px; border-top: 1px solid #d9c8b8; padding-top: 20px; }
+        .help-comunidade h2 { font-family: var(--font-brand); font-weight: 600; font-size: 19px; margin: 0 0 8px; }
+        .help-comunidade p { color: #66605a; font-size: 14px; line-height: 1.6; }
+        .help-comunidade a { color: #0f7680; font-weight: 700; }
       `}</style>
     </main>
   );
