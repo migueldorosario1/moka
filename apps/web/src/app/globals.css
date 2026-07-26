@@ -4,24 +4,24 @@
    A IA é invisível; o texto é o protagonista. */
 
 :root {
-  /* Cores — LIGHT MODE (porcelana + cobre queimado + madeira clara) */
-  --bg: #f6efe3;              /* porcelana quente (fundo) */
-  --surface: #fffcf5;         /* louça branca (cards/superfícies) */
-  --surface-alt: #eee3d1;     /* madeira clara (áreas secundárias) */
-  --text: #2b2015;            /* espresso (texto principal) */
-  --text-muted: #8b7460;      /* café com leite (texto secundário) */
-  --border: #e3d6c1;          /* bege-madeira (bordas) */
-  --border-soft: #ede3d2;     /* borda quase invisível */
-  --accent: #a35d2f;          /* cobre queimado (cor principal) */
-  --accent-soft: #f3e4d0;     /* crema (hover, fundos suaves) */
-  --accent-dark: #7e4522;     /* cobre escuro (press, ênfase) */
-  --gold: #c2955c;            /* dourado envelhecido (detalhes) */
+  /* Cores — LIGHT MODE (Porcelana Azul + Safira Nobre + Cobalto) */
+  --bg: #f0f4f9;              /* porcelana azulada elegante (fundo) */
+  --surface: #ffffff;         /* louça branca pura (cards/superfícies) */
+  --surface-alt: #e2ebf6;     /* azul acinzentado suave (áreas secundárias) */
+  --text: #0f172a;            /* azul noite / espresso azulado (texto principal) */
+  --text-muted: #475569;      /* azul ardósia suave (texto secundário) */
+  --border: #cbd5e1;          /* borda azulada limpa */
+  --border-soft: #e2e8f0;     /* borda quase invisível */
+  --accent: #1e40af;          /* azul cobalto nobre (cor principal) */
+  --accent-soft: #dbeafe;     /* azul gelo (hover, fundos suaves) */
+  --accent-dark: #172554;     /* azul safira profundo (press, ênfase) */
+  --gold: #d97706;            /* detalhe dourado envelhecido */
 
-  /* Sombras — sempre tingidas de marrom, nunca cinza-frio */
-  --shadow-sm: 0 1px 2px rgba(62, 42, 24, 0.05), 0 1px 3px rgba(62, 42, 24, 0.04);
-  --shadow: 0 2px 6px rgba(62, 42, 24, 0.06), 0 6px 20px rgba(62, 42, 24, 0.07);
-  --shadow-lg: 0 4px 12px rgba(62, 42, 24, 0.08), 0 18px 50px rgba(62, 42, 24, 0.14);
-  --shadow-up: 0 -2px 12px rgba(62, 42, 24, 0.08);
+  /* Sombras — tingidas de azul noite elegante */
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05), 0 1px 3px rgba(15, 23, 42, 0.04);
+  --shadow: 0 2px 6px rgba(15, 23, 42, 0.06), 0 6px 20px rgba(15, 23, 42, 0.07);
+  --shadow-lg: 0 4px 12px rgba(15, 23, 42, 0.08), 0 18px 50px rgba(15, 23, 42, 0.14);
+  --shadow-up: 0 -2px 12px rgba(15, 23, 42, 0.08);
 
   /* Raios */
   --radius-sm: 8px;
@@ -53,35 +53,35 @@
   --space-5: 24px;
   --space-6: 32px;
 
-  /* Transições — curva suave, sem pressa (como o café) */
+  /* Transições — curva suave */
   --ease: cubic-bezier(0.25, 0.6, 0.3, 1);
   --transition: 180ms var(--ease);
 
-  /* Seleção de texto (marca-texto dourado/cobre) */
-  --selection-bg: #efd6a4;
-  --selection-color: #2b2015;
+  /* Seleção de texto (destaque azul gelo / cobalto) */
+  --selection-bg: #bfdbfe;
+  --selection-color: #0f172a;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    /* DARK MODE (madeira escura + cobre à meia-luz) */
-    --bg: #1a1410;            /* madeira quase preta (fundo) */
-    --surface: #221b15;       /* madeira escura (superfícies) */
-    --surface-alt: #2d241c;   /* madeira um pouco mais clara */
-    --text: #f0e6d5;          /* porcelana quente (texto) */
-    --text-muted: #a68f79;    /* madeira seca (texto secundário) */
-    --border: #3a2f24;        /* madeira queimada (bordas) */
-    --border-soft: #2f261d;
-    --accent: #d29360;        /* cobre iluminado (destaca no escuro) */
-    --accent-soft: #33251a;   /* cobre profundo (hover) */
-    --accent-dark: #b06a3b;   /* cobre médio */
-    --gold: #d3a96e;          /* dourado quente */
+    /* DARK MODE (Azul Noite Profundo + Safira à meia-luz) */
+    --bg: #0b132b;            /* azul noite profundo (fundo) */
+    --surface: #1c2541;       /* azul safira escuro (superfícies) */
+    --surface-alt: #2a385b;   /* azul cobalto escuro */
+    --text: #f1f5f9;          /* porcelana branca (texto) */
+    --text-muted: #94a3b8;    /* azul ardósia claro (texto secundário) */
+    --border: #334155;        /* borda azul noite */
+    --border-soft: #1e293b;
+    --accent: #60a5fa;        /* azul safira iluminado */
+    --accent-soft: #1e293b;   /* azul escuro (hover) */
+    --accent-dark: #3b82f6;   /* azul cobalto médio */
+    --gold: #f59e0b;          /* dourado quente */
     --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
     --shadow: 0 2px 8px rgba(0, 0, 0, 0.4), 0 8px 24px rgba(0, 0, 0, 0.35);
     --shadow-lg: 0 6px 16px rgba(0, 0, 0, 0.45), 0 20px 56px rgba(0, 0, 0, 0.5);
     --shadow-up: 0 -2px 12px rgba(0, 0, 0, 0.4);
-    --selection-bg: #5a4520;
-    --selection-color: #f0e6d5;
+    --selection-bg: #1e3a8a;
+    --selection-color: #f1f5f9;
   }
 }
 
@@ -303,6 +303,23 @@ a:hover {
   border-bottom: 1px solid var(--border-soft);
   background: var(--surface);
   flex-shrink: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-x;
+  gap: 12px;
+  max-width: 100vw;
+  box-sizing: border-box;
+}
+.igot-topbar::-webkit-scrollbar {
+  display: none;
+}
+@media (max-width: 600px) {
+  .igot-topbar {
+    padding: 8px 12px;
+    gap: 8px;
+  }
 }
 .igot-workspace {
   display: grid;
@@ -397,6 +414,10 @@ a:hover {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Lado esquerdo do topbar: logo + estante */

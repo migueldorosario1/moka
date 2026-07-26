@@ -11,7 +11,7 @@ import { SettingsModal } from "@/components/SettingsModal";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
 import { CloseAppButton } from "@/components/CloseAppButton";
 import { VisitPing } from "@/components/VisitPing";
-import { AuthButton } from "@/components/AuthButton";
+import { ContaButton } from "@/components/ContaButton";
 import { hasConfig, loadConfigCache } from "@/lib/config";
 import { useAuth } from "@/lib/auth";
 import { listLibrary, saveToLibrary, removeFromLibrary, clearAllBooks } from "@/lib/repository";
@@ -21,6 +21,7 @@ import {
 } from "@/lib/db";
 import { parseBook } from "@igot/parser";
 import { renderPdfCover } from "@/lib/pdf-cover";
+import { generateDynamicBookCover } from "@/lib/cover-generator";
 
 /**
  * Home = ESTANTE.
@@ -160,12 +161,18 @@ export default function HomePage() {
 
           // Livro NOVO — cria entry na estante.
           const bookId = `b${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
-          // Capa (V3 — pedido do Miguel): EPUB traz extraída; PDF renderiza pág. 1.
-          const coverImage =
+          // Capa (V3 — pedido do Miguel): EPUB/PDF traz extraída ou gera capa elegante.
+          let coverImage =
             result.book.coverImage ??
             (result.book.sourceFormat === "pdf"
               ? await renderPdfCover(data) ?? undefined
               : undefined);
+          if (!coverImage) {
+            coverImage = generateDynamicBookCover({
+              title: result.book.title,
+              author: result.book.author,
+            });
+          }
           const session: Session = {
             id: bookId,
             fileName: file.name,
@@ -199,22 +206,16 @@ export default function HomePage() {
       {/* TopBar com logo clicável */}
       <div className="igot-topbar">
         <div className="igot-topbar-left">
-          <div className="brand" title="Moka — livros e vídeos">
+          <Link href="/" className="brand" title="Moka — Ir para página central">
             <CafezinhoLogo size={26} opacity={0.85} /> <span>Moka</span>
-          </div>
+          </Link>
           <SectionSwitcher active="reader" />
         </div>
         <div className="igot-topbar-actions">
           <CloseAppButton />
           <a href="/premium" className="premium-link" title="Moka Premium">⭐</a>
           <LangSwitcher />
-          <AuthButton
-            status={auth.status}
-            userName={auth.user?.user_metadata?.full_name ?? null}
-            avatarUrl={auth.user?.user_metadata?.avatar_url ?? null}
-            onSignIn={auth.signInWithGoogle}
-            onSignOut={auth.signOut}
-          />
+          <ContaButton />
           <button
             className={`gear ${configReady ? "" : "unset"}`}
             onClick={() => setSettingsOpen(true)}
@@ -287,14 +288,16 @@ export default function HomePage() {
               <div key={book.id} className="book-card-wrapper">
                 <Link href={`/book/${book.id}`} className="book-card">
                   <div className="book-cover">
-                    {book.coverImage ? (
-                      <img src={book.coverImage} alt="" />
-                    ) : (
-                      <div className="book-cover-placeholder">
-                        <span className="book-cover-icon">📖</span>
-                        <span className="book-cover-format">{book.book.sourceFormat.toUpperCase()}</span>
-                      </div>
-                    )}
+                    <img
+                      src={
+                        book.coverImage ||
+                        generateDynamicBookCover({
+                          title: book.book.title,
+                          author: book.book.author,
+                        })
+                      }
+                      alt={book.book.title}
+                    />
                   </div>
                   <div className="book-info">
                     <h3 className="book-title">{book.book.title}</h3>

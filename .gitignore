@@ -54,3 +54,4 @@ venv/
 
 # backups locais de segurança (ZCode)
 *.bak_zcode_*
+.env*

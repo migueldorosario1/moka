@@ -128,12 +128,25 @@ async function runStream(
 
 // ─── ⚡ Explicação rápida ────────────────────────────────────────────────
 
+function fullOrSampledTranscript(segments: TranscriptSegment[], maxChars = 120000): string {
+  const full = transcriptText(segments);
+  if (full.length <= maxChars) return full;
+  // Para vídeos extremamente longos (> 120k chars, ~2.5h de fala contínua),
+  // combina início (introdução/tese), meio e fim (conclusão).
+  const third = Math.floor(maxChars / 3);
+  const head = full.slice(0, third);
+  const midStart = Math.floor(full.length / 2 - third / 2);
+  const mid = full.slice(midStart, midStart + third);
+  const tail = full.slice(-third);
+  return `${head}\n\n[... trecho intermediário do vídeo ...]\n\n${mid}\n\n[... trecho final do vídeo ...]\n\n${tail}`;
+}
+
 export async function quickExplain(
   meta: VideoMeta,
   segments: TranscriptSegment[],
   onChunk: (text: string) => void,
 ): Promise<string> {
-  const transcript = transcriptText(segments).slice(0, 30000);
+  const transcript = fullOrSampledTranscript(segments);
   return runStream(
     `${videoHeader(meta)}\n\n` +
       "Explique em 5 a 8 linhas O QUE FOI este vídeo: quem fala, sobre o quê, " +
@@ -167,11 +180,11 @@ export async function summarize(
         : "Estruture com subtítulos (###), cobrindo as seções do vídeo em ordem, com os argumentos centrais de cada uma.") +
     " Não invente nada que não esteja no material.";
 
-  // Vídeo curto/transcrição pequena: uma chamada só.
+  // Vídeo curto/transcrição pequena: uma chamada só com transcrição inteira.
   if (transcript.length <= MAPREDUCE_THRESHOLD) {
     return runStream(
       finalPrompt(""),
-      { context: transcript.slice(0, 60000), maxTokens: Math.min(4000, targetWords * 2 + 600) },
+      { context: transcript, maxTokens: Math.min(4000, targetWords * 2 + 600) },
       onChunk,
     );
   }
@@ -217,7 +230,7 @@ export async function characters(
   segments: TranscriptSegment[],
   onChunk: (text: string) => void,
 ): Promise<string> {
-  const transcript = transcriptText(segments).slice(0, 45000);
+  const transcript = fullOrSampledTranscript(segments);
   return runStream(
     `${videoHeader(meta)}\n\n` +
       "Identifique os PERSONAGENS do vídeo — quem fala e quem é citado com " +
@@ -238,7 +251,7 @@ export async function politicalContext(
   segments: TranscriptSegment[],
   onChunk: (text: string) => void,
 ): Promise<string> {
-  const transcript = transcriptText(segments).slice(0, 45000);
+  const transcript = fullOrSampledTranscript(segments);
   return runStream(
     `${videoHeader(meta)}\n\n` +
       "Situe este vídeo no CONTEXTO POLÍTICO:\n" +
@@ -260,7 +273,7 @@ export async function critique(
   segments: TranscriptSegment[],
   onChunk: (text: string) => void,
 ): Promise<string> {
-  const transcript = transcriptText(segments).slice(0, 45000);
+  const transcript = fullOrSampledTranscript(segments);
   return runStream(
     `${videoHeader(meta)}\n\n` +
       "Faça uma CRÍTICA honesta e equilibrada deste vídeo:\n" +

@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { SettingsModal } from "@/components/SettingsModal";
-import { AuthButton } from "@/components/AuthButton";
 import { VideoAskModal } from "@/components/VideoAskModal";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
 import { ContaButton } from "@/components/ContaButton";
@@ -270,10 +270,10 @@ export default function VideoPage() {
     <main className="igot-shell">
       <div className="igot-topbar">
         <div className="igot-topbar-left">
-          <a className="brand" href="/video" title="Voltar pra videoteca">
+          <Link className="brand" href="/" title="Moka — Ir para página central">
             <CafezinhoLogo size={26} opacity={0.85} />
             <span>Moka</span>
-          </a>
+          </Link>
           <SectionSwitcher active="video" />
         </div>
         <div className="igot-topbar-actions">
@@ -296,13 +296,6 @@ export default function VideoPage() {
           >
             📤
           </button>
-          <AuthButton
-            status={auth.status}
-            userName={auth.user?.user_metadata?.full_name ?? null}
-            avatarUrl={auth.user?.user_metadata?.avatar_url ?? null}
-            onSignIn={auth.signInWithGoogle}
-            onSignOut={auth.signOut}
-          />
           <button
             className={`gear ${configReady ? "" : "unset"}`}
             onClick={() => setSettingsOpen(true)}
