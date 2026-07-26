@@ -30,7 +30,7 @@ export default function Capa() {
       </div>
 
       <div className="capa-body">
-        <p className="capa-kicker">Cafezinho Media Group apresenta</p>
+        <p className="capa-kicker">{t("capa_kicker")}</p>
         <div className="capa-logo">MOKA</div>
         <h1 className="capa-tagline">{t("app_tagline")}</h1>
 
@@ -128,6 +128,7 @@ export default function Capa() {
           position: sticky;
           top: 0;
           z-index: 100;
+          overflow: visible !important;
         }
         .capa-body {
           flex: 1;
