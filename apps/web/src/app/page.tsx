@@ -1,46 +1,27 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { ContaButton } from "@/components/ContaButton";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { useI18n } from "@/components/I18nProvider";
-import { listLibrary } from "@/lib/repository";
-import type { Session } from "@/lib/db";
 
 /**
  * CAPA V3 (espelho — pedido do Miguel 23/07): a home VENDE.
  * Ordem: oferta R$5 grande → vídeo do anúncio explicando → preços.
  * O checkout R$5 aponta pro funil real (Pix na API de pontos).
  */
-// (a compra agora é interna: /experimente — doc 15)
-const VIDEO_URL =
-  "https://pub-7c53d388419e4d44b17eace540ae7e22.r2.dev/moka/anuncio/moka_anuncio_bbc.mp4";
-
 export default function Capa() {
   const { t } = useI18n();
-  const [last, setLast] = useState<Session | null>(null);
-
-  useEffect(() => {
-    listLibrary(null)
-      .then((list) => {
-        if (list.length > 0) {
-          setLast(
-            list.reduce((a, b) => ((b.savedAt ?? 0) > (a.savedAt ?? 0) ? b : a)),
-          );
-        }
-      })
-      .catch(() => {});
-  }, []);
 
   return (
     <main className="igot-shell ft">
       <div className="igot-topbar">
         <div className="igot-topbar-left">
-          <div className="brand" title="Moka — livros e vídeos">
+          <Link href="/" className="brand" title="Moka — Ir para página central">
             <CafezinhoLogo size={26} opacity={0.85} />
             <span>Moka</span>
-          </div>
+          </Link>
         </div>
         <div className="igot-topbar-actions">
           <ContaButton />
@@ -65,14 +46,11 @@ export default function Capa() {
           </a>
         </div>
 
-        {/* ── Vídeo do anúncio: explica o que é ── */}
-        <h2 className="capa-video-title">{t("capa_video_title")}</h2>
-        <video
-          className="capa-video"
-          src={VIDEO_URL}
-          controls
-          playsInline
-          preload="metadata"
+        {/* ── Ilustração Editorial de Destaque ── */}
+        <img
+          className="capa-hero-img"
+          src="/moka_hero_editorial.png"
+          alt="Moka — Inteligência de Leitura e Vídeos"
         />
 
         {/* ── O que os pontos compram (equivalências honestas) ── */}
@@ -98,7 +76,7 @@ export default function Capa() {
         </div>
         <p className="capa-plans-note">{t("capa_plans_note")}</p>
 
-        {/* ── Entradas do app ── */}
+        {/* ── Entradas do app (Estante & Videoteca) ── */}
         <div className="capa-cards">
           <a className="capa-card" href="/estante">
             <b>📖 {t("capa_shelf_books")}</b>
@@ -110,16 +88,6 @@ export default function Capa() {
           </a>
         </div>
 
-        {last && (
-          <a className="capa-continue" href={`/book/${last.id}`}>
-            ▶ {t("capa_continue")}: <b>{last.book.title}</b>
-          </a>
-        )}
-
-        <a className="capa-shelf" href="/estante">
-          📚 {t("capa_shelf")}
-        </a>
-
         <p className="capa-footer">{t("capa_footer")}</p>
       </div>
 
@@ -127,6 +95,11 @@ export default function Capa() {
         /* ─── Porcelana, Café & Cobre (Refinado FT Editorial) ─────────────
            Legibilidade sagrada: fundo claro porcelana, texto espresso profundo,
            acentos em cobre queimado, crema e teal editorial. ─── */
+        :global(main.igot-shell.ft) {
+          height: auto !important;
+          min-height: 100vh;
+          overflow-y: auto !important;
+        }
         .ft {
           --ft-paper: #faf8f5;
           --ft-paper-warm: #f6efe3;
@@ -158,14 +131,15 @@ export default function Capa() {
         }
         .capa-body {
           flex: 1;
-          overflow-y: auto;
           display: flex;
           flex-direction: column;
           align-items: center;
           text-align: center;
-          padding: 48px 24px 80px;
-          max-width: 900px;
+          padding: 44px 20px 80px;
+          max-width: 860px;
+          width: 100%;
           margin: 0 auto;
+          box-sizing: border-box;
         }
         .capa-kicker {
           text-transform: uppercase;
@@ -255,23 +229,15 @@ export default function Capa() {
           line-height: 1.55;
         }
 
-        /* ── Vídeo do anúncio ── */
-        .capa-video-title {
-          font-family: var(--font-brand);
-          font-weight: 600;
-          font-size: 24px;
-          color: var(--ft-ink);
-          margin: 0 0 16px;
-        }
-        .capa-video {
+        /* ── Ilustração Editorial de Destaque ── */
+        .capa-hero-img {
           width: min(680px, 94vw);
-          aspect-ratio: 16 / 9;
-          background: #1c1510;
+          aspect-ratio: 1 / 1;
+          object-fit: cover;
           border: 1px solid var(--ft-hairline);
-          border-radius: 16px;
-          box-shadow: 0 10px 30px rgba(43, 32, 21, 0.12);
+          border-radius: 20px;
+          box-shadow: 0 12px 36px rgba(43, 32, 21, 0.14);
           margin-bottom: 54px;
-          overflow: hidden;
         }
 
         /* ── Planos e Equivalências ── */
@@ -349,7 +315,7 @@ export default function Capa() {
           flex-direction: column;
           gap: 8px;
           flex: 1;
-          min-width: 240px;
+          min-width: min(200px, 100%);
           padding: 22px 20px;
           background: var(--ft-surface);
           border: 1px solid var(--ft-hairline);
@@ -359,6 +325,7 @@ export default function Capa() {
           text-align: left;
           box-shadow: 0 2px 6px rgba(43, 32, 21, 0.03);
           transition: all 0.18s ease;
+          box-sizing: border-box;
         }
         .capa-card:hover {
           background: #fff;
@@ -382,21 +349,22 @@ export default function Capa() {
         .capa-continue {
           display: inline-flex;
           align-items: center;
+          justify-content: center;
           gap: 8px;
           margin-bottom: 18px;
-          padding: 14px 28px;
+          padding: 12px 24px;
           background: linear-gradient(135deg, var(--ft-ink) 0%, #1a1410 100%);
           color: var(--ft-surface);
           text-decoration: none;
           font-size: 14.5px;
           font-weight: 500;
-          border-radius: 999px;
+          border-radius: var(--radius-lg);
           box-shadow: 0 4px 14px rgba(43, 32, 21, 0.15);
           transition: all 0.18s ease;
-          max-width: 90vw;
-          overflow: hidden;
-          text-overflow: ellipsis;
-          white-space: nowrap;
+          max-width: min(600px, 92vw);
+          line-height: 1.4;
+          text-align: center;
+          word-break: break-word;
         }
         .capa-continue:hover {
           transform: translateY(-2px);

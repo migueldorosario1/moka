@@ -136,7 +136,7 @@ interface Json3Event {
 
 function parseJson3(text: string): Segment[] {
   const data = JSON.parse(text) as { events?: Json3Event[] };
-  const segments: Segment[] = [];
+  const raw: Segment[] = [];
   for (const ev of data.events ?? []) {
     const text = (ev.segs ?? [])
       .map((s) => s.utf8 ?? "")
@@ -144,13 +144,13 @@ function parseJson3(text: string): Segment[] {
       .replace(/\s+/g, " ")
       .trim();
     if (!text || ev.tStartMs == null) continue;
-    segments.push({
+    raw.push({
       start: ev.tStartMs / 1000,
       end: (ev.tStartMs + (ev.dDurationMs ?? 0)) / 1000,
       text,
     });
   }
-  return mergeSegments(segments);
+  return dedupeRollingSegments(raw);
 }
 
 function parseVtt(text: string): Segment[] {
@@ -160,7 +160,7 @@ function parseVtt(text: string): Segment[] {
     const [, h, min, s, ms] = m;
     return (Number(h ?? 0) * 3600 + Number(min) * 60 + Number(s)) + Number(ms) / 1000;
   };
-  const segments: Segment[] = [];
+  const raw: Segment[] = [];
   const blocks = text.split(/\n\s*\n/);
   for (const block of blocks) {
     const lines = block.split("\n").filter((l) => l.trim());
@@ -174,9 +174,53 @@ function parseVtt(text: string): Segment[] {
       .replace(/\s+/g, " ")
       .trim();
     if (!text) continue;
-    segments.push({ start: toSec(startTs), end: toSec(endTs ?? startTs), text });
+    raw.push({ start: toSec(startTs), end: toSec(endTs ?? startTs), text });
   }
-  return mergeSegments(segments);
+  return dedupeRollingSegments(raw);
+}
+
+/**
+ * Remove a repetição acumulada das legendas automáticas do YouTube (rolagem ASR / VTT).
+ * O YouTube envia o bloco anterior repetido com 1-2 palavras novas no final.
+ */
+function dedupeRollingSegments(raw: Segment[]): Segment[] {
+  const cleaned: Segment[] = [];
+  let prevText = "";
+
+  for (const s of raw) {
+    let t = s.text.trim();
+    if (!t) continue;
+
+    if (prevText) {
+      if (t === prevText) continue;
+      if (t.startsWith(prevText)) {
+        t = t.slice(prevText.length).trim();
+      } else {
+        // Remove sobreposição de palavras entre o final de prevText e o início de t
+        const pWords = prevText.split(/\s+/);
+        const tWords = t.split(/\s+/);
+        let maxOverlap = 0;
+        const limit = Math.min(pWords.length, tWords.length);
+        for (let len = limit; len > 0; len--) {
+          const tail = pWords.slice(-len).join(" ").toLowerCase();
+          const head = tWords.slice(0, len).join(" ").toLowerCase();
+          if (tail === head) {
+            maxOverlap = len;
+            break;
+          }
+        }
+        if (maxOverlap > 0) {
+          t = tWords.slice(maxOverlap).join(" ").trim();
+        }
+      }
+    }
+
+    if (!t) continue;
+    cleaned.push({ start: s.start, end: s.end, text: t });
+    prevText = s.text.trim();
+  }
+
+  return mergeSegments(cleaned);
 }
 
 /**
@@ -193,7 +237,7 @@ function mergeSegments(raw: Segment[]): Segment[] {
     }
     const wouldBeLong = s.end - cur.start > 14;
     const endsSentence = /[.!?…]["'»)]?$/.test(cur.text);
-    const duplicated = cur.text.endsWith(s.text); // rolagem das auto-captions
+    const duplicated = cur.text.endsWith(s.text);
     if ((wouldBeLong || endsSentence) && !duplicated) {
       merged.push(cur);
       cur = { ...s };

@@ -1375,13 +1375,12 @@ export function Reader({
         {/* ── Menu: row-scroll (ações do livro, scrollável) + row-right (controles, fixo) ── */}
         <div className="reader-row-main">
         <div className="reader-row-scroll">
-          {/* Logo Cafezinho — canto esquerdo, vazada */}
+          {/* Logo Cafezinho — canto esquerdo, vai para a home central (/) */}
           <a
-            href="/estante"
-            onClick={(e) => { if (onGoToShelf) { e.preventDefault(); onGoToShelf(); } }}
+            href="/"
             className="cafezinho-mark"
-            title="Cafezinho Media Group"
-            aria-label="Cafezinho Media Group"
+            title="Moka — Ir para página central"
+            aria-label="Moka — Ir para página central"
           >
             <CafezinhoLogo size={26} opacity={0.85} />
           </a>
@@ -1565,9 +1564,6 @@ export function Reader({
         </div>
         {/* Fim reader-row-scroll. Início reader-row-right (controles fixos). */}
           <div className="reader-row-right">
-            {/* ✕ Fechar + 🌐 idioma — mesma simetria da seção de vídeo
-                (pedido do Miguel 23/07). */}
-            <CloseAppButton />
             <LangSwitcher />
             {/* ❓ Ajuda */}
             <a

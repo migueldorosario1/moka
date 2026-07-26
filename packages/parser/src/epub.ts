@@ -154,6 +154,17 @@ export async function parseEPUB(input: EPUBParseInput): Promise<ParsedBook> {
     );
   }
 
+  // Se não encontrou capa no OPF, tenta pegar a primeira imagem do 1º capítulo
+  if (!coverImage && chapters.length > 0) {
+    for (const chap of chapters) {
+      const imgBlock = chap.blocks.find((b) => b.type === "image" && b.src);
+      if (imgBlock?.src) {
+        coverImage = imgBlock.src;
+        break;
+      }
+    }
+  }
+
   return {
     title: metadata.title || input.fileName?.replace(/\.epub$/i, "") || "Sem título",
     author: metadata.author,

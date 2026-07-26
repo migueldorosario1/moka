@@ -74,9 +74,8 @@ export function detectUILang(): string {
   // 1. Preferência salva.
   const saved = window.localStorage.getItem(UI_LANG_KEY);
   if (saved && SUPPORTED_CODES.has(saved)) return saved;
-  // 2. Idioma do navegador.
-  const nav = navigator.language || navigator.languages?.[0] || DEFAULT_LANG;
-  return normalizeLang(nav);
+  // Fallback padrão soberano Moka: pt-BR
+  return DEFAULT_LANG;
 }
 
 /** Lê o idioma atual da interface (do localStorage). */
