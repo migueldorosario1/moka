@@ -18,9 +18,9 @@ export default function Capa() {
     <main className="igot-shell ft">
       <div className="igot-topbar">
         <div className="igot-topbar-left">
-          <Link href="/" className="brand" title="Moka — Ir para página central">
+          <Link href="/" className="brand" title="MOKA — Ir para página central">
             <CafezinhoLogo size={26} opacity={0.85} />
-            <span>Moka</span>
+            <span>MOKA</span>
           </Link>
         </div>
         <div className="igot-topbar-actions">
@@ -30,8 +30,8 @@ export default function Capa() {
       </div>
 
       <div className="capa-body">
-        <p className="capa-kicker">O Cafezinho apresenta</p>
-        <div className="capa-logo">Moka</div>
+        <p className="capa-kicker">Cafezinho Media Group apresenta</p>
+        <div className="capa-logo">MOKA</div>
         <h1 className="capa-tagline">{t("app_tagline")}</h1>
 
         {/* ── V3: os 2 caminhos — pontos (IA da casa) × licença (BYOK) ── */}

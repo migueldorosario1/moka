@@ -69,9 +69,10 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
+      style={{ backgroundColor: "#faf8f5" }}
       className={`${fontDisplay.variable} ${fontReading.variable} ${fontUI.variable}`}
     >
-      <body>
+      <body style={{ backgroundColor: "#faf8f5", color: "#2b2015", margin: 0 }}>
         <I18nProvider>
           {children}
         </I18nProvider>
