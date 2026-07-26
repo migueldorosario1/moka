@@ -48,6 +48,7 @@ export type UIStringKey =
   | "capa_shelf"
   | "capa_footer"
   // ── Capa V3 (oferta + vídeo + preços) ──
+  | "capa_kicker"
   | "capa_offer_badge"
   | "capa_offer_desc"
   | "capa_offer_cta"
@@ -359,6 +360,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_continue: "Continuar lendo",
     capa_shelf: "Minha estante",
     capa_footer: "Do time de O Cafezinho — jornalismo e IA, todos os dias.",
+    capa_kicker: "Cafezinho Media Group apresenta",
     capa_offer_badge: "⚡ oferta de lançamento",
     capa_offer_desc: "200 pontos na hora — sem assinatura, sem cartão. Resuma vídeos e livros em 2 minutos.",
     capa_offer_cta: "QUERO TESTAR →",
@@ -673,6 +675,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_continue: "Continue reading",
     capa_shelf: "My bookshelf",
     capa_footer: "From the O Cafezinho team — journalism and AI, every day.",
+    capa_kicker: "Cafezinho Media Group presents",
     capa_offer_badge: "⚡ launch offer",
     capa_offer_desc: "200 points instantly — no subscription, no card. Summarize videos and books in 2 minutes.",
     capa_offer_cta: "I WANT TO TRY →",
@@ -979,6 +982,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_continue: "Seguir leyendo",
     capa_shelf: "Mi estantería",
     capa_footer: "Del equipo de O Cafezinho — periodismo e IA, todos los días.",
+    capa_kicker: "Cafezinho Media Group presenta",
     capa_offer_badge: "⚡ oferta de lanzamiento",
     capa_offer_desc: "200 puntos al instante — sin suscripción, sin tarjeta. Resume videos y libros en 2 minutos.",
     capa_offer_cta: "QUIERO PROBAR →",
@@ -1285,6 +1289,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_continue: "Continuer la lecture",
     capa_shelf: "Ma bibliothèque",
     capa_footer: "Par l'équipe d'O Cafezinho — journalisme et IA, chaque jour.",
+    capa_kicker: "Cafezinho Media Group présente",
     capa_offer_badge: "⚡ offre de lancement",
     capa_offer_desc: "200 points immédiatement — sans abonnement, sans carte. Résumez vidéos et livres en 2 minutes.",
     capa_offer_cta: "JE VEUX ESSAYER →",
@@ -1591,6 +1596,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_continue: "Weiterlesen",
     capa_shelf: "Mein Regal",
     capa_footer: "Vom O-Cafezinho-Team — Journalismus und KI, jeden Tag.",
+    capa_kicker: "Cafezinho Media Group präsentiert",
     capa_offer_badge: "⚡ Einführungsangebot",
     capa_offer_desc: "200 Punkte sofort — ohne Abo, ohne Karte. Videos und Bücher in 2 Minuten zusammengefasst.",
     capa_offer_cta: "ICH WILL TESTEN →",
@@ -1897,6 +1903,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_continue: "Continua a leggere",
     capa_shelf: "La mia libreria",
     capa_footer: "Dal team di O Cafezinho — giornalismo e IA, ogni giorno.",
+    capa_kicker: "Cafezinho Media Group presenta",
     capa_offer_badge: "⚡ offerta di lancio",
     capa_offer_desc: "200 punti subito — senza abbonamento, senza carta. Riassumi video e libri in 2 minuti.",
     capa_offer_cta: "VOGLIO PROVARE →",
@@ -2203,6 +2210,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_continue: "Продолжить чтение",
     capa_shelf: "Моя полка",
     capa_footer: "От команды O Cafezinho — журналистика и ИИ, каждый день.",
+    capa_kicker: "Cafezinho Media Group представляет",
     capa_offer_badge: "⚡ стартовое предложение",
     capa_offer_desc: "200 баллов сразу — без подписки, без карты. Видео и книги за 2 минуты.",
     capa_offer_cta: "ХОЧУ ПОПРОБОВАТЬ →",
@@ -2509,6 +2517,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_continue: "继续阅读",
     capa_shelf: "我的书架",
     capa_footer: "来自 O Cafezinho 团队——新闻与 AI，每一天。",
+    capa_kicker: "Cafezinho Media Group 呈现",
     capa_offer_badge: "⚡ 上线特惠",
     capa_offer_desc: "立得 200 积分——无需订阅，无需绑卡。2 分钟读完视频和书籍。",
     capa_offer_cta: "立即体验 →",
@@ -2815,6 +2824,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_continue: "続きを読む",
     capa_shelf: "本棚",
     capa_footer: "O Cafezinho チームより——ジャーナリズムとAI、毎日。",
+    capa_kicker: "Cafezinho Media Group プレゼンツ",
     capa_offer_badge: "⚡ ローンチ特典",
     capa_offer_desc: "200ポイント即付与——サブスクもカードも不要。動画も本も2分で要約。",
     capa_offer_cta: "試してみる →",
@@ -3121,6 +3131,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_continue: "계속 읽기",
     capa_shelf: "내 책장",
     capa_footer: "O Cafezinho 팀 — 저널리즘과 AI, 매일.",
+    capa_kicker: "Cafezinho Media Group 선사",
     capa_offer_badge: "⚡ 출시 특가",
     capa_offer_desc: "200포인트 즉시 지급 — 구독도 카드도 필요 없어요. 영상과 책을 2분 만에 요약.",
     capa_offer_cta: "체험하기 →",
@@ -3427,6 +3438,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_continue: "متابعة القراءة",
     capa_shelf: "مكتبتي",
     capa_footer: "من فريق O Cafezinho — صحافة وذكاء اصطناعي، كل يوم.",
+    capa_kicker: "يقدم Cafezinho Media Group",
     capa_offer_badge: "⚡ عرض الإطلاق",
     capa_offer_desc: "200 نقطة فورًا — بدون اشتراك، بدون بطاقة. لخّص الفيديوهات والكتب في دقيقتين.",
     capa_offer_cta: "أريد التجربة →",
@@ -3733,6 +3745,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_continue: "पढ़ना जारी रखें",
     capa_shelf: "मेरी किताबों की अलमारी",
     capa_footer: "O Cafezinho टीम से — पत्रकारिता और AI, हर दिन।",
+    capa_kicker: "Cafezinho Media Group प्रस्तुत करता है",
     capa_offer_badge: "⚡ लॉन्च ऑफ़र",
     capa_offer_desc: "तुरंत 200 पॉइंट — न सब्सक्रिप्शन, न कार्ड। वीडियो और किताबें 2 मिनट में समझें।",
     capa_offer_cta: "मुझे आज़माना है →",

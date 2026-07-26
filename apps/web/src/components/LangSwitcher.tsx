@@ -19,16 +19,20 @@ export function LangSwitcher({ compact = true }: { compact?: boolean }) {
   const ref = useRef<HTMLDivElement>(null);
   const current = getLangInfo(lang) ?? SUPPORTED_UI_LANGS[0];
 
-  // Fecha ao clicar fora.
+  // Fecha ao clicar/tocar fora.
   useEffect(() => {
     if (!open) return;
-    const handler = (e: MouseEvent) => {
+    const handler = (e: MouseEvent | PointerEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) {
         setOpen(false);
       }
     };
+    document.addEventListener("pointerdown", handler);
     document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
+    return () => {
+      document.removeEventListener("pointerdown", handler);
+      document.removeEventListener("mousedown", handler);
+    };
   }, [open]);
 
   return (
@@ -67,6 +71,7 @@ export function LangSwitcher({ compact = true }: { compact?: boolean }) {
         .lang-switcher {
           position: relative;
           flex-shrink: 0;
+          z-index: 1000;
         }
         .lang-switcher-btn {
           display: flex;
