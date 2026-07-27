@@ -338,9 +338,15 @@ export function Reader({
     const el = containerRef.current;
     if (!el) return;
     if (!document.fullscreenElement) {
-      el.requestFullscreen?.().then(() => setIsFullscreen(true)).catch(() => {});
+      el.requestFullscreen?.().then(() => {
+        setIsFullscreen(true);
+        setMenuVisible(false);
+      }).catch(() => {});
     } else {
-      document.exitFullscreen?.().then(() => setIsFullscreen(false)).catch(() => {});
+      document.exitFullscreen?.().then(() => {
+        setIsFullscreen(false);
+        setMenuVisible(true);
+      }).catch(() => {});
     }
   };
 
@@ -1371,6 +1377,18 @@ export function Reader({
 
   return (
     <section className="reader" ref={containerRef} data-menu-hidden={!menuVisible}>
+      {/* Botão flutuante da xicrinha (☕) para reexibir o menu quando oculto */}
+      {!menuVisible && (
+        <button
+          onClick={() => setMenuVisible(true)}
+          className="moka-teacup-float-btn"
+          title={t("reader_show_menu")}
+          aria-label={t("reader_show_menu")}
+        >
+          ☕
+        </button>
+      )}
+
       <header className="reader-header" data-hidden={!menuVisible}>
         {/* ── Menu: row-scroll (ações do livro, scrollável) + row-right (controles, fixo) ── */}
         <div className="reader-row-main">
@@ -1607,17 +1625,15 @@ export function Reader({
             >
               {isFullscreen ? "🗗" : "⛶"}
             </button>
-            {/* 👁 Ocultar menu (fullscreen) */}
-            {isFullscreen && (
-              <button
-                onClick={() => setMenuVisible((v) => !v)}
-                className="icon-btn menu-toggle-btn"
-                title={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
-                aria-label={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
-              >
-                {menuVisible ? "👁" : "🙈"}
-              </button>
-            )}
+            {/* ☕/👁 Ocultar menu (leitura imersiva) */}
+            <button
+              onClick={() => setMenuVisible((v) => !v)}
+              className="icon-btn menu-toggle-btn"
+              title={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
+              aria-label={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
+            >
+              ☕
+            </button>
           </div>
         </div>
 
@@ -1963,20 +1979,45 @@ export function Reader({
           display: flex;
           flex-direction: column;
           height: 100%;
+          height: 100dvh;
+          max-height: 100dvh;
           min-height: 0;
           background: var(--bg);
-          border-right: none; /* era 1px solid, mas sem painel lateral não precisa */
+          border-right: none;
           position: relative;
-          /* overflow: hidden é NECESSÁRIO pra conter o reader-scroll e
-             deixar a nav-bar visível. Mas NÃO corta o header porque:
-             - header tem flex-shrink: 0 (não encolhe)
-             - header tem min-height: 50px
-             - reader-scroll tem flex: 1 + min-height: 0 (encolhe)
-             - nav-bar tem flex-shrink: 0 (não encolhe)
-             A soma: header (fixo) + scroll (encolhe) + navbar (fixo) = 100% */
           overflow: hidden;
         }
-        /* Em tela cheia: ocupa toda a tela, mantém header + nav visíveis. */
+        /* Botão flutuante da xicrinha Moka (☕) quando menu está oculto */
+        .moka-teacup-float-btn {
+          position: absolute;
+          top: 12px;
+          left: 16px;
+          z-index: 200;
+          width: 42px;
+          height: 42px;
+          border-radius: 50%;
+          background: var(--surface);
+          border: 1px solid var(--border);
+          box-shadow: var(--shadow-lg);
+          font-size: 20px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          cursor: pointer;
+          transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+          backdrop-filter: blur(8px);
+          -webkit-backdrop-filter: blur(8px);
+        }
+        .moka-teacup-float-btn:hover {
+          transform: scale(1.1);
+          background: var(--accent-soft);
+          border-color: var(--accent);
+          box-shadow: 0 6px 20px rgba(30, 64, 175, 0.22);
+        }
+        .moka-teacup-float-btn:active {
+          transform: scale(0.92);
+        }
+        /* Em tela cheia: ocupa toda a tela, mantém header + nav visíveis quando ativo */
         .reader:fullscreen {
           width: 100vw;
           height: 100vh;
@@ -1989,16 +2030,10 @@ export function Reader({
           max-height: none;
           overflow: visible;
         }
+        .reader-header[data-hidden="true"],
+        .reader[data-menu-hidden="true"] .reader-header,
         .reader:fullscreen[data-menu-hidden="true"] .reader-header {
-          height: 0;
-          min-height: 0;
-          max-height: 0;
-          padding-top: 0;
-          padding-bottom: 0;
-          overflow: hidden;
-          opacity: 0;
-          border: 0;
-          pointer-events: none;
+          display: none !important;
         }
         .reader:fullscreen .reader-scroll {
           padding-top: 16px;
@@ -2013,8 +2048,9 @@ export function Reader({
           flex-shrink: 0;
           min-height: 50px;
           box-shadow: var(--shadow-sm);
-          position: relative;
-          z-index: 5;
+          position: sticky;
+          top: 0;
+          z-index: 100;
         }
         /* Linhas do header — distribuem bem os elementos (sem espaço vazio). */
         .reader-row {
@@ -2024,7 +2060,7 @@ export function Reader({
           flex-wrap: wrap;
           min-height: 42px;
         }
-        /* Container principal: GRID (scroll + right) — solução ChatGPT */
+        /* Container principal: GRID (scroll + right) */
         .reader-row-main {
           display: grid;
           grid-template-columns: minmax(0, 1fr) max-content;
@@ -2046,8 +2082,6 @@ export function Reader({
           overscroll-behavior-x: contain;
           scroll-snap-type: x proximity;
           scrollbar-width: none;
-          /* Fade indicador de scroll nas bordas (solução Claude).
-             Quando tem botões escondidos, a borda fica esmaecida. */
           -webkit-mask-image: linear-gradient(to right, transparent 0, black 12px, black calc(100% - 12px), transparent 100%);
           mask-image: linear-gradient(to right, transparent 0, black 12px, black calc(100% - 12px), transparent 100%);
         }
@@ -2088,7 +2122,7 @@ export function Reader({
             font-size: 16px;
           }
         }
-        /* Controles fixos à direita (NÃO scrolla, NÃO corta dropdown) */
+        /* Controles fixos à direita */
         .reader-row-right {
           display: flex;
           align-items: center;
@@ -2098,14 +2132,13 @@ export function Reader({
           z-index: 10;
           margin-left: auto;
           flex-shrink: 0;
-          margin-left: auto; /* empurra tudo pra direita */
         }
         /* Zoom VERTICAL no topo da lateral direita.
-           Só + e −, compacto. Some quando o menu é ocultado (fullscreen). */
+           Ajustado dinamicamente para não cortar nem sobrepor. */
         .zoom-rail {
           position: absolute;
           right: 12px;
-          top: 64px; /* ABAIXO do header (não trepa no menu) */
+          top: 64px;
           display: flex;
           flex-direction: column;
           gap: 2px;
@@ -2114,19 +2147,17 @@ export function Reader({
           border: 1px solid var(--border-soft);
           border-radius: var(--radius-pill);
           box-shadow: var(--shadow);
-          z-index: 40;
-          transition: opacity 200ms ease;
+          z-index: 90;
+          transition: top 200ms ease, opacity 200ms ease;
         }
-        /* Esconde o zoom junto com o menu (data-hidden=true no fullscreen). */
-        .zoom-rail[data-hidden="true"] {
-          opacity: 0;
-          pointer-events: none;
+        @media (max-width: 600px) {
+          .zoom-rail {
+            top: 96px;
+          }
         }
-        .reader:fullscreen .zoom-rail {
-          top: 64px; /* abaixo do header do fullscreen */
-        }
+        .reader[data-menu-hidden="true"] .zoom-rail,
         .reader:fullscreen[data-menu-hidden="true"] .zoom-rail {
-          top: 16px;
+          top: 12px;
         }
         .zoom-rail-btn {
           width: 40px;
