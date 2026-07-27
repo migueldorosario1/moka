@@ -540,7 +540,12 @@ export function SettingsForm({
             id="apikey"
             type={showKey ? "text" : "password"}
             value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setApiKey(val);
+              setTest({ status: "idle", message: "" });
+              setModelsError("");
+            }}
             placeholder={editingId ? t("set_api_key_update") : t("set_api_key_placeholder")}
             autoComplete="off"
             spellCheck={false}
@@ -598,8 +603,6 @@ export function SettingsForm({
             value={targetLang}
             onChange={(e) => {
               setLang(e.target.value);
-              // BUG-20260724-LANG-REVERT: persistir NA HORA (antes só salvava
-              // no handleSave, que exige chave — fechar revertia a escolha).
               setTargetLang(e.target.value);
             }}
           >
@@ -648,7 +651,6 @@ export function SettingsForm({
               setAudioLang(e.target.value);
             }}
           >
-            {/* "Original" em primeiro, separado, destacado */}
             <option value="original">📖 {t("set_audio_original")}</option>
             <optgroup label={t("set_audio_specific")}>
               <option value="pt-BR">🇧🇷 Português</option>
@@ -666,14 +668,12 @@ export function SettingsForm({
             </optgroup>
           </select>
         </div>
-        {/* 4. Idioma do CONTEÚDO — automático (detectado ao abrir, V2.4+).
-            Os 4 papéis: interface / traduções / áudio / conteúdo (auto). */}
         <p className="hint" style={{ marginTop: "4px" }}>
           {t("set_content_lang")}
         </p>
       </div>
 
-      {/* Modelo — SEMPRE VISÍVEL (é o que diferencia múltiplas entries) */}
+      {/* Modelo — SEMPRE VISÍVEL */}
       <div className="field">
         <label htmlFor="model">
           {t("set_model")}
@@ -684,7 +684,10 @@ export function SettingsForm({
             id="model"
             type="text"
             value={model}
-            onChange={(e) => setModel(e.target.value)}
+            onChange={(e) => {
+              setModel(e.target.value);
+              setTest({ status: "idle", message: "" });
+            }}
             placeholder={preset?.defaultModel}
             spellCheck={false}
           />
@@ -699,7 +702,7 @@ export function SettingsForm({
           </button>
         </div>
 
-        {/* Lista de modelos encontrados (clicável) */}
+        {/* Lista de modelos encontrados (clicável com confirmação OK) */}
         {modelsLoading && (
           <p className="hint">{t("set_searching_models")}</p>
         )}
@@ -736,12 +739,27 @@ export function SettingsForm({
                     key={m}
                     type="button"
                     className={`model-item ${model === m ? "selected" : ""}`}
-                    onClick={() => setModel(m)}
+                    onClick={() => {
+                      setModel(m);
+                      setTest({ status: "idle", message: "" });
+                    }}
                   >
                     {model === m && "✓ "}{m}
                   </button>
                 ))}
             </div>
+            {model && (
+              <div className="model-select-bar">
+                <span>Modelo escolhido: <strong>{model}</strong></span>
+                <button
+                  type="button"
+                  className="model-ok-btn"
+                  onClick={() => setModelsList(null)}
+                >
+                  ✓ OK — Usar Este Modelo
+                </button>
+              </div>
+            )}
           </div>
         )}
         {modelsList && modelsList.length === 0 && (
@@ -1315,6 +1333,32 @@ export function SettingsForm({
           background: #f0f2e4;
           color: #6b8e3d;
           font-weight: 600;
+        }
+        .model-select-bar {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding: 8px 12px;
+          background: #f4f8f4;
+          border-top: 1px solid var(--border);
+          font-size: 13px;
+        }
+        .model-select-bar strong {
+          color: #2c7a2c;
+          font-family: ui-monospace, "SF Mono", Consolas, monospace;
+        }
+        .model-ok-btn {
+          background: #2c7a2c !important;
+          color: #ffffff !important;
+          border: none !important;
+          padding: 5px 12px !important;
+          border-radius: 6px !important;
+          font-weight: 600 !important;
+          font-size: 12.5px !important;
+          cursor: pointer;
+        }
+        .model-ok-btn:hover {
+          background: #226222 !important;
         }
         .actions {
           display: flex;
