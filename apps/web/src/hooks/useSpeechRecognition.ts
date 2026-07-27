@@ -73,42 +73,32 @@ export function useSpeechRecognition(onFinalResult?: (text: string) => void): Sp
     recognition.onstart = () => {
       setListening(true);
       startTimeout();
-      // NO reinício: restaura o acumulado na tela (não zera).
-      if (accumulatedRef.current) {
-        setTranscript(accumulatedRef.current);
-      }
     };
 
     recognition.onresult = (event: any) => {
-      // Renova o timeout a cada resultado (enquanto fala, segue ouvindo).
       startTimeout();
-      let interim = "";
-      let newFinal = "";
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const result = event.results[i];
-        if (result.isFinal) {
-          newFinal += result[0].transcript;
+      let finalTranscript = "";
+      let interimTranscript = "";
+
+      for (let i = 0; i < event.results.length; i++) {
+        const res = event.results[i];
+        if (res.isFinal) {
+          finalTranscript += res[0].transcript + " ";
         } else {
-          interim += result[0].transcript;
+          interimTranscript += res[0].transcript;
         }
       }
-      if (newFinal) {
-        // ACUMULA: soma ao texto já reconhecido (não substitui).
-        // Guard: não soma se o newFinal já tá no final do accumulated (evita duplicar).
-        const acc = accumulatedRef.current;
-        if (!acc.endsWith(newFinal.trim())) {
-          accumulatedRef.current = (acc + " " + newFinal).trim();
-          setTranscript(accumulatedRef.current);
-          callbackRef.current?.(accumulatedRef.current);
-        }
-      } else if (interim) {
-        // Mostra: acumulado + o que tá falando agora.
-        setTranscript((accumulatedRef.current + " " + interim).trim());
-      }
+
+      const sessionText = (finalTranscript + interimTranscript).trim();
+      const fullText = accumulatedRef.current
+        ? (accumulatedRef.current + " " + sessionText).trim()
+        : sessionText;
+
+      setTranscript(fullText);
+      callbackRef.current?.(fullText);
     };
 
     recognition.onerror = (event: any) => {
-      // "no-speech" e "aborted" são normais — não desligam.
       if (event.error === "not-allowed" || event.error === "service-not-allowed") {
         stoppedManuallyRef.current = true;
         if (timeoutId) clearTimeout(timeoutId);
@@ -117,17 +107,14 @@ export function useSpeechRecognition(onFinalResult?: (text: string) => void): Sp
     };
 
     recognition.onend = () => {
-      // iOS/Safari para o reconhecimento ao detectar silêncio, mesmo com
-      // continuous=true. Se não foi o usuário que parou, REINICIA.
-      // GUARD: só reinicia se ainda somos a instância ativa (evita duplicação).
+      // Guarda o acumulado único da sessão anterior ao reiniciar no iOS/Safari
       if (!stoppedManuallyRef.current && recognitionRef.current === recognition) {
-        // Pequeno delay pra evitar múltiplas instâncias se reiniciando rápido.
         setTimeout(() => {
           if (!stoppedManuallyRef.current && recognitionRef.current === recognition) {
             try {
               recognition.start();
             } catch {
-              // Já tá rodando ou erro — ignora.
+              /* ignora */
             }
           }
         }, 100);
