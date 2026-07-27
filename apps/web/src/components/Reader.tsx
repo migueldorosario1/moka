@@ -350,12 +350,23 @@ export function Reader({
     }
   };
 
-  // Atualiza estado se sair do fullscreen via ESC.
+  // Atualiza estado se sair do fullscreen via ESC ou mudar a tela.
   useEffect(() => {
-    const onFsChange = () => setIsFullscreen(!!document.fullscreenElement);
+    const onFsChange = () => {
+      const fs = !!document.fullscreenElement;
+      setIsFullscreen(fs);
+      if (!fs) {
+        setMenuVisible(true);
+      }
+    };
     document.addEventListener("fullscreenchange", onFsChange);
     return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
+
+  // Garante que o menu superior fique SEMPRE visível ao abrir configurações ou ao carregar a obra.
+  useEffect(() => {
+    setMenuVisible(true);
+  }, [book, settingsOpen]);
 
   /** Esta página já está marcada? (lookup rápido no array de bookmarks). */
   const isBookmarked = bookmarks.some((b) => b.chapterIdx === chapterIdx);
@@ -1598,7 +1609,10 @@ export function Reader({
             {/* ⚙️ Configurações */}
             {onOpenSettings && (
               <button
-                onClick={onOpenSettings}
+                onClick={() => {
+                  setMenuVisible(true);
+                  onOpenSettings();
+                }}
                 className={`icon-btn settings-gear ${configReady ? "" : "unset"}`}
                 title={t("reader_settings")}
                 aria-label={t("settings")}
@@ -2048,8 +2062,12 @@ export function Reader({
           flex-shrink: 0;
           min-height: 50px;
           box-shadow: var(--shadow-sm);
-          position: sticky;
+          position: relative;
           top: 0;
+          left: 0;
+          right: 0;
+          width: 100%;
+          box-sizing: border-box;
           z-index: 100;
         }
         /* Linhas do header — distribuem bem os elementos (sem espaço vazio). */
