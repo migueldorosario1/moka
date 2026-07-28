@@ -2,5 +2,17 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "framework": "nextjs",
-  "regions": ["gru1"]
+  "regions": [
+    "gru1"
+  ],
+  "rewrites": [
+    {
+      "source": "/painel",
+      "destination": "https://43.156.151.165.sslip.io/painel"
+    },
+    {
+      "source": "/api/pontos/:path*",
+      "destination": "https://43.156.151.165.sslip.io/:path*"
+    }
+  ]
 }

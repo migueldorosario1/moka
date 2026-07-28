@@ -7,7 +7,9 @@
  */
 
 const KEY = "moka.pontos.conta";
-export const API_PONTOS = "https://43.156.151.165.sslip.io";
+// A API de pontos é alcançada via rewrite da Vercel (mesma origem) —
+// o cliente nunca vê o endereço do backend (pedido do Miguel, 28/07).
+export const API_PONTOS = "/api/pontos";
 
 export interface ContaPontos {
   email: string;

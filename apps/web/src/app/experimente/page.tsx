@@ -11,7 +11,7 @@ import { useI18n } from "@/components/I18nProvider";
  * Valor livre (mínimo R$40 = 400 pts), estimativa viva, Pix na hora via
  * API de pontos (Tencent). Mesma estética FT-sofisticada da capa.
  */
-const API = "https://43.156.151.165.sslip.io";
+const API = "/api/pontos";
 const TAXA = 0.1; // R$ por ponto (doc 15, opção A)
 
 type Etapa = "form" | "pix" | "ok";
