@@ -4,5 +4,17 @@
   "outputDirectory": "apps/web/.next",
   "installCommand": "npm install",
   "framework": "nextjs",
-  "regions": ["gru1"]
+  "regions": [
+    "gru1"
+  ],
+  "rewrites": [
+    {
+      "source": "/painel",
+      "destination": "https://43.156.151.165.sslip.io/painel"
+    },
+    {
+      "source": "/api/pontos/:path*",
+      "destination": "https://43.156.151.165.sslip.io/:path*"
+    }
+  ]
 }
