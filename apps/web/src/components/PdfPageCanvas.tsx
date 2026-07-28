@@ -162,6 +162,9 @@ export function PdfPageCanvas({
   const [docReady, setDocReady] = useState(false);
   const [pageReady, setPageReady] = useState(false);
   const [error, setError] = useState<string>("");
+  // Watchdog de render (Miguel, 28/07): re-tenta 1× por página se travar.
+  const [retryTick, setRetryTick] = useState(0);
+  const lastRetryPage = useRef<number | null>(null);
 
   // Carrega o documento UMA vez quando o `data` muda.
   useEffect(() => {
@@ -225,6 +228,26 @@ export function PdfPageCanvas({
 
     // Esconde a página antiga imediatamente (mostra spinner).
     setPageReady(false);
+    setError("");
+
+    // WATCHDOG de render (Miguel, 28/07): se a página travar no meio do
+    // render (worker engasga numa página pesada), o spinner rodava PRA
+    // SEMPRE até o usuário voltar e avançar. Agora: 20s → re-tenta 1×
+    // (uma única vez por página, sem loop); se travar de novo → erro
+    // com orientação, nunca espera infinita.
+    let concluiu = false;
+    const watchdog = setTimeout(() => {
+      if (!cancelled && !concluiu) {
+        if (lastRetryPage.current !== pageNum) {
+          lastRetryPage.current = pageNum;
+          setRetryTick((t) => t + 1);
+        } else {
+          setError(
+            "esta página travou ao carregar. Volte uma página e avance — se persistir, recarregue o livro.",
+          );
+        }
+      }
+    }, 20_000);
 
     (async () => {
       try {
@@ -321,11 +344,15 @@ export function PdfPageCanvas({
         onPageText?.(pageText);
 
         // PRONTO: só agora revelamos a página, já 100% alinhada.
+        concluiu = true;
+        clearTimeout(watchdog);
         setPageReady(true);
         // Entrega o canvas ao pai (pra snapshot/foto da página).
         if (canvas) onCanvasReady?.(canvas);
       } catch (err) {
         if (cancelled) return;
+        concluiu = true;
+        clearTimeout(watchdog);
         // RenderingCancelledException é esperada em re-renders; ignora.
         const msg = err instanceof Error ? err.message : String(err);
         if (!/cancelled/i.test(msg)) {
@@ -336,11 +363,12 @@ export function PdfPageCanvas({
 
     return () => {
       cancelled = true;
+      clearTimeout(watchdog);
       localRenderTask?.cancel();
       localTextLayer?.cancel();
     };
     // vpSize dispara re-render ao redimensionar/girar a tela. zoom ao mudar o zoom.
-  }, [pageNum, docReady, vpSize, zoom, onPageText]);
+  }, [pageNum, docReady, vpSize, zoom, onPageText, retryTick]);
 
   const showSpinner = !pageReady && !error;
   const showError = error !== "";
