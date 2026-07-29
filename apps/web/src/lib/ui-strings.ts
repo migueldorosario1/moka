@@ -111,6 +111,7 @@ export type UIStringKey =
   | "exp_panel"
   | "capa_shelf_books"
   | "capa_shelf_videos"
+  | "capa_test_link"
   // ── Home (estante) ──
   | "shelf_loading"
   | "shelf_title"
@@ -423,6 +424,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     exp_panel: "Acessar meu painel →",
     capa_shelf_books: "Estante de livros",
     capa_shelf_videos: "Videoteca",
+    capa_test_link: "Só quer experimentar? Teste com R$ 5 →",
     save: "Salvar",
     cancel: "Cancelar",
     remove: "Remover",
@@ -739,6 +741,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     exp_panel: "Open my dashboard →",
     capa_shelf_books: "Bookshelf",
     capa_shelf_videos: "Video library",
+    capa_test_link: "Just want to try? Test with R$ 5 →",
     save: "Save",
     cancel: "Cancel",
     remove: "Remove",
@@ -1047,6 +1050,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     exp_panel: "Abrir mi panel →",
     capa_shelf_books: "Estantería de libros",
     capa_shelf_videos: "Videoteca",
+    capa_test_link: "¿Solo quieres probar? Test por R$ 5 →",
     save: "Guardar",
     cancel: "Cancelar",
     remove: "Quitar",
@@ -1355,6 +1359,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     exp_panel: "Ouvrir mon tableau de bord →",
     capa_shelf_books: "Bibliothèque",
     capa_shelf_videos: "Vidéothèque",
+    capa_test_link: "Envie d'essayer ? Test à 5 R$ →",
     save: "Enregistrer",
     cancel: "Annuler",
     remove: "Retirer",
@@ -1663,6 +1668,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     exp_panel: "Mein Dashboard öffnen →",
     capa_shelf_books: "Bücherregal",
     capa_shelf_videos: "Videothek",
+    capa_test_link: "Nur ausprobieren? Test für 5 R$ →",
     save: "Speichern",
     cancel: "Abbrechen",
     remove: "Entfernen",
@@ -1971,6 +1977,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     exp_panel: "Apri il mio pannello →",
     capa_shelf_books: "Libreria",
     capa_shelf_videos: "Videoteca",
+    capa_test_link: "Vuoi solo provare? Test a R$ 5 →",
     save: "Salva",
     cancel: "Annulla",
     remove: "Rimuovi",
@@ -2279,6 +2286,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     exp_panel: "Открыть мою панель →",
     capa_shelf_books: "Книжная полка",
     capa_shelf_videos: "Видеотека",
+    capa_test_link: "Хотите просто попробовать? Тест за 5 R$ →",
     save: "Сохранить",
     cancel: "Отмена",
     remove: "Удалить",
@@ -2587,6 +2595,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     exp_panel: "打开我的面板 →",
     capa_shelf_books: "书架",
     capa_shelf_videos: "视频库",
+    capa_test_link: "只想试试？R$ 5 试用 →",
     save: "保存",
     cancel: "取消",
     remove: "移除",
@@ -2895,6 +2904,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     exp_panel: "マイページへ →",
     capa_shelf_books: "本棚",
     capa_shelf_videos: "動画ライブラリ",
+    capa_test_link: "まず試したい方は？R$ 5 テスト →",
     save: "保存",
     cancel: "キャンセル",
     remove: "削除",
@@ -3203,6 +3213,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     exp_panel: "내 패널 열기 →",
     capa_shelf_books: "책장",
     capa_shelf_videos: "동영상 보관함",
+    capa_test_link: "그냥 체험해 보고 싶다면? R$ 5 테스트 →",
     save: "저장",
     cancel: "취소",
     remove: "제거",
@@ -3511,6 +3522,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     exp_panel: "فتح لوحتي →",
     capa_shelf_books: "مكتبة الكتب",
     capa_shelf_videos: "مكتبة الفيديو",
+    capa_test_link: "تريد التجربة فقط؟ جرّب بـ 5 R$ →",
     save: "حفظ",
     cancel: "إلغاء",
     remove: "إزالة",
@@ -3819,6 +3831,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     exp_panel: "मेरा पैनल खोलें →",
     capa_shelf_books: "किताबों की अलमारी",
     capa_shelf_videos: "वीडियो लाइब्रेरी",
+    capa_test_link: "बस आज़माना है? R$ 5 टेस्ट →",
     save: "सहेजें",
     cancel: "रद्द करें",
     remove: "हटाएँ",

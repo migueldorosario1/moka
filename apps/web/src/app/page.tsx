@@ -46,6 +46,11 @@ export default function Capa() {
           </a>
         </div>
 
+        {/* Teste R$5 — SEMPRE visível onde há oferta (regra do Miguel, 29/07) */}
+        <a className="capa-test-link" href="/experimente?modo=teste">
+          🎣 {t("capa_test_link")}
+        </a>
+
         {/* ── Ilustração Editorial de Destaque ── */}
         <img
           className="capa-hero-img"

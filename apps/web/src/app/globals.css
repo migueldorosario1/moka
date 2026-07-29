@@ -2018,6 +2018,19 @@ main.igot-shell.ft {
   font-weight: 600;
   color: var(--ft-ink);
 }
+
+/* Teste R$5 sempre visível (regra do Miguel, 29/07) */
+.capa-test-link {
+  display: inline-block;
+  margin: -26px 0 34px;
+  color: #0f7680;
+  font-weight: 700;
+  font-size: 15px;
+  text-decoration: none;
+  border-bottom: 1px solid #0f7680;
+  padding-bottom: 1px;
+}
+.capa-test-link:hover { color: #191919; border-color: #191919; }
 .capa-path span {
   color: var(--ft-ink-soft);
   font-size: 14px;
