@@ -305,8 +305,15 @@ export function SettingsForm({
           Sem mensalidade — seus pontos não expiram.
         </p>
         <div className="v3-plans">
-          <a className="v3-plan v3-plan-featured" href="/experimente">
+          <a className="v3-plan v3-plan-teste" href="/experimente?modo=teste">
             <span className="v3-plan-badge">comece aqui</span>
+            <b>🎣 Teste</b>
+            <span className="v3-plan-price">R$ 5</span>
+            <span className="v3-plan-desc">
+              200 pontos pra experimentar tudo — sem compromisso
+            </span>
+          </a>
+          <a className="v3-plan v3-plan-featured" href="/experimente">
             <b>⚡ Pontos</b>
             <span className="v3-plan-price">a partir de R$ 40</span>
             <span className="v3-plan-desc">
@@ -873,6 +880,10 @@ export function SettingsForm({
         .v3-plan-featured {
           border-color: #191919;
           background: #fff1e5;
+        }
+        .v3-plan-teste {
+          border-color: #191919;
+          background: #f5e0cb;
         }
         .v3-plan-byok {
           background: #eaf3f4;

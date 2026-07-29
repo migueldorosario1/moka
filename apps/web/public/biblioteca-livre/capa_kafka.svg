@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="540" viewBox="0 0 360 540">
+<rect width="360" height="540" fill="#fff1e5"/>
+<rect x="14" y="14" width="332" height="512" fill="none" stroke="#1a1a1a" stroke-width="2"/>
+<text x="180" y="70" font-family="Georgia, serif" font-size="34" text-anchor="middle">🇩🇪</text>
+<text x="180" y="260" font-family="Georgia, serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#1a1a1a">Die Verwandlung</text>
+<text x="180" y="300" font-family="Georgia, serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#1a1a1a"></text>
+<line x1="120" y1="330" x2="240" y2="330" stroke="#1a1a1a" stroke-width="1"/>
+<text x="180" y="370" font-family="Georgia, serif" font-size="20" font-style="italic" text-anchor="middle" fill="#66605a">Franz Kafka</text>
+<text x="180" y="500" font-family="Georgia, serif" font-size="13" text-anchor="middle" fill="#0f7680">BIBLIOTECA LIVRE · MOKA</text>
+</svg>
