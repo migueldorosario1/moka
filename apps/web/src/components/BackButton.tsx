@@ -21,8 +21,9 @@ export function BackButton() {
       }}
       aria-label={t("back")}
       title={t("back")}
+      style={{ fontSize: "18px", lineHeight: 1 }}
     >
-      ← {t("back")}
+      ←
     </button>
   );
 }
