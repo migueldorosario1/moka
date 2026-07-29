@@ -21,9 +21,9 @@ type Modo = "pontos" | "teste" | "avancado";
 const MODOS: Record<Modo, { titulo: string; preco: string; desc: string }> = {
   pontos: { titulo: "⚡ Pontos", preco: "", desc: "" },
   teste: {
-    titulo: "🎣 Teste",
-    preco: "R$ 5",
-    desc: "200 pontos na hora, pra experimentar tudo — sem compromisso.",
+    titulo: "🎣 Teste (lançamento)",
+    preco: "R$ 10",
+    desc: "110 pontos na hora, pra experimentar tudo — promoção de lançamento, 1× por e-mail.",
   },
   avancado: {
     titulo: "💼 Licença avançada",
@@ -66,7 +66,7 @@ export default function Experimente() {
     try {
       const corpo =
         modo === "teste"
-          ? { email: email.trim(), nome: nome.trim(), pacote: "r5_200" }
+          ? { email: email.trim(), nome: nome.trim(), pacote: "r10_110" }
           : modo === "avancado"
             ? { email: email.trim(), nome: nome.trim(), pacote: "avancado_6m" }
             : { email: email.trim(), nome: nome.trim(), pontos_custom: pontos };

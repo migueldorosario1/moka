@@ -19,7 +19,7 @@ const FAQ: Faq[] = [
   { q: "O que são pontos?", tags: ["pontos", "ponto", "créditos", "saldo"],
     a: "Pontos são a moeda do Moka. Cada ação da IA custa pontos: resumir um vídeo custa 30, resumir um livro custa 40, traduzir um livro inteiro custa 80 e um áudio de 10 minutos custa 40. Você compra pontos uma vez e gasta quando quiser — eles não expiram." },
   { q: "Quanto custa cada coisa?", tags: ["preço", "custa", "valor", "quanto"],
-    a: "O ponto custa R$ 0,10. Então: resumo de vídeo = R$ 3,00 · resumo de livro = R$ 4,00 · tradução de livro inteiro = R$ 8,00 · áudio de 10 min = R$ 4,00. A compra mínima é R$ 40 (400 pontos)." },
+    a: "O ponto custa R$ 0,10. Então: resumo de vídeo = R$ 3,00 · resumo de livro = R$ 4,00 · tradução de livro inteiro = R$ 8,00 · áudio de 10 min = R$ 4,00. A compra mínima é R$ 40 (400 pontos) — ou o teste de lançamento: R$ 10 (110 pontos, 1× por e-mail)." },
   { q: "Como compro pontos?", tags: ["comprar", "compra", "pix", "pagar", "pagamento"],
     a: "Na página Comprar pontos (/experimente): escolha a quantidade (mínimo 400), informe e-mail e nome, pague o Pix. Os pontos caem na sua conta em segundos, junto com uma senha de acesso que também vai por e-mail." },
   { q: "Os pontos expiram?", tags: ["expira", "expiram", "validade", "prazo"],

@@ -307,10 +307,10 @@ export function SettingsForm({
         <div className="v3-plans">
           <a className="v3-plan v3-plan-teste" href="/experimente?modo=teste">
             <span className="v3-plan-badge">comece aqui</span>
-            <b>🎣 Teste</b>
-            <span className="v3-plan-price">R$ 5</span>
+            <b>🎣 Teste (lançamento)</b>
+            <span className="v3-plan-price">R$ 10</span>
             <span className="v3-plan-desc">
-              200 pontos pra experimentar tudo — sem compromisso
+              110 pontos pra experimentar tudo — promoção, 1× por e-mail
             </span>
           </a>
           <a className="v3-plan v3-plan-featured" href="/experimente">
