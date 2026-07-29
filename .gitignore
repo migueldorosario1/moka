@@ -55,3 +55,4 @@ venv/
 # backups locais de segurança (ZCode)
 *.bak_zcode_*
 .env*
+!apps/web/public/biblioteca-livre/*.epub
