@@ -243,16 +243,6 @@ export default function HomePage() {
         <div className="shelf-page">
           <div className="shelf-header">
             <h1>{t("shelf_title")}</h1>
-          </div>
-
-          {/* Oferta da Biblioteca Livre (pedido do Miguel, 29/07): link
-              sempre visível pra os livros grátis de domínio público. */}
-          <a className="shelf-bib-link" href="/biblioteca">
-            📚 <b>Biblioteca Livre</b> — livros grátis de domínio público,
-            com capa e sinopse. <span>Baixe direto pra sua estante →</span>
-          </a>
-
-          <div className="shelf-header-2">
             <div className="shelf-actions">
               <button
                 className="clear-shelf-btn"
@@ -281,6 +271,12 @@ export default function HomePage() {
               }}
             />
           </div>
+
+          {/* Oferta da Biblioteca Livre (pedido do Miguel, 29/07) */}
+          <a className="shelf-bib-link" href="/biblioteca">
+            📚 <b>Biblioteca Livre</b> — livros grátis de domínio público,
+            com capa e sinopse. <span>Baixe direto pra sua estante →</span>
+          </a>
 
           {addingBook && (
             <div className="igot-loading">
