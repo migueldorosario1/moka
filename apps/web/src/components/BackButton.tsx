@@ -20,7 +20,6 @@ export function BackButton() {
         else router.push("/");
       }}
       aria-label={t("back")}
-      title={t("back")}
       style={{ fontSize: "18px", lineHeight: 1 }}
     >
       ←
