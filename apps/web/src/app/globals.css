@@ -2427,3 +2427,19 @@ main.igot-shell.ft {
 }
 .book-format-badge.fmt-epub { color: var(--accent-dark); border-color: var(--accent-dark); }
 .book-format-badge.fmt-pdf { color: #a33; border-color: #a33; }
+
+/* Link da Biblioteca Livre na estante (pedido do Miguel, 29/07) */
+.shelf-bib-link {
+  display: block;
+  margin: 14px 0 4px;
+  padding: 12px 16px;
+  background: #fff1e5;
+  border: 1px solid #d9c8b8;
+  color: #1a1a1a;
+  text-decoration: none;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.shelf-bib-link b { font-family: var(--font-brand); font-size: 15px; }
+.shelf-bib-link span { color: #0f7680; font-weight: 700; }
+.shelf-bib-link:hover { background: #f7e7d7; }
