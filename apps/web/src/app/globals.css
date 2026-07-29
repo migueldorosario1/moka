@@ -2399,3 +2399,18 @@ main.igot-shell.ft {
   font-weight: 600;
 }
 
+
+/* Marca do formato na estante (pedido do Miguel, 29/07) */
+.book-format-badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 1px 7px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+}
+.book-format-badge.fmt-epub { color: var(--accent-dark); border-color: var(--accent-dark); }
+.book-format-badge.fmt-pdf { color: #a33; border-color: #a33; }

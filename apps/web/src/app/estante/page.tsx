@@ -309,6 +309,10 @@ export default function HomePage() {
                         ? t("shelf_page_n", { n: book.chapterIdx + 1 })
                         : t("shelf_chapter_n", { n: book.chapterIdx + 1 })}
                     </p>
+                    {/* Marca do formato (pedido do Miguel, 29/07) */}
+                    <span className={`book-format-badge fmt-${book.book.sourceFormat}`}>
+                      {book.book.sourceFormat.toUpperCase()}
+                    </span>
                   </div>
                 </Link>
                 <button
