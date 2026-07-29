@@ -425,10 +425,7 @@ export default function HomePage() {
             <button className="config-callout-btn" onClick={() => setSettingsOpen(true)}>
               {t("video_config_btn")}
             </button>
-            <span>
-              (é o botão de engrenagem lá em cima, no canto direito — a chave
-              fica só no seu navegador)
-            </span>
+            <span>{t("video_config_hint")}</span>
           </div>
         )}
       </section>
