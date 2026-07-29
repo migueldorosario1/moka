@@ -4,6 +4,7 @@ import { useState } from "react";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { ContaButton } from "@/components/ContaButton";
+import { BackButton } from "@/components/BackButton";
 import { useI18n } from "@/components/I18nProvider";
 import { BIBLIOTECA_LIVRE, type LivroLivre } from "@/lib/biblioteca-livre";
 import { parseBook } from "@igot/parser";
@@ -68,6 +69,7 @@ export default function Biblioteca() {
           </a>
         </div>
         <div className="igot-topbar-actions">
+          <BackButton />
           <ContaButton />
           <LangSwitcher />
         </div>
@@ -75,12 +77,11 @@ export default function Biblioteca() {
 
       <div className="bib-body">
         <p className="bib-kicker">📚 Biblioteca Livre</p>
-        <h1 className="bib-title">Livros grátis, de domínio público, pra sua estante</h1>
-        <p className="bib-sub">
-          Escolhemos a dedo e escrevemos as sinopses. Baixe o que quiser — a
-          sua estante é sua: remova qualquer livro, ou limpe tudo, quando quiser.
-          Estrangeiros marcados com 🌐 são perfeitos pra treinar a tradução.
-        </p>
+        <h1 className="bib-title">{t("bib_title")}</h1>
+        <p className="bib-sub">{t("bib_sub")}</p>
+
+        {/* Chamada legal tranquilizadora (pedido do Miguel, 29/07) */}
+        <p className="bib-legal">{t("bib_legal")}</p>
 
         {erro && <p className="bib-erro">⚠️ {erro}</p>}
 
@@ -101,9 +102,9 @@ export default function Biblioteca() {
                 <div className="bib-acoes">
                   {naEstante[livro.id] ? (
                     <>
-                      <span className="bib-ok">✓ na sua estante</span>
+                      <span className="bib-ok">{t("bib_in_shelf")}</span>
                       <button className="bib-btn bib-btn-abrir" onClick={() => router.push("/estante")}>
-                        Abrir estante →
+                        {t("bib_open_shelf")}
                       </button>
                     </>
                   ) : (
@@ -112,7 +113,7 @@ export default function Biblioteca() {
                       onClick={() => void adicionar(livro)}
                       disabled={baixando === livro.id}
                     >
-                      {baixando === livro.id ? "⏳ baixando…" : "⬇ Adicionar à estante"}
+                      {baixando === livro.id ? t("bib_btn_downloading") : t("bib_btn_add")}
                     </button>
                   )}
                 </div>
@@ -121,11 +122,7 @@ export default function Biblioteca() {
           ))}
         </div>
 
-        <p className="bib-nota">
-          Todos os textos são de domínio público real e garantido (autores mortos
-          há 70+ anos; edições e traduções igualmente livres). Sua estante é sua:
-          remova o que quiser, inclusive limpar tudo.
-        </p>
+        <p className="bib-nota">{t("bib_nota")}</p>
       </div>
 
       <style jsx>{`
@@ -142,6 +139,11 @@ export default function Biblioteca() {
         }
         .bib-sub { color: #66605a; font-size: 14.5px; line-height: 1.6; text-align: center; max-width: 560px; margin: 0 auto 28px; }
         .bib-erro { color: #b3261e; text-align: center; margin-bottom: 14px; }
+        .bib-legal {
+          margin: 0 auto 22px; max-width: 520px; text-align: center;
+          background: #eef7ee; border: 1px solid #2c7a2c33; color: #235c23;
+          font-size: 13.5px; font-weight: 600; padding: 10px 14px; line-height: 1.5;
+        }
         .bib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
         .bib-card {
           background: #fff; border: 1px solid #d9c8b8; display: flex; flex-direction: column;
