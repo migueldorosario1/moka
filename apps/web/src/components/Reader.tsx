@@ -1052,17 +1052,17 @@ export function Reader({
   /** Rótulo dinâmico do botão conforme o estado. */
   const translateBtnLabel = translatingPage && overlayMode === "translate"
     ? t("reader_translating")
-    : pageTranslation && overlayMode === "translate"
+      : pageTranslation && overlayMode === "translate"
       ? showTranslation
         ? t("reader_view_original")
         : t("reader_view_translation")
-      : t("reader_sel_translate");
+      : t("reader_translate_page");
 
   const explainBtnLabel = translatingPage && overlayMode === "explain"
     ? t("reader_explaining")
     : overlayMode === "explain" && showTranslation
       ? t("reader_view_original")
-      : t("reader_sel_explain");
+      : t("reader_explain_page");
 
   /** Versão SÓ ÍCONE dos botões (cabe numa linha só).
    *  O texto completo vai no `title` (tooltip ao passar o dedo/mouse). */
