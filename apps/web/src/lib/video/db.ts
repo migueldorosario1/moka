@@ -13,6 +13,8 @@ export interface TranscriptSegment {
   /** Fim em segundos (0 se desconhecido). */
   end: number;
   text: string;
+  /** Falante (diarização) — presente nas transcrições da casa (Transkriptor). */
+  speaker?: string;
 }
 
 export interface VideoMeta {
@@ -45,8 +47,8 @@ export interface VideoRecord {
   id: string;
   url: string;
   meta: VideoMeta;
-  /** De onde veio o texto: legendas oficiais/auto ou Whisper. */
-  transcriptSource: "captions" | "whisper";
+  /** De onde veio o texto: legendas oficiais/auto, Whisper ou Transkriptor (casa). */
+  transcriptSource: "captions" | "whisper" | "transkriptor";
   segments: TranscriptSegment[];
   /** Análises já geradas, cacheadas pra não gastar token de novo. */
   analyses: Partial<Record<AnalysisKind, string>>;
@@ -154,12 +156,23 @@ export function normalizeUrl(url: string): string {
   }
 }
 
-/** Texto corrido da transcrição (sem timestamps), pra mandar pra IA. */
+/** Texto corrido da transcrição (sem timestamps), pra mandar pra IA.
+ *  Com diarização, marca as trocas de falante como [SPK_1]: — a IA usa
+ *  isso pra não atribuir fala errada (regra de ouro dos agentes). */
 export function transcriptText(segments: TranscriptSegment[]): string {
-  return segments
-    .map((s) => s.text.trim())
-    .filter(Boolean)
-    .join(" ");
+  let current: string | undefined;
+  const parts: string[] = [];
+  for (const s of segments) {
+    const txt = s.text.trim();
+    if (!txt) continue;
+    if (s.speaker && s.speaker !== current) {
+      parts.push(`\n[${s.speaker}]: ${txt}`);
+      current = s.speaker;
+    } else {
+      parts.push(txt);
+    }
+  }
+  return parts.join(" ").trim();
 }
 
 /** Formata segundos → "12:34" ou "1:02:34". */

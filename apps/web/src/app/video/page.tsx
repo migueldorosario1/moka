@@ -16,10 +16,8 @@ import {
   loadConfigCache,
   getWhisperKey,
   getIngestServer,
-  probeLocalIngest,
-  getLocalNetPermission,
-  ingestBaseAuto,
 } from "@/lib/config";
+import { getConta } from "@/lib/moka-conta";
 import {
   listVideos,
   findVideoByUrl,
@@ -38,8 +36,10 @@ type Stage =
   | { kind: "meta" }
   | { kind: "captions" }
   | { kind: "whisper" }
+  /** Transcrição da casa em andamento (polling) — elapsed em segundos. */
+  | { kind: "listening"; elapsed: number }
   | { kind: "saving" }
-  | { kind: "error"; message: string };
+  | { kind: "error"; message: string; linkHref?: string; linkLabel?: string };
 
 const PLATFORM_ICON: Record<string, string> = {
   youtube: "▶️",
@@ -65,6 +65,58 @@ async function safeJson(res: Response): Promise<Record<string, unknown>> {
   }
 }
 
+/** Resposta do passo transcript/status do /api/ingest. */
+type TxData = {
+  meta?: VideoMeta;
+  transcriptSource?: "captions" | "whisper" | "transkriptor";
+  segments?: TranscriptSegment[];
+  pending?: boolean;
+  orderId?: string;
+  cached?: boolean;
+  debitado?: number;
+  saldo?: number;
+  error?: string;
+  needsWhisperKey?: boolean;
+  needsAccount?: boolean;
+  insufficientFunds?: boolean;
+};
+
+/** Transcrições da casa em andamento — sobrevivem a sair da página. */
+const PENDING_KEY = "mokavideo.pendingJobs";
+type PendingJob = { orderId: string; meta: VideoMeta; ts: number };
+
+function readPendingJobs(): Record<string, PendingJob> {
+  if (typeof window === "undefined") return {};
+  try {
+    return JSON.parse(
+      window.localStorage.getItem(PENDING_KEY) ?? "{}",
+    ) as Record<string, PendingJob>;
+  } catch {
+    return {};
+  }
+}
+
+function loadPendingJob(url: string): PendingJob | null {
+  const j = readPendingJobs()[url.trim()];
+  // Com mais de 2h, o job morreu do nosso lado — submete de novo.
+  if (!j || Date.now() - j.ts > 2 * 3600_000) return null;
+  return j;
+}
+
+function savePendingJob(url: string, orderId: string, meta: VideoMeta): void {
+  if (typeof window === "undefined") return;
+  const all = readPendingJobs();
+  all[url.trim()] = { orderId, meta, ts: Date.now() };
+  window.localStorage.setItem(PENDING_KEY, JSON.stringify(all));
+}
+
+function clearPendingJob(url: string): void {
+  if (typeof window === "undefined") return;
+  const all = readPendingJobs();
+  delete all[url.trim()];
+  window.localStorage.setItem(PENDING_KEY, JSON.stringify(all));
+}
+
 /**
  * Home do Moka Video = cola o link + videoteca.
  *
@@ -82,43 +134,12 @@ export default function HomePage() {
   const [stage, setStage] = useState<Stage>({ kind: "idle" });
   const [configReady, setConfigReady] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
-  /** Servidor de leitura ativo: "local" (seu computador), "custom" (das ⚙️) ou null (o próprio site). */
-  const [ingestMode, setIngestMode] = useState<"local" | "custom" | null>(null);
-  /** Permissão "Local Network Access" do navegador (Chrome a bloqueia por padrão). */
-  const [lnaState, setLnaState] = useState<"granted" | "denied" | "prompt" | "unknown" | null>(null);
-
-  /** Tenta ligar o motor local (dispara o pedido de permissão do Chrome se for "prompt"). */
-  const tryEnableLocal = useCallback(async () => {
-    const ok = await probeLocalIngest(true);
-    if (ok) {
-      setIngestMode("local");
-      setLnaState("granted");
-    } else {
-      setLnaState(await getLocalNetPermission());
-    }
-    return ok;
-  }, []);
 
   useEffect(() => {
     let cancelled = false;
     loadConfigCache().then(() => {
       if (!cancelled) setConfigReady(hasConfig());
     });
-    // Auto-detecta o Moka Video local (lê pelo IP da casa do usuário).
-    if (getIngestServer()) {
-      setIngestMode("custom");
-    } else {
-      (async () => {
-        const ok = await probeLocalIngest();
-        if (cancelled) return;
-        if (ok) {
-          setIngestMode("local");
-          setLnaState("granted");
-        } else {
-          setLnaState(await getLocalNetPermission());
-        }
-      })();
-    }
     listVideos()
       .then((list) => {
         if (!cancelled) setVideos(list);
@@ -161,34 +182,18 @@ export default function HomePage() {
         }
 
         // 1) Metadados (rápido).
-        // Resolve o caminho de leitura: servidor das ⚙️ > motor local > site.
-        // Re-sonda o motor local a cada leitura (antes era só na abertura
-        // da página — info velha causava "servidor tropeçou (404)").
+        // Caminho de leitura: servidor das ⚙️ (se configurado) > o próprio
+        // site (legendas ou transcrição da casa). Um endereço errado nas ⚙️
+        // NUNCA pode derrubar a leitura (bug do Miguel, 2026-07-22).
         const customServer = getIngestServer();
-        let mode: "local" | "custom" | null = customServer ? "custom" : null;
-        if (!customServer) {
-          const localOk = await probeLocalIngest(true);
-          mode = localOk ? "local" : null;
-          if (mode !== ingestMode) setIngestMode(mode);
-        }
-        let ingestBase = ingestBaseAuto(mode === "local");
-        let usedPath =
-          mode === "custom" ? `servidor (${customServer})` : mode === "local" ? "computador" : "site";
+        let ingestBase = customServer || "";
+        let usedPath = customServer ? `servidor (${customServer})` : "site";
 
-        /** POST /api/ingest com fallback em cadeia: servidor das ⚙️ quebrado
-            → motor local → próprio site. Um endereço errado salvo nas ⚙️
-            NUNCA pode derrubar a leitura (bug do Miguel, 2026-07-22). */
         let fellBack = false;
-        const downgrade = async () => {
+        const downgrade = () => {
           fellBack = true;
-          const localOk = customServer ? await probeLocalIngest(true) : false;
-          if (localOk) {
-            ingestBase = ingestBaseAuto(true);
-            usedPath = "computador";
-          } else {
-            ingestBase = "";
-            usedPath = "site";
-          }
+          ingestBase = "";
+          usedPath = "site";
         };
         const postIngest = async (
           body: Record<string, unknown>,
@@ -203,14 +208,14 @@ export default function HomePage() {
           try {
             const res = await doFetch();
             // Servidor configurado respondendo 404 = endereço errado nas ⚙️.
-            if (res.status === 404 && mode !== null && !fellBack) {
-              await downgrade();
+            if (res.status === 404 && customServer && !fellBack) {
+              downgrade();
               return doFetch();
             }
             return res;
           } catch (err) {
-            if (mode !== null && !fellBack) {
-              await downgrade();
+            if (customServer && !fellBack) {
+              downgrade();
               return doFetch();
             }
             throw err;
@@ -230,24 +235,73 @@ export default function HomePage() {
           throw new Error(metaData.error ?? "Não consegui ler esse link.");
         }
 
-        // 2) Transcrição — legendas (instantâneo) ou Whisper (demora mais).
+        // 2) Transcrição — legendas (grátis, instantâneo) ou a casa ouvindo
+        //    o áudio (com pontos, pode levar alguns minutos).
         setStage(metaData.hasCaptions ? { kind: "captions" } : { kind: "whisper" });
-        const whisperKey = (await getWhisperKey()) ?? "";
-        const txRes = await postIngest(
-          { url: link, step: "transcript" },
-          whisperKey ? { "x-openai-key": whisperKey } : {},
-        );
-        const txData = (await safeJson(txRes)) as {
-          meta?: VideoMeta;
-          transcriptSource?: "captions" | "whisper";
-          segments?: TranscriptSegment[];
-          error?: string;
-          needsWhisperKey?: boolean;
-        };
-        if (!txRes.ok || !txData.segments) {
+        const conta = getConta();
+        const contaBody = conta
+          ? { conta: { email: conta.email, senha: conta.senha } }
+          : {};
+
+        // Ficou uma transcrição pendente DESTE link (usuário saiu e voltou)?
+        // Retoma o polling em vez de submeter de novo.
+        const pendingJob = loadPendingJob(link);
+        let txData: TxData;
+        if (pendingJob) {
+          txData = { pending: true, orderId: pendingJob.orderId, meta: pendingJob.meta };
+        } else {
+          const whisperKey = (await getWhisperKey()) ?? "";
+          const txRes = await postIngest(
+            { url: link, step: "transcript", ...contaBody },
+            whisperKey ? { "x-openai-key": whisperKey } : {},
+          );
+          txData = (await safeJson(txRes)) as TxData;
+        }
+
+        // Transcrição da casa em andamento → polling até ficar pronta.
+        if (txData.pending && txData.orderId) {
+          const orderId = txData.orderId;
+          savePendingJob(link, orderId, txData.meta ?? metaData.meta);
+          const t0 = Date.now();
+          for (;;) {
+            setStage({ kind: "listening", elapsed: Math.floor((Date.now() - t0) / 1000) });
+            await new Promise((r) => setTimeout(r, 12_000));
+            const elapsed = Math.floor((Date.now() - t0) / 1000);
+            if (elapsed > 45 * 60) {
+              clearPendingJob(link);
+              throw new Error(
+                "A transcrição está demorando mais que o normal. Tente de novo " +
+                  "mais tarde — seus pontos só são descontados quando o texto aparece.",
+              );
+            }
+            const stRes = await postIngest({
+              url: link,
+              step: "status",
+              orderId,
+              ...contaBody,
+            });
+            const stData = (await safeJson(stRes)) as TxData;
+            if (stData.pending) continue;
+            txData = stData;
+            break;
+          }
+        }
+
+        if (!txData.segments) {
+          clearPendingJob(link);
           console.debug("[video] transcrição falhou — caminho:", usedPath, "caiu pro plano B:", fellBack);
+          if (txData.insufficientFunds) {
+            setStage({
+              kind: "error",
+              message: txData.error ?? "Seus pontos não cobrem esta transcrição.",
+              linkHref: "/experimente",
+              linkLabel: "☕ Comprar pontos",
+            });
+            return;
+          }
           throw new Error(txData.error ?? "Não consegui transcrever o vídeo.");
         }
+        clearPendingJob(link);
 
         // 3) Salva na videoteca e abre.
         setStage({ kind: "saving" });
@@ -271,7 +325,7 @@ export default function HomePage() {
         });
       }
     },
-    [url, busy, router, ingestMode],
+    [url, busy, router],
   );
 
   return (
@@ -332,49 +386,12 @@ export default function HomePage() {
 
         {/* Selo: o site está lendo através do computador do usuário
             (o IP da casa dele — que o YouTube não bloqueia). */}
-        {ingestMode === "local" && (
-          <p className="ingest-badge">
-            🖥️ <strong>Leitura turbinada:</strong> achei o Moka Video rodando no
-            seu computador — vou ler por ele, usando a internet da sua casa
-            (o YouTube não bloqueia).
-          </p>
-        )}
-        {ingestMode === "custom" && (
+        {/* Servidor próprio das ⚙️ (feature avançada — o usuário comum nunca vê) */}
+        {getIngestServer() && (
           <p className="ingest-badge">
             🖥️ Lendo através do seu servidor: <strong>{getIngestServer()}</strong>{" "}
             (das ⚙️ — apague lá pra voltar ao automático).
           </p>
-        )}
-
-        {/* Chrome bloqueia site→localhost até o usuário permitir
-            ("Local Network Access"). Guia claro, sem tecniquês. */}
-        {!ingestMode && lnaState === "prompt" && (
-          <div className="lna-card">
-            <strong>🔓 Falta uma permissão do navegador</strong>
-            <span>
-              O Chrome precisa da sua autorização pra o site conversar com o
-              motor do Moka no seu computador. Toque no botão — o Chrome vai
-              perguntar; escolha <strong>“Permitir”</strong>.
-            </span>
-            <button className="lna-btn" onClick={() => void tryEnableLocal()}>
-              🔓 Permitir ligação com meu computador
-            </button>
-          </div>
-        )}
-        {!ingestMode && lnaState === "denied" && (
-          <div className="lna-card">
-            <strong>🔒 O navegador bloqueou a ligação com seu computador</strong>
-            <span>
-              Em alguma tentativa anterior, o acesso foi negado. Pra liberar:
-              clique no <strong>cadeado 🔒</strong> ao lado do endereço do site
-              → <strong>Configurações do site</strong> →{" "}
-              <strong>Acesso à rede local</strong> → <strong>Permitir</strong>{" "}
-              — e depois recarregue esta página.
-            </span>
-            <button className="lna-btn" onClick={() => void tryEnableLocal()}>
-              ↻ Já liberei — tentar de novo
-            </button>
-          </div>
         )}
 
         {/* Progresso por etapa (real: o cliente chama a API em duas fases) */}
@@ -400,6 +417,17 @@ export default function HomePage() {
                   <span>sem legendas — o Moka está ouvindo o vídeo (pode levar alguns minutos)</span>
                 </>
               )}
+              {stage.kind === "listening" && (
+                <>
+                  <strong>Ouvindo o vídeo… 🎧</strong>
+                  <span>
+                    {stage.elapsed >= 60
+                      ? `já faz ${Math.floor(stage.elapsed / 60)} min — vídeo longo demora mais. `
+                      : ""}
+                    Seus pontos só são descontados quando o texto fica pronto.
+                  </span>
+                </>
+              )}
               {stage.kind === "saving" && (
                 <>
                   <strong>{t("video_step_save")}</strong>
@@ -410,7 +438,12 @@ export default function HomePage() {
           </div>
         )}
         {stage.kind === "error" && (
-          <p className="hero-error">⚠️ {stage.message}</p>
+          <p className="hero-error">
+            ⚠️ {stage.message}{" "}
+            {stage.linkHref && (
+              <Link href={stage.linkHref}>{stage.linkLabel ?? "Saiba mais"}</Link>
+            )}
+          </p>
         )}
 
         {!configReady && (

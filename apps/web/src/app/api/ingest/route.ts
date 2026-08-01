@@ -23,6 +23,22 @@ import { promisify } from "node:util";
 import { mkdtemp, rm, readdir, readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import {
+  transkriptorEnabled,
+  tkSubmit,
+  tkJobStatus,
+  tkSegments,
+  tkDuration,
+  tkQualityOk,
+  motorGetJob,
+  motorUpsertJob,
+  motorSaldo,
+  motorDebit,
+  tierFor,
+  VIDEO_MAX_SEC,
+  type ContaPontos,
+  type TkSegment,
+} from "@/lib/video/transkriptor";
 
 const run = promisify(execFile);
 
@@ -580,11 +596,255 @@ const SERVERLESS_NOTE_NO_CAPTIONS =
   "Este vídeo não tem legendas, e por aqui ainda não conseguimos transcrever " +
   "o áudio dele. Tente outro vídeo do YouTube que tenha legendas.";
 
+// ─── Transcrição da casa (Transkriptor + pontos) ────────────────────────
+// O usuário nunca vê tecniquês: ou o vídeo tem legenda (grátis), ou o Moka
+// "ouve" o vídeo por ele. Cada entrega de transcrição é debitada em pontos
+// pela faixa de duração; vídeo já transcrito sai do NOSSO cache na hora
+// (custo zero pra nós — o Transkriptor não é chamado de novo).
+
+interface IngestMeta {
+  title: string;
+  channel: string;
+  durationSec: number;
+  thumbnail?: string;
+  platform: string;
+  description?: string;
+  webpageUrl: string;
+  uploadDate?: string;
+}
+
+function normalizeConta(raw: IngestBody["conta"]): ContaPontos | null {
+  const email = raw?.email?.trim();
+  const senha = raw?.senha ?? "";
+  return email && senha ? { email, senha } : null;
+}
+
+const MSG_NEEDS_ACCOUNT =
+  "Para transcrever vídeos sem legenda, entre com sua conta de pontos " +
+  "(botão 🪙 aqui em cima) — a transcrição é por conta da casa. ☕";
+
+/** Debita a faixa de duração. null = ok; senão resposta de erro pronta. */
+async function debitaTranscricao(
+  conta: ContaPontos | null,
+  duracaoS: number,
+  recursoRef: string,
+): Promise<{ resp?: NextResponse; debitado?: number; saldo?: number }> {
+  if (!conta) {
+    return {
+      resp: respond({ error: MSG_NEEDS_ACCOUNT, needsAccount: true }, { status: 401 }),
+    };
+  }
+  // Duração desconhecida (0) cobra a menor faixa; acima de 3h, a maior.
+  const tier =
+    tierFor(duracaoS > 0 ? duracaoS : 1) ??
+    tierFor(VIDEO_MAX_SEC)!;
+  const custoUsd = (duracaoS / 60) * 0.006; // tabela Transkriptor Standard
+  const r = await motorDebit(conta, tier.acao, recursoRef, custoUsd);
+  if (r.ok) return { debitado: r.debitado, saldo: r.saldo };
+  if (r.insufficient) {
+    return {
+      resp: respond(
+        {
+          error:
+            `Esta transcrição custa ${tier.pontos} pontos (vídeo ${tier.rotulo}) ` +
+            "e seu saldo não cobre. Compre mais pontos em /experimente ☕",
+          insufficientFunds: true,
+          needed: tier.pontos,
+        },
+        { status: 402 },
+      ),
+    };
+  }
+  return {
+    resp: respond(
+      {
+        error:
+          "Não consegui confirmar seus pontos agora. Tente de novo em alguns " +
+          "minutos — se o texto aparecer, aí sim os pontos são descontados.",
+      },
+      { status: 502 },
+    ),
+  };
+}
+
+/** Entrega os segmentos com débito (caminho comum: cache OU recém-transcrito). */
+async function entregaTranscricao(
+  payload: IngestBody,
+  job: { order_id: string; segments_json: string; duracao_s: number },
+  meta: IngestMeta | null,
+  fromCache: boolean,
+) {
+  let segments: TkSegment[];
+  try {
+    segments = JSON.parse(job.segments_json) as TkSegment[];
+  } catch {
+    segments = [];
+  }
+  if (segments.length === 0) {
+    return respond({ error: "A transcrição veio vazia. Nada foi cobrado." }, { status: 422 });
+  }
+  const debit = await debitaTranscricao(
+    normalizeConta(payload.conta),
+    job.duracao_s,
+    job.order_id,
+  );
+  if (debit.resp) return debit.resp;
+  return respond({
+    ...(meta ? { meta } : {}),
+    transcriptSource: "transkriptor",
+    segments,
+    cached: fromCache,
+    debitado: debit.debitado,
+    saldo: debit.saldo,
+  });
+}
+
+/** step "transcript" sem legendas: cache → job em andamento → submit novo. */
+async function handleTranscricaoSubmit(
+  url: string,
+  videoId: string,
+  meta: IngestMeta,
+  payload: IngestBody,
+) {
+  // 1) Já transcrevemos este vídeo? Entrega na hora (custo zero pra nós).
+  const existing = await motorGetJob({ videoId });
+  if (existing?.status === "completed" && existing.segments_json) {
+    return entregaTranscricao(payload, existing, meta, true);
+  }
+  // 2) Outro usuário pediu o MESMO vídeo agora? Reaproveita o job.
+  if (existing?.status === "processing" && existing.order_id) {
+    return respond({ meta, pending: true, orderId: existing.order_id }, { status: 202 });
+  }
+  // 3) Transcrição nova: precisa de conta com saldo pra pelo menos a menor faixa.
+  const conta = normalizeConta(payload.conta);
+  if (!conta) {
+    return respond({ error: MSG_NEEDS_ACCOUNT, needsAccount: true, meta }, { status: 401 });
+  }
+  const saldo = await motorSaldo(conta);
+  if (saldo === null) {
+    return respond(
+      {
+        error:
+          "Não consegui confirmar sua conta de pontos — confira e-mail e senha " +
+          "no botão 🪙 aqui em cima.",
+        needsAccount: true,
+        meta,
+      },
+      { status: 401 },
+    );
+  }
+  const tierMin = tierFor(1)!;
+  if (saldo < tierMin.pontos) {
+    return respond(
+      {
+        error:
+          `Uma transcrição custa a partir de ${tierMin.pontos} pontos e você tem ` +
+          `${saldo}. Compre mais pontos em /experimente ☕`,
+        insufficientFunds: true,
+        needed: tierMin.pontos,
+        saldo,
+        meta,
+      },
+      { status: 402 },
+    );
+  }
+  const orderId = await tkSubmit(url);
+  if (!orderId) {
+    return respond(
+      {
+        error:
+          "Nosso transcritor está ocupado agora. Tente de novo em alguns minutos. 🙂",
+        meta,
+      },
+      { status: 502 },
+    );
+  }
+  await motorUpsertJob({
+    videoId,
+    orderId,
+    url,
+    titulo: meta.title,
+    status: "processing",
+  });
+  return respond({ meta, pending: true, orderId }, { status: 202 });
+}
+
+/** step "status": polling do cliente até a transcrição ficar pronta. */
+async function handleTranscricaoStatus(payload: IngestBody) {
+  const orderId = payload.orderId?.trim();
+  if (!orderId) {
+    return respond({ error: "Pedido de transcrição inválido." }, { status: 400 });
+  }
+  // Já está no nosso cache? Nem chama o Transkriptor.
+  const job = await motorGetJob({ orderId });
+  if (job?.status === "completed" && job.segments_json) {
+    return entregaTranscricao(payload, job, null, true);
+  }
+  if (job?.status === "failed") {
+    return respond(
+      { error: "A transcrição deste vídeo falhou. Nada foi cobrado — tente de novo." },
+      { status: 422 },
+    );
+  }
+  const st = await tkJobStatus(orderId);
+  if (st === "processing" || st === "unknown") {
+    return respond({ pending: true }, { status: 202 });
+  }
+  if (st === "failed") {
+    if (job) {
+      await motorUpsertJob({ videoId: job.video_id, orderId, status: "failed" });
+    }
+    return respond(
+      { error: "Não conseguimos transcrever este vídeo. Nada foi cobrado. 🙏" },
+      { status: 422 },
+    );
+  }
+  // Completed: busca os segmentos, aplica o gate de qualidade e guarda no cache.
+  const segs = await tkSegments(orderId);
+  const dur = tkDuration(segs);
+  if (segs.length === 0 || !tkQualityOk(segs, dur)) {
+    if (job) {
+      await motorUpsertJob({ videoId: job.video_id, orderId, status: "failed" });
+    }
+    return respond(
+      {
+        error:
+          "A transcrição veio vazia ou com qualidade ruim — não cobramos nada. " +
+          "Tente de novo mais tarde. 🙏",
+      },
+      { status: 422 },
+    );
+  }
+  if (job) {
+    await motorUpsertJob({
+      videoId: job.video_id,
+      orderId,
+      status: "completed",
+      segments: segs,
+      duracaoS: dur,
+    });
+  }
+  return entregaTranscricao(
+    payload,
+    {
+      order_id: orderId,
+      segments_json: JSON.stringify(segs),
+      duracao_s: dur,
+    },
+    null,
+    false,
+  );
+}
+
 // ─── Handler ────────────────────────────────────────────────────────────
 
 interface IngestBody {
   url?: string;
-  step?: "meta" | "transcript";
+  step?: "meta" | "transcript" | "status";
+  /** Polling de transcrição da casa: order_id devolvido no submit (202). */
+  orderId?: string;
+  /** Conta de pontos do usuário (e-mail + senha das ⚙️) — transcrição paga. */
+  conta?: { email?: string; senha?: string };
 }
 
 /**
@@ -643,7 +903,8 @@ export async function POST(req: Request) {
   }
   const step = payload.step ?? "meta";
 
-  // ── Caminho serverless (Vercel, sem yt-dlp): só YouTube, só legendas ──
+  // ── Caminho serverless (Vercel, sem yt-dlp): YouTube — legendas diretas
+  // (grátis) ou transcrição da casa via Transkriptor (paga, com pontos).
   // Tudo embrulhado em try/catch: erro vira JSON amigável, NUNCA página
   // HTML de erro (que quebrava o cliente com "Unexpected token '<'").
   if (!(await hasYtDlp())) {
@@ -652,6 +913,12 @@ export async function POST(req: Request) {
       if (!videoId) {
         return respond({ error: SERVERLESS_NOTE_NOT_YOUTUBE }, { status: 501 });
       }
+
+      // Polling de uma transcrição da casa já submetida (step "status").
+      if (step === "status") {
+        return await handleTranscricaoStatus(payload);
+      }
+
       const meta = await youtubeMetaHttp(url, videoId);
       if (step === "meta") {
         // Confirma se há legendas já na etapa meta (barato e evita surpresa).
@@ -659,13 +926,18 @@ export async function POST(req: Request) {
         return respond({ meta, hasCaptions: caps != null });
       }
       const segments = await youtubeCaptionsHttp(videoId).catch(() => null);
-      if (!segments) {
+      if (segments) {
+        return respond({ meta, transcriptSource: "captions", segments });
+      }
+
+      // Sem legendas acessíveis → motor da casa (Transkriptor + pontos).
+      if (!transkriptorEnabled()) {
         return respond(
           { error: SERVERLESS_NOTE_NO_CAPTIONS, needsWhisperKey: false, meta },
           { status: 428 },
         );
       }
-      return respond({ meta, transcriptSource: "captions", segments });
+      return await handleTranscricaoSubmit(url, videoId, meta, payload);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       // Detalhe técnico fica no log do servidor — nunca na tela do usuário.
