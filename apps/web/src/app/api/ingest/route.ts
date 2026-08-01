@@ -571,10 +571,14 @@ async function youtubeCaptionsHttp(videoId: string): Promise<Segment[] | null> {
   return segments.length > 0 ? segments : null;
 }
 
-const SERVERLESS_NOTE =
-  "No site no ar (Vercel) só é possível ler vídeos do YouTube que tenham " +
-  "legendas. Para vídeos sem legenda (Whisper), X/Twitter e Instagram, " +
-  "rode o Moka Video local (npm start) ou no servidor com yt-dlp.";
+// Mensagens pro USUÁRIO FINAL — nada de tecniquês (Vercel/Whisper/yt-dlp/
+// localhost são detalhes internos; o internauta só precisa saber o que fazer).
+const SERVERLESS_NOTE_NOT_YOUTUBE =
+  "Por enquanto o Moka lê só vídeos do YouTube. " +
+  "Links do X/Twitter e do Instagram chegam em breve. 🙏";
+const SERVERLESS_NOTE_NO_CAPTIONS =
+  "Este vídeo não tem legendas, e por aqui ainda não conseguimos transcrever " +
+  "o áudio dele. Tente outro vídeo do YouTube que tenha legendas.";
 
 // ─── Handler ────────────────────────────────────────────────────────────
 
@@ -646,7 +650,7 @@ export async function POST(req: Request) {
     try {
       const videoId = youtubeId(url);
       if (!videoId) {
-        return respond({ error: SERVERLESS_NOTE }, { status: 501 });
+        return respond({ error: SERVERLESS_NOTE_NOT_YOUTUBE }, { status: 501 });
       }
       const meta = await youtubeMetaHttp(url, videoId);
       if (step === "meta") {
@@ -657,20 +661,20 @@ export async function POST(req: Request) {
       const segments = await youtubeCaptionsHttp(videoId).catch(() => null);
       if (!segments) {
         return respond(
-          { error: SERVERLESS_NOTE, needsWhisperKey: false, meta },
+          { error: SERVERLESS_NOTE_NO_CAPTIONS, needsWhisperKey: false, meta },
           { status: 428 },
         );
       }
       return respond({ meta, transcriptSource: "captions", segments });
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
+      // Detalhe técnico fica no log do servidor — nunca na tela do usuário.
+      console.error("[ingest] youtube serverless falhou:", message);
       return respond(
         {
           error:
-            "O YouTube não deixou o servidor ler este vídeo agora. " +
-            "Tente de novo em alguns minutos — ou rode o Moka Video no " +
-            "computador (localhost), onde a leitura é completa. " +
-            `(${message.slice(0, 120)})`,
+            "O YouTube não deixou a gente ler este vídeo agora. " +
+            "Tente de novo em alguns minutos. 🙂",
         },
         { status: 502 },
       );
@@ -720,8 +724,8 @@ export async function POST(req: Request) {
       return respond(
         {
           error:
-            "Este vídeo não tem legendas disponíveis. Para o Moka transcrever " +
-            "o áudio com Whisper, configure uma chave OpenAI nas ⚙️ Configurações.",
+            "Este vídeo não tem legendas disponíveis. Para o Moka ouvir e " +
+            "transcrever o áudio dele, configure sua chave OpenAI nas ⚙️ Configurações.",
           needsWhisperKey: true,
           meta,
         },

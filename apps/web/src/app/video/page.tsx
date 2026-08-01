@@ -224,10 +224,10 @@ export default function HomePage() {
           error?: string;
         };
         if (!metaRes.ok || !metaData.meta) {
-          throw new Error(
-            (metaData.error ?? "Não consegui ler esse link.") +
-              ` (caminho: ${usedPath}${fellBack ? " — o servidor das ⚙️ falhou e eu caí pro plano B" : ""})`,
-          );
+          // Diagnóstico (caminho usado, fallback) vai pro console — a tela
+          // do usuário mostra só a mensagem amigável da API.
+          console.debug("[video] meta falhou — caminho:", usedPath, "caiu pro plano B:", fellBack);
+          throw new Error(metaData.error ?? "Não consegui ler esse link.");
         }
 
         // 2) Transcrição — legendas (instantâneo) ou Whisper (demora mais).
@@ -245,14 +245,8 @@ export default function HomePage() {
           needsWhisperKey?: boolean;
         };
         if (!txRes.ok || !txData.segments) {
-          const base = txData.error ?? "Não consegui transcrever o vídeo.";
-          const hint =
-            usedPath === "site"
-              ? " Dica: abra http://localhost:3100 direto no navegador — lá a leitura é completa."
-              : "";
-          throw new Error(
-            `${base} (caminho: ${usedPath}${fellBack ? " — o servidor das ⚙️ falhou e eu caí pro plano B" : ""})${hint}`,
-          );
+          console.debug("[video] transcrição falhou — caminho:", usedPath, "caiu pro plano B:", fellBack);
+          throw new Error(txData.error ?? "Não consegui transcrever o vídeo.");
         }
 
         // 3) Salva na videoteca e abre.
