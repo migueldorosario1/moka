@@ -70,6 +70,9 @@ export function PageActionModal({
   const [started, setStarted] = useState(false);
   const [result, setResult] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  /** Janela minimizada (pilula flutuante) — o livro fica 100% visível
+   *  enquanto a IA trabalha ou enquanto a pessoa lê o resultado. */
+  const [minimized, setMinimized] = useState(false);
   const resultRef = useRef<HTMLDivElement>(null);
 
   const bookCtx: BookContext = {
@@ -153,13 +156,28 @@ export function PageActionModal({
   };
 
   return (
-    <div className="summary-overlay" onClick={onClose}>
-      <div className="summary-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={t("pa_title")}>
+    <div className="summary-overlay" aria-hidden={minimized}>
+      {/* Minimizada: vira uma pilula no canto — livro 100% livre. */}
+      {minimized ? (
+        <button
+          className="pa-pill"
+          onClick={() => setMinimized(false)}
+          title={t("pa_title")}
+        >
+          {loading ? "⏳" : "📝"} {t("pa_title")} ▲
+        </button>
+      ) : (
+      <div className="summary-modal" role="dialog" aria-label={t("pa_title")}>
         <header className="summary-header">
           <h2>{t("pa_title")}</h2>
-          <button onClick={onClose} aria-label={t("close")} title={t("close")}>
-            ✕
-          </button>
+          <div className="pa-header-btns">
+            <button onClick={() => setMinimized(true)} aria-label="minimizar" title="minimizar — o livro fica inteiro visível">
+              ➖
+            </button>
+            <button onClick={onClose} aria-label={t("close")} title={t("close")}>
+              ✕
+            </button>
+          </div>
         </header>
 
         <div className="summary-body" ref={resultRef}>
@@ -266,36 +284,68 @@ export function PageActionModal({
         </div>
 
         <style jsx>{`
+          /* POPUP FLUTUANTE (pedido do Miguel, 2026-08-02): SEM fundo escuro
+             e SEM cobrir a tela — a página do livro continua INTEIRA e
+             brilhante atrás. Desktop: card na lateral direita (cobre só a
+             margem). Celular: folha inferior compacta (+ botão minimizar). */
           .summary-overlay {
             position: fixed;
             inset: 0;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
             z-index: 1000;
-            padding: 20px;
+            pointer-events: none; /* os cliques passam direto pro livro */
+            background: transparent;
           }
           .summary-modal {
+            pointer-events: auto;
+            position: fixed;
+            top: 72px;
+            right: 16px;
+            bottom: 16px;
+            width: min(430px, calc(100vw - 32px));
             background: var(--bg);
+            border: 1px solid var(--border);
             border-radius: 14px;
-            width: 100%;
-            max-width: 560px;
-            max-height: 85vh;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+          }
+          @media (max-width: 700px) {
+            .summary-modal {
+              top: auto;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              width: 100%;
+              max-height: 58vh;
+              border-radius: 14px 14px 0 0;
+            }
+          }
+          .pa-pill {
+            pointer-events: auto;
+            position: fixed;
+            right: 16px;
+            bottom: 16px;
+            z-index: 1000;
+            padding: 10px 16px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--bg);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text);
+            cursor: pointer;
           }
           .summary-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 16px 22px;
+            padding: 14px 18px;
             border-bottom: 1px solid var(--border);
           }
           .summary-header h2 {
             margin: 0;
-            font-size: 17px;
+            font-size: 16px;
             font-weight: 700;
           }
           .summary-header button {
@@ -307,8 +357,12 @@ export function PageActionModal({
             border-radius: 50%;
             cursor: pointer;
           }
+          .pa-header-btns {
+            display: flex;
+            gap: 6px;
+          }
           .summary-body {
-            padding: 18px 22px 22px;
+            padding: 16px 18px 18px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
@@ -460,6 +514,7 @@ export function PageActionModal({
           }
         `}</style>
       </div>
+      )}
     </div>
   );
 }
