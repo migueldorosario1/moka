@@ -73,7 +73,39 @@ export function PageActionModal({
   /** Janela minimizada (pilula flutuante) — o livro fica 100% visível
    *  enquanto a IA trabalha ou enquanto a pessoa lê o resultado. */
   const [minimized, setMinimized] = useState(false);
+  /** Posição quando arrastada (null = encaixe padrão na ESQUERDA —
+   *  nunca tapa o zoom, que mora no canto superior DIREITO). Pedido do
+   *  Miguel (02/08): a janela tem que ser flexível — arrasta pelo título
+   *  e redimensiona pelo canto (desktop). */
+  const [pos, setPos] = useState<{ x: number; y: number; w: number } | null>(null);
+  const dragRef = useRef<{ dx: number; dy: number } | null>(null);
+  const modalRef = useRef<HTMLDivElement>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+
+  const finePointer =
+    typeof window !== "undefined" &&
+    (window.matchMedia?.("(pointer: fine)").matches ?? false);
+
+  const onHeaderPointerDown = (e: React.PointerEvent<HTMLElement>) => {
+    if (!finePointer) return; // celular: folha inferior fixa
+    if ((e.target as HTMLElement).closest("button")) return; // ➖/✕ não arrastam
+    const rect = modalRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    dragRef.current = { dx: e.clientX - rect.left, dy: e.clientY - rect.top };
+    e.currentTarget.setPointerCapture?.(e.pointerId);
+  };
+  const onHeaderPointerMove = (e: React.PointerEvent<HTMLElement>) => {
+    const d = dragRef.current;
+    if (!d) return;
+    const rect = modalRef.current?.getBoundingClientRect();
+    const w = rect?.width ?? 430;
+    const x = Math.min(Math.max(8, e.clientX - d.dx), window.innerWidth - w - 8);
+    const y = Math.min(Math.max(8, e.clientY - d.dy), window.innerHeight - 60);
+    setPos({ x, y, w });
+  };
+  const onHeaderPointerUp = () => {
+    dragRef.current = null;
+  };
 
   const bookCtx: BookContext = {
     bookTitle: book.title,
@@ -167,8 +199,25 @@ export function PageActionModal({
           {loading ? "⏳" : "📝"} {t("pa_title")} ▲
         </button>
       ) : (
-      <div className="summary-modal" role="dialog" aria-label={t("pa_title")}>
-        <header className="summary-header">
+      <div
+        className={`summary-modal${finePointer ? " pa-movable" : ""}${pos ? " pa-dragged" : ""}`}
+        ref={modalRef}
+        style={
+          pos
+            ? { left: pos.x, top: pos.y, right: "auto", bottom: "auto", width: pos.w }
+            : undefined
+        }
+        role="dialog"
+        aria-label={t("pa_title")}
+      >
+        <header
+          className="summary-header"
+          onPointerDown={onHeaderPointerDown}
+          onPointerMove={onHeaderPointerMove}
+          onPointerUp={onHeaderPointerUp}
+          onPointerCancel={onHeaderPointerUp}
+          title={finePointer ? "arraste pra mover a janela" : undefined}
+        >
           <h2>{t("pa_title")}</h2>
           <div className="pa-header-btns">
             <button onClick={() => setMinimized(true)} aria-label="minimizar" title="minimizar — o livro fica inteiro visível">
@@ -286,8 +335,9 @@ export function PageActionModal({
         <style jsx>{`
           /* POPUP FLUTUANTE (pedido do Miguel, 2026-08-02): SEM fundo escuro
              e SEM cobrir a tela — a página do livro continua INTEIRA e
-             brilhante atrás. Desktop: card na lateral direita (cobre só a
-             margem). Celular: folha inferior compacta (+ botão minimizar). */
+             brilhante atrás. Encaixe padrão na lateral ESQUERDA (o controle
+             de zoom mora no canto superior DIREITO — nunca pode ser tapado).
+             Desktop: arrastável pelo título + redimensionável pelo canto. */
           .summary-overlay {
             position: fixed;
             inset: 0;
@@ -299,7 +349,7 @@ export function PageActionModal({
             pointer-events: auto;
             position: fixed;
             top: 72px;
-            right: 16px;
+            left: 16px;
             bottom: 16px;
             width: min(430px, calc(100vw - 32px));
             background: var(--bg);
@@ -308,6 +358,27 @@ export function PageActionModal({
             display: flex;
             flex-direction: column;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+          }
+          .summary-modal.pa-dragged {
+            bottom: auto;
+          }
+          @media (min-width: 701px) {
+            .summary-modal.pa-movable {
+              resize: both;
+              overflow: hidden;
+              min-width: 300px;
+              min-height: 220px;
+              max-width: calc(100vw - 32px);
+              max-height: calc(100vh - 32px);
+            }
+            .summary-modal.pa-movable .summary-header {
+              cursor: grab;
+              user-select: none;
+              touch-action: none;
+            }
+            .summary-modal.pa-movable .summary-header:active {
+              cursor: grabbing;
+            }
           }
           @media (max-width: 700px) {
             .summary-modal {
