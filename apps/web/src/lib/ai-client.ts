@@ -280,15 +280,21 @@ export async function explainPageStream(
   text: string,
   ctx: BookContext,
   onChunk: StreamCallback,
+  /** Tamanho-alvo em palavras (barra deslizante do modal de anotação). */
+  targetWords?: number,
 ): Promise<AIActionResult> {
   if (!text.trim()) return { ok: false, error: "Página sem texto." };
   const targetLang = getTargetLang();
+  const lengthRule = targetWords && targetWords > 0
+    ? ` A explicação deve ter CERCA de ${targetWords} palavras — nunca ultrapasse ` +
+      `${Math.round(targetWords * 1.25)} palavras.`
+    : "";
   const systemPrompt =
     `Você é um assistente de leitura. Explique o texto completo da página ` +
     `a seguir em ${targetLang}, de forma clara e didática. ` +
     `Cubra: o sentido geral da página, termos ou conceitos importantes, ` +
     `possíveis dificuldades de tradução (idiotismos, referências culturais), ` +
-    `e como este trecho se conecta com o resto da obra. ` +
+    `e como este trecho se conecta com o resto da obra.${lengthRule} ` +
     `Use quebras de linha para separar seções. ` +
     `NÃO use asteriscos, negrito, itálico ou markdown — só texto puro. ` +
     `Não invente — se não souber algo, diga.`;
@@ -509,14 +515,20 @@ export async function summarizeStream(
   scope: "page" | "book",
   ctx: BookContext,
   onChunk: StreamCallback,
+  /** Tamanho-alvo em palavras (barra deslizante do modal de anotação). */
+  targetWords?: number,
 ): Promise<AIActionResult> {
   if (!text.trim()) return { ok: false, error: "Texto ausente." };
   const targetLang = getTargetLang();
+  const lengthRule = targetWords && targetWords > 0
+    ? ` O resumo deve ter CERCA de ${targetWords} palavras — nunca ultrapasse ` +
+      `${Math.round(targetWords * 1.25)} palavras.`
+    : "";
   const systemPrompt =
     scope === "page"
       ? `Você é um assistente de leitura. Resuma a página a seguir em ${targetLang}, ` +
         `de forma clara e fiel: a ideia central, os pontos principais e ` +
-        `qualquer virada importante (3 a 6 frases, ou tópicos curtos se couber melhor). ` +
+        `qualquer virada importante.${lengthRule || " Use de 3 a 6 frases, ou tópicos curtos se couber melhor."} ` +
         `Não comente fora do texto. Não invente. Texto puro, sem markdown.`
       : `Você é um assistente de leitura. A seguir vai uma COMPILAÇÃO de trechos ` +
         `do livro "${ctx.bookTitle ?? "desconhecido"}" (títulos de capítulos e ` +

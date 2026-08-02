@@ -13,7 +13,7 @@ import { useTTS } from "@/hooks/useTTS";
 import { getTargetLang, getAudioLang, getConfigSync } from "@/lib/config";
 import { SettingsModal } from "./SettingsModal";
 import { AskModal } from "./AskModal";
-import { SummaryModal } from "./SummaryModal";
+import { PageActionModal } from "./PageActionModal";
 import { TranslateBookModal } from "./TranslateBookModal";
 import { translatePageStream, explainPageStream, translateStream, explainStream, translateForSpeech } from "@/lib/ai-client";
 import { blocksToText, paginateBlocks } from "@/lib/paginate";
@@ -1058,24 +1058,13 @@ export function Reader({
         : t("reader_view_translation")
       : t("reader_translate_page");
 
-  const explainBtnLabel = translatingPage && overlayMode === "explain"
-    ? t("reader_explaining")
-    : overlayMode === "explain" && showTranslation
-      ? t("reader_view_original")
-      : t("reader_explain_page");
-
-  /** Versão SÓ ÍCONE dos botões (cabe numa linha só).
+  /** Versão SÓ ÍCONE do botão de tradução (cabe numa linha só).
    *  O texto completo vai no `title` (tooltip ao passar o dedo/mouse). */
   const translateIcon = translatingPage && overlayMode === "translate"
     ? "⏳"
     : pageTranslation && overlayMode === "translate"
       ? showTranslation ? "📖" : "🌐"
       : "🌐";
-  const explainIcon = translatingPage && overlayMode === "explain"
-    ? "⏳"
-    : overlayMode === "explain" && showTranslation
-      ? "📖"
-      : "🧠";
 
   // Detecta seleção dentro do conteúdo e, se houver texto, mostra o menu.
   const handleSelection = () => {
@@ -1516,56 +1505,41 @@ export function Reader({
               />
             </svg>
           </button>
-          {/* 📝 Resumo — da página na tela ou do livro inteiro (com aviso de tokens) */}
+          {/* 📝 ANOTAR — Resumir ou Explicar a página inteira, com barra
+              deslizante de tamanho (pedido do Miguel, 2026-08-01: antes eram
+              dois ícones 📝+🧠 — redundância cortada). Resumo cobre também
+              o livro inteiro. */}
           <button
             onClick={() => setSummaryOpen(true)}
             className="icon-btn"
-            title={t("reader_summarize")}
-            aria-label={t("reader_summarize")}
+            title={t("pa_title")}
+            aria-label={t("pa_title")}
           >
             📝
           </button>
-          {/* 🌐/🧠 Traduzir/Explicar a PÁGINA NA TELA (só ícone + confirmação).
+          {/* 🌐 Traduzir a PÁGINA NA TELA (só ícone + confirmação).
+              SEMPRE renderizado: antes só aparecia com (isEpub||pdfSource)
+              e SUMIA em PDF enquanto o arquivo carregava — pedaço do bug
+              crônico do menu. Sem texto ainda, fica só desabilitado.
               PDF: texto extraído da página renderizada.
               EPUB: texto da página local visível (nunca o livro inteiro). */}
-          {(isEpub || pdfSource) && (
-            <>
-              <button
-                onClick={() => {
-                  if (overlayMode === "translate" && showTranslation) {
-                    setShowTranslation(false);
-                    return;
-                  }
-                  if (confirm(t("reader_confirm_translate_page"))) {
-                    handleTranslatePage();
-                  }
-                }}
-                disabled={translatingPage || !currentPageText}
-                className={`icon-btn ${overlayMode === "translate" && showTranslation ? "active" : ""}`}
-                title={translateBtnLabel}
-                aria-label={translateBtnLabel}
-              >
-                {translatingPage && overlayMode === "translate" ? "⏳" : "🌐"}
-              </button>
-              <button
-                onClick={() => {
-                  if (overlayMode === "explain" && showTranslation) {
-                    setShowTranslation(false);
-                    return;
-                  }
-                  if (confirm(t("reader_confirm_explain_page"))) {
-                    handlePageAction("explain");
-                  }
-                }}
-                disabled={(translatingPage && overlayMode !== "explain") || !currentPageText}
-                className={`icon-btn ${overlayMode === "explain" && showTranslation ? "active" : ""}`}
-                title={explainBtnLabel}
-                aria-label={explainBtnLabel}
-              >
-                {translatingPage && overlayMode === "explain" ? "⏳" : "🧠"}
-              </button>
-            </>
-          )}
+          <button
+            onClick={() => {
+              if (overlayMode === "translate" && showTranslation) {
+                setShowTranslation(false);
+                return;
+              }
+              if (confirm(t("reader_confirm_translate_page"))) {
+                handleTranslatePage();
+              }
+            }}
+            disabled={translatingPage || !currentPageText}
+            className={`icon-btn ${overlayMode === "translate" && showTranslation ? "active" : ""}`}
+            title={translateBtnLabel}
+            aria-label={translateBtnLabel}
+          >
+            {translatingPage && overlayMode === "translate" ? "⏳" : "🌐"}
+          </button>
           {/* 🌍 Traduzir o LIVRO INTEIRO em volumes de ~50 páginas.
               Cada volume vira um EPUB (baixado) + livro na estante;
               depois dá pra integrar tudo num livro único. Só EPUB. */}
@@ -1639,14 +1613,18 @@ export function Reader({
             >
               {isFullscreen ? "🗗" : "⛶"}
             </button>
-            {/* ☕/👁 Ocultar menu (leitura imersiva) */}
+            {/* 👁 Ocultar menu (leitura imersiva) — o ícone precisa dizer o
+                que faz: antes era ☕ (a marca!), e o usuário tocava sem querer
+                achando que era "menu do Moka" → o menu sumia do nada (bug
+                crônico reportado pelo Miguel, 2026-08-01). O ☕ ficou só no
+                botão flutuante que TRAZ o menu de volta. */}
             <button
               onClick={() => setMenuVisible((v) => !v)}
               className="icon-btn menu-toggle-btn"
               title={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
               aria-label={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
             >
-              ☕
+              {menuVisible ? "👁" : "🙈"}
             </button>
           </div>
         </div>
@@ -3110,10 +3088,10 @@ export function Reader({
         />
       )}
 
-      {/* Janela de Resumo (📝) — página na tela ou livro inteiro,
-          com aviso de gasto de tokens no escopo "livro". */}
+      {/* Janela ANOTAR (📝) — Resumir ou Explicar a página inteira com
+          barra de tamanho; resumo também cobre o livro inteiro. */}
       {summaryOpen && (
-        <SummaryModal
+        <PageActionModal
           book={book}
           pageText={currentPageText || blocksToText(currentBlocks, "\n\n")}
           pageLabel={pageLabel}

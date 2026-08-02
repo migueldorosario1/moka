@@ -497,6 +497,25 @@ export function setIngestServer(url: string): void {
   else window.localStorage.removeItem(INGEST_SERVER_KEY);
 }
 
+// ─── Modelo da IA da casa (V4, pedido do Miguel 2026-08-01) ─────────────
+// A IA da casa roda no servidor (pontos) com default deepseek-v4-flash —
+// o mais econômico. O usuário pode trocar nas ⚙️ (modelos mais fortes
+// custam mais pontos — o app mostra o custo junto da opção). Vazio = default.
+const MODELO_CASA_KEY = "moka.modeloCasa";
+
+/** Modelo da casa escolhido pelo usuário ("" = default deepseek-v4-flash). */
+export function getModeloCasa(): string {
+  if (typeof window === "undefined") return "";
+  return window.localStorage.getItem(MODELO_CASA_KEY) ?? "";
+}
+
+export function setModeloCasa(modelo: string): void {
+  if (typeof window === "undefined") return;
+  const clean = modelo.trim();
+  if (clean) window.localStorage.setItem(MODELO_CASA_KEY, clean);
+  else window.localStorage.removeItem(MODELO_CASA_KEY);
+}
+
 let probedLocal: boolean | null = null;
 
 /** Sonda o localhost:3100 (motor Moka Video local). `force` ignora o cache. */

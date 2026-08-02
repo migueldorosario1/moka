@@ -9,8 +9,9 @@ import {
   listAllEntriesSync, getConfigById,
   setWhisperKey, getWhisperKeyMasked,
   getIngestServer, setIngestServer,
+  getModeloCasa, setModeloCasa,
 } from "@/lib/config";
-import { getConta, setConta, verificarConta, licencaAtiva } from "@/lib/moka-conta";
+import { getConta, setConta, verificarConta, licencaAtiva, MODELOS_CASA } from "@/lib/moka-conta";
 import { testConnection, listModels } from "@/lib/ai-client";
 import { useI18n } from "./I18nProvider";
 
@@ -79,8 +80,11 @@ export function SettingsForm({
   const [contaErro, setContaErro] = useState("");
   const [contaLoading, setContaLoading] = useState(false);
   const [licenca, setLicenca] = useState<boolean | null>(null);
+  /** Modelo da IA da casa escolhido ("" = default deepseek-v4-flash). */
+  const [modeloCasa, setModeloCasaState] = useState("");
 
   useEffect(() => {
+    setModeloCasaState(getModeloCasa());
     const c = getConta();
     if (c) {
       setContaLoading(true);
@@ -386,6 +390,33 @@ export function SettingsForm({
         <p className="v3-simple-note">
           Já comprou ou tem cupom? <a href="https://43.156.151.165.sslip.io/painel" target="_blank" rel="noreferrer">Entre no seu painel de pontos →</a>
         </p>
+
+        {/* 🚀 Modelo da IA da casa (pedido do Miguel, 2026-08-01):
+            default deepseek-v4-flash (o mais econômico) — trocável aqui.
+            Modelos mais fortes consomem mais pontos; o app mostra o custo
+            (tokens por ponto) junto de cada opção. */}
+        {contaInfo && (
+          <div className="v3-conta" style={{ marginTop: 10 }}>
+            <label htmlFor="modelo-casa" style={{ fontSize: 14, fontWeight: 600, display: "block", marginBottom: 6 }}>
+              🚀 {t("set_model_casa")}
+            </label>
+            <select
+              id="modelo-casa"
+              value={modeloCasa}
+              onChange={(e) => { setModeloCasaState(e.target.value); setModeloCasa(e.target.value); }}
+              style={{ width: "100%", padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
+            >
+              {MODELOS_CASA.map((m) => (
+                <option key={m.id || "default"} value={m.id}>
+                  {m.rotulo}
+                  {m.economico ? " ☕" : ""} — {m.tokensPorPonto} {t("set_model_tokens")}
+                  {m.mult > 1 ? ` (${t("set_model_mult", { n: m.mult })})` : ""}
+                </option>
+              ))}
+            </select>
+            <p className="hint" style={{ marginTop: 6 }}>{t("set_model_casa_hint")}</p>
+          </div>
+        )}
       </div>
 
       {/* ═══ V3: daqui pra baixo é AVANÇADO (BYOK — usar a própria chave) ═══

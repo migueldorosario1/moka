@@ -73,6 +73,37 @@ export class SaldoInsuficienteError extends Error {
 /** Mapeamento ação do app → ação tarifada (tabela precos_acoes). */
 export type AcaoIa = "resumo_video" | "resumo_livro" | "traducao_livro";
 
+/** Modelos servidos pela casa (allowlist do gateway, espelho pra UI).
+ *  "" = default da casa (deepseek-v4-flash — o mais econômico; pedido do
+ *  Miguel 2026-08-01). Tokens/ponto calculado com 1 ponto ≈ US$ 0,0164 e
+ *  preço mesclado (75% input / 25% output) do catálogo do Cérebro. */
+export interface ModeloCasaInfo {
+  id: string;
+  rotulo: string;
+  /** Texto de custo exibido na opção (ex.: "~90 mil tokens por ponto"). */
+  tokensPorPonto: string;
+  /** Multiplicador de pontos sobre a ação (1 = preço base). */
+  mult: number;
+  /** É o default/econômico da casa. */
+  economico: boolean;
+}
+export const MODELOS_CASA: ModeloCasaInfo[] = [
+  {
+    id: "",
+    rotulo: "DeepSeek V4 Flash",
+    tokensPorPonto: "~90 mil",
+    mult: 1,
+    economico: true,
+  },
+  {
+    id: "deepseek-v4-pro",
+    rotulo: "DeepSeek V4 Pro",
+    tokensPorPonto: "~8 mil",
+    mult: 4,
+    economico: false,
+  },
+];
+
 export interface IaResposta {
   texto: string;
   debitado: number;
@@ -88,6 +119,7 @@ export async function iaCompletar(
   prompt: string,
   contexto: string,
   maxTokens = 2000,
+  modelo = "",
 ): Promise<IaResposta> {
   const r = await fetch(`${API_PONTOS}/ia/completar`, {
     method: "POST",
@@ -100,6 +132,7 @@ export async function iaCompletar(
       prompt,
       contexto,
       max_tokens: maxTokens,
+      ...(modelo ? { modelo } : {}),
     }),
   });
   const d = await r.json();
@@ -112,6 +145,7 @@ export async function iaCompletar(
 // Assim o app inteiro funciona SEM chave: resolveProvider/gateway cai aqui
 // quando não há BYOK configurado — e o gateway debita os pontos no servidor.
 import type { AIProvider, CompleteOptions, CompleteResult } from "@igot/ai-providers";
+import { getModeloCasa } from "./config";
 
 export function gatewayProvider(acao: AcaoIa): AIProvider {
   return {
@@ -128,6 +162,7 @@ export function gatewayProvider(acao: AcaoIa): AIProvider {
       const r = await iaCompletar(
         conta, acao, opts?.systemPrompt ?? "", prompt,
         opts?.context ?? "", opts?.maxTokens ?? 2000,
+        getModeloCasa(),
       );
       return { text: r.texto };
     },
