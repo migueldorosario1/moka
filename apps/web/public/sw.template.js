@@ -56,6 +56,14 @@ self.addEventListener("fetch", (event) => {
   // Chamadas de IA NUNCA cacheiam — sempre rede.
   if (url.pathname.startsWith("/api/")) return;
 
+  // NUNCA cachear o PRÓPRIO service worker (armadilha do "SW que cacheia a
+  // si mesmo"): com cache-first, o SW velho responde o sw.js velho na checa-
+  // gem de atualização e o app instalado fica preso numa versão antiga PRA
+  // SEMPRE. Foi o que manteve o PDF do Miguel travado em "carregando": o
+  // PWA dele rodava código pré-22/07 (worker do CDN, que engasga). O nave-
+  // gador precisa SEMPRE ver o sw.js novo da rede. (Miguel, 2026-08-03)
+  if (url.pathname === "/sw.js") return;
+
   // Navegações (HTML): network-first com fallback pro shell offline.
   if (request.mode === "navigate") {
     event.respondWith(

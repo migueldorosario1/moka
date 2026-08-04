@@ -319,10 +319,36 @@ async function walk(
     return;
   }
 
-  // Recursão: div, section, article, etc.
+  // Elemento genérico SEM filho de bloco → o texto agregado vira UM parágrafo.
+  // BUG (Miguel, 2026-08-03 — "carreguei um epub e só veio algumas páginas"):
+  // EPUBs gerados pelo calibre/OceanofPDF marcam parágrafos como
+  // `<div class="p-..."><span><span class="i">texto</span></span></div>`
+  // (zero tags <p>). O walk antigo só criava bloco de <p>/<h>/<blockquote>/
+  // <ul>/<img> e descia recursão nos demais — o texto dentro de <span>
+  // nunca virava bloco e o filtro de "capítulo trivial" DESCARTAVA os
+  // capítulos de texto inteiros (sobraram só as páginas com imagem).
+  if (!hasBlockLevelChild(el)) {
+    const text = el.textContent?.trim();
+    if (text) blocks.push({ id, type: "paragraph", text });
+    return;
+  }
+
+  // Recursão: div, section, article, etc. COM filhos de bloco.
   for (const child of Array.from(el.childNodes)) {
     await walk(child, blocks, chapId, nextId, resolveImage);
   }
+}
+
+/** Tags que contam como "bloco" pra decidir descer recursão ou colher texto. */
+const BLOCK_LEVEL_RE =
+  /^(div|section|article|main|aside|nav|header|footer|p|h[1-6]|blockquote|pre|ul|ol|li|dl|dt|dd|table|thead|tbody|tfoot|tr|td|th|figure|figcaption|form|fieldset|hr)$/;
+
+/** O elemento tem algum filho DIRETO de nível de bloco? */
+function hasBlockLevelChild(el: Element): boolean {
+  for (const child of Array.from(el.children)) {
+    if (BLOCK_LEVEL_RE.test(child.tagName.toLowerCase())) return true;
+  }
+  return false;
 }
 
 /**
