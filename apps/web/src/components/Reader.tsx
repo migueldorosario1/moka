@@ -1000,7 +1000,13 @@ export function Reader({
       return;
     }
     // Se tem tradução salva e é translate, mostra ela sem re-traduzir.
-    if (action === "translate" && pageTranslation && overlayMode !== "explain") {
+    // (Erro "⚠️ …" NÃO é tradução salva: clicar de novo TENTA DE NOVO.)
+    if (
+      action === "translate" &&
+      pageTranslation &&
+      !pageTranslation.startsWith("⚠️") &&
+      overlayMode !== "explain"
+    ) {
       setOverlayMode("translate");
       setShowTranslation(true);
       return;
@@ -1678,10 +1684,35 @@ export function Reader({
             zoom={zoom}
             translationOverlay={pageTranslation}
             showTranslation={showTranslation}
+            translating={translatingPage}
             onPageText={setCurrentPageText}
             onCanvasReady={(c) => (pdfCanvasRef.current = c)}
             onNumPages={setPdfNumPages}
           />
+        ) : showTranslation && overlayMode === "translate" ? (
+          /* Tradução da página inteira em EPUB: troca o conteúdo da área da
+             página. BUG (Miguel, 04/08 — "cliquei, veio a ampulheta e não
+             traduziu"): antes a tradução só aparecia em PDF; em EPUB o
+             resultado nunca era renderizado. E a espera agora é EXPLÍCITA:
+             a página toda mostra o estado (pedido do Miguel). */
+          <article
+            className="reader-text"
+            style={{ fontSize: `calc(var(--text-lg) * ${fontScale})` }}
+          >
+            {translatingPage && !pageTranslation ? (
+              <div className="page-ai-waiting">
+                <div className="page-ai-spinner" />
+                <strong>{t("reader_translating_page")}</strong>
+                <span>{t("reader_translating_page_sub")}</span>
+              </div>
+            ) : pageTranslation?.startsWith("⚠️") ? (
+              <div className="page-ai-error">{pageTranslation}</div>
+            ) : (
+              (pageTranslation ?? "").split(/\n{2,}/).map((para, i) => (
+                <p key={i}>{para}</p>
+              ))
+            )}
+          </article>
         ) : (
           <article
             className="reader-text"
@@ -2669,6 +2700,50 @@ export function Reader({
           padding: 40px 0 120px;
           -webkit-overflow-scrolling: touch;
           overscroll-behavior: contain;
+        }
+        /* Estado de espera da IA (tradução da página inteira) — EXPLÍCITO,
+           ocupa a área da página: a pessoa vê que algo está acontecendo.
+           (Pedido do Miguel, 04/08: "não basta ampulheta".) */
+        .page-ai-waiting {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 12px;
+          min-height: 50vh;
+          text-align: center;
+          color: var(--text-muted);
+          padding: 32px 20px;
+        }
+        .page-ai-waiting strong {
+          font-size: 18px;
+          color: var(--text);
+        }
+        .page-ai-waiting span {
+          font-size: 13.5px;
+          max-width: 340px;
+          line-height: 1.5;
+        }
+        .page-ai-spinner {
+          width: 44px;
+          height: 44px;
+          border: 4px solid var(--accent-soft);
+          border-top-color: var(--accent);
+          border-radius: 50%;
+          animation: page-ai-spin 0.9s linear infinite;
+        }
+        @keyframes page-ai-spin {
+          to { transform: rotate(360deg); }
+        }
+        .page-ai-error {
+          margin: 24px auto;
+          max-width: 480px;
+          padding: 16px 18px;
+          background: var(--accent-soft);
+          border-radius: 12px;
+          color: var(--accent);
+          font-size: 15px;
+          line-height: 1.6;
         }
         .reader-text {
           max-width: 680px;

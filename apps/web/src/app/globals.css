@@ -790,6 +790,38 @@ a:hover {
   text-indent: 0;
 }
 
+/* Espera explícita da tradução (PDF) — spinner grande centralizado. */
+.pdf-translation-waiting {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 60vh;
+  text-align: center;
+  text-indent: 0 !important;
+}
+.pdf-translation-waiting strong {
+  font-size: 17px;
+}
+.pdf-translation-waiting span {
+  font-size: 13.5px;
+  color: #6b5d4d;
+  max-width: 320px;
+  line-height: 1.5;
+}
+.page-ai-spinner {
+  width: 44px;
+  height: 44px;
+  border: 4px solid rgba(62, 42, 24, 0.12);
+  border-top-color: #8a5a2b;
+  border-radius: 50%;
+  animation: page-ai-spin 0.9s linear infinite;
+}
+@keyframes page-ai-spin {
+  to { transform: rotate(360deg); }
+}
+
 /* Em telas pequenas, aumenta um pouco o corpo e reduz as margens. */
 @media (max-width: 600px) {
   .pdf-translation-page {

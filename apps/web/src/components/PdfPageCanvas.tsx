@@ -31,6 +31,8 @@ interface PdfPageCanvasProps {
   translationOverlay?: string | null;
   /** True = mostra a tradução; False = mostra o original (toggle). */
   showTranslation?: boolean;
+  /** IA traduzindo a página agora (espera explícita sobre o canvas). */
+  translating?: boolean;
   /** Recebe o texto extraído da página atual (pra "Traduzir página"). */
   onPageText?: (text: string) => void;
   /** Entrega o canvas renderizado ao pai (pra snapshot/foto da página). */
@@ -104,6 +106,7 @@ export function PdfPageCanvas({
   zoom = 1,
   translationOverlay = null,
   showTranslation = false,
+  translating = false,
   onPageText,
   onCanvasReady,
   onNumPages,
@@ -383,6 +386,17 @@ export function PdfPageCanvas({
       >
         <canvas ref={canvasRef} className="pdf-canvas" />
         <div ref={textLayerRef} className="pdf-text-layer" />
+        {showTranslation && translating && !translationOverlay && (
+          /* Espera EXPLÍCITA (pedido do Miguel, 04/08): a página toda avisa
+             que a IA está traduzindo — não só a ampulheta do botão. */
+          <div className="pdf-translation-overlay">
+            <div className="pdf-translation-page pdf-translation-waiting">
+              <div className="page-ai-spinner" />
+              <strong>🌐 Traduzindo a página inteira…</strong>
+              <span>A IA está trabalhando — pode levar até 1 minuto. O texto aparece aqui.</span>
+            </div>
+          </div>
+        )}
         {showTranslation && translationOverlay && (
           <div className="pdf-translation-overlay">
             <div className="pdf-translation-page">
