@@ -27,7 +27,7 @@ export default function Tutorial() {
   const { t } = useI18n();
 
   const steps = [
-    { n: "1", title: t("tut_s1_t"), desc: t("tut_s1_d"), link: { href: "/premium", label: "🏆 Ranking de preços →" } },
+    { n: "1", title: t("tut_s1_t"), desc: t("tut_s1_d"), link: { href: "/ajuda", label: "🏆 Ranking de preços →" } },
     { n: "2", title: t("tut_s2_t"), desc: t("tut_s2_d"), providers: true },
     { n: "3", title: t("tut_s3_t"), desc: t("tut_s3_d") },
     { n: "4", title: t("tut_s4_t"), desc: t("tut_s4_d1"), extra: [t("tut_s4_d2"), t("tut_s4_d3")] },

@@ -8,7 +8,6 @@ import {
   getAudioLang, setAudioLang,
   listAllEntriesSync, getConfigById,
   setWhisperKey, getWhisperKeyMasked,
-  getIngestServer, setIngestServer,
 } from "@/lib/config";
 import { testConnection, listModels } from "@/lib/ai-client";
 import { useI18n } from "./I18nProvider";
@@ -37,7 +36,6 @@ export function SettingsForm({
   // ── Seção de vídeo (fusão V 2.0): chave Whisper + servidor próprio ──
   const [whisperDraft, setWhisperDraft] = useState("");
   const [whisperMasked, setWhisperMasked] = useState<string | null>(null);
-  const [ingestDraft, setIngestDraft] = useState("");
   const [videoMsg, setVideoMsg] = useState<string | null>(null);
   const [testingVideo, setTestingVideo] = useState(false);
 
@@ -86,7 +84,6 @@ export function SettingsForm({
   // Assim, se o usuário fechar o modal sem salvar, não perde o que digitou.
   useEffect(() => {
     getWhisperKeyMasked().then(setWhisperMasked).catch(() => {});
-    setIngestDraft(getIngestServer());
   }, []);
 
   useEffect(() => {
@@ -263,7 +260,17 @@ export function SettingsForm({
         <h3 className="v3-simple-title">🆓 {t("free_title")}</h3>
         <p className="v3-simple-sub">{t("free_desc")}</p>
         <p className="v3-simple-sub" style={{ marginTop: 6 }}>{t("byok_cost")}</p>
-        <p className="v3-simple-note" style={{ marginTop: 10 }}>{t("byok_video_note")}</p>
+      </div>
+
+      {/* 🗝 Três jeitos de usar (pedido do Miguel, 05/08): explica SIMPLES
+          que texto/voz/vídeo usam chaves diferentes — e que UMA OpenAI cobre
+          voz neural + transcrição de vídeo. */}
+      <div className="v3-simple" style={{ background: "var(--surface)" }}>
+        <h3 className="v3-simple-title" style={{ fontSize: 17 }}>{t("keys3_title")}</h3>
+        <p className="v3-simple-sub">{t("keys3_text")}</p>
+        <p className="v3-simple-sub" style={{ marginTop: 6 }}>{t("keys3_voice")}</p>
+        <p className="v3-simple-sub" style={{ marginTop: 6 }}>{t("keys3_video")}</p>
+        <p className="v3-simple-note" style={{ marginTop: 10 }}>{t("keys3_same")}</p>
       </div>
 
       {/* ═══ Atalhos rápidos (pedido do Miguel, 05/08): navegação direta no
@@ -279,11 +286,8 @@ export function SettingsForm({
           antes ficava atrás da licença paga) ═══ */}
       <details className="v3-advanced" id="advanced-settings" open>
         <summary>
-          🔧 <strong>Configurações avançadas</strong> — usar minha própria chave de IA
-          <span className="v3-advanced-hint">
-            Só mexa aqui se você sabe o que é uma API key. Sua chave fica salva
-            no seu navegador — nunca vai pro nosso servidor.
-          </span>
+          <strong>{t("set_keys_title")}</strong>
+          <span className="v3-advanced-hint">{t("set_keys_hint")}</span>
         </summary>
 
       {/* Minhas chaves cadastradas — cada uma com provedor + MODELO visível */}
@@ -777,69 +781,6 @@ export function SettingsForm({
           </div>
           {videoMsg && <p className="feedback">{videoMsg}</p>}
         </div>
-
-        {/* 3.2 — Servidor próprio (opcional, avançado — pode deixar vazio) */}
-        <details className="video-advanced">
-          <summary>🖥️ {t("vid_server_title")} <span className="video-advanced-hint">{t("vid_server_hint")}</span></summary>
-          <p className="video-block-note">{t("vid_server_desc")}</p>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <input
-              type="url"
-              value={ingestDraft}
-              onChange={(e) => setIngestDraft(e.target.value)}
-              placeholder="https://video.seuservidor.com"
-              autoComplete="off"
-              style={{ flex: 1, minWidth: 180, padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
-            />
-            <button
-              type="button"
-              className="btn-ghost"
-              disabled={testingVideo}
-              onClick={async () => {
-                const clean = ingestDraft.trim();
-                if (!clean) {
-                  setIngestServer("");
-                  setVideoMsg("🗑 Servidor removido — detecção automática do motor local.");
-                  return;
-                }
-                setTestingVideo(true);
-                setVideoMsg("🔍 Testando o endereço…");
-                try {
-                  const ctrl = new AbortController();
-                  const timer = setTimeout(() => ctrl.abort(), 5000);
-                  const res = await fetch(`${clean.replace(/\/$/, "")}/api/ingest`, { signal: ctrl.signal });
-                  clearTimeout(timer);
-                  const data = await res.json();
-                  if (data?.ok && data?.server === "moka-video") {
-                    setIngestServer(clean);
-                    setVideoMsg(data.full ? "✅ Servidor válido e completo! Salvo." : "✅ Servidor válido (limitado). Salvo.");
-                  } else {
-                    setVideoMsg("❌ Respondeu, mas não é um motor Moka Video. Não salvei.");
-                  }
-                } catch {
-                  setVideoMsg("❌ Não consegui falar com esse endereço. Não salvei.");
-                } finally {
-                  setTestingVideo(false);
-                }
-              }}
-            >
-              {testingVideo ? "Testando…" : "💾 Salvar (com teste)"}
-            </button>
-          </div>
-          {videoMsg && (
-            <p style={{ marginTop: 10, fontSize: 13, padding: "8px 12px", background: "var(--surface)", border: "1px solid var(--border-soft)", borderRadius: 8 }}>
-              {videoMsg}
-            </p>
-          )}
-        </details>
-
-        {/* 3.3 — Nota IPRoyal: 1 linha discreta no rodapé da seção */}
-        <p className="video-iproyal">
-          {t("vid_cfg_iproyal")}{" "}
-          <a href="https://iproyal.com" target="_blank" rel="noreferrer" style={{ color: "var(--accent-dark)" }}>
-            iproyal.com →
-          </a>
-        </p>
       </section>
 
       <style jsx>{`
@@ -1053,70 +994,6 @@ export function SettingsForm({
       {/* Link pra tutorial completo */}
       <a href="/ajuda" target="_blank" rel="noreferrer" className="help-link-banner">
         ❓ Tutorial completo — o que cada ícone faz, como usar o Moka →
-      </a>
-
-      {/* Ajuda: o que é API, ranking de preços, link do provedor */}
-      <details className="help-section" id="ajuda">
-        <summary>{t("help_title")}</summary>
-        <div className="help-content">
-          <p>
-            {t("help_what_is_key")}
-          </p>
-          <p>
-            <strong>{t("help_how_to_get")}</strong>
-          </p>
-          <ul>
-            <li>{t("help_step1")}</li>
-            <li>{t("help_step2")}</li>
-            <li>{t("help_step3")}</li>
-            <li>{t("help_step4")}</li>
-          </ul>
-          <p>
-            <strong>{t("help_pricing")}</strong>{" "}
-            <a href="https://openrouter.ai/pricing" target="_blank" rel="noreferrer">
-              Ver ranking de preços (OpenRouter) →
-            </a>
-          </p>
-        </div>
-      </details>
-
-      {/* Quem somos — agora SÓ o Sobre, no fim da página (pedido do Miguel,
-          05/08: a config de vídeo ganhou seção própria em destaque acima) */}
-      <div className="about-section" id="quem-somos">
-        <details>
-          <summary>{t("about_title")}</summary>
-          <div className="about-content">
-            <p>
-              <strong>Moka</strong> — "Leia qualquer coisa. Entenda tudo."
-            </p>
-            <p>
-              Um aplicativo dois em um (📖 livros + 🎬 vídeos) com IA que
-              traduz, explica, transcreve e resume qualquer conteúdo, em
-              qualquer idioma. Desenvolvido por:
-            </p>
-            <p>
-              <strong>Miguel Gomes Barbosa do Rosário</strong><br />
-              Cafezinho Media Group<br />
-              Produtora de conteúdo e aplicativos<br />
-              Niterói, RJ — Brasil<br />
-              migueldorosario@ocafezinho.com
-            </p>
-            <p style={{ marginTop: "12px" }}>
-              <a href="/sobre" target="_blank" rel="noreferrer" style={{ color: "var(--accent)", textDecoration: "none" }}>
-                Saiba mais →
-              </a>
-              <span style={{ margin: "0 8px", color: "var(--text-muted)" }}>·</span>
-              <a href="/privacidade" target="_blank" rel="noreferrer" style={{ color: "var(--accent)", textDecoration: "none" }}>
-                Privacidade →
-              </a>
-            </p>
-          </div>
-        </details>
-      </div>
-
-      {/* Premium */}
-      <a href="/premium" className="premium-banner">
-        ⭐ Moka Premium — IA inclusa, voz neural, biblioteca na nuvem. Saiba mais →
       </a>
 
       {/* Doação */}

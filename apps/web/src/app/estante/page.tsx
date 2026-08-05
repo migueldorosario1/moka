@@ -213,7 +213,6 @@ export default function HomePage() {
         </div>
         <div className="igot-topbar-actions">
           <BackButton />
-          <a href="/premium" className="premium-link" title="Moka Premium">⭐</a>
           <LangSwitcher />
           <button
             className={`gear ${configReady ? "" : "unset"}`}
