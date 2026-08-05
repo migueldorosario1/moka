@@ -322,6 +322,7 @@ export type UIStringKey =
   | "donate_paypal"
   | "donate_pix"
   | "free_title"
+  | "capa_login_benefit"
   | "free_desc"
   | "byok_get_key"
   | "byok_cost"
@@ -676,6 +677,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     donate_pix: "🟢 PIX (copiar)",
     free_title: "Moka é grátis nesta fase ☕",
     free_desc: "Tudo liberado: você usa com a SUA chave de IA. Ela fica só no seu dispositivo, criptografada — nunca passa por nossos servidores.",
+    capa_login_benefit: "🔐 Entre com o Google (grátis): sua biblioteca — livros, anotações, traduções e progresso — fica guardada na nuvem e abre em qualquer aparelho.",
     byok_get_key: "Como conseguir sua chave de IA (1 minuto)",
     byok_cost: "Custo pra você: centavos por uso, pagos direto ao seu provedor. Resumo de livro/vídeo ≈ R$ 0,01–0,05 · livro inteiro traduzido ≈ R$ 0,50–2 · 1h de vídeo transcrita ≈ R$ 2.",
     byok_video_note: "⚠️ Pra transcrever vídeo SEM legenda, a chave precisa ser de uma API com transcrição de áudio (ex.: OpenAI/Whisper) — nem toda API de texto serve.",
@@ -1018,6 +1020,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     donate_pix: "🟢 PIX (copy)",
     free_title: "Moka is free in this phase ☕",
     free_desc: "Everything is unlocked: you use it with YOUR OWN AI key. It stays only on your device, encrypted — it never passes through our servers.",
+    capa_login_benefit: "🔐 Sign in with Google (free): your library — books, notes, translations and progress — is saved to the cloud and opens on any device.",
     byok_get_key: "How to get your AI key (1 minute)",
     byok_cost: "Your cost: cents per use, paid directly to your provider. Book/video summary ≈ US$ 0.01 · whole-book translation ≈ US$ 0.10–0.40 · 1h of video transcribed ≈ US$ 0.36.",
     byok_video_note: "⚠️ To transcribe videos WITHOUT captions, your key must be from an API with audio transcription (e.g., OpenAI/Whisper) — not every text API works.",
@@ -1360,6 +1363,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     donate_pix: "🟢 PIX (copiar)",
     free_title: "Moka es gratis en esta fase ☕",
     free_desc: "Todo desbloqueado: lo usas con TU propia clave de IA. Queda solo en tu dispositivo, cifrada — nunca pasa por nuestros servidores.",
+    capa_login_benefit: "🔐 Entra con Google (gratis): tu biblioteca — libros, notas, traducciones y progreso — se guarda en la nube y abre en cualquier dispositivo.",
     byok_get_key: "Cómo conseguir tu clave de IA (1 minuto)",
     byok_cost: "Tu costo: centavos por uso, pagados directo a tu proveedor. Resumen de libro/video ≈ US$ 0,01 · libro entero traducido ≈ US$ 0,10–0,40 · 1h de video transcrito ≈ US$ 0,36.",
     byok_video_note: "⚠️ Para transcribir videos SIN subtítulos, la clave debe ser de una API con transcripción de audio (ej.: OpenAI/Whisper) — no toda API de texto sirve.",
@@ -1702,6 +1706,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     donate_pix: "🟢 PIX (copier)",
     free_title: "Moka est gratuit dans cette phase ☕",
     free_desc: "Tout est débloqué : vous l'utilisez avec VOTRE propre clé IA. Elle reste uniquement sur votre appareil, chiffrée — elle ne passe jamais par nos serveurs.",
+    capa_login_benefit: "🔐 Connectez-vous avec Google (gratuit) : votre bibliothèque — livres, notes, traductions et progression — est gardée dans le cloud et s'ouvre sur tout appareil.",
     byok_get_key: "Comment obtenir votre clé IA (1 minute)",
     byok_cost: "Votre coût : quelques centimes par usage, payés directement à votre fournisseur. Résumé livre/vidéo ≈ 0,01 $ · livre entier traduit ≈ 0,10–0,40 $ · 1 h de vidéo transcrite ≈ 0,36 $.",
     byok_video_note: "⚠️ Pour transcrire une vidéo SANS sous-titres, la clé doit venir d'une API avec transcription audio (ex. : OpenAI/Whisper) — toutes les API texte ne conviennent pas.",
@@ -2044,6 +2049,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     donate_pix: "🟢 PIX (kopieren)",
     free_title: "Moka ist in dieser Phase kostenlos ☕",
     free_desc: "Alles ist freigeschaltet: Sie nutzen es mit IHREM eigenen KI-Schlüssel. Er bleibt nur auf Ihrem Gerät, verschlüsselt — nie über unsere Server.",
+    capa_login_benefit: "🔐 Mit Google anmelden (kostenlos): Ihre Bibliothek — Bücher, Notizen, Übersetzungen und Fortschritt — wird in der Cloud gespeichert und öffnet auf jedem Gerät.",
     byok_get_key: "So holen Sie Ihren KI-Schlüssel (1 Minute)",
     byok_cost: "Ihre Kosten: Cents pro Nutzung, direkt an Ihren Anbieter. Buch-/Videozusammenfassung ≈ 0,01 $ · ganzes Buch übersetzt ≈ 0,10–0,40 $ · 1 Std. Video transkribiert ≈ 0,36 $.",
     byok_video_note: "⚠️ Zum Transkribieren von Videos OHNE Untertitel brauchen Sie eine API mit Audio-Transkription (z. B. OpenAI/Whisper) — nicht jede Text-API reicht.",
@@ -2386,6 +2392,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     donate_pix: "🟢 PIX (copia)",
     free_title: "Moka è gratis in questa fase ☕",
     free_desc: "Tutto sbloccato: lo usi con la TUA chiave IA. Resta solo sul tuo dispositivo, cifrata — non passa mai dai nostri server.",
+    capa_login_benefit: "🔐 Accedi con Google (gratis): la tua biblioteca — libri, note, traduzioni e progressi — è salvata nel cloud e si apre su qualsiasi dispositivo.",
     byok_get_key: "Come ottenere la tua chiave IA (1 minuto)",
     byok_cost: "Il tuo costo: pochi centesimi a uso, pagati direttamente al tuo provider. Riassunto libro/video ≈ 0,01 $ · libro intero tradotto ≈ 0,10–0,40 $ · 1 h di video trascritto ≈ 0,36 $.",
     byok_video_note: "⚠️ Per trascrivere video SENZA sottotitoli serve una chiave di un'API con trascrizione audio (es.: OpenAI/Whisper) — non tutte le API di testo vanno bene.",
@@ -2728,6 +2735,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     donate_pix: "🟢 PIX (копировать)",
     free_title: "Moka бесплатен на этом этапе ☕",
     free_desc: "Всё открыто: вы пользуетесь СВОИМ ключом ИИ. Он хранится только на вашем устройстве, зашифрован — и никогда не проходит через наши серверы.",
+    capa_login_benefit: "🔐 Войдите через Google (бесплатно): ваша библиотека — книги, заметки, переводы и прогресс — хранится в облаке и открывается на любом устройстве.",
     byok_get_key: "Как получить свой ключ ИИ (1 минута)",
     byok_cost: "Ваша цена: копейки за использование, напрямую провайдеру. Резюме книги/видео ≈ $0,01 · перевод всей книги ≈ $0,10–0,40 · час видео в текст ≈ $0,36.",
     byok_video_note: "⚠️ Чтобы расшифровать видео БЕЗ субтитров, нужен ключ API с аудио-транскрипцией (напр., OpenAI/Whisper) — не всякий текстовый API подойдёт.",
@@ -3070,6 +3078,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     donate_pix: "🟢 PIX（复制）",
     free_title: "Moka 在此阶段免费 ☕",
     free_desc: "全部解锁：您使用自己的 AI 密钥。密钥只保存在您的设备上并加密——绝不经过我们的服务器。",
+    capa_login_benefit: "🔐 使用 Google 登录（免费）：您的图书馆——书籍、笔记、翻译和进度——保存到云端，可在任何设备上打开。",
     byok_get_key: "如何获取您的 AI 密钥（1 分钟）",
     byok_cost: "您的成本：每次使用几美分，直接付给提供商。书籍/视频摘要 ≈ $0.01 · 整本书翻译 ≈ $0.10–0.40 · 1 小时视频转写 ≈ $0.36。",
     byok_video_note: "⚠️ 要转写没有字幕的视频，密钥必须来自支持音频转写的 API（例如 OpenAI/Whisper）——并非所有文本 API 都适用。",
@@ -3412,6 +3421,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     donate_pix: "🟢 PIX（コピー）",
     free_title: "Mokaはこの段階では無料です ☕",
     free_desc: "すべて解放：あなた自身のAIキーで使えます。キーは暗号化されてあなたの端末だけに保存——サーバーは通りません。",
+    capa_login_benefit: "🔐 Googleでログイン（無料）：あなたのライブラリ（本・メモ・翻訳・進捗）はクラウドに保存され、どの端末でも開けます。",
     byok_get_key: "AIキーの取得方法（1分）",
     byok_cost: "あなたのコスト：1回数セント、プロバイダへ直接支払い。本/動画の要約 ≈ $0.01 · 本全体の翻訳 ≈ $0.10–0.40 · 1時間の動画文字起こし ≈ $0.36。",
     byok_video_note: "⚠️ 字幕のない動画を文字起こしするには、音声転写対応APIのキー（例：OpenAI/Whisper）が必要です——テキストAPI全てが使えるわけではありません。",
@@ -3754,6 +3764,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     donate_pix: "🟢 PIX(복사)",
     free_title: "Moka는 이 단계에서 무료입니다 ☕",
     free_desc: "모두 개방: 여러분 자신의 AI 키로 사용하세요. 키는 암호화되어 여러분의 기기에만 저장됩니다 — 서버를 거치지 않습니다.",
+    capa_login_benefit: "🔐 Google로 로그인(무료): 내 서재(책, 메모, 번역, 진행 상황)가 클라우드에 저장되어 어떤 기기에서도 열립니다.",
     byok_get_key: "AI 키 받는 법 (1분)",
     byok_cost: "비용: 사용당 몇 센트, 제공업체에 직접 지불. 책/영상 요약 ≈ $0.01 · 책 전체 번역 ≈ $0.10–0.40 · 1시간 영상 전사 ≈ $0.36.",
     byok_video_note: "⚠️ 자막 없는 영상을 전사하려면 오디오 전사가 되는 API 키(예: OpenAI/Whisper)가 필요합니다 — 모든 텍스트 API가 되는 건 아닙니다.",
@@ -4096,6 +4107,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     donate_pix: "🟢 PIX (نسخ)",
     free_title: "Moka مجاني في هذه المرحلة ☕",
     free_desc: "كل شيء مفتوح: تستخدمه بمفتاح الذكاء الاصطناعي الخاص بك. يبقى مشفرًا على جهازك فقط — لا يمر أبدًا عبر خوادمنا.",
+    capa_login_benefit: "🔐 سجّل الدخول عبر Google (مجانًا): مكتبتك — الكتب والملاحظات والترجمات والتقدم — تُحفظ في السحابة وتُفتح على أي جهاز.",
     byok_get_key: "كيف تحصل على مفتاح الذكاء الاصطناعي (دقيقة واحدة)",
     byok_cost: "تكلفتك: سنتات قليلة لكل استخدام، تُدفع مباشرة لمزودك. ملخص كتاب/فيديو ≈ $0.01 · ترجمة كتاب كامل ≈ $0.10–0.40 · ساعة فيديو مفرّغة ≈ $0.36.",
     byok_video_note: "⚠️ لتفريغ فيديو بلا ترجمة، تحتاج مفتاح API يدعم التفريغ الصوتي (مثل OpenAI/Whisper) — ليست كل APIs النصية تنفع.",
@@ -4438,6 +4450,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     donate_pix: "🟢 PIX (कॉपी)",
     free_title: "Moka इस चरण में मुफ़्त है ☕",
     free_desc: "सब कुछ खुला है: इसे अपनी खुद की AI कुंजी से चलाएँ। कुंजी एन्क्रिप्ट होकर सिर्फ़ आपके डिवाइस में रहती है — हमारे सर्वर से कभी नहीं गुज़रती।",
+    capa_login_benefit: "🔐 Google से साइन इन करें (मुफ़्त): आपकी लाइब्रेरी — किताबें, नोट्स, अनुवाद और प्रगति — क्लाउड में सहेजी जाती है और किसी भी डिवाइस पर खुलती है।",
     byok_get_key: "अपनी AI कुंजी कैसे लें (1 मिनट)",
     byok_cost: "आपकी लागत: प्रति उपयोग कुछ सेंट, सीधे आपके प्रोवाइडर को। किताब/वीडियो सारांश ≈ $0.01 · पूरी किताब का अनुवाद ≈ $0.10–0.40 · 1 घंटे का वीडियो ट्रांसक्रिप्ट ≈ $0.36।",
     byok_video_note: "⚠️ बिना सबटाइटल वाले वीडियो को ट्रांसक्राइब करने के लिए ऑडियो ट्रांसक्रिप्शन वाले API की कुंजी चाहिए (जैसे OpenAI/Whisper) — हर टेक्स्ट API काम नहीं आती।",

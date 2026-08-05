@@ -4,17 +4,22 @@ import Link from "next/link";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { SiteFooter } from "@/components/SiteFooter";
+import { AuthButton } from "@/components/AuthButton";
 import { useI18n } from "@/components/I18nProvider";
+import { useAuth } from "@/lib/auth";
 
 /**
  * CAPA — fase GRATUITA (pivô do Miguel, 2026-08-04):
  * nada de preços/pontos — o Moka é grátis e roda com a chave de IA do
  * próprio usuário (BYOK). Rodapé com doação + Quem Somos + contato.
+ * Login Google em DESTAQUE: é o que faz a biblioteca syncar entre
+ * aparelhos (e cria o vínculo com o leitor — pedido do Miguel).
  * (A versão de vendas com pontos está no backup pré-pivô / tag
  * `pre-pivot-pago-v4.3` — volta na Fase 2.)
  */
 export default function Capa() {
   const { t } = useI18n();
+  const auth = useAuth();
 
   return (
     <main className="igot-shell ft">
@@ -26,6 +31,13 @@ export default function Capa() {
           </Link>
         </div>
         <div className="igot-topbar-actions">
+          <AuthButton
+            status={auth.status}
+            userName={auth.user?.user_metadata?.full_name ?? null}
+            avatarUrl={auth.user?.user_metadata?.avatar_url ?? null}
+            onSignIn={auth.signInWithGoogle}
+            onSignOut={auth.signOut}
+          />
           <LangSwitcher />
         </div>
       </div>
@@ -46,6 +58,11 @@ export default function Capa() {
             <span>{t("byok_cost")}</span>
           </Link>
         </div>
+
+        {/* Login Google = biblioteca em qualquer aparelho (pedido do Miguel) */}
+        <p style={{ margin: "4px 0 0", fontSize: 13.5, color: "var(--text-muted)", lineHeight: 1.5 }}>
+          {t("capa_login_benefit")}
+        </p>
 
         {/* ── Ilustração Editorial de Destaque ── */}
         <img
