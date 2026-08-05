@@ -4,9 +4,8 @@ import Link from "next/link";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { SiteFooter } from "@/components/SiteFooter";
-import { AuthButton } from "@/components/AuthButton";
+import { AuthGate } from "@/components/AuthGate";
 import { useI18n } from "@/components/I18nProvider";
-import { useAuth } from "@/lib/auth";
 
 /**
  * CAPA — fase GRATUITA (pivô do Miguel, 2026-08-04):
@@ -19,7 +18,6 @@ import { useAuth } from "@/lib/auth";
  */
 export default function Capa() {
   const { t } = useI18n();
-  const auth = useAuth();
 
   return (
     <main className="igot-shell ft">
@@ -31,13 +29,7 @@ export default function Capa() {
           </Link>
         </div>
         <div className="igot-topbar-actions">
-          <AuthButton
-            status={auth.status}
-            userName={auth.user?.user_metadata?.full_name ?? null}
-            avatarUrl={auth.user?.user_metadata?.avatar_url ?? null}
-            onSignIn={auth.signInWithGoogle}
-            onSignOut={auth.signOut}
-          />
+          <AuthGate />
           <LangSwitcher />
         </div>
       </div>

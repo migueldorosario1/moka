@@ -5,7 +5,7 @@ import type { Block, ParsedBook } from "@igot/parser";
 import type { SelectionAction } from "@/lib/types";
 import { PdfPageCanvas } from "./PdfPageCanvas";
 import { CafezinhoLogo } from "./CafezinhoLogo";
-import { AuthButton } from "./AuthButton";
+import { AuthGate } from "./AuthGate";
 import { useI18n } from "./I18nProvider";
 import { CloseAppButton } from "./CloseAppButton";
 import { LangSwitcher } from "./LangSwitcher";
@@ -1600,16 +1600,8 @@ export function Reader({
                 ⚙️
               </button>
             )}
-            {/* 👤 Login */}
-            {auth && (
-              <AuthButton
-                status={auth.status}
-                userName={auth.user?.user_metadata?.full_name ?? null}
-                avatarUrl={auth.user?.user_metadata?.avatar_url ?? null}
-                onSignIn={auth.signInWithGoogle}
-                onSignOut={auth.signOut}
-              />
-            )}
+            {/* 👤 Login (AuthGate: Google OU e-mail — modal com as duas portas) */}
+            {auth && <AuthGate />}
             {/* 🗐 Tela cheia */}
             <button
               onClick={toggleFullscreen}

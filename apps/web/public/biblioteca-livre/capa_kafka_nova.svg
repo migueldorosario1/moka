@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="540" viewBox="0 0 360 540">
+  <!-- Cinza Kafka -->
+  <rect width="360" height="540" fill="#232326"/>
+  <rect x="14" y="14" width="332" height="512" fill="none" stroke="#9a9aa2" stroke-width="1.4"/>
+
+  <!-- A "rachadura" (a metamorfose) -->
+  <polyline points="60,120 140,190 110,230 190,300 150,340 230,430" fill="none" stroke="#c8b06a" stroke-width="3" stroke-linejoin="round"/>
+
+  <!-- O inseto minimalista -->
+  <g stroke="#9a9aa2" stroke-width="2.4" fill="none">
+    <ellipse cx="255" cy="180" rx="26" ry="34"/>
+    <line x1="255" y1="146" x2="255" y2="214"/>
+    <path d="M236 160 l-22 -14 M274 160 l22 -14 M232 180 l-26 -4 M278 180 l26 -4 M238 202 l-20 12 M272 202 l20 12"/>
+    <path d="M248 150 q-8 -18 -2 -30 M262 150 q8 -18 2 -30"/>
+  </g>
+
+  <text x="180" y="330" font-family="Georgia, serif" font-size="27" font-weight="bold" text-anchor="middle" fill="#e8e8ec" letter-spacing="1">DIE</text>
+  <text x="180" y="366" font-family="Georgia, serif" font-size="27" font-weight="bold" text-anchor="middle" fill="#e8e8ec" letter-spacing="1">VERWANDLUNG</text>
+  <line x1="120" y1="392" x2="240" y2="392" stroke="#9a9aa2" stroke-width="1"/>
+  <text x="180" y="426" font-family="Georgia, serif" font-size="20" font-style="italic" text-anchor="middle" fill="#c8b06a">Franz Kafka</text>
+
+  <text x="180" y="506" font-family="Georgia, serif" font-size="12" text-anchor="middle" fill="#9a9aa2" letter-spacing="3">BIBLIOTECA LIVRE · MOKA</text>
+</svg>

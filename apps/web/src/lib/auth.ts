@@ -64,12 +64,60 @@ export function useAuth() {
     setStatus("anon");
   }, []);
 
+  /** Entrar com e-mail + senha (pedido do Miguel, 05/08 — cadastro duplo:
+   *  Google OU e-mail comum, porque a biblioteca synca e o e-mail vira
+   *  canal de contato com o leitor). */
+  const signInWithPassword = useCallback(async (email: string, password: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw new Error(error.message);
+  }, []);
+
+  /** Criar conta com e-mail + senha. Com a confirmação de e-mail ligada no
+   *  Supabase, a pessoa recebe o link e SÓ ENTRA depois de clicar nele —
+   *  exatamente o fluxo pedido pelo Miguel ("clique em e-mail, chega no
+   *  e-mail e você confirma"). */
+  const signUpWithPassword = useCallback(async (email: string, password: string) => {
+    const supabase = createClient();
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: `${window.location.origin}/api/auth/callback`,
+      },
+    });
+    if (error) throw new Error(error.message);
+    // Confirmação ligada → session é null até clicar no link do e-mail.
+    return { needsConfirmation: !data.session };
+  }, []);
+
+  /** "Esqueci a senha": manda o link por e-mail; o link cai no callback e
+   *  de lá pra /auth/atualizar-senha (param `next`). */
+  const resetPassword = useCallback(async (email: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/api/auth/callback?next=/auth/atualizar-senha`,
+    });
+    if (error) throw new Error(error.message);
+  }, []);
+
+  /** Define a nova senha (depois do link de recuperação). */
+  const updatePassword = useCallback(async (newPassword: string) => {
+    const supabase = createClient();
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+    if (error) throw new Error(error.message);
+  }, []);
+
   return {
     status,
     user,
     /** id do usuário quando logado (pra repassar ao repository). */
     userId: user?.id ?? null,
     signInWithGoogle,
+    signInWithPassword,
+    signUpWithPassword,
+    resetPassword,
+    updatePassword,
     signOut,
   };
 }

@@ -53,5 +53,10 @@ export async function GET(request: Request) {
     origin = "https://mokareader.com";
   }
 
-  return NextResponse.redirect(`${origin}/`);
+  // Destino pós-login: `next` (ex.: /auth/atualizar-senha no fluxo
+  // "esqueci a senha") — só caminhos internos, senão cai na home.
+  const next = requestUrl.searchParams.get("next");
+  const destino = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+
+  return NextResponse.redirect(`${origin}${destino}`);
 }

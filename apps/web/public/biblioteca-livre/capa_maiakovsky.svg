@@ -1,10 +1,30 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="360" height="540" viewBox="0 0 360 540">
-<rect width="360" height="540" fill="#fff1e5"/>
-<rect x="14" y="14" width="332" height="512" fill="none" stroke="#1a1a1a" stroke-width="2"/>
-<text x="180" y="70" font-family="Georgia, serif" font-size="34" text-anchor="middle">🇷🇺</text>
-<text x="180" y="260" font-family="Georgia, serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#1a1a1a">Облако в штанах</text>
-<text x="180" y="300" font-family="Georgia, serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#1a1a1a"></text>
-<line x1="120" y1="330" x2="240" y2="330" stroke="#1a1a1a" stroke-width="1"/>
-<text x="180" y="370" font-family="Georgia, serif" font-size="20" font-style="italic" text-anchor="middle" fill="#66605a">Vladimir Maiakovski</text>
-<text x="180" y="500" font-family="Georgia, serif" font-size="13" text-anchor="middle" fill="#0f7680">BIBLIOTECA LIVRE · MOKA</text>
+  <!-- Fundo papel construtivista -->
+  <rect width="360" height="540" fill="#f2ecdc"/>
+
+  <!-- Geometria construtivista: diagonais vermelho/preto -->
+  <polygon points="0,540 360,540 360,470 0,610" fill="#c0241c"/>
+  <polygon points="0,540 210,540 360,505 360,540" fill="#1a1a1a"/>
+  <polygon points="0,0 360,0 360,26 0,66" fill="#1a1a1a"/>
+  <polygon points="300,0 360,0 360,150 330,150" fill="#c0241c"/>
+
+  <!-- Nuvem (a "nuvem de calças") -->
+  <g fill="#ffffff" stroke="#1a1a1a" stroke-width="3">
+    <ellipse cx="150" cy="170" rx="62" ry="34"/>
+    <ellipse cx="205" cy="158" rx="46" ry="30"/>
+    <ellipse cx="245" cy="178" rx="40" ry="26"/>
+    <rect x="118" y="168" width="160" height="34" fill="#ffffff" stroke="none"/>
+    <path d="M88 202 Q 250 202 288 202" fill="none"/>
+  </g>
+
+  <!-- Bloco do título -->
+  <rect x="34" y="262" width="292" height="120" fill="#1a1a1a"/>
+  <text x="180" y="312" font-family="Georgia, 'Noto Serif', serif" font-size="34" font-weight="bold" text-anchor="middle" fill="#f2ecdc">ОБЛАКО</text>
+  <text x="180" y="352" font-family="Georgia, 'Noto Serif', serif" font-size="34" font-weight="bold" text-anchor="middle" fill="#c0241c">В ШТАНАХ</text>
+  <text x="180" y="404" font-family="Georgia, serif" font-size="16" text-anchor="middle" fill="#1a1a1a" letter-spacing="3">A NUVEM DE CALÇAS</text>
+
+  <line x1="110" y1="428" x2="250" y2="428" stroke="#c0241c" stroke-width="3"/>
+  <text x="180" y="458" font-family="Georgia, serif" font-size="19" font-style="italic" text-anchor="middle" fill="#1a1a1a">Vladimir Maiakovski</text>
+
+  <text x="180" y="508" font-family="Georgia, serif" font-size="12" text-anchor="middle" fill="#f2ecdc" letter-spacing="3">BIBLIOTECA LIVRE · MOKA</text>
 </svg>

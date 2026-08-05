@@ -1,10 +1,27 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="360" height="540" viewBox="0 0 360 540">
-<rect width="360" height="540" fill="#fff1e5"/>
-<rect x="14" y="14" width="332" height="512" fill="none" stroke="#1a1a1a" stroke-width="2"/>
-<text x="180" y="70" font-family="Georgia, serif" font-size="34" text-anchor="middle">🇨🇳</text>
-<text x="180" y="260" font-family="Georgia, serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#1a1a1a">論語 (Analectos)</text>
-<text x="180" y="300" font-family="Georgia, serif" font-size="26" font-weight="bold" text-anchor="middle" fill="#1a1a1a"></text>
-<line x1="120" y1="330" x2="240" y2="330" stroke="#1a1a1a" stroke-width="1"/>
-<text x="180" y="370" font-family="Georgia, serif" font-size="20" font-style="italic" text-anchor="middle" fill="#66605a">Confúcio</text>
-<text x="180" y="500" font-family="Georgia, serif" font-size="13" text-anchor="middle" fill="#0f7680">BIBLIOTECA LIVRE · MOKA</text>
+  <!-- Fundo vermelho-laca clássico -->
+  <rect width="360" height="540" fill="#7d1d1d"/>
+  <rect x="10" y="10" width="340" height="520" fill="none" stroke="#d8b45a" stroke-width="1.6"/>
+  <rect x="18" y="18" width="324" height="504" fill="none" stroke="#d8b45a" stroke-width="0.7" opacity="0.65"/>
+
+  <!-- Selo redondo com o ideograma -->
+  <circle cx="180" cy="170" r="86" fill="#f5e8c8"/>
+  <circle cx="180" cy="170" r="78" fill="none" stroke="#7d1d1d" stroke-width="2"/>
+  <text x="180" y="200" font-family="Georgia, 'Noto Serif SC', serif" font-size="92" font-weight="bold" text-anchor="middle" fill="#7d1d1d">論</text>
+
+  <!-- Bambus laterais discretos -->
+  <g stroke="#d8b45a" stroke-width="2" opacity="0.55" fill="none">
+    <path d="M52 320 q6 -60 0 -120"/>
+    <path d="M44 258 l16 -10 M44 288 l16 -10 M44 228 l16 -10"/>
+    <path d="M308 320 q-6 -60 0 -120"/>
+    <path d="M316 258 l-16 -10 M316 288 l-16 -10 M316 228 l-16 -10"/>
+  </g>
+
+  <!-- Título -->
+  <text x="180" y="330" font-family="Georgia, 'Noto Serif SC', serif" font-size="30" font-weight="bold" text-anchor="middle" fill="#f5e8c8">論語</text>
+  <text x="180" y="364" font-family="Georgia, serif" font-size="21" text-anchor="middle" fill="#e8cf8e" letter-spacing="2">ANALECTOS</text>
+  <line x1="120" y1="390" x2="240" y2="390" stroke="#d8b45a" stroke-width="1"/>
+  <text x="180" y="424" font-family="Georgia, serif" font-size="19" font-style="italic" text-anchor="middle" fill="#f5e8c8">Confúcio</text>
+
+  <text x="180" y="506" font-family="Georgia, serif" font-size="12" text-anchor="middle" fill="#e8cf8e" letter-spacing="3">BIBLIOTECA LIVRE · MOKA</text>
 </svg>

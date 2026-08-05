@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="540" viewBox="0 0 360 540">
+  <!-- Vermelho Dantesco -->
+  <rect width="360" height="540" fill="#6e2417"/>
+  <rect x="10" y="10" width="340" height="520" fill="none" stroke="#d8b45a" stroke-width="1.6"/>
+  <rect x="18" y="18" width="324" height="504" fill="none" stroke="#d8b45a" stroke-width="0.7" opacity="0.65"/>
+
+  <!-- Três estrelas: Inferno · Purgatório · Paraíso -->
+  <g fill="#e8c45a">
+    <polygon points="120,120 126,140 147,140 129,152 135,172 120,160 105,172 111,152 93,140 114,140"/>
+    <polygon points="180,100 186,120 207,120 189,132 195,152 180,140 165,152 171,132 153,120 174,120"/>
+    <polygon points="240,120 246,140 267,140 249,152 255,172 240,160 225,172 231,152 213,140 234,140"/>
+  </g>
+
+  <!-- Loureiro -->
+  <g stroke="#d8b45a" stroke-width="2.4" fill="none" opacity="0.9">
+    <path d="M110 250 q-24 34 0 70 M110 250 q-30 8 -34 34 M112 272 q-26 12 -28 36 M116 294 q-20 14 -20 34"/>
+    <path d="M250 250 q24 34 0 70 M250 250 q30 8 34 34 M248 272 q26 12 28 36 M244 294 q20 14 20 34"/>
+  </g>
+
+  <text x="180" y="330" font-family="Georgia, serif" font-size="30" font-weight="bold" text-anchor="middle" fill="#f2e6c4">LA DIVINA</text>
+  <text x="180" y="368" font-family="Georgia, serif" font-size="30" font-weight="bold" text-anchor="middle" fill="#f2e6c4">COMMEDIA</text>
+  <line x1="120" y1="394" x2="240" y2="394" stroke="#d8b45a" stroke-width="1"/>
+  <text x="180" y="428" font-family="Georgia, serif" font-size="20" font-style="italic" text-anchor="middle" fill="#f2e6c4">Dante Alighieri</text>
+
+  <text x="180" y="506" font-family="Georgia, serif" font-size="12" text-anchor="middle" fill="#e8cf8e" letter-spacing="3">BIBLIOTECA LIVRE · MOKA</text>
+</svg>

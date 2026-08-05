@@ -87,8 +87,11 @@ export default function Biblioteca() {
           {BIBLIOTECA_LIVRE.map((livro) => (
             <article key={livro.id} className="bib-card">
               <div className="bib-capa">
+                {/* Capa com moldura de proporção fixa (2:3) — a página NÃO
+                    pula enquanto a imagem carrega (o "flash desconfigurado"
+                    que o Miguel viu). O 📖 fica de fundo se a capa falhar. */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={livro.capa} alt={`Capa de ${livro.titulo}`} />
+                <img src={livro.capa} alt={`Capa de ${livro.titulo}`} loading="lazy" />
               </div>
               <div className="bib-info">
                 <h2>
@@ -125,43 +128,70 @@ export default function Biblioteca() {
 
       <style jsx>{`
         .bib { min-height: 100vh; background: #fff6ee; color: #1a1a1a; }
-        .bib-topbar { background: #fff6ee; border-bottom: 1px solid #d9c8b8; }
-        .bib-body { max-width: 860px; margin: 0 auto; padding: 36px 22px 64px; }
+        .bib-topbar { background: #fff6ee; border-bottom: 1px solid #e8d9c8; }
+        .bib-body { max-width: 980px; margin: 0 auto; padding: 36px 22px 64px; }
         .bib-kicker {
           text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px;
           font-weight: 700; color: #0f7680; margin-bottom: 8px; text-align: center;
         }
         .bib-title {
-          font-family: var(--font-brand); font-weight: 600; font-size: 26px;
+          font-family: var(--font-brand); font-weight: 600; font-size: 27px;
           text-align: center; margin: 0 0 10px;
         }
         .bib-sub { color: #66605a; font-size: 14.5px; line-height: 1.6; text-align: center; max-width: 560px; margin: 0 auto 28px; }
         .bib-erro { color: #b3261e; text-align: center; margin-bottom: 14px; }
         .bib-legal {
-          margin: 0 auto 22px; max-width: 520px; text-align: center;
+          margin: 0 auto 26px; max-width: 520px; text-align: center;
           background: #eef7ee; border: 1px solid #2c7a2c33; color: #235c23;
           font-size: 13.5px; font-weight: 600; padding: 10px 14px; line-height: 1.5;
+          border-radius: 12px;
         }
-        .bib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+        .bib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; }
         .bib-card {
-          background: #fff; border: 1px solid #d9c8b8; display: flex; flex-direction: column;
+          background: #fff; border: 1px solid #e8d9c8; display: flex; flex-direction: column;
+          border-radius: 14px; overflow: hidden;
+          box-shadow: 0 2px 10px rgba(93, 60, 28, 0.06);
+          transition: transform 180ms ease, box-shadow 180ms ease;
         }
-        .bib-capa { border-bottom: 1px solid #d9c8b8; }
-        .bib-capa img { display: block; width: 100%; height: auto; }
-        .bib-info { padding: 14px 14px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
-        .bib-info h2 { font-family: var(--font-brand); font-size: 16.5px; font-weight: 600; margin: 0; line-height: 1.25; }
+        .bib-card:hover {
+          transform: translateY(-3px);
+          box-shadow: 0 10px 26px rgba(93, 60, 28, 0.14);
+        }
+        /* Moldura 2:3 fixa: sem salto de layout (CLS) — o flash sumiu. */
+        .bib-capa {
+          position: relative; aspect-ratio: 2 / 3; overflow: hidden;
+          background: #f3e9dc center / 42% no-repeat;
+          border-bottom: 1px solid #efe0cd;
+        }
+        .bib-capa::before {
+          content: "📖"; position: absolute; inset: 0;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 40px; opacity: 0.35;
+        }
+        .bib-capa img {
+          position: relative; display: block; width: 100%; height: 100%;
+          object-fit: cover; animation: bib-fade 0.5s ease both;
+        }
+        @keyframes bib-fade { from { opacity: 0; } to { opacity: 1; } }
+        .bib-info { padding: 13px 14px 15px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+        .bib-info h2 { font-family: var(--font-brand); font-size: 15.5px; font-weight: 600; margin: 0; line-height: 1.25; }
         .bib-demo { font-size: 13px; }
-        .bib-autor { color: #66605a; font-size: 13px; font-style: italic; margin: 0; }
-        .bib-sinopse { color: #66605a; font-size: 13px; line-height: 1.55; margin: 0; flex: 1; }
+        .bib-autor { color: #8a7a6a; font-size: 12.5px; font-style: italic; margin: 0; }
+        .bib-sinopse {
+          color: #66605a; font-size: 12.5px; line-height: 1.55; margin: 0; flex: 1;
+          display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
+        }
         .bib-acoes { margin-top: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
         .bib-btn {
-          background: #1a1a1a; color: #fff; border: none; padding: 10px 14px;
-          font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 2px;
+          background: #1a1a1a; color: #fff; border: none; padding: 9px 14px;
+          font-size: 13px; font-weight: 700; cursor: pointer; border-radius: 8px;
+          transition: background 150ms ease;
         }
+        .bib-btn:hover { background: #0f7680; }
         .bib-btn:disabled { opacity: 0.6; cursor: wait; }
         .bib-btn-abrir { background: #0f7680; }
-        .bib-ok { color: #2c7a2c; font-weight: 700; font-size: 13.5px; }
-        .bib-nota { margin-top: 30px; padding-top: 16px; border-top: 1px solid #d9c8b8; color: #66605a; font-size: 12.5px; line-height: 1.6; text-align: center; }
+        .bib-ok { color: #2c7a2c; font-weight: 700; font-size: 13px; }
+        .bib-nota { margin-top: 30px; padding-top: 16px; border-top: 1px solid #e8d9c8; color: #8a7a6a; font-size: 12.5px; line-height: 1.6; text-align: center; }
       `}</style>
     </main>
   );
