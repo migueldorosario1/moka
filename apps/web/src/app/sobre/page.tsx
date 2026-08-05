@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { LangSwitcher } from "@/components/LangSwitcher";
+import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
@@ -18,7 +19,10 @@ export default function SobrePage() {
     <main className="info-page">
       <div className="info-topbar">
         <a href="/" className="info-back">← Moka</a>
-        <LangSwitcher />
+        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <AuthGate />
+          <LangSwitcher />
+        </div>
       </div>
       <article className="info-card">
 

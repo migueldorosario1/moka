@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
+import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
 import { LlmPriceRanking } from "@/components/LlmPriceRanking";
 import { useI18n } from "@/components/I18nProvider";
@@ -88,6 +89,7 @@ export default function Ajuda() {
           </a>
         </div>
         <div className="igot-topbar-actions">
+          <AuthGate />
           <LangSwitcher />
         </div>
       </div>

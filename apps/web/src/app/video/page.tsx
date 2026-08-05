@@ -8,6 +8,7 @@ import { SettingsModal } from "@/components/SettingsModal";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
 import { LangSwitcher } from "@/components/LangSwitcher";
+import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/components/I18nProvider";
@@ -339,6 +340,7 @@ export default function HomePage() {
           <SectionSwitcher active="video" />
         </div>
         <div className="igot-topbar-actions">
+          <AuthGate />
           <LangSwitcher />
           <button
             className={`gear ${configReady ? "" : "unset"}`}

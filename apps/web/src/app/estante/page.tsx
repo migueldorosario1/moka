@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Uploader } from "@/components/Uploader";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
+import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
 import { useI18n } from "@/components/I18nProvider";
 import { SettingsModal } from "@/components/SettingsModal";
@@ -213,6 +214,7 @@ export default function HomePage() {
         </div>
         <div className="igot-topbar-actions">
           <BackButton />
+          <AuthGate />
           <LangSwitcher />
           <button
             className={`gear ${configReady ? "" : "unset"}`}
