@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useI18n } from "./I18nProvider";
 import type { useAuth } from "@/lib/auth";
 
@@ -88,7 +89,17 @@ export function AuthModal({ auth, onClose }: AuthModalProps) {
     }
   };
 
-  return (
+  // PORTAL pro <body> (bug "probleminha meio grave" do Miguel, 05/08 — print
+  // mostrava a janela virando uma FAIXA cortada no topo): renderizado inline
+  // dentro da topbar, o `position: fixed` do overlay quebrava por algum
+  // ancestral (transform/filter cria containing block) — o overlay cobria
+  // só uma faixa do topo e o card ficava cortado. Renderizando via portal
+  // no body, o overlay cobre a viewport INTEIRA sempre, em qualquer página.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+  if (!mounted) return null;
+
+  return createPortal(
     <div className="am-overlay" onClick={onClose}>
       <div className="am-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={t("auth_modal_title")}>
         <header className="am-head">
@@ -168,20 +179,23 @@ export function AuthModal({ auth, onClose }: AuthModalProps) {
       </div>
 
       <style jsx>{`
-        /* Mobile-first (bug do Miguel, 05/08 — celular): o card é ALTO e, com
-           centralização flex, o TOPO (botão do Google) ficava cortado e
-           inalcançável. Padrão robusto: overlay rola + card com margin:auto
-           (centraliza quando cabe, rola quando não cabe) + altura limitada
-           à viewport dinâmica (100dvh lida com a barra do celular). */
+        /* Mobile-first (bugs do Miguel, 05/08): (1) no celular, centralizar
+           com flex cortava o topo do card (botão Google inalcançável);
+           (2) no desktop, o overlay virava uma FAIXA cortada no topo.
+           Portal no <body> + este padrão à prova de corte:
+           overlay rola / card com margem vertical (nunca margin:auto com
+           overflow — é o bug clássico que clipa o topo para sempre). */
         .am-overlay {
           position: fixed; inset: 0; z-index: 1100;
           background: rgba(0, 0, 0, 0.45);
           display: flex;
+          align-items: flex-start;
+          justify-content: center;
           overflow-y: auto;
-          padding: 20px;
+          padding: 0 20px;
         }
         .am-card {
-          margin: auto;
+          margin: 6vh auto;
           background: var(--bg); border-radius: 16px; width: 100%; max-width: 380px;
           max-height: calc(100vh - 40px); /* fallback pra navegadores antigos */
           max-height: calc(100dvh - 40px);
@@ -219,6 +233,7 @@ export function AuthModal({ auth, onClose }: AuthModalProps) {
         .am-link { border: none; background: none; color: var(--accent-dark); font-size: 13px; cursor: pointer; padding: 2px 4px; }
         .am-link:hover { text-decoration: underline; }
       `}</style>
-    </div>
+    </div>,
+    document.body,
   );
 }
