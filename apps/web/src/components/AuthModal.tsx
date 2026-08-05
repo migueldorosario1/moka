@@ -168,14 +168,24 @@ export function AuthModal({ auth, onClose }: AuthModalProps) {
       </div>
 
       <style jsx>{`
+        /* Mobile-first (bug do Miguel, 05/08 — celular): o card é ALTO e, com
+           centralização flex, o TOPO (botão do Google) ficava cortado e
+           inalcançável. Padrão robusto: overlay rola + card com margin:auto
+           (centraliza quando cabe, rola quando não cabe) + altura limitada
+           à viewport dinâmica (100dvh lida com a barra do celular). */
         .am-overlay {
           position: fixed; inset: 0; z-index: 1100;
           background: rgba(0, 0, 0, 0.45);
-          display: flex; align-items: center; justify-content: center;
+          display: flex;
+          overflow-y: auto;
           padding: 20px;
         }
         .am-card {
+          margin: auto;
           background: var(--bg); border-radius: 16px; width: 100%; max-width: 380px;
+          max-height: calc(100vh - 40px); /* fallback pra navegadores antigos */
+          max-height: calc(100dvh - 40px);
+          overflow-y: auto;
           padding: 22px; display: flex; flex-direction: column; gap: 12px;
           box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
         }
