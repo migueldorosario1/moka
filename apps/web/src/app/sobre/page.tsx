@@ -1,5 +1,6 @@
 import { Metadata } from "next";
 import { LangSwitcher } from "@/components/LangSwitcher";
+import { SiteFooter } from "@/components/SiteFooter";
 
 export const metadata: Metadata = {
   title: "Quem Somos — Moka",
@@ -171,6 +172,7 @@ export default function SobrePage() {
           }
         }
       `}</style>
+          <SiteFooter />
     </main>
   );
 }

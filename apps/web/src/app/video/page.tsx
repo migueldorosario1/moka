@@ -7,8 +7,8 @@ import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { SettingsModal } from "@/components/SettingsModal";
 import { InstallPrompt } from "@/components/InstallPrompt";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
-import { ContaButton } from "@/components/ContaButton";
 import { LangSwitcher } from "@/components/LangSwitcher";
+import { SiteFooter } from "@/components/SiteFooter";
 import { useAuth } from "@/lib/auth";
 import { useI18n } from "@/components/I18nProvider";
 import {
@@ -339,7 +339,6 @@ export default function HomePage() {
           <SectionSwitcher active="video" />
         </div>
         <div className="igot-topbar-actions">
-          <ContaButton />
           <LangSwitcher />
           <button
             className={`gear ${configReady ? "" : "unset"}`}
@@ -556,6 +555,7 @@ export default function HomePage() {
         />
       )}
 
+          <SiteFooter />
     </main>
   );
 }

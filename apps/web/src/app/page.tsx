@@ -2,14 +2,16 @@
 
 import Link from "next/link";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
-import { ContaButton } from "@/components/ContaButton";
 import { LangSwitcher } from "@/components/LangSwitcher";
+import { SiteFooter } from "@/components/SiteFooter";
 import { useI18n } from "@/components/I18nProvider";
 
 /**
- * CAPA V3 (espelho — pedido do Miguel 23/07): a home VENDE.
- * Ordem: oferta R$5 grande → vídeo do anúncio explicando → preços.
- * O checkout R$5 aponta pro funil real (Pix na API de pontos).
+ * CAPA — fase GRATUITA (pivô do Miguel, 2026-08-04):
+ * nada de preços/pontos — o Moka é grátis e roda com a chave de IA do
+ * próprio usuário (BYOK). Rodapé com doação + Quem Somos + contato.
+ * (A versão de vendas com pontos está no backup pré-pivô / tag
+ * `pre-pivot-pago-v4.3` — volta na Fase 2.)
  */
 export default function Capa() {
   const { t } = useI18n();
@@ -24,7 +26,6 @@ export default function Capa() {
           </Link>
         </div>
         <div className="igot-topbar-actions">
-          <ContaButton />
           <LangSwitcher />
         </div>
       </div>
@@ -34,22 +35,17 @@ export default function Capa() {
         <div className="capa-logo">MOKA</div>
         <h1 className="capa-tagline">{t("app_tagline")}</h1>
 
-        {/* ── V3: os 2 caminhos — pontos (IA da casa) × licença (BYOK) ── */}
+        {/* ── FASE GRATUITA: BYOK é o único caminho (e é grátis) ── */}
         <div className="capa-paths">
-          <a className="capa-path" href="/experimente">
-            <b>{t("capa_path_points_title")}</b>
-            <span>{t("capa_path_points_desc")}</span>
-          </a>
-          <a className="capa-path" href="/experimente?plano=avancado">
-            <b>{t("capa_path_adv_title")}</b>
-            <span>{t("capa_path_adv_desc")}</span>
-          </a>
+          <Link className="capa-path" href="/estante">
+            <b>🆓 {t("free_title")}</b>
+            <span>{t("free_desc")}</span>
+          </Link>
+          <Link className="capa-path" href="/ajuda">
+            <b>🔑 {t("byok_get_key")}</b>
+            <span>{t("byok_cost")}</span>
+          </Link>
         </div>
-
-        {/* Teste R$5 — SEMPRE visível onde há oferta (regra do Miguel, 29/07) */}
-        <a className="capa-test-link" href="/experimente?modo=teste">
-          🎣 {t("capa_test_link")}
-        </a>
 
         {/* ── Ilustração Editorial de Destaque ── */}
         <img
@@ -57,29 +53,6 @@ export default function Capa() {
           src="/moka_hero_editorial.png"
           alt="Moka — Inteligência de Leitura e Vídeos"
         />
-
-        {/* ── O que os pontos compram (equivalências honestas) ── */}
-        <h2 className="capa-plans-title">{t("capa_how_title")}</h2>
-        <div className="capa-plans-rule" />
-        <div className="capa-plans">
-          <div className="capa-plan">
-            <b>🎬 30 pts</b>
-            <span className="desc">1 {t("exp_videos")} (resumo)</span>
-          </div>
-          <div className="capa-plan">
-            <b>📖 40 pts</b>
-            <span className="desc">1 {t("exp_books")} (resumo)</span>
-          </div>
-          <div className="capa-plan">
-            <b>🌍 80 pts</b>
-            <span className="desc">1 {t("exp_translations")} (livro inteiro)</span>
-          </div>
-          <div className="capa-plan">
-            <b>🎧 40 pts</b>
-            <span className="desc">1 {t("exp_audios")} (10 min)</span>
-          </div>
-        </div>
-        <p className="capa-plans-note">{t("capa_plans_note")}</p>
 
         {/* ── Entradas do app (Estante & Videoteca) ── */}
         <div className="capa-cards">
@@ -93,9 +66,10 @@ export default function Capa() {
           </a>
         </div>
 
-        <p className="capa-footer">{t("capa_footer")}</p>
+        <p className="capa-footer">{t("byok_video_note")}</p>
       </div>
 
+      <SiteFooter />
     </main>
   );
 }

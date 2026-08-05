@@ -593,8 +593,9 @@ const SERVERLESS_NOTE_NOT_YOUTUBE =
   "Por enquanto o Moka lê só vídeos do YouTube. " +
   "Links do X/Twitter e do Instagram chegam em breve. 🙏";
 const SERVERLESS_NOTE_NO_CAPTIONS =
-  "Este vídeo não tem legendas, e por aqui ainda não conseguimos transcrever " +
-  "o áudio dele. Tente outro vídeo do YouTube que tenha legendas.";
+  "Este vídeo não tem legendas. Nesta fase gratuita, a transcrição " +
+  "automática por IA está pausada (ela volta na próxima fase). " +
+  "Por enquanto, tente vídeos do YouTube que tenham legendas. 🙏";
 
 // ─── Transcrição da casa (Transkriptor + pontos) ────────────────────────
 // O usuário nunca vê tecniquês: ou o vídeo tem legenda (grátis), ou o Moka

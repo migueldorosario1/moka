@@ -42,6 +42,11 @@ export interface TkJob {
 }
 
 export function transkriptorEnabled(): boolean {
+  // FASE GRATUITA (pivô do Miguel, 2026-08-04): a transcrição da casa
+  // (Transkriptor com a NOSSA chave — custo nosso por minuto) fica DESLIGADA
+  // por padrão. Religa na Fase 2 com MOKA_CASA_TRANSCRICAO=1 no env da Vercel
+  // — todo o caminho (cache, fila, débito) fica intacto esperando.
+  if (process.env.MOKA_CASA_TRANSCRICAO !== "1") return false;
   return Boolean(process.env.TRANSKRIPTOR_API_KEY?.trim()) && motorEnabled();
 }
 

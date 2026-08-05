@@ -9,9 +9,7 @@ import {
   listAllEntriesSync, getConfigById,
   setWhisperKey, getWhisperKeyMasked,
   getIngestServer, setIngestServer,
-  getModeloCasa, setModeloCasa,
 } from "@/lib/config";
-import { getConta, setConta, verificarConta, licencaAtiva, MODELOS_CASA } from "@/lib/moka-conta";
 import { testConnection, listModels } from "@/lib/ai-client";
 import { useI18n } from "./I18nProvider";
 
@@ -73,49 +71,7 @@ export function SettingsForm({
     message: "",
   });
   const [saved, setSaved] = useState(false);
-  // V3: conta de pontos (IA da casa) + licença do modo avançado
-  const [contaInfo, setContaInfo] = useState<{ email: string; nome: string; saldo: number } | null>(null);
-  const [contaEmail, setContaEmail] = useState("");
-  const [contaSenha, setContaSenha] = useState("");
-  const [contaErro, setContaErro] = useState("");
-  const [contaLoading, setContaLoading] = useState(false);
-  const [licenca, setLicenca] = useState<boolean | null>(null);
-  /** Modelo da IA da casa escolhido ("" = default deepseek-v4-flash). */
-  const [modeloCasa, setModeloCasaState] = useState("");
 
-  useEffect(() => {
-    setModeloCasaState(getModeloCasa());
-    const c = getConta();
-    if (c) {
-      setContaLoading(true);
-      Promise.all([verificarConta(c.email, c.senha), licencaAtiva(c.email, c.senha)])
-        .then(([info, lic]) => {
-          setContaInfo({ email: c.email, nome: info.nome, saldo: info.saldo });
-          setLicenca(lic);
-        })
-        .catch(() => setConta(null))
-        .finally(() => setContaLoading(false));
-    }
-  }, []);
-
-  const entrarConta = async () => {
-    setContaErro("");
-    setContaLoading(true);
-    try {
-      const [info, lic] = await Promise.all([
-        verificarConta(contaEmail.trim(), contaSenha),
-        licencaAtiva(contaEmail.trim(), contaSenha),
-      ]);
-      setConta({ email: contaEmail.trim(), senha: contaSenha });
-      setContaInfo({ email: contaEmail.trim(), nome: info.nome, saldo: info.saldo });
-      setLicenca(lic);
-      setContaSenha("");
-    } catch (err) {
-      setContaErro(err instanceof Error ? err.message : String(err));
-    } finally {
-      setContaLoading(false);
-    }
-  };
   // Busca de modelos disponíveis do provedor.
   const [modelsList, setModelsList] = useState<string[] | null>(null);
   const [modelsLoading, setModelsLoading] = useState(false);
@@ -298,146 +254,21 @@ export function SettingsForm({
 
   return (
     <form className="settings-form" onSubmit={handleSave}>
-      {/* ═══ V3 (mirror): MODO SIMPLES — pra quem NÃO sabe o que é API ═══
-          O default é o Premium (IA incluída, sem chave). BYOK vira opção
-          avançada lá embaixo. (Pedido do Miguel, 23/07 — espelho V3.) */}
+      {/* ═══ FASE GRATUITA (pivô do Miguel, 2026-08-04): BYOK é O modo — a
+          IA roda com a chave do PRÓPRIO usuário (privacidade: a chave fica
+          só no dispositivo, criptografada). Nada de planos/pontos/licença —
+          a versão paga está preservada no backup pré-pivô (tag
+          `pre-pivot-pago-v4.3`) e volta na Fase 2. ═══ */}
       <div className="v3-simple">
-        <h3 className="v3-simple-title">✨ Compre pontos e use — sem configurar nada</h3>
-        <p className="v3-simple-sub">
-          Com os pacotes de pontos, a inteligência artificial já vem
-          incluída: é só comprar e usar, sem chave e sem configuração.
-          Sem mensalidade — seus pontos não expiram.
-        </p>
-        <div className="v3-plans">
-          <a className="v3-plan v3-plan-teste" href="/experimente?modo=teste">
-            <span className="v3-plan-badge">comece aqui</span>
-            <b>🎣 Teste (lançamento)</b>
-            <span className="v3-plan-price">R$ 10</span>
-            <span className="v3-plan-desc">
-              110 pontos pra experimentar tudo — promoção, 1× por e-mail
-            </span>
-          </a>
-          <a className="v3-plan v3-plan-featured" href="/experimente">
-            <b>⚡ Pontos</b>
-            <span className="v3-plan-price">a partir de R$ 40</span>
-            <span className="v3-plan-desc">
-              IA da casa incluída. 400 pontos ≈ 13 vídeos ou 10 livros.
-              Sem mensalidade — não expiram.
-            </span>
-          </a>
-          <a className="v3-plan v3-plan-byok" href="/experimente?plano=avancado">
-            <b>💼 Modo avançado</b>
-            <span className="v3-plan-price">R$ 50 / 6 meses</span>
-            <span className="v3-plan-desc">
-              Licença para usar a SUA chave de IA, com painel de gastos.
-            </span>
-          </a>
-        </div>
-        <p className="v3-simple-note" style={{ marginTop: 10 }}>
-          Vale para livros E vídeos. Seus pontos não expiram.
-        </p>
-
-        {/* V3: entrar com a conta de pontos (a IA da casa funciona na hora) */}
-        <div className="v3-conta">
-          {contaInfo ? (
-            <div className="v3-conta-logado">
-              <p>
-                ✅ <strong>{contaInfo.nome}</strong> conectado —{" "}
-                <strong>{contaInfo.saldo.toLocaleString("pt-BR")} pontos</strong>
-                {licenca === true && " · 💼 licença avançada ativa"}
-                {licenca === false && " · sem licença avançada"}
-              </p>
-              <button
-                type="button"
-                className="mini-btn"
-                onClick={() => { setConta(null); setContaInfo(null); setLicenca(null); }}
-              >
-                Sair da conta
-              </button>
-            </div>
-          ) : (
-            <div className="v3-conta-form">
-              <p className="v3-conta-titulo">🔑 Entrar com sua conta de pontos</p>
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                <input
-                  type="email" placeholder="seu e-mail da compra" value={contaEmail}
-                  onChange={(e) => setContaEmail(e.target.value)}
-                  style={{ flex: 1, minWidth: 160, padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
-                />
-                <input
-                  type="password" placeholder="senha (veio por e-mail)" value={contaSenha}
-                  onChange={(e) => setContaSenha(e.target.value)}
-                  style={{ flex: 1, minWidth: 140, padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
-                />
-                <button
-                  type="button" className="mini-btn use-btn"
-                  onClick={() => void entrarConta()}
-                  disabled={contaLoading || !contaEmail.trim() || !contaSenha}
-                >
-                  {contaLoading ? "⏳" : "Entrar"}
-                </button>
-              </div>
-              {contaErro && <p className="feedback err">{contaErro}</p>}
-              <p className="hint">
-                Comprou pontos? A senha foi pro seu e-mail. Ainda não tem?{" "}
-                <a href="/experimente" style={{ color: "var(--accent-dark)", fontWeight: 700 }}>
-                  Compre em /experimente →
-                </a>
-              </p>
-            </div>
-          )}
-        </div>
-        <p className="v3-simple-note">
-          Já comprou ou tem cupom? <a href="https://43.156.151.165.sslip.io/painel" target="_blank" rel="noreferrer">Entre no seu painel de pontos →</a>
-        </p>
-
-        {/* 🚀 Modelo da IA da casa (pedido do Miguel, 2026-08-01):
-            default deepseek-v4-flash (o mais econômico) — trocável aqui.
-            Modelos mais fortes consomem mais pontos; o app mostra o custo
-            (tokens por ponto) junto de cada opção. */}
-        {contaInfo && (
-          <div className="v3-conta" style={{ marginTop: 10 }}>
-            <label htmlFor="modelo-casa" style={{ fontSize: 14, fontWeight: 600, display: "block", marginBottom: 6 }}>
-              🚀 {t("set_model_casa")}
-            </label>
-            <select
-              id="modelo-casa"
-              value={modeloCasa}
-              onChange={(e) => { setModeloCasaState(e.target.value); setModeloCasa(e.target.value); }}
-              style={{ width: "100%", padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
-            >
-              {MODELOS_CASA.map((m) => (
-                <option key={m.id || "default"} value={m.id}>
-                  {m.rotulo}
-                  {m.economico ? " ☕" : ""} — {m.tokensPorPonto} {t("set_model_tokens")}
-                  {m.mult > 1 ? ` (${t("set_model_mult", { n: m.mult })})` : ""}
-                </option>
-              ))}
-            </select>
-            <p className="hint" style={{ marginTop: 6 }}>{t("set_model_casa_hint")}</p>
-          </div>
-        )}
+        <h3 className="v3-simple-title">🆓 {t("free_title")}</h3>
+        <p className="v3-simple-sub">{t("free_desc")}</p>
+        <p className="v3-simple-sub" style={{ marginTop: 6 }}>{t("byok_cost")}</p>
+        <p className="v3-simple-note" style={{ marginTop: 10 }}>{t("byok_video_note")}</p>
       </div>
 
-      {/* ═══ V3: daqui pra baixo é AVANÇADO (BYOK — usar a própria chave) ═══
-          Só aparece o seletor de provedor se a LICENÇA estiver ativa
-          (pedido do Miguel: nada de "escolher provedor" pra usuário comum). */}
-      {licenca === false ? (
-        <div className="v3-advanced v3-advanced-locked">
-          <p>
-            🔒 <strong>Modo avançado</strong> — usar a própria chave de IA é um
-            recurso da <strong>licença</strong> (R$ 50 / 6 meses).{" "}
-            <a href="/experimente?plano=avancado" style={{ color: "var(--accent-dark)", fontWeight: 700 }}>
-              Ativar licença →
-            </a>
-          </p>
-          <p className="hint" style={{ marginTop: 6 }}>
-            Sem licença você nem vê esta área: é só comprar pontos e usar —
-            a IA da casa já está pronta, sem configurar nada.
-          </p>
-        </div>
-      ) : (
-      <details className="v3-advanced">
+      {/* ═══ BYOK: sua chave de IA (sempre aberta na fase gratuita —
+          antes ficava atrás da licença paga) ═══ */}
+      <details className="v3-advanced" open>
         <summary>
           🔧 <strong>Configurações avançadas</strong> — usar minha própria chave de IA
           <span className="v3-advanced-hint">
@@ -863,7 +694,6 @@ export function SettingsForm({
       )}
 
       </details>
-      )}
 
       <style jsx>{`
         .v3-simple {

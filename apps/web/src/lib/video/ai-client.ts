@@ -16,7 +16,6 @@ import type { VideoMeta } from "./db";
 import { transcriptText, formatTime } from "./db";
 import type { TranscriptSegment } from "./db";
 import { getConfig, getTargetLang } from "@/lib/config";
-import { gatewayProvider } from "@/lib/moka-conta";
 import { getProvider } from "@igot/ai-providers";
 import { createProxyTransport } from "@igot/ai-providers";
 
@@ -71,11 +70,16 @@ function videoHeader(meta: VideoMeta): string {
   );
 }
 
-/** Provedor de IA: BYOK se o usuário tem chave; senão, a IA da casa (pontos, V3). */
+/** Provedor de IA: SEMPRE a chave do usuário (BYOK).
+ *  FASE GRATUITA (pivô 2026-08-04): sem IA da casa/pontos — sem chave, o
+ *  erro guia a pessoa a configurar a própria. */
 async function provider() {
   const config = await getConfig();
   if (!config) {
-    return gatewayProvider("resumo_video");
+    throw new Error(
+      "Para usar a IA, abra as ⚙️ Configurações e cole a SUA chave de IA " +
+      "(ela fica só no seu dispositivo). Em /ajuda tem o passo a passo de 1 minuto.",
+    );
   }
   return getProvider(config, createProxyTransport());
 }

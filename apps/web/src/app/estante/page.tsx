@@ -6,12 +6,12 @@ import Link from "next/link";
 import { Uploader } from "@/components/Uploader";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
+import { SiteFooter } from "@/components/SiteFooter";
 import { useI18n } from "@/components/I18nProvider";
 import { SettingsModal } from "@/components/SettingsModal";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
 import { BackButton } from "@/components/BackButton";
 import { VisitPing } from "@/components/VisitPing";
-import { ContaButton } from "@/components/ContaButton";
 import { hasConfig, loadConfigCache } from "@/lib/config";
 import { useAuth } from "@/lib/auth";
 import { listLibrary, saveToLibrary, removeFromLibrary, clearAllBooks } from "@/lib/repository";
@@ -215,7 +215,6 @@ export default function HomePage() {
           <BackButton />
           <a href="/premium" className="premium-link" title="Moka Premium">⭐</a>
           <LangSwitcher />
-          <ContaButton />
           <button
             className={`gear ${configReady ? "" : "unset"}`}
             onClick={() => setSettingsOpen(true)}
@@ -347,6 +346,7 @@ export default function HomePage() {
           onSaved={() => setConfigReady(hasConfig())}
         />
       )}
+          <SiteFooter />
     </main>
   );
 }

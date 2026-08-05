@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
-import { ContaButton } from "@/components/ContaButton";
 import { LangSwitcher } from "@/components/LangSwitcher";
+import { SiteFooter } from "@/components/SiteFooter";
+import { useI18n } from "@/components/I18nProvider";
 
 /**
  * /ajuda — HELP do V3 (doc 15): página bem explicativa para quem nunca
@@ -67,6 +68,7 @@ function responder(pergunta: string): string {
 }
 
 export default function Ajuda() {
+  const { t } = useI18n();
   const [busca, setBusca] = useState("");
   const [pergunta, setPergunta] = useState("");
   const [resposta, setResposta] = useState("");
@@ -89,7 +91,6 @@ export default function Ajuda() {
           </a>
         </div>
         <div className="igot-topbar-actions">
-          <ContaButton />
           <LangSwitcher />
         </div>
       </div>
@@ -97,6 +98,15 @@ export default function Ajuda() {
       <div className="help-body">
         <p className="help-kicker">Central de ajuda</p>
         <h1 className="help-title">Como o Moka funciona</h1>
+
+        {/* FASE GRATUITA (pivô 2026-08-04): o essencial do BYOK em destaque,
+            nos 12 idiomas (ui-strings) — antes de qualquer FAQ. */}
+        <section className="help-robo" style={{ marginBottom: 18 }}>
+          <h2>🆓 {t("free_title")}</h2>
+          <p style={{ lineHeight: 1.6 }}>{t("free_desc")}</p>
+          <p style={{ lineHeight: 1.6, marginTop: 8 }}>{t("byok_cost")}</p>
+          <p style={{ lineHeight: 1.6, marginTop: 8 }}>{t("byok_video_note")}</p>
+        </section>
 
         {/* Robô de dúvidas */}
         <section className="help-robo">
@@ -194,6 +204,7 @@ export default function Ajuda() {
         .help-comunidade p { color: #66605a; font-size: 14px; line-height: 1.6; }
         .help-comunidade a { color: #0f7680; font-weight: 700; }
       `}</style>
+          <SiteFooter />
     </main>
   );
 }

@@ -7,7 +7,6 @@ import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { SettingsModal } from "@/components/SettingsModal";
 import { VideoAskModal } from "@/components/VideoAskModal";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
-import { ContaButton } from "@/components/ContaButton";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { useAuth } from "@/lib/auth";
 import { Markdown } from "@/components/Markdown";
@@ -285,7 +284,6 @@ export default function VideoPage() {
           >
             ＋
           </a>
-          <ContaButton />
           <LangSwitcher />
           <button
             className="gear"

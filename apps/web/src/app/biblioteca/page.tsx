@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
-import { ContaButton } from "@/components/ContaButton";
 import { BackButton } from "@/components/BackButton";
 import { useI18n } from "@/components/I18nProvider";
 import { BIBLIOTECA_LIVRE, type LivroLivre } from "@/lib/biblioteca-livre";
@@ -70,7 +69,6 @@ export default function Biblioteca() {
         </div>
         <div className="igot-topbar-actions">
           <BackButton />
-          <ContaButton />
           <LangSwitcher />
         </div>
       </div>

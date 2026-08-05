@@ -17,7 +17,6 @@ import {
   type AIConfig,
 } from "@igot/ai-providers";
 import { getConfigSync, getTargetLang } from "./config";
-import { gatewayProvider } from "./moka-conta";
 import { t } from "./messages";
 
 /** Contexto da obra relevante para as ações. */
@@ -47,11 +46,16 @@ function buildContext(ctx: BookContext): string | undefined {
   return parts.length ? parts.join("\n") : undefined;
 }
 
-/** Instancia o provider: BYOK se há chave; senão, a IA da casa (pontos, V3). */
+/** Instancia o provider SEMPRE com a chave do usuário (BYOK).
+ *  FASE GRATUITA (pivô 2026-08-04): não existe mais IA da casa/pontos —
+ *  sem chave configurada, o erro guia a pessoa a colocar a própria. */
 function resolveProvider() {
   const config = getConfigSync();
   if (!config) {
-    return { provider: gatewayProvider("resumo_livro"), config: null };
+    throw new Error(
+      "Para usar a IA, abra as ⚙️ Configurações e cole a SUA chave de IA " +
+      "(ela fica só no seu dispositivo). Em /ajuda tem o passo a passo de 1 minuto.",
+    );
   }
   const transport = createProxyTransport("/api/proxy");
   return { provider: getProvider(config as AIConfig, transport), config };
