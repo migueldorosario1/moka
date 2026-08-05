@@ -52,6 +52,13 @@ export default function Tutorial() {
         <h1 className="capa-tagline" style={{ fontSize: 26 }}>{t("tut_title")}</h1>
         <p style={{ color: "var(--text-muted)", lineHeight: 1.6, marginTop: 8 }}>{t("tut_intro")}</p>
 
+        {/* 🔑 "O que é API?" — pedido do Miguel (05/08): o tutorial tem que
+            abrir explicando o que é a API, antes de qualquer passo */}
+        <div className="tut-api-card">
+          <h2>{t("tut_api_t")}</h2>
+          <p>{t("tut_api_d")}</p>
+        </div>
+
         <div className="tut-steps">
           {steps.map((s) => (
             <section key={s.n} className="tut-step">
@@ -94,6 +101,12 @@ export default function Tutorial() {
       <SiteFooter />
 
       <style jsx>{`
+        .tut-api-card {
+          margin-top: 16px; padding: 14px 18px; border-radius: 14px;
+          background: var(--surface); border: 1.5px solid var(--accent);
+        }
+        .tut-api-card h2 { margin: 0 0 6px; font-size: 16.5px; font-family: var(--font-brand); }
+        .tut-api-card p { margin: 0; font-size: 14px; line-height: 1.65; }
         .tut-steps { display: flex; flex-direction: column; gap: 14px; margin-top: 22px; }
         .tut-step {
           display: flex; gap: 14px; padding: 16px 18px;

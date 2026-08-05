@@ -17,9 +17,9 @@ interface Faq { q: string; a: string; tags: string[] }
 
 const FAQ: Faq[] = [
   { q: "O que é o Moka?", tags: ["moka", "que", "é", "app", "aplicativo"],
-    a: "O Moka é um leitor com inteligência artificial: ele resume vídeos do YouTube e livros (EPUB/PDF) em minutos, traduz, explica, identifica personagens e responde perguntas sobre o conteúdo — no seu idioma. Nesta fase ele é GRATUITO." },
+    a: "O Moka é um leitor com inteligência artificial: ele resume vídeos do YouTube e livros (EPUB/PDF) em minutos, traduz, explica, identifica personagens e responde perguntas sobre o conteúdo — no seu idioma. E é GRATUITO." },
   { q: "O Moka é grátis mesmo?", tags: ["grátis", "gratuito", "preço", "custa", "valor", "quanto", "pontos", "ponto", "créditos", "saldo"],
-    a: "Sim — nesta fase experimental, tudo é grátis. Você não compra nada no Moka: a IA roda com a SUA chave de API (BYOK), e você paga o provedor diretamente pelo que usar — centavos por livro/vídeo. Se quiser apoiar o projeto, tem o botão de doação no rodapé. ☕" },
+    a: "Sim — o Moka é grátis de verdade: você não compra nada aqui. A IA roda com a SUA chave de API (a chave da sua inteligência artificial), e você paga o provedor diretamente pelo que usar — centavos por livro/vídeo. Se quiser apoiar o projeto, tem o botão de doação no rodapé. ☕" },
   { q: "Quanto vou gastar com a minha própria API?", tags: ["gasto", "custo", "api", "provedor", "estimativa", "400", "paginas", "páginas"],
     a: "Pouco: com a IA mais econômica (DeepSeek V4 Flash), resumir um livro de 400 páginas custa ~R$ 0,02 e traduzir o livro inteiro ~R$ 0,15. Com modelos premium (Claude Opus, GPT-5), sobe pra centavos/reais por livro. Veja o Ranking de Preços das IAs aqui embaixo — dá pra comparar e escolher." },
   { q: "Como consigo uma chave de API?", tags: ["comprar", "compra", "chave", "api", "conseguir", "key", "onde"],
@@ -27,7 +27,7 @@ const FAQ: Faq[] = [
   { q: "Vídeo usa a mesma chave?", tags: ["vídeo", "video", "youtube", "transcrever", "legenda", "whisper", "áudio"],
     a: "Cuidado: vídeo é OUTRO sistema. Vídeo COM legenda é grátis e não gasta nada. Vídeo SEM legenda precisa de API de transcrição de ÁUDIO (ex.: OpenAI/Whisper) — nem toda API de texto serve pra isso. Preço: ~US$ 0,04–0,36 por hora de vídeo, conforme o serviço." },
   { q: "O que é uma chave de API?", tags: ["api", "o que é", "senha", "funciona"],
-    a: "É como uma senha que permite a um programa usar uma inteligência artificial (como a DeepSeek ou a OpenAI). Você cria a sua de graça no site do provedor e adiciona crédito lá mesmo (cartão) — o Moka não vende crédito nenhum nesta fase." },
+    a: "É como uma senha que liga o Moka à inteligência artificial que você escolheu (DeepSeek, OpenAI…). Você cria a sua de graça no site do provedor e adiciona crédito lá mesmo (cartão) — o Moka não vende crédito. O passo a passo completo está no /tutorial." },
   { q: "Qual IA devo escolher?", tags: ["ia", "llm", "modelo", "deepseek", "openai", "groq", "claude", "gemini", "escolher", "melhor"],
     a: "Pra começar: a mais econômica que resolve muito bem é a DeepSeek V4 Flash (centavos por livro). Se quiser o máximo de qualidade literária, Claude e GPT-5 são os premium — e custam mais. O Ranking de Preços aqui embaixo compara todos os modelos que o Moka aceita." },
   { q: "Minha chave fica segura?", tags: ["dados", "privacidade", "segurança", "seguro", "chave", "servidor"],
@@ -39,7 +39,7 @@ const FAQ: Faq[] = [
   { q: "Preciso criar conta?", tags: ["conta", "cadastro", "login", "google", "email", "senha", "registrar"],
     a: "Não é obrigatório — mas vale a pena: entrando com Google ou e-mail, sua biblioteca (livros, anotações, traduções e progresso) fica guardada na nuvem e abre em qualquer aparelho. O cadastro por e-mail pede confirmação no seu e-mail; tem 'esqueci a senha' também." },
   { q: "Quem faz o Moka?", tags: ["quem", "cafezinho", "empresa", "time"],
-    a: "O Moka é feito pelo time de O Cafezinho, com carinho de jornalista e precisão de engenharia. Nesta fase é gratuito — quem quiser apoiar, tem a doação no rodapé (PayPal, e Pix em breve)." },
+    a: "O Moka é feito pelo time de O Cafezinho, com carinho de jornalista e precisão de engenharia. É gratuito — quem quiser apoiar, tem a doação no rodapé (PayPal, e Pix em breve)." },
 ];
 
 /** Normaliza (minúsculas, sem acento) pra busca e pro robô. */
