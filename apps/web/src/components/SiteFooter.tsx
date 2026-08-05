@@ -48,6 +48,18 @@ export function SiteFooter() {
       >
         {t("footer_feedback")}
       </a>
+      {/* Selo do grupo (pedido do Miguel, 05/08): pequenininho, com link,
+          em todas as páginas públicas — como nos 8 portais temáticos. */}
+      <p className="site-footer-group">
+        {t("footer_group")}{" "}
+        <a
+          href="https://cafezinhomediagroup.vercel.app/"
+          target="_blank"
+          rel="noreferrer"
+        >
+          Cafezinho Media Group
+        </a>
+      </p>
       <style jsx>{`
         .site-footer {
           margin-top: 28px;
@@ -129,6 +141,18 @@ export function SiteFooter() {
         .site-footer-feedback:hover {
           filter: brightness(0.95);
           text-decoration: underline;
+        }
+        .site-footer-group {
+          margin: 0;
+          font-size: 11px;
+          letter-spacing: 0.04em;
+          color: var(--text-muted);
+          opacity: 0.85;
+        }
+        .site-footer-group a {
+          color: inherit;
+          text-decoration: none;
+          border-bottom: 1px dotted currentColor;
         }
       `}</style>
     </footer>
