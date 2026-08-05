@@ -266,9 +266,18 @@ export function SettingsForm({
         <p className="v3-simple-note" style={{ marginTop: 10 }}>{t("byok_video_note")}</p>
       </div>
 
+      {/* ═══ Atalhos rápidos (pedido do Miguel, 05/08): navegação direta no
+          topo — "Configurações avançadas" e "Vídeo" com link direto ═══ */}
+      <nav className="settings-quicknav">
+        <a href="#advanced-settings">🔧 {t("nav_advanced")}</a>
+        <a href="#video">🎬 {t("nav_video")}</a>
+        <a href="#ajuda">❓ {t("nav_help")}</a>
+        <a href="#quem-somos">👥 {t("nav_about")}</a>
+      </nav>
+
       {/* ═══ BYOK: sua chave de IA (sempre aberta na fase gratuita —
           antes ficava atrás da licença paga) ═══ */}
-      <details className="v3-advanced" open>
+      <details className="v3-advanced" id="advanced-settings" open>
         <summary>
           🔧 <strong>Configurações avançadas</strong> — usar minha própria chave de IA
           <span className="v3-advanced-hint">
@@ -695,6 +704,144 @@ export function SettingsForm({
 
       </details>
 
+      {/* ═══ 🎬 VÍDEO & TRANSCRIÇÃO — seção própria em destaque (pedido do
+          Miguel, 05/08): antes ficava enterrada dentro de "Quem somos", miúda
+          e sem título. Agora: título em negrito, âncora direta (#video) e o
+          mesmo porte visual das outras seções. ═══ */}
+      <section id="video" className="video-section">
+        <h3 className="video-section-title">🎬 {t("vid_section_title")}</h3>
+        <p className="video-section-sub">{t("vid_cfg_diff")}</p>
+
+        {/* 3.1 — Chave de transcrição (OpenAI/Whisper) — para vídeos sem legenda */}
+        <div className="video-block">
+          <p className="video-block-title">
+            🎙 <strong>{t("vid_whisper_title")}</strong>{" "}
+            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" style={{ color: "var(--accent-dark)", fontWeight: 700 }}>
+              {t("vid_cfg_getkey")}
+            </a>{" "}
+            <span className="video-block-note">{t("vid_cfg_price")}</span>
+          </p>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <input
+              type="password"
+              value={whisperDraft}
+              onChange={(e) => setWhisperDraft(e.target.value)}
+              placeholder={whisperMasked ?? "sk-…"}
+              autoComplete="off"
+              style={{ flex: 1, minWidth: 180, padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
+            />
+            <button
+              type="button"
+              className="btn-ghost"
+              onClick={async () => {
+                await setWhisperKey(whisperDraft.trim());
+                setWhisperDraft("");
+                setWhisperMasked(await getWhisperKeyMasked());
+                setVideoMsg(whisperDraft.trim() ? "✅ Chave Whisper salva." : "🗑 Chave Whisper removida.");
+              }}
+            >
+              💾 Salvar
+            </button>
+            <button
+              type="button"
+              className="btn-ghost"
+              disabled={testingVideo}
+              onClick={async () => {
+                setTestingVideo(true);
+                setVideoMsg(null);
+                try {
+                  const key = whisperDraft.trim() || (await (await import("@/lib/config")).getWhisperKey()) || "";
+                  if (!key) throw new Error("Cole a chave pra testar.");
+                  const res = await fetch("/api/proxy", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                      url: "https://api.openai.com/v1/models",
+                      method: "GET",
+                      headers: { Authorization: `Bearer ${key}` },
+                      body: "",
+                    }),
+                  });
+                  const env = await res.json();
+                  if ((env.status ?? 200) >= 400) throw new Error(`OpenAI respondeu ${env.status}.`);
+                  setVideoMsg("✅ Chave OpenAI válida — Whisper pronto.");
+                } catch (err) {
+                  setVideoMsg(`❌ ${err instanceof Error ? err.message : String(err)}`);
+                } finally {
+                  setTestingVideo(false);
+                }
+              }}
+            >
+              {testingVideo ? "Testando…" : "🔌 Testar"}
+            </button>
+          </div>
+          {videoMsg && <p className="feedback">{videoMsg}</p>}
+        </div>
+
+        {/* 3.2 — Servidor próprio (opcional, avançado — pode deixar vazio) */}
+        <details className="video-advanced">
+          <summary>🖥️ {t("vid_server_title")} <span className="video-advanced-hint">{t("vid_server_hint")}</span></summary>
+          <p className="video-block-note">{t("vid_server_desc")}</p>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <input
+              type="url"
+              value={ingestDraft}
+              onChange={(e) => setIngestDraft(e.target.value)}
+              placeholder="https://video.seuservidor.com"
+              autoComplete="off"
+              style={{ flex: 1, minWidth: 180, padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
+            />
+            <button
+              type="button"
+              className="btn-ghost"
+              disabled={testingVideo}
+              onClick={async () => {
+                const clean = ingestDraft.trim();
+                if (!clean) {
+                  setIngestServer("");
+                  setVideoMsg("🗑 Servidor removido — detecção automática do motor local.");
+                  return;
+                }
+                setTestingVideo(true);
+                setVideoMsg("🔍 Testando o endereço…");
+                try {
+                  const ctrl = new AbortController();
+                  const timer = setTimeout(() => ctrl.abort(), 5000);
+                  const res = await fetch(`${clean.replace(/\/$/, "")}/api/ingest`, { signal: ctrl.signal });
+                  clearTimeout(timer);
+                  const data = await res.json();
+                  if (data?.ok && data?.server === "moka-video") {
+                    setIngestServer(clean);
+                    setVideoMsg(data.full ? "✅ Servidor válido e completo! Salvo." : "✅ Servidor válido (limitado). Salvo.");
+                  } else {
+                    setVideoMsg("❌ Respondeu, mas não é um motor Moka Video. Não salvei.");
+                  }
+                } catch {
+                  setVideoMsg("❌ Não consegui falar com esse endereço. Não salvei.");
+                } finally {
+                  setTestingVideo(false);
+                }
+              }}
+            >
+              {testingVideo ? "Testando…" : "💾 Salvar (com teste)"}
+            </button>
+          </div>
+          {videoMsg && (
+            <p style={{ marginTop: 10, fontSize: 13, padding: "8px 12px", background: "var(--surface)", border: "1px solid var(--border-soft)", borderRadius: 8 }}>
+              {videoMsg}
+            </p>
+          )}
+        </details>
+
+        {/* 3.3 — Nota IPRoyal: 1 linha discreta no rodapé da seção */}
+        <p className="video-iproyal">
+          {t("vid_cfg_iproyal")}{" "}
+          <a href="https://iproyal.com" target="_blank" rel="noreferrer" style={{ color: "var(--accent-dark)" }}>
+            iproyal.com →
+          </a>
+        </p>
+      </section>
+
       <style jsx>{`
         .v3-simple {
           background: #f7e7d7;
@@ -822,6 +969,85 @@ export function SettingsForm({
           color: var(--text-muted);
           line-height: 1.45;
         }
+
+        /* ═══ QA-FEATURE (Kimi 3, 2026-08-05): atalhos rápidos no topo +
+          seção própria de Vídeo & Transcrição (pedido do Miguel) ═══ */
+        .settings-quicknav {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+          margin: 0 0 18px;
+        }
+        .settings-quicknav a {
+          font-size: 11.5px;
+          font-weight: 800;
+          text-decoration: none;
+          color: var(--accent-dark);
+          background: rgba(255, 255, 255, 0.6);
+          border: 1px solid var(--border);
+          border-radius: 999px;
+          padding: 6px 12px;
+          transition: background 0.15s ease;
+        }
+        .settings-quicknav a:hover { background: #fff; }
+
+        .video-section {
+          background: #fdf3e3;
+          border: 2px solid var(--accent-dark, #b45309);
+          border-radius: 16px;
+          padding: 20px;
+          margin: 0 0 18px;
+        }
+        .video-section-title {
+          margin: 0 0 6px;
+          font-family: var(--font-brand);
+          font-size: 20px;
+          font-weight: 900;
+          color: var(--text);
+        }
+        .video-section-sub {
+          margin: 0 0 16px;
+          font-size: 13px;
+          line-height: 1.6;
+          color: var(--text-muted);
+        }
+        .video-block { margin-bottom: 14px; }
+        .video-block-title {
+          margin: 0 0 10px;
+          font-size: 14px;
+          line-height: 1.55;
+        }
+        .video-block-note {
+          font-size: 12.5px;
+          color: var(--text-muted);
+          font-weight: 400;
+        }
+        .video-advanced {
+          border: 1px dashed var(--border);
+          border-radius: 12px;
+          padding: 10px 14px;
+          margin-top: 4px;
+          background: rgba(255, 255, 255, 0.5);
+        }
+        .video-advanced summary {
+          cursor: pointer;
+          font-size: 13px;
+          font-weight: 700;
+          color: var(--text);
+        }
+        .video-advanced-hint {
+          font-size: 11.5px;
+          font-weight: 400;
+          color: var(--text-muted);
+        }
+        .video-iproyal {
+          margin: 14px 0 0;
+          padding-top: 12px;
+          border-top: 1px solid var(--border-soft);
+          font-size: 12px;
+          line-height: 1.55;
+          color: var(--text-muted);
+        }
       `}</style>
 
       {/* Link pra tutorial completo */}
@@ -830,7 +1056,7 @@ export function SettingsForm({
       </a>
 
       {/* Ajuda: o que é API, ranking de preços, link do provedor */}
-      <details className="help-section">
+      <details className="help-section" id="ajuda">
         <summary>{t("help_title")}</summary>
         <div className="help-content">
           <p>
@@ -854,142 +1080,9 @@ export function SettingsForm({
         </div>
       </details>
 
-      {/* Quem somos */}
-      <div className="about-section">
-        <details className="settings-section">
-          <summary>{t("vid_cfg_title")}</summary>
-          <div className="about-content">
-            {/* Pedido do Miguel (05/08): a config de VÍDEO é DIFERENTE da do
-                Reader — explicar direitinho, com dicas de API e link direto. */}
-            <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.6 }}>
-              {t("vid_cfg_diff")}
-            </p>
-            <p style={{ fontSize: "13px", lineHeight: 1.6 }}>
-              🎙 <strong>Chave OpenAI (Whisper)</strong> —{" "}
-              <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" style={{ color: "var(--accent-dark)", fontWeight: 700 }}>
-                {t("vid_cfg_getkey")}
-              </a>{" "}
-              {t("vid_cfg_price")}
-            </p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <input
-                type="password"
-                value={whisperDraft}
-                onChange={(e) => setWhisperDraft(e.target.value)}
-                placeholder={whisperMasked ?? "sk-…"}
-                autoComplete="off"
-                style={{ flex: 1, minWidth: 180, padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
-              />
-              <button
-                type="button"
-                className="btn-ghost"
-                onClick={async () => {
-                  await setWhisperKey(whisperDraft.trim());
-                  setWhisperDraft("");
-                  setWhisperMasked(await getWhisperKeyMasked());
-                  setVideoMsg(whisperDraft.trim() ? "✅ Chave Whisper salva." : "🗑 Chave Whisper removida.");
-                }}
-              >
-                💾 Salvar
-              </button>
-              <button
-                type="button"
-                className="btn-ghost"
-                disabled={testingVideo}
-                onClick={async () => {
-                  setTestingVideo(true);
-                  setVideoMsg(null);
-                  try {
-                    const key = whisperDraft.trim() || (await (await import("@/lib/config")).getWhisperKey()) || "";
-                    if (!key) throw new Error("Cole a chave pra testar.");
-                    const res = await fetch("/api/proxy", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({
-                        url: "https://api.openai.com/v1/models",
-                        method: "GET",
-                        headers: { Authorization: `Bearer ${key}` },
-                        body: "",
-                      }),
-                    });
-                    const env = await res.json();
-                    if ((env.status ?? 200) >= 400) throw new Error(`OpenAI respondeu ${env.status}.`);
-                    setVideoMsg("✅ Chave OpenAI válida — Whisper pronto.");
-                  } catch (err) {
-                    setVideoMsg(`❌ ${err instanceof Error ? err.message : String(err)}`);
-                  } finally {
-                    setTestingVideo(false);
-                  }
-                }}
-              >
-                {testingVideo ? "Testando…" : "🔌 Testar"}
-              </button>
-            </div>
-            {videoMsg && <p className="feedback">{videoMsg}</p>}
-
-            <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: 16 }}>
-              <strong>🖥️ Servidor próprio</strong> — avançado, pode deixar vazio.
-              Se você tiver o Moka Video rodando num servidor seu, cole o
-              endereço pra ler vídeos por ele (Whisper, X/Twitter, Instagram).
-            </p>
-            <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-              <input
-                type="url"
-                value={ingestDraft}
-                onChange={(e) => setIngestDraft(e.target.value)}
-                placeholder="https://video.seuservidor.com"
-                autoComplete="off"
-                style={{ flex: 1, minWidth: 180, padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
-              />
-              <button
-                type="button"
-                className="btn-ghost"
-                disabled={testingVideo}
-                onClick={async () => {
-                  const clean = ingestDraft.trim();
-                  if (!clean) {
-                    setIngestServer("");
-                    setVideoMsg("🗑 Servidor removido — detecção automática do motor local.");
-                    return;
-                  }
-                  setTestingVideo(true);
-                  setVideoMsg("🔍 Testando o endereço…");
-                  try {
-                    const ctrl = new AbortController();
-                    const timer = setTimeout(() => ctrl.abort(), 5000);
-                    const res = await fetch(`${clean.replace(/\/$/, "")}/api/ingest`, { signal: ctrl.signal });
-                    clearTimeout(timer);
-                    const data = await res.json();
-                    if (data?.ok && data?.server === "moka-video") {
-                      setIngestServer(clean);
-                      setVideoMsg(data.full ? "✅ Servidor válido e completo! Salvo." : "✅ Servidor válido (limitado). Salvo.");
-                    } else {
-                      setVideoMsg("❌ Respondeu, mas não é um motor Moka Video. Não salvei.");
-                    }
-                  } catch {
-                    setVideoMsg("❌ Não consegui falar com esse endereço. Não salvei.");
-                  } finally {
-                    setTestingVideo(false);
-                  }
-                }}
-              >
-                {testingVideo ? "Testando…" : "💾 Salvar (com teste)"}
-              </button>
-            </div>
-            {videoMsg && (
-              <p style={{ marginTop: 10, fontSize: 13, padding: "8px 12px", background: "var(--surface)", border: "1px solid var(--border-soft)", borderRadius: 8 }}>
-                {videoMsg}
-              </p>
-            )}
-            <p style={{ fontSize: "12.5px", color: "var(--text-muted)", marginTop: 14, lineHeight: 1.6, borderTop: "1px solid var(--border-soft)", paddingTop: 12 }}>
-              {t("vid_cfg_iproyal")}{" "}
-              <a href="https://iproyal.com" target="_blank" rel="noreferrer" style={{ color: "var(--accent-dark)" }}>
-                iproyal.com →
-              </a>
-            </p>
-          </div>
-        </details>
-
+      {/* Quem somos — agora SÓ o Sobre, no fim da página (pedido do Miguel,
+          05/08: a config de vídeo ganhou seção própria em destaque acima) */}
+      <div className="about-section" id="quem-somos">
         <details>
           <summary>{t("about_title")}</summary>
           <div className="about-content">
