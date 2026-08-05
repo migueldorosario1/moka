@@ -45,7 +45,7 @@ export default function Capa() {
             <b>🆓 {t("free_title")}</b>
             <span>{t("free_desc")}</span>
           </Link>
-          <Link className="capa-path" href="/ajuda">
+          <Link className="capa-path" href="/tutorial">
             <b>🔑 {t("byok_get_key")}</b>
             <span>{t("byok_cost")}</span>
           </Link>
