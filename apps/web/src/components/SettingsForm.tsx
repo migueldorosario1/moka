@@ -273,13 +273,12 @@ export function SettingsForm({
         <p className="v3-simple-note" style={{ marginTop: 10 }}>{t("keys3_same")}</p>
       </div>
 
-      {/* ═══ Atalhos rápidos (pedido do Miguel, 05/08): navegação direta no
-          topo — "Configurações avançadas" e "Vídeo" com link direto ═══ */}
+      {/* ═══ Atalhos rápidos: só âncoras vivas (Ajuda = banner ❓ Tutorial
+          lá embaixo → /ajuda; Quem somos = rodapé global — pedido do Miguel,
+          05/08: nada de parede de texto nas configurações) ═══ */}
       <nav className="settings-quicknav">
         <a href="#advanced-settings">🔧 {t("nav_advanced")}</a>
         <a href="#video">🎬 {t("nav_video")}</a>
-        <a href="#ajuda">❓ {t("nav_help")}</a>
-        <a href="#quem-somos">👥 {t("nav_about")}</a>
       </nav>
 
       {/* ═══ BYOK: sua chave de IA (sempre aberta na fase gratuita —
