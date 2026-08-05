@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { SiteFooter } from "@/components/SiteFooter";
+import { LlmPriceRanking } from "@/components/LlmPriceRanking";
 import { useI18n } from "@/components/I18nProvider";
 
 /**
@@ -16,33 +17,29 @@ interface Faq { q: string; a: string; tags: string[] }
 
 const FAQ: Faq[] = [
   { q: "O que é o Moka?", tags: ["moka", "que", "é", "app", "aplicativo"],
-    a: "O Moka é um leitor com inteligência artificial: ele resume vídeos do YouTube e livros (EPUB/PDF) em minutos, traduz, explica, identifica personagens e responde perguntas sobre o conteúdo — no seu idioma." },
-  { q: "O que são pontos?", tags: ["pontos", "ponto", "créditos", "saldo"],
-    a: "Pontos são a moeda do Moka. Cada ação da IA custa pontos: resumir um vídeo custa 30, resumir um livro custa 40, traduzir um livro inteiro custa 80 e um áudio de 10 minutos custa 40. Você compra pontos uma vez e gasta quando quiser — eles não expiram." },
-  { q: "Quanto custa cada coisa?", tags: ["preço", "custa", "valor", "quanto"],
-    a: "O ponto custa R$ 0,10. Então: resumo de vídeo = R$ 3,00 · resumo de livro = R$ 4,00 · tradução de livro inteiro = R$ 8,00 · áudio de 10 min = R$ 4,00. A compra mínima é R$ 40 (400 pontos) — ou o teste de lançamento: R$ 10 (110 pontos, 1× por e-mail)." },
-  { q: "Como compro pontos?", tags: ["comprar", "compra", "pix", "pagar", "pagamento"],
-    a: "Na página Comprar pontos (/experimente): escolha a quantidade (mínimo 400), informe e-mail e nome, pague o Pix. Os pontos caem na sua conta em segundos, junto com uma senha de acesso que também vai por e-mail." },
-  { q: "Os pontos expiram?", tags: ["expira", "expiram", "validade", "prazo"],
-    a: "Não. Seus pontos são seus para sempre: use hoje, amanhã ou daqui a um ano." },
-  { q: "Preciso instalar alguma coisa?", tags: ["instalar", "baixar", "download", "app"],
-    a: "Não. O Moka funciona no navegador, no celular e no computador. Se quiser, dá pra instalar como aplicativo (o botão aparece na página inicial) — é grátis e não passa por loja." },
-  { q: "O que é o modo avançado (BYOK)?", tags: ["avançado", "byok", "chave", "api", "licença"],
-    a: "É o modo para quem já tem a própria chave de IA (OpenAI, DeepSeek etc.). Com a licença de R$ 50 por 6 meses, você usa o Moka inteiro com a SUA chave — os gastos de IA saem da sua conta do provedor, não dos pontos. A chave fica salva só no seu navegador." },
-  { q: "O que é uma chave de API?", tags: ["api", "chave", "key", "o que é"],
-    a: "É como uma senha que permite a um programa usar uma inteligência artificial (como a DeepSeek ou a OpenAI). Quem tem uma, pode usar o modo avançado. Quem não tem, simplesmente compra pontos — a IA da casa já está incluída, sem configurar nada." },
-  { q: "Qual IA o Moka usa?", tags: ["ia", "llm", "modelo", "deepseek", "openai", "groq"],
-    a: "Uma cascata de modelos escolhidos a dedo para custar pouco e funcionar muito bem em português: DeepSeek V4 para texto, Groq Whisper para transcrição de áudio e OpenAI para voz." },
+    a: "O Moka é um leitor com inteligência artificial: ele resume vídeos do YouTube e livros (EPUB/PDF) em minutos, traduz, explica, identifica personagens e responde perguntas sobre o conteúdo — no seu idioma. Nesta fase ele é GRATUITO." },
+  { q: "O Moka é grátis mesmo?", tags: ["grátis", "gratuito", "preço", "custa", "valor", "quanto", "pontos", "ponto", "créditos", "saldo"],
+    a: "Sim — nesta fase experimental, tudo é grátis. Você não compra nada no Moka: a IA roda com a SUA chave de API (BYOK), e você paga o provedor diretamente pelo que usar — centavos por livro/vídeo. Se quiser apoiar o projeto, tem o botão de doação no rodapé. ☕" },
+  { q: "Quanto vou gastar com a minha própria API?", tags: ["gasto", "custo", "api", "provedor", "estimativa", "400", "paginas", "páginas"],
+    a: "Pouco: com a IA mais econômica (DeepSeek V4 Flash), resumir um livro de 400 páginas custa ~R$ 0,02 e traduzir o livro inteiro ~R$ 0,15. Com modelos premium (Claude Opus, GPT-5), sobe pra centavos/reais por livro. Veja o Ranking de Preços das IAs aqui embaixo — dá pra comparar e escolher." },
+  { q: "Como consigo uma chave de API?", tags: ["comprar", "compra", "chave", "api", "conseguir", "key", "onde"],
+    a: "Em 1 minuto, no site do provedor que você escolher (DeepSeek, OpenAI, Z.ai, Qwen, Kimi, Anthropic, Gemini...): crie a conta, gere a chave e cole nas ⚙️ Configurações do Moka. Ela fica salva só no seu dispositivo, criptografada — nunca passa pelos nossos servidores." },
+  { q: "Vídeo usa a mesma chave?", tags: ["vídeo", "video", "youtube", "transcrever", "legenda", "whisper", "áudio"],
+    a: "Cuidado: vídeo é OUTRO sistema. Vídeo COM legenda é grátis e não gasta nada. Vídeo SEM legenda precisa de API de transcrição de ÁUDIO (ex.: OpenAI/Whisper) — nem toda API de texto serve pra isso. Preço: ~US$ 0,04–0,36 por hora de vídeo, conforme o serviço." },
+  { q: "O que é uma chave de API?", tags: ["api", "o que é", "senha", "funciona"],
+    a: "É como uma senha que permite a um programa usar uma inteligência artificial (como a DeepSeek ou a OpenAI). Você cria a sua de graça no site do provedor e adiciona crédito lá mesmo (cartão) — o Moka não vende crédito nenhum nesta fase." },
+  { q: "Qual IA devo escolher?", tags: ["ia", "llm", "modelo", "deepseek", "openai", "groq", "claude", "gemini", "escolher", "melhor"],
+    a: "Pra começar: a mais econômica que resolve muito bem é a DeepSeek V4 Flash (centavos por livro). Se quiser o máximo de qualidade literária, Claude e GPT-5 são os premium — e custam mais. O Ranking de Preços aqui embaixo compara todos os modelos que o Moka aceita." },
+  { q: "Minha chave fica segura?", tags: ["dados", "privacidade", "segurança", "seguro", "chave", "servidor"],
+    a: "Sim. Sua chave fica só no seu dispositivo (criptografada no navegador) — nunca vai pra nossos servidores. Seus livros e vídeos também ficam no seu aparelho; se você entrar com Google/e-mail, a biblioteca synca na nuvem pra abrir em qualquer aparelho." },
   { q: "O Moka funciona em outros idiomas?", tags: ["idioma", "língua", "inglês", "espanhol", "tradução"],
     a: "Sim. A interface fala 12 idiomas (bandeirinha no topo), o Moka detecta automaticamente o idioma do vídeo ou livro e responde no SEU idioma. Um vídeo em inglês vira resumo em português sem você configurar nada." },
-  { q: "E se o pagamento não cair?", tags: ["pagamento", "não caiu", "problema", "pix", "erro"],
-    a: "O Pix confirma em segundos, mas se algo travar, os pontos são reconciliados automaticamente (nosso sistema confere com o Mercado Pago). Persistindo, fale com a gente na comunidade que resolvemos na hora." },
-  { q: "Como vejo meu saldo e histórico?", tags: ["saldo", "painel", "histórico", "extrato"],
-    a: "No seu painel (/painel na página de compra): entre com o e-mail e a senha que você recebeu na compra. Lá aparecem saldo, pontos consumidos e as últimas ações." },
+  { q: "Preciso instalar alguma coisa?", tags: ["instalar", "baixar", "download", "app"],
+    a: "Não. O Moka funciona no navegador, no celular e no computador. Se quiser, dá pra instalar como aplicativo (o botão aparece na página inicial) — é grátis e não passa por loja." },
+  { q: "Preciso criar conta?", tags: ["conta", "cadastro", "login", "google", "email", "senha", "registrar"],
+    a: "Não é obrigatório — mas vale a pena: entrando com Google ou e-mail, sua biblioteca (livros, anotações, traduções e progresso) fica guardada na nuvem e abre em qualquer aparelho. O cadastro por e-mail pede confirmação no seu e-mail; tem 'esqueci a senha' também." },
   { q: "Quem faz o Moka?", tags: ["quem", "cafezinho", "empresa", "time"],
-    a: "O Moka é feito pelo time de O Cafezinho, com carinho de jornalista e precisão de engenharia." },
-  { q: "Meus dados ficam seguros?", tags: ["dados", "privacidade", "segurança", "seguro"],
-    a: "Sim. Seus livros e vídeos ficam no seu navegador. No modo avançado, sua chave nunca sai do seu aparelho. Nos pagamentos, só guardamos e-mail, nome e pontos — o dinheiro é do Mercado Pago, não passa pelas nossas mãos." },
+    a: "O Moka é feito pelo time de O Cafezinho, com carinho de jornalista e precisão de engenharia. Nesta fase é gratuito — quem quiser apoiar, tem a doação no rodapé (PayPal, e Pix em breve)." },
 ];
 
 /** Normaliza (minúsculas, sem acento) pra busca e pro robô. */
@@ -107,6 +104,9 @@ export default function Ajuda() {
           <p style={{ lineHeight: 1.6, marginTop: 8 }}>{t("byok_cost")}</p>
           <p style={{ lineHeight: 1.6, marginTop: 8 }}>{t("byok_video_note")}</p>
         </section>
+
+        {/* 🏆 Ranking de preços das IAs (pedido do Miguel, 05/08) */}
+        <LlmPriceRanking />
 
         {/* Robô de dúvidas */}
         <section className="help-robo">
