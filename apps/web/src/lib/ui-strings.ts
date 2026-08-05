@@ -376,6 +376,7 @@ export type UIStringKey =
   | "vid_cfg_iproyal"
   | "footer_donate_note"
   | "footer_about"
+  | "footer_feedback"
   | "about_title"
   | "about_desc"
   | "about_developer"
@@ -777,6 +778,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     vid_cfg_iproyal: "🌐 Avançado: no seu servidor próprio, se o YouTube bloquear o IP do datacenter, um proxy residencial (ex.: IPRoyal) resolve. Configure o proxy no seu servidor.",
     footer_donate_note: "O Moka é gratuito. Se ele te ajuda, apoie com uma doação — qualquer valor mantém o projeto vivo. ☕",
     footer_about: "Quem somos",
+    footer_feedback: "🚧🐛 Moka experimental — achou um bug, tem um elogio ou uma crítica? Fale com a gente: seu feedback conserta o app. ☕💛",
     about_title: "Quem somos",
     about_desc: "Moka — o companheiro de leitura que sempre imaginamos existir. Leia qualquer coisa. Entenda tudo.",
     about_developer: "Desenvolvido por Miguel Gomes Barbosa do Rosário — Cafezinho Media Group — Niterói, RJ — Brasil",
@@ -1167,6 +1169,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     vid_cfg_iproyal: "🌐 Advanced: on your own server, if YouTube blocks the datacenter IP, a residential proxy (e.g., IPRoyal) fixes it. Configure the proxy on your server.",
     footer_donate_note: "Moka is free. If it helps you, support it with a donation — any amount keeps the project alive. ☕",
     footer_about: "About us",
+    footer_feedback: "🚧🐛 Moka is experimental — found a bug, have praise or criticism? Talk to us: your feedback fixes the app. ☕💛",
     about_title: "About us",
     about_desc: "Read anything. Understand everything.",
     about_developer: "Developed by Miguel Gomes Barbosa do Rosario — Cafezinho Media Group — Niterói, RJ — Brazil",
@@ -1557,6 +1560,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     vid_cfg_iproyal: "🌐 Avanzado: en tu servidor propio, si YouTube bloquea la IP del datacenter, un proxy residencial (ej.: IPRoyal) lo resuelve. Configura el proxy en tu servidor.",
     footer_donate_note: "Moka es gratis. Si te ayuda, apóyalo con una donación — cualquier valor mantiene vivo el proyecto. ☕",
     footer_about: "Quiénes somos",
+    footer_feedback: "🚧🐛 Moka experimental — ¿encontraste un bug, tienes un elogio o una crítica? Háblanos: tu feedback arregla la app. ☕💛",
     about_title: "Quiénes somos",
     about_desc: "Lee cualquier cosa. Entiende todo.",
     about_developer: "Desarrollado por Miguel Gomes Barbosa do Rosario — Cafezinho Media Group — Niterói, RJ — Brasil",
@@ -1947,6 +1951,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     vid_cfg_iproyal: "🌐 Avancé : sur votre propre serveur, si YouTube bloque l'IP du datacenter, un proxy résidentiel (ex. : IPRoyal) règle le problème. Configurez le proxy sur votre serveur.",
     footer_donate_note: "Moka est gratuit. S'il vous aide, soutenez-le par un don — tout montant fait vivre le projet. ☕",
     footer_about: "Qui sommes-nous",
+    footer_feedback: "🚧🐛 Moka est expérimental — un bug, un éloge ou une critique ? Parlez-nous : vos retours réparent l'app. ☕💛",
     about_title: "À propos de nous",
     about_desc: "Lisez tout. Comprenez tout.",
     about_developer: "Développé par Miguel Gomes Barbosa do Rosario — Cafezinho Media Group — Niterói, RJ — Brésil",
@@ -2337,6 +2342,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     vid_cfg_iproyal: "🌐 Fortgeschritten: Auf Ihrem eigenen Server: Wenn YouTube die Datacenter-IP blockiert, hilft ein Residential-Proxy (z. B. IPRoyal). Proxy auf Ihrem Server konfigurieren.",
     footer_donate_note: "Moka ist kostenlos. Wenn es Ihnen hilft, unterstützen Sie es mit einer Spende — jeder Betrag hält das Projekt am Leben. ☕",
     footer_about: "Über uns",
+    footer_feedback: "🚧🐛 Moka ist experimentell — einen Bug gefunden, Lob oder Kritik? Schreiben Sie uns: Ihr Feedback repariert die App. ☕💛",
     about_title: "Über uns",
     about_desc: "Lies alles. Verstehe alles.",
     about_developer: "Entwickelt von Miguel Gomes Barbosa do Rosario — Cafezinho Media Group — Niterói, RJ — Brasilien",
@@ -2727,6 +2733,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     vid_cfg_iproyal: "🌐 Avanzato: sul tuo server, se YouTube blocca l'IP del datacenter, un proxy residenziale (es.: IPRoyal) risolve. Configura il proxy sul tuo server.",
     footer_donate_note: "Moka è gratuito. Se ti aiuta, sostienilo con una donazione — qualsiasi importo mantiene vivo il progetto. ☕",
     footer_about: "Chi siamo",
+    footer_feedback: "🚧🐛 Moka è sperimentale — trovato un bug, hai un elogio o una critica? Scrivici: il tuo feedback aggiusta l'app. ☕💛",
     about_title: "Chi siamo",
     about_desc: "Leggi qualsiasi cosa. Capisci tutto.",
     about_developer: "Sviluppato da Miguel Gomes Barbosa do Rosario — Cafezinho Media Group — Niterói, RJ — Brasile",
@@ -3117,6 +3124,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     vid_cfg_iproyal: "🌐 Продвинуто: на своём сервере, если YouTube блокирует IP дата-центра, поможет резидентский прокси (напр., IPRoyal). Настройте прокси на вашем сервере.",
     footer_donate_note: "Moka бесплатен. Если он вам помогает, поддержите проект донатом — любая сумма помогает ему жить. ☕",
     footer_about: "Кто мы",
+    footer_feedback: "🚧🐛 Moka экспериментальный — нашли баг, есть похвала или критика? Напишите нам: ваш отзыв чинит приложение. ☕💛",
     about_title: "О нас",
     about_desc: "Читайте что угодно. Понимайте всё.",
     about_developer: "Разработано Miguel Gomes Barbosa do Rosario — Cafezinho Media Group — Нитерой, РЖ — Бразилия",
@@ -3507,6 +3515,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     vid_cfg_iproyal: "🌐 高级：在您自己的服务器上，如果 YouTube 屏蔽数据中心 IP，住宅代理（例如 IPRoyal）可以解决。在您的服务器上配置代理。",
     footer_donate_note: "Moka 免费。如果它帮到您，请捐赠支持——任何金额都能让项目活下去。☕",
     footer_about: "关于我们",
+    footer_feedback: "🚧🐛 Moka 处于实验阶段——发现 bug、想表扬或批评？告诉我们：您的反馈让应用变得更好。☕💛",
     about_title: "关于我们",
     about_desc: "阅读一切。理解一切。",
     about_developer: "由 Miguel Gomes Barbosa do Rosario 开发 — Cafezinho Media Group — 巴西里约热内卢州尼泰罗伊",
@@ -3897,6 +3906,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     vid_cfg_iproyal: "🌐 上級：自分のサーバーで、YouTubeがデータセンターのIPをブロックする場合、住宅プロキシ（例：IPRoyal）で解決できます。サーバー上でプロキシを設定してください。",
     footer_donate_note: "Mokaは無料です。役に立ったら、寄付で応援してください——どんな金額でもプロジェクトの力になります。☕",
     footer_about: "私たちについて",
+    footer_feedback: "🚧🐛 Mokaは実験段階です——バグを見つけた、褒めたい、批評がある？ぜひ教えてください：あなたの声がアプリを直します。☕💛",
     about_title: "私たちについて",
     about_desc: "何でも読む。すべてを理解する。",
     about_developer: "開発：Miguel Gomes Barbosa do Rosario — Cafezinho Media Group — ニテロイ、RJ — ブラジル",
@@ -4287,6 +4297,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     vid_cfg_iproyal: "🌐 고급: 자체 서버에서 YouTube가 데이터센터 IP를 차단하면 주거용 프록시(예: IPRoyal)로 해결됩니다. 서버에서 프록시를 구성하세요.",
     footer_donate_note: "Moka는 무료입니다. 도움이 되었다면 기부로 응원해 주세요 — 어떤 금액도 프로젝트에 힘이 됩니다. ☕",
     footer_about: "우리는 누구인가",
+    footer_feedback: "🚧🐛 Moka는 실험 단계입니다 — 버그를 찾았거나, 칭찬이나 비판이 있나요? 알려주세요: 여러분의 피드백이 앱을 고칩니다. ☕💛",
     about_title: "회사 소개",
     about_desc: "무엇이든 읽으세요. 모두 이해하세요.",
     about_developer: "개발: Miguel Gomes Barbosa do Rosario — Cafezinho Media Group — 니테로이, RJ — 브라질",
@@ -4677,6 +4688,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     vid_cfg_iproyal: "🌐 متقدم: على خادمك الخاص، إذا حظر YouTube عنوان IP لمركز البيانات، يحلها بروكسي سكني (مثل IPRoyal). قم بإعداد البروكسي على خادمك.",
     footer_donate_note: "Moka مجاني. إن كان يساعدك، ادعمه بتبرع — أي مبلغ يُبقي المشروع حيًّا. ☕",
     footer_about: "من نحن",
+    footer_feedback: "🚧🐛 Moka تجريبي — وجدت خطأ، لديك مديح أو نقد؟ تحدث إلينا: ملاحظاتك تُصلح التطبيق. ☕💛",
     about_title: "من نحن",
     about_desc: "اقرأ أي شيء. افهم كل شيء.",
     about_developer: "تطوير Miguel Gomes Barbosa do Rosario — Cafezinho Media Group — نيتيروي، RJ — البرازيل",
@@ -5067,6 +5079,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     vid_cfg_iproyal: "🌐 एडवांस्ड: अपने सर्वर पर, अगर YouTube डेटासेंटर IP ब्लॉक करे, तो रेजिडेंशियल प्रॉक्सी (जैसे IPRoyal) काम आता है। अपने सर्वर पर प्रॉक्सी कॉन्फ़िगर करें।",
     footer_donate_note: "Moka मुफ़्त है। अगर यह आपके काम आता है, तो दान से सहयोग करें — कोई भी राशि प्रोजेक्ट को जीवित रखती है। ☕",
     footer_about: "हम कौन हैं",
+    footer_feedback: "🚧🐛 Moka प्रयोगात्मक है — कोई बग मिला, प्रशंसा या आलोचना है? हमें बताएँ: आपकी प्रतिक्रिया ऐप सुधारती है। ☕💛",
     about_title: "हमारे बारे में",
     about_desc: "कुछ भी पढ़ें। सब कुछ समझें।",
     about_developer: "विकसित by Miguel Gomes Barbosa do Rosario — Cafezinho Media Group — नितेरोइ, RJ — ब्राज़ील",

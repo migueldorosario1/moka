@@ -40,6 +40,14 @@ export function SiteFooter() {
         <span aria-hidden>·</span>
         <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
       </nav>
+      {/* Convite de feedback (pedido do Miguel, 05/08): bug/elogio/crítica
+          em TODA parte — o app é experimental e o feedback corrige. */}
+      <a
+        className="site-footer-feedback"
+        href={`mailto:${CONTACT_EMAIL}?subject=Moka%20%E2%80%94%20bug%2C%20elogio%20ou%20cr%C3%ADtica`}
+      >
+        {t("footer_feedback")}
+      </a>
       <style jsx>{`
         .site-footer {
           margin-top: 28px;
@@ -103,6 +111,23 @@ export function SiteFooter() {
           text-decoration: none;
         }
         .site-footer-links a:hover {
+          text-decoration: underline;
+        }
+        .site-footer-feedback {
+          display: inline-block;
+          max-width: 460px;
+          padding: 10px 16px;
+          border-radius: 999px;
+          background: var(--accent-soft);
+          color: var(--accent-dark);
+          font-size: 12.5px;
+          font-weight: 600;
+          line-height: 1.5;
+          text-decoration: none;
+          transition: var(--transition);
+        }
+        .site-footer-feedback:hover {
+          filter: brightness(0.95);
           text-decoration: underline;
         }
       `}</style>
