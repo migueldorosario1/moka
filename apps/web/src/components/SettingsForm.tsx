@@ -857,12 +857,19 @@ export function SettingsForm({
       {/* Quem somos */}
       <div className="about-section">
         <details className="settings-section">
-          <summary>🎬 Moka Video — transcrição e servidor</summary>
+          <summary>{t("vid_cfg_title")}</summary>
           <div className="about-content">
-            <p style={{ fontSize: "13px", color: "var(--text-muted)" }}>
-              <strong>🎙 Chave OpenAI (Whisper)</strong> — opcional. Só é usada
-              pra transcrever vídeos <em>sem legendas</em> (o Moka ouve o áudio).
-              {whisperMasked ? ` Salva: ${whisperMasked}.` : ""}
+            {/* Pedido do Miguel (05/08): a config de VÍDEO é DIFERENTE da do
+                Reader — explicar direitinho, com dicas de API e link direto. */}
+            <p style={{ fontSize: "13px", color: "var(--text-muted)", lineHeight: 1.6 }}>
+              {t("vid_cfg_diff")}
+            </p>
+            <p style={{ fontSize: "13px", lineHeight: 1.6 }}>
+              🎙 <strong>Chave OpenAI (Whisper)</strong> —{" "}
+              <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" style={{ color: "var(--accent-dark)", fontWeight: 700 }}>
+                {t("vid_cfg_getkey")}
+              </a>{" "}
+              {t("vid_cfg_price")}
             </p>
             <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
               <input
@@ -918,6 +925,7 @@ export function SettingsForm({
                 {testingVideo ? "Testando…" : "🔌 Testar"}
               </button>
             </div>
+            {videoMsg && <p className="feedback">{videoMsg}</p>}
 
             <p style={{ fontSize: "13px", color: "var(--text-muted)", marginTop: 16 }}>
               <strong>🖥️ Servidor próprio</strong> — avançado, pode deixar vazio.
@@ -973,6 +981,12 @@ export function SettingsForm({
                 {videoMsg}
               </p>
             )}
+            <p style={{ fontSize: "12.5px", color: "var(--text-muted)", marginTop: 14, lineHeight: 1.6, borderTop: "1px solid var(--border-soft)", paddingTop: 12 }}>
+              {t("vid_cfg_iproyal")}{" "}
+              <a href="https://iproyal.com" target="_blank" rel="noreferrer" style={{ color: "var(--accent-dark)" }}>
+                iproyal.com →
+              </a>
+            </p>
           </div>
         </details>
 
