@@ -29,6 +29,11 @@ export default function Capa() {
           </Link>
         </div>
         <div className="igot-topbar-actions">
+          {/* QA-CHANGE (Kimi 3, 2026-08-05): "Quem somos" saiu das Configurações
+              e veio para o início da página (pedido do Miguel) — link direto /sobre */}
+          <Link href="/sobre" className="topbar-about" title="Quem somos — Saiba mais">
+            👥 {t("nav_about")}
+          </Link>
           <AuthGate />
           <LangSwitcher />
         </div>

@@ -414,6 +414,24 @@ a:hover {
   overflow: visible;
 }
 
+/* QA-CHANGE (Kimi 3, 2026-08-05): link "Quem somos" no topo (pedido do Miguel) */
+.topbar-about {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--accent-dark);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.55);
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+.topbar-about:hover { background: #fff; }
+
 /* Lado esquerdo do topbar: logo + estante */
 .igot-topbar-left {
   display: flex;
