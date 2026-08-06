@@ -83,7 +83,9 @@ export function useAuth() {
       email,
       password,
       options: {
-        emailRedirectTo: `${window.location.origin}/api/auth/callback`,
+        // Depois de confirmar o e-mail, cai na página "✅ E-mail confirmado"
+        // (pedido do Miguel, 05/08 — antes caía na home sem aviso nenhum).
+        emailRedirectTo: `${window.location.origin}/api/auth/callback?next=/auth/confirmado`,
       },
     });
     if (error) throw new Error(error.message);

@@ -25,7 +25,19 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = createClient();
     // Troca o code por sessão (seta os cookies automaticamente).
-    await supabase.auth.exchangeCodeForSession(code);
+    const { error } = await supabase.auth.exchangeCodeForSession(code);
+    if (error) {
+      // Link expirado/já usado: avisa na página de destino em vez de
+      // jogar a pessoa na home sem explicação (relato do Miguel, 05/08).
+      const next = requestUrl.searchParams.get("next");
+      const destino = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+      const alvo = destino.startsWith("/auth/") ? `${destino}?erro=1` : destino;
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL;
+      const host = request.headers.get("x-forwarded-host") ?? request.headers.get("host");
+      const proto = request.headers.get("x-forwarded-proto") ?? "https";
+      const origin = siteUrl ? siteUrl.replace(/\/$/, "") : `${proto}://${host}`;
+      return NextResponse.redirect(`${origin}${alvo}`);
+    }
   }
 
   // Descobre a URL pública do app pra onde voltar.
