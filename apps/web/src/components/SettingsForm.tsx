@@ -10,6 +10,7 @@ import {
   setWhisperKey, getWhisperKeyMasked,
 } from "@/lib/config";
 import { testConnection, listModels } from "@/lib/ai-client";
+import { PIX_KEY, PIX_HOLDER } from "@/lib/donate";
 import { useI18n } from "./I18nProvider";
 
 interface SettingsFormProps {
@@ -1011,10 +1012,11 @@ export function SettingsForm({
             type="button"
             className="donate-btn pix"
             onClick={() => {
-              navigator.clipboard?.writeText("migueldorosario2@gmail.com").then(() => {
-                alert("PIX copiado!\n\nChave: migueldorosario2@gmail.com\nNome: Miguel Gomes Barbosa do Rosário\nBanco: Nubank");
+              // Chave única no lib/donate.ts (decisão do Miguel, 07/08).
+              navigator.clipboard?.writeText(PIX_KEY).then(() => {
+                alert(`PIX copiado!\n\nChave: ${PIX_KEY}\nNome: ${PIX_HOLDER}`);
               }).catch(() => {
-                alert("PIX: migueldorosario2@gmail.com\nNome: Miguel Gomes Barbosa do Rosário\nBanco: Nubank");
+                alert(`PIX: ${PIX_KEY}\nNome: ${PIX_HOLDER}`);
               });
             }}
           >

@@ -11,10 +11,13 @@ export const PAYPAL_DONATE_URL =
 
 /**
  * Chave Pix da doação (Brasil).
- * ⚠️ PENDENTE MIGUEL (04/08): qual chave Pix usar (e-mail, CNPJ ou aleatória)?
+ * Decidida pelo Miguel (07/08): a chave é o e-mail de contato do Moka.
  * Enquanto vazia, o botão Pix fica ESCONDIDO e o rodapé mostra só PayPal.
  */
-export const PIX_KEY = "";
+export const PIX_KEY = "info@mokareader.com";
+
+/** Titular da conta Pix (mostrado na confirmação da doação). */
+export const PIX_HOLDER = "Miguel Gomes Barbosa do Rosário";
 
 /** E-mail de contato público (vai na capa e no rodapé). */
 export const CONTACT_EMAIL = "info@mokareader.com";

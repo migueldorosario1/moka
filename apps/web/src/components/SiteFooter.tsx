@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useI18n } from "./I18nProvider";
-import { PAYPAL_DONATE_URL, PIX_KEY, CONTACT_EMAIL } from "@/lib/donate";
+import { PAYPAL_DONATE_URL, PIX_KEY, PIX_HOLDER, CONTACT_EMAIL } from "@/lib/donate";
 
 /**
  * Rodapé do site (fase GRATUITA — pedido do Miguel, 2026-08-04):
@@ -14,7 +14,13 @@ export function SiteFooter() {
   const { t } = useI18n();
 
   const copyPix = () => {
-    if (PIX_KEY) navigator.clipboard?.writeText(PIX_KEY).catch(() => {});
+    if (!PIX_KEY) return;
+    // Confirmação visível: é doação — a pessoa precisa saber o que copiou.
+    navigator.clipboard?.writeText(PIX_KEY).then(() => {
+      alert(`PIX copiado!\n\nChave: ${PIX_KEY}\nNome: ${PIX_HOLDER}`);
+    }).catch(() => {
+      alert(`PIX: ${PIX_KEY}\nNome: ${PIX_HOLDER}`);
+    });
   };
 
   return (
