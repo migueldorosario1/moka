@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.mokareader.app",
+      "sha256_cert_fingerprints": [
+        "9A:BB:E0:F1:3A:05:15:4F:68:E8:AD:2B:4C:4E:B9:20:CD:33:43:81:23:82:3B:4F:21:EA:3B:1C:35:95:44:26"
+      ]
+    }
+  }
+]

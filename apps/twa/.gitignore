@@ -1,0 +1,9 @@
+# Segredos e artefatos de build — NUNCA commitar (Regra 4: keystore espelhado nos cofres)
+android.keystore
+*.apk
+*.aab
+*.keystore
+app/build/
+build/
+.gradle/
+local.properties
