@@ -58,6 +58,7 @@ export default function SociosPage() {
           <AuthButton
             status={auth.status}
             userName={auth.user?.user_metadata?.full_name ?? null}
+            userEmail={auth.user?.email ?? null}
             avatarUrl={auth.user?.user_metadata?.avatar_url ?? null}
             onSignIn={auth.signInWithGoogle}
             onSignOut={auth.signOut}

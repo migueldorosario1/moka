@@ -544,8 +544,10 @@ export default function HomePage() {
         </span>
         <span className="footer-sep">·</span>
         <Link href="/sobre">Quem somos</Link>
+        {/* 🤝 Sócios — fora da 1ª fase pública (volta na fase 2).
+             Rota /socios preservada internamente.
         <span className="footer-sep">·</span>
-        <Link href="/socios">🤝 Sócios</Link>
+        <Link href="/socios">🤝 Sócios</Link> */}
         <span className="footer-sep">·</span>
         <Link href="/ajuda">Ajuda</Link>
       </footer>

@@ -46,8 +46,8 @@ export function SiteFooter() {
         <span aria-hidden>·</span>
         <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
       </nav>
-      {/* Convite de feedback (pedido do Miguel, 05/08): bug/elogio/crítica
-          em TODA parte — o app é experimental e o feedback corrige. */}
+      {/* Convite de feedback (pedido do Miguel, 05/08): bug/sugestão em
+          TODA parte — o feedback melhora o app. */}
       <a
         className="site-footer-feedback"
         href={`mailto:${CONTACT_EMAIL}?subject=Moka%20%E2%80%94%20bug%2C%20elogio%20ou%20cr%C3%ADtica`}

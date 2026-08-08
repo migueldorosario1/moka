@@ -69,10 +69,26 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      style={{ backgroundColor: "#faf8f5" }}
       className={`${fontDisplay.variable} ${fontReading.variable} ${fontUI.variable}`}
     >
-      <body style={{ backgroundColor: "#faf8f5", color: "#2b2015", margin: 0 }}>
+      <head>
+        {/* CSS CRÍTICO — elimina o flash de layout (FOUC). Antes, as cores
+            inline aqui eram do tema antigo "café" (#faf8f5/#2b2015) e não
+            batiam com o tema "azul" real do globals.css, causando um flash
+            visível em TODAS as páginas (mais forte em dark mode). Estas
+            cores idênticas às de globals.css são aplicadas imediatamente,
+            antes do resto do CSS parsear, e respeitam light/dark via media
+            query — sem flash. */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            html, body { background: #f0f4f9; color: #0f172a; }
+            @media (prefers-color-scheme: dark) {
+              html, body { background: #0b132b; color: #f1f5f9; }
+            }
+          `,
+        }} />
+      </head>
+      <body>
         <I18nProvider>
           {children}
         </I18nProvider>

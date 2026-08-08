@@ -45,10 +45,11 @@ export default function SobrePage() {
           de voz nativo.
         </p>
         <p>
-          Cada usuário pode usar sua própria chave de API (BYOK) de qualquer
-          provedor de IA — DeepSeek, OpenAI, Kimi (Moonshot), Qwen, Z.ai,
-          Together, Anthropic ou Google Gemini. As chaves ficam criptografadas
-          no próprio dispositivo.
+          Toda a inteligência artificial fica no seu controle: você escolhe o
+          provedor de IA que prefere usar, e a chave de acesso fica guardada e
+          criptografada no seu próprio aparelho — nunca no servidor do Moka.
+          Assim, a privacidade das suas leituras é total e o custo depende só
+          do que você consome.
         </p>
 
         <h2>Criador</h2>
@@ -89,7 +90,9 @@ export default function SobrePage() {
         </p>
 
         <p className="info-footer">
-          <a href="/socios">🤝 Painel de Sócios →</a>{"  ·  "}
+          {/* 🤝 Painel de Sócios — fora da 1ª fase pública (volta na fase 2).
+              Código da rota /socios preservado internamente.
+          <a href="/socios">🤝 Painel de Sócios →</a>{"  ·  "} */}
           <a href="/privacidade">Política de Privacidade →</a>
         </p>
       </article>

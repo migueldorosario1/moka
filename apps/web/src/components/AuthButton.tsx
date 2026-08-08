@@ -8,6 +8,7 @@ import { useI18n } from "./I18nProvider";
 interface AuthButtonProps {
   status: AuthStatus;
   userName?: string | null;
+  userEmail?: string | null;
   avatarUrl?: string | null;
   onSignIn: () => void;
   onSignOut: () => Promise<void> | void;
@@ -23,10 +24,17 @@ interface AuthButtonProps {
  * - Tocar em "Sair" = executa logout ANTES de fechar
  *
  * Isso é à prova de iOS/Safari (sem pointerdown/pointerup race condition).
+ *
+ * CORREÇÃO DO AVATAR (BUG do "?" intermitente, 08/08):
+ * O `?` aparecia quando user_metadata (full_name/avatar_url) ainda não tinha
+ * chegado na 1ª sessão OAuth, ou quando a CDN do Google demorava/403 na
+ * imagem. Agora: (a) a inicial de fallback usa o e-mail se o nome vier vazio;
+ * (b) onError no <img> troca pra inicial se a imagem falhar a carregar.
  */
 export function AuthButton({
   status,
   userName,
+  userEmail,
   avatarUrl,
   onSignIn,
   onSignOut,
@@ -34,8 +42,14 @@ export function AuthButton({
   const { t } = useI18n();
   const [menuOpen, setMenuOpen] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
+  const [imgFailed, setImgFailed] = useState(false);
   const triggerRef = useRef<HTMLDivElement>(null);
   const [dropdownPos, setDropdownPos] = useState({ top: 54, right: 12 });
+
+  // Reset do flag de imagem quando o avatar muda (troca de usuário).
+  useEffect(() => {
+    setImgFailed(false);
+  }, [avatarUrl]);
 
   // Calcula posição do dropdown baseada na posição real do avatar.
   const updatePos = useCallback(() => {
@@ -96,13 +110,19 @@ export function AuthButton({
         className="auth-avatar-btn"
         onClick={() => setMenuOpen((o) => !o)}
         aria-label={t("auth_account_menu")}
-        title={userName ?? t("auth_user")}
+        title={userName ?? userEmail ?? t("auth_user")}
       >
-        {avatarUrl ? (
-          <img src={avatarUrl} alt="" className="auth-avatar" />
+        {avatarUrl && !imgFailed ? (
+          <img
+            src={avatarUrl}
+            alt=""
+            className="auth-avatar"
+            onError={() => setImgFailed(true)}
+            referrerPolicy="no-referrer"
+          />
         ) : (
           <span className="auth-avatar-fallback">
-            {(userName ?? "?").charAt(0).toUpperCase()}
+            {(userName ?? userEmail ?? "?").charAt(0).toUpperCase()}
           </span>
         )}
       </button>
@@ -139,7 +159,7 @@ export function AuthButton({
               marginBottom: "8px",
               wordBreak: "break-word",
             }}>
-              {userName ?? t("auth_user")}
+              {userName ?? userEmail ?? t("auth_user")}
             </div>
             <button
               onClick={handleSignOut}

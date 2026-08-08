@@ -34,7 +34,22 @@ export function useAuth() {
 
     // Pega a sessão inicial (já tem cookie?).
     supabase.auth.getSession().then(({ data }) => {
-      setUser(data.session?.user ?? null);
+      // CORREÇÃO DO AVATAR (BUG do "?" intermitente, 08/08):
+      // No 1º login via OAuth (redirect do Google), o JWT às vezes vem sem
+      // user_metadata completo (full_name/avatar_url ausentes) → o avatar
+      // caía no fallback "?" até a próxima atualização. Se há sessão mas os
+      // metadados do usuário estão incompletos, forçamos UM refresh aqui
+      // para obter dados frescos (é o que "sair e entrar" fazia antes).
+      const u = data.session?.user;
+      const meta = u?.user_metadata ?? {};
+      const needsMeta = !!data.session && (!meta.full_name || !meta.avatar_url);
+      if (needsMeta) {
+        supabase.auth.refreshSession().then(({ data: refreshed }) => {
+          setUser(refreshed.session?.user ?? u ?? null);
+          setStatus("authed");
+        });
+      }
+      setUser(u ?? null);
       setStatus(data.session ? "authed" : "anon");
     });
 
