@@ -12,6 +12,18 @@ import {
   type LlmPrice,
 } from "@/lib/llm-prices";
 
+// Locale pra formatar data conforme o idioma da interface.
+const LOCALE_BY_LANG: Record<string, string> = {
+  "pt-BR": "pt-BR", en: "en-US", es: "es-ES", fr: "fr-FR", de: "de-DE",
+  it: "it-IT", ru: "ru-RU", zh: "zh-CN", ja: "ja-JP", ko: "ko-KR",
+  ar: "ar-SA", hi: "hi-IN",
+};
+
+/** Formata US$ com sufixo "USD" explícito (pra ninguém confundir com real). */
+function usdLabel(v: number): string {
+  return `US$ ${v.toFixed(v >= 1 ? 2 : v >= 0.1 ? 3 : 4)}`;
+}
+
 /**
  * 🏆 Ranking de Preços das IAs (pedido do Miguel, 2026-08-05):
  * "a pessoa paga pela API dela — o que a gente pode colocar como informação
@@ -23,7 +35,7 @@ import {
  * Mostra "atualizado em DD/MM/AAAA" quando os dados são frescos.
  */
 export function LlmPriceRanking() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [prices, setPrices] = useState<LlmPrice[]>(LLM_PRICES);
   const [updatedAt, setUpdatedAt] = useState<string | null>(null);
 
@@ -34,9 +46,9 @@ export function LlmPriceRanking() {
     });
   }, []);
 
-  // Formata "atualizado em DD/MM/AAAA" se tiver data do agente.
+  // Data formatada no idioma da interface (antes era sempre pt-BR).
   const atualizadoEm = updatedAt
-    ? new Date(updatedAt).toLocaleDateString("pt-BR")
+    ? new Date(updatedAt).toLocaleDateString(LOCALE_BY_LANG[lang] || "en-US")
     : null;
 
   return (
@@ -68,9 +80,9 @@ export function LlmPriceRanking() {
                   <b>{m.modelo}</b>
                   {m.nota && <span className="lpr-nota"> · {m.nota}</span>}
                 </td>
-                <td className="lpr-num">{usd(m.inUsd)} / {usd(m.outUsd)}</td>
-                <td className="lpr-num lpr-hl">{usd(custoResumo(m))}</td>
-                <td className="lpr-num">{usd(custoTraducao(m))}</td>
+                <td className="lpr-num">{usdLabel(m.inUsd)} / {usdLabel(m.outUsd)}</td>
+                <td className="lpr-num lpr-hl">{usdLabel(custoResumo(m))}</td>
+                <td className="lpr-num">{usdLabel(custoTraducao(m))}</td>
               </tr>
             ))}
           </tbody>
@@ -84,10 +96,16 @@ export function LlmPriceRanking() {
         <ul>
           {TRANSCRICAO_PRECOS.map((v) => (
             <li key={v.servico}>
-              {v.servico}: <b>{usd(v.porHora)}</b> {t("rank_per_hour")}
+              {v.servico}: <b>{usdLabel(v.porHora)}</b> {t("rank_per_hour")}
             </li>
           ))}
         </ul>
+        {/* Estimativa prática de transcrever 1h de vídeo (pedido Miguel). */}
+        <p className="lpr-video-est">
+          {t("rank_per_hour") === "per hour"
+            ? "Estimate: transcribing 1h of video costs ~"
+            : "Estimativa: transcrever 1h de vídeo custa ~"}<b>US$ 0,04 a US$ 0,36</b>{t("rank_per_hour") === "per hour" ? " depending on the service." : " conforme o serviço."}
+        </p>
       </div>
 
       <p className="lpr-cta">{t("rank_cta")}</p>
