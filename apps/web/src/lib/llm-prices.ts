@@ -78,9 +78,11 @@ export function usd(v: number): string {
 // preços frescos. O Moka faz fetch com cache de 24h (localStorage); se a rede
 // falhar ou o agente sair do ar, usa o fallback. (Pedido do Miguel, 09/08.)
 
-/** URL do JSON canônico do agente. (Fase 1: raw.githubusercontent quando o
- *  Miguel escolher o repo. Por enquanto, string vazia = só fallback.) */
-export const LLM_PRICES_DYNAMIC_URL = ""; // TODO: preencher quando o agente tiver endpoint público
+/** URL do JSON canônico do agente. Servido via raw.githubusercontent.com
+ *  (repo cafezinhomediagroup/data/) — Opção A do Miguel. O agente commita
+ *  automaticamente todo dia às 09:00 UTC (cron Tencent). */
+export const LLM_PRICES_DYNAMIC_URL =
+  "https://raw.githubusercontent.com/migueldorosario1/cafezinhomediagroup/main/data/ranking_llm.json";
 
 /** Versão dinâmica do preço (vem do JSON do agente). */
 export interface LlmPriceDynamic {
