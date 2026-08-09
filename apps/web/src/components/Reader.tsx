@@ -179,7 +179,10 @@ export function Reader({
     if (!res.ok || !res.text) {
       setTtsPrep(null);
       setTtsLoading(false);
-      alert(`⚠️ ${res.error ?? "Erro."}`);
+      // Erro cru (ex.: "deepseek respondeu 401") só no console — o usuário
+      // vê um aviso amigável na língua dele, com a saída (chave ⚙️ / original).
+      console.warn("Tradução pra fala falhou:", res.error);
+      alert(t("reader_speech_translate_error"));
       return null;
     }
     // AUTO-SAVE: a tradução gerada pra fala também vira nota.

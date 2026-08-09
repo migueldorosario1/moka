@@ -218,6 +218,7 @@ export type UIStringKey =
   | "reader_font_decrease"
   | "reader_tts_translating"
   | "tts_neural_hint"
+  | "reader_speech_translate_error"
   | "reader_confirm_photo"
   | "reader_ask_anything"
   | "reader_summarize"
@@ -596,6 +597,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_ask: "🎤 Perguntar por voz",
     reader_tts_translating: "Traduzindo o trecho pra falar…",
     tts_neural_hint: "🔊 Para ouvir com voz natural, configure a sua chave da OpenAI nas Configurações (⚙️). Por enquanto, o Moka usa a voz gratuita do seu dispositivo.",
+    reader_speech_translate_error: "🔊 Não consegui preparar a fala: a tradução falhou. Confira a sua chave de IA nas Configurações (⚙️) — ou escolha ouvir no idioma original do livro.",
     reader_font_increase: "Aumentar fonte",
     reader_font_decrease: "Diminuir fonte",
     reader_confirm_photo: "Salvar uma foto (PNG) de {page} no seu dispositivo?",
@@ -1015,6 +1017,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_ask: "🎤 Perguntar por voz",
     reader_tts_translating: "Translating the passage for speech…",
     tts_neural_hint: "🔊 To listen with a natural voice, add your OpenAI key in Settings (⚙️). For now, Moka uses your device's free voice.",
+    reader_speech_translate_error: "🔊 Couldn't prepare the speech: translation failed. Check your AI key in Settings (⚙️) — or choose to listen in the book's original language.",
     reader_font_increase: "Increase font size",
     reader_font_decrease: "Decrease font size",
     reader_confirm_photo: "Save a photo (PNG) of {page} to your device?",
@@ -1430,6 +1433,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_ask: "🎤 Perguntar por voz",
     reader_tts_translating: "Traduciendo el pasaje para leerlo en voz alta…",
     tts_neural_hint: "🔊 Para escuchar con una voz natural, configura tu clave de OpenAI en Configuración (⚙️). Por ahora, Moka usa la voz gratuita de tu dispositivo.",
+    reader_speech_translate_error: "🔊 No pude preparar la lectura: la traducción falló. Revisa tu clave de IA en Configuración (⚙️) — o elige escuchar en el idioma original del libro.",
     reader_font_increase: "Aumentar fuente",
     reader_font_decrease: "Reducir fuente",
     reader_confirm_photo: "¿Guardar una foto (PNG) de {page} en tu dispositivo?",
@@ -1845,6 +1849,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_ask: "🎤 Perguntar por voz",
     reader_tts_translating: "Traduction du passage pour la lecture vocale…",
     tts_neural_hint: "🔊 Pour écouter avec une voix naturelle, configurez votre clé OpenAI dans les Paramètres (⚙️). Pour l'instant, Moka utilise la voix gratuite de votre appareil.",
+    reader_speech_translate_error: "🔊 Impossible de préparer la lecture : la traduction a échoué. Vérifiez votre clé d'IA dans les Paramètres (⚙️) — ou choisissez d'écouter dans la langue originale du livre.",
     reader_font_increase: "Agrandir la police",
     reader_font_decrease: "Réduire la police",
     reader_confirm_photo: "Enregistrer une photo (PNG) de {page} sur votre appareil ?",
@@ -2260,6 +2265,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_ask: "🎤 Perguntar por voz",
     reader_tts_translating: "Passage wird für die Sprachausgabe übersetzt…",
     tts_neural_hint: "🔊 Um mit einer natürlichen Stimme zu hören, hinterlege deinen OpenAI-Schlüssel in den Einstellungen (⚙️). Vorläufig nutzt Moka die kostenlose Stimme deines Geräts.",
+    reader_speech_translate_error: "🔊 Sprache konnte nicht vorbereitet werden: Übersetzung fehlgeschlagen. Prüfe deinen KI-Schlüssel in den Einstellungen (⚙️) — oder höre in der Originalsprache des Buches.",
     reader_font_increase: "Schrift vergrößern",
     reader_font_decrease: "Schrift verkleinern",
     reader_confirm_photo: "Ein Foto (PNG) von {page} auf deinem Gerät speichern?",
@@ -2675,6 +2681,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_ask: "🎤 Perguntar por voz",
     reader_tts_translating: "Traduzione del passaggio per la lettura vocale…",
     tts_neural_hint: "🔊 Per ascoltare con una voce naturale, configura la tua chiave OpenAI nelle Impostazioni (⚙️). Per ora Moka usa la voce gratuita del tuo dispositivo.",
+    reader_speech_translate_error: "🔊 Non sono riuscito a preparare la lettura: la traduzione è fallita. Controlla la tua chiave IA nelle Impostazioni (⚙️) — oppure scegli di ascoltare nella lingua originale del libro.",
     reader_font_increase: "Aumenta carattere",
     reader_font_decrease: "Riduci carattere",
     reader_confirm_photo: "Salvare una foto (PNG) di {page} sul tuo dispositivo?",
@@ -3090,6 +3097,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_ask: "🎤 Perguntar por voz",
     reader_tts_translating: "Перевожу фрагмент для озвучки…",
     tts_neural_hint: "🔊 Чтобы слушать естественным голосом, добавьте ключ OpenAI в Настройках (⚙️). Пока Moka использует бесплатный голос вашего устройства.",
+    reader_speech_translate_error: "🔊 Не удалось подготовить озвучку: перевод не получился. Проверьте ключ ИИ в Настройках (⚙️) — или выберите прослушивание на оригинальном языке книги.",
     reader_font_increase: "Увеличить шрифт",
     reader_font_decrease: "Уменьшить шрифт",
     reader_confirm_photo: "Сохранить фото (PNG) страницы {page} на устройство?",
@@ -3505,6 +3513,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_ask: "🎤 Perguntar por voz",
     reader_tts_translating: "正在为朗读翻译该段落…",
     tts_neural_hint: "🔊 想用自然语音收听？请在设置（⚙️）中配置你的 OpenAI 密钥。目前 Moka 先用设备的免费语音。",
+    reader_speech_translate_error: "🔊 语音准备失败：翻译出错了。请在设置（⚙️）中检查你的 AI 密钥——或选择用书籍原语言收听。",
     reader_font_increase: "增大字体",
     reader_font_decrease: "减小字体",
     reader_confirm_photo: "要将 {page} 的照片 (PNG) 保存到您的设备吗？",
@@ -3920,6 +3929,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_ask: "🎤 Perguntar por voz",
     reader_tts_translating: "読み上げ用に段落を翻訳中…",
     tts_neural_hint: "🔊 自然な音声で聞くには、設定（⚙️）で OpenAI キーを設定してください。今はデバイスの無料音声で読み上げます。",
+    reader_speech_translate_error: "🔊 読み上げの準備ができませんでした：翻訳に失敗しました。設定（⚙️）で AI キーを確認するか、本の原語での再生を選んでください。",
     reader_font_increase: "文字を大きく",
     reader_font_decrease: "文字を小さく",
     reader_confirm_photo: "{page} の写真（PNG）をデバイスに保存しますか？",
@@ -4335,6 +4345,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_ask: "🎤 Perguntar por voz",
     reader_tts_translating: "낭독을 위해 구절을 번역하는 중…",
     tts_neural_hint: "🔊 자연스러운 음성으로 들으려면 설정(⚙️)에서 OpenAI 키를 등록하세요. 지금은 기기의 무료 음성으로 읽어드립니다.",
+    reader_speech_translate_error: "🔊 음성 준비에 실패했습니다: 번역이 실패했어요. 설정(⚙️)에서 AI 키를 확인하거나 책의 원래 언어로 듣기를 선택하세요.",
     reader_font_increase: "글꼴 키우기",
     reader_font_decrease: "글꼴 줄이기",
     reader_confirm_photo: "{page}의 사진(PNG)을 기기에 저장할까요?",
@@ -4750,6 +4761,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_ask: "🎤 Perguntar por voz",
     reader_tts_translating: "جارٍ ترجمة المقطع للقراءة الصوتية…",
     tts_neural_hint: "🔊 للاستماع بصوت طبيعي، أضِف مفتاح OpenAI في الإعدادات (⚙️). يستخدم Moka حاليًا صوت جهازك المجاني.",
+    reader_speech_translate_error: "🔊 تعذّر تجهيز القراءة: فشلت الترجمة. تحقّق من مفتاح الذكاء الاصطناعي في الإعدادات (⚙️) — أو اختر الاستماع بلغة الكتاب الأصلية.",
     reader_font_increase: "تكبير الخط",
     reader_font_decrease: "تصغير الخط",
     reader_confirm_photo: "حفظ صورة (PNG) للصفحة {page} على جهازك؟",
@@ -5165,6 +5177,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_ask: "🎤 Perguntar por voz",
     reader_tts_translating: "बोलने के लिए अंश का अनुवाद हो रहा है…",
     tts_neural_hint: "🔊 प्राकृतिक आवाज़ में सुनने के लिए सेटिंग्स (⚙️) में अपनी OpenAI कुंजी जोड़ें। अभी Moka आपके डिवाइस की मुफ़्त आवाज़ इस्तेमाल करता है।",
+    reader_speech_translate_error: "🔊 वाणी तैयार नहीं हो सकी: अनुवाद विफल रहा। सेटिंग्स (⚙️) में अपनी AI कुंजी जाँचें — या पुस्तक की मूल भाषा में सुनना चुनें।",
     reader_font_increase: "फ़ॉन्ट बड़ा करें",
     reader_font_decrease: "फ़ॉन्ट छोटा करें",
     reader_confirm_photo: "{page} की फोटो (PNG) अपने डिवाइस पर सहेजें?",
