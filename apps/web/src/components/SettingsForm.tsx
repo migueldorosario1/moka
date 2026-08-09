@@ -485,8 +485,18 @@ export function SettingsForm({
           <p className="hint">
             {t("set_no_key_link")}{" "}
             <a href={preset.keyUrl} target="_blank" rel="noreferrer">
-              Obter uma →
+              {t("cfg_get_key")} →
             </a>
+            {/* Acompanhar uso/gasto da IA (dashboard de usage do provedor) —
+                pedido do Miguel: "acompanhe o uso de sua IA por aqui". */}
+            {preset?.usageUrl && (
+              <>
+                {" · "}
+                <a href={preset.usageUrl} target="_blank" rel="noreferrer">
+                  📊 {t("cfg_track_usage")} →
+                </a>
+              </>
+            )}
           </p>
         )}
       </div>

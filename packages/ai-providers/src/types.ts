@@ -92,6 +92,8 @@ export interface ProviderPreset {
   adapter: AdapterKind;
   /** Onde o usuário obtém uma chave. */
   keyUrl: string;
+  /** Onde o usuário acompanha o uso/gasto da sua IA (dashboard de usage). */
+  usageUrl?: string;
   /** Descrição curta pra exibir na UI. */
   description?: string;
 }

@@ -26,6 +26,7 @@ export const PRESETS: ProviderPreset[] = [
     defaultModel: "glm-4.6",
     adapter: "openai",
     keyUrl: "https://z.ai/",
+    usageUrl: "https://z.ai/billing",
     description: "Modelos GLM. Janela de contexto longa, multilíngue robusto.",
   },
   {
@@ -35,6 +36,7 @@ export const PRESETS: ProviderPreset[] = [
     defaultModel: "gpt-4o-mini",
     adapter: "openai",
     keyUrl: "https://platform.openai.com/api-keys",
+    usageUrl: "https://platform.openai.com/usage",
     description: "GPT-4o e família. Padrão de mercado.",
   },
   {
@@ -44,6 +46,7 @@ export const PRESETS: ProviderPreset[] = [
     defaultModel: "deepseek-chat",
     adapter: "openai",
     keyUrl: "https://platform.deepseek.com/api_keys",
+    usageUrl: "https://platform.deepseek.com/usage",
     description: "Excelente custo-benefício e raciocínio.",
   },
   {
@@ -53,6 +56,7 @@ export const PRESETS: ProviderPreset[] = [
     defaultModel: "meta-llama/Llama-3.3-70B-Instruct-Turbo",
     adapter: "openai",
     keyUrl: "https://api.together.ai/settings/api-keys",
+    usageUrl: "https://api.together.ai/billing",
     description: "Centena de modelos open-source (Llama, Qwen, DeepSeek). Preços baixos.",
   },
   {
@@ -62,6 +66,7 @@ export const PRESETS: ProviderPreset[] = [
     defaultModel: "kimi-k3",
     adapter: "openai",
     keyUrl: "https://platform.moonshot.ai/console/api-keys",
+    usageUrl: "https://platform.moonshot.ai/console/account",
     description: "Kimi K3: modelo flagship 2.8T parâmetros, contexto de 1M tokens.",
   },
   {
@@ -71,6 +76,7 @@ export const PRESETS: ProviderPreset[] = [
     defaultModel: "qwen-plus",
     adapter: "openai",
     keyUrl: "https://dashscope.console.aliyun.com/apiKey",
+    usageUrl: "https://dashscope.console.aliyun.com/billing",
     description: "Multilíngue fortíssimo, ótimo em tradução.",
   },
   {
@@ -80,6 +86,7 @@ export const PRESETS: ProviderPreset[] = [
     defaultModel: "claude-haiku-4-5",
     adapter: "anthropic",
     keyUrl: "https://console.anthropic.com/settings/keys",
+    usageUrl: "https://console.anthropic.com/settings/billing",
     description: "Modelos Claude (Haiku rápido, Sonnet equilibrado, Opus máximo). Forte em escrita e explicação.",
   },
   {
@@ -89,6 +96,7 @@ export const PRESETS: ProviderPreset[] = [
     defaultModel: "gemini-2.0-flash",
     adapter: "gemini",
     keyUrl: "https://aistudio.google.com/app/apikey",
+    usageUrl: "https://aistudio.google.com/usage",
     description: "Modelos Gemini do Google. Janela de contexto enorme, multilíngue.",
   },
   {
@@ -98,6 +106,7 @@ export const PRESETS: ProviderPreset[] = [
     defaultModel: "mistral-small-latest",
     adapter: "openai",
     keyUrl: "https://console.mistral.ai/api-keys",
+    usageUrl: "https://console.mistral.ai/usage",
     description: "Modelos Mistral (Europa). Eficiente, multilíngue, bom custo-benefício.",
   },
   {
@@ -107,6 +116,7 @@ export const PRESETS: ProviderPreset[] = [
     defaultModel: "grok-3-mini",
     adapter: "openai",
     keyUrl: "https://console.x.ai",
+    usageUrl: "https://console.x.ai/billing",
     description: "Modelos Grok da xAI. Tem voz neural (TTS) e transcrição (STT) — ótimo pra ler em voz alta e vídeos.",
   },
   {
@@ -116,6 +126,7 @@ export const PRESETS: ProviderPreset[] = [
     defaultModel: "llama-3.3-70b-versatile",
     adapter: "openai",
     keyUrl: "https://console.groq.com/keys",
+    usageUrl: "https://console.groq.com/usage",
     description: "Inferência ultrarrápida (LPU). Modelos open-source a preço baixo. Tem TTS e Whisper.",
   },
 ];
