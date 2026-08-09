@@ -178,61 +178,7 @@ export function AuthModal({ auth, onClose }: AuthModalProps) {
         </div>
       </div>
 
-      <style jsx>{`
-        /* Mobile-first (bugs do Miguel, 05/08): (1) no celular, centralizar
-           com flex cortava o topo do card (botão Google inalcançável);
-           (2) no desktop, o overlay virava uma FAIXA cortada no topo.
-           Portal no <body> + este padrão à prova de corte:
-           overlay rola / card com margem vertical (nunca margin:auto com
-           overflow — é o bug clássico que clipa o topo para sempre). */
-        .am-overlay {
-          position: fixed; inset: 0; z-index: 1100;
-          background: rgba(0, 0, 0, 0.45);
-          display: flex;
-          align-items: flex-start;
-          justify-content: center;
-          overflow-y: auto;
-          padding: 0 20px;
-        }
-        .am-card {
-          margin: 6vh auto;
-          background: var(--bg); border-radius: 16px; width: 100%; max-width: 380px;
-          max-height: calc(100vh - 40px); /* fallback pra navegadores antigos */
-          max-height: calc(100dvh - 40px);
-          overflow-y: auto;
-          padding: 22px; display: flex; flex-direction: column; gap: 12px;
-          box-shadow: 0 24px 70px rgba(0, 0, 0, 0.35);
-        }
-        .am-head { display: flex; align-items: center; justify-content: space-between; }
-        .am-head h2 { margin: 0; font-size: 18px; font-family: var(--font-brand); }
-        .am-head button { border: none; background: var(--surface-alt); color: var(--text-muted); width: 30px; height: 30px; border-radius: 50%; cursor: pointer; }
-        .am-aviso { margin: 0; padding: 10px 12px; background: #eef7ee; border: 1px solid #2c7a2c33; color: #235c23; border-radius: 10px; font-size: 13.5px; line-height: 1.5; }
-        .am-erro { margin: 0; padding: 10px 12px; background: var(--accent-soft); border-radius: 10px; color: var(--accent); font-size: 13.5px; line-height: 1.5; }
-        .am-google {
-          display: flex; align-items: center; justify-content: center; gap: 10px;
-          padding: 12px; border-radius: 10px; border: 1px solid var(--border);
-          background: var(--surface); color: var(--text); font-size: 15px; font-weight: 700; cursor: pointer;
-        }
-        .am-google:hover { background: var(--accent-soft); border-color: var(--accent); }
-        .am-g { font-weight: 800; color: #4285f4; font-size: 17px; }
-        .am-divider { display: flex; align-items: center; gap: 10px; color: var(--text-muted); font-size: 12px; }
-        .am-divider::before, .am-divider::after { content: ""; flex: 1; height: 1px; background: var(--border); }
-        form { display: flex; flex-direction: column; gap: 10px; }
-        input {
-          padding: 12px; border: 1px solid var(--border); border-radius: 10px;
-          background: var(--surface); color: var(--text); font-size: 15px;
-        }
-        input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
-        .am-submit {
-          padding: 12px; border: none; border-radius: 10px; cursor: pointer;
-          background: var(--accent); color: var(--accent-contrast, #fff);
-          font-size: 15px; font-weight: 700;
-        }
-        .am-submit:disabled { opacity: 0.6; cursor: wait; }
-        .am-links { display: flex; justify-content: center; gap: 10px; font-size: 13px; color: var(--text-muted); }
-        .am-link { border: none; background: none; color: var(--accent-dark); font-size: 13px; cursor: pointer; padding: 2px 4px; }
-        .am-link:hover { text-decoration: underline; }
-      `}</style>
+      {/* CSS migrado para globals.css — cura FOUC (era <style jsx>) */}
     </div>,
     document.body,
   );

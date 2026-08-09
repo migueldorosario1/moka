@@ -163,61 +163,7 @@ export function ContaButton() {
         </div>
       )}
 
-      <style jsx>{`
-        .conta-btn-wrap { position: relative; }
-        .conta-ativa { outline: 2px solid var(--gold); outline-offset: 1px; }
-        .avatar-img { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; }
-        .avatar-pop { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
-        .conta-header { display: flex; align-items: center; gap: 10px; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
-        .conta-pop {
-          position: absolute; top: calc(100% + 8px); right: 0; z-index: 900;
-          width: 270px; background: var(--surface); border: 1px solid var(--border);
-          border-radius: 12px; box-shadow: var(--shadow-lg); padding: 14px;
-          display: flex; flex-direction: column; gap: 8px;
-        }
-        .conta-titulo { font-weight: 700; font-size: 13.5px; margin: 0 0 2px; text-align: center; }
-        .conta-nome { margin: 0; font-size: 13.5px; line-height: 1.2; }
-        .conta-email { margin: 0; font-size: 11.5px; color: var(--text-muted); }
-        .conta-saldo, .conta-lic { margin: 0; font-size: 13.5px; }
-        .conta-lic { color: var(--accent-dark); font-size: 12px; }
-
-        .btn-google {
-          display: flex; align-items: center; justify-content: center; gap: 8px;
-          background: #ffffff; color: #3c4043; border: 1px solid #dadce0;
-          border-radius: 8px; padding: 9px 12px; font-weight: 600; font-size: 13px;
-          cursor: pointer; transition: background 0.2s, box-shadow 0.2s;
-        }
-        .btn-google:hover { background: #f8f9fa; box-shadow: 0 1px 3px rgba(60,64,67,0.15); }
-        .google-icon { flex-shrink: 0; }
-
-        .conta-divisor {
-          display: flex; align-items: center; text-align: center; margin: 4px 0;
-        }
-        .conta-divisor::before, .conta-divisor::after {
-          content: ''; flex: 1; border-bottom: 1px solid var(--border);
-        }
-        .conta-divisor span {
-          padding: 0 8px; font-size: 11px; color: var(--text-muted); font-weight: 500;
-        }
-
-        .conta-pop input {
-          padding: 9px 11px; border: 1px solid var(--border); border-radius: 8px;
-          background: var(--bg); color: var(--text); font-size: 13px; width: 100%;
-          box-sizing: border-box;
-        }
-        .conta-entrar {
-          background: var(--accent); color: #fff8ee; border: none; border-radius: 8px;
-          padding: 9px; font-weight: 700; font-size: 13px; cursor: pointer;
-        }
-        .conta-entrar:disabled { opacity: 0.6; cursor: wait; }
-        .conta-erro { color: #b3261e; font-size: 12px; margin: 0; }
-        .conta-link { color: var(--accent-dark); font-size: 12px; font-weight: 700; text-decoration: none; text-align: center; }
-        .conta-link:hover { text-decoration: underline; }
-        .conta-sair {
-          background: none; border: 1px solid var(--border); border-radius: 8px;
-          padding: 8px; color: var(--text-muted); font-size: 12px; cursor: pointer; margin-top: 4px;
-        }
-      `}</style>
+      {/* CSS migrado para globals.css — cura FOUC (era <style jsx>) */}
     </div>
   );
 }

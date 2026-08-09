@@ -256,17 +256,7 @@ export default function BookPage({ params }: { params: { id: string } }) {
           />
         </div>
       )}
-      <style jsx>{`
-        .back-btn {
-          margin-top: 16px;
-          padding: 8px 16px;
-          border: 1px solid var(--border);
-          background: var(--surface);
-          color: var(--accent);
-          border-radius: 8px;
-          cursor: pointer;
-        }
-      `}</style>
+      {/* CSS migrado para globals.css — cura FOUC (era <style jsx>) */}
     </main>
   );
 }

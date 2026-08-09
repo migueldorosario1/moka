@@ -102,39 +102,7 @@ export default function Tutorial() {
 
       <SiteFooter />
 
-      <style jsx>{`
-        .tut-api-card {
-          margin-top: 16px; padding: 14px 18px; border-radius: 14px;
-          background: var(--surface); border: 1.5px solid var(--accent);
-        }
-        .tut-api-card h2 { margin: 0 0 6px; font-size: 16.5px; font-family: var(--font-brand); }
-        .tut-api-card p { margin: 0; font-size: 14px; line-height: 1.65; }
-        .tut-steps { display: flex; flex-direction: column; gap: 14px; margin-top: 22px; }
-        .tut-step {
-          display: flex; gap: 14px; padding: 16px 18px;
-          background: var(--surface); border: 1px solid var(--border); border-radius: 14px;
-        }
-        .tut-num {
-          flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%;
-          background: var(--accent); color: var(--accent-contrast, #fff);
-          display: flex; align-items: center; justify-content: center;
-          font-weight: 800; font-size: 16px;
-        }
-        .tut-content h2 { margin: 0 0 6px; font-size: 16.5px; font-family: var(--font-brand); }
-        .tut-content p { margin: 0 0 8px; font-size: 14px; line-height: 1.65; color: var(--text); }
-        .tut-content p:last-child { margin-bottom: 0; }
-        .tut-link { color: var(--accent-dark); font-weight: 700; text-decoration: none; }
-        .tut-link:hover { text-decoration: underline; }
-        .tut-providers { margin: 6px 0 0; padding-left: 18px; font-size: 13.5px; line-height: 1.8; }
-        .tut-providers a { color: var(--accent-dark); font-weight: 700; text-decoration: none; }
-        .tut-providers a:hover { text-decoration: underline; }
-        .tut-providers span { color: var(--text-muted); font-size: 12.5px; }
-        .tut-video-note {
-          margin-top: 16px; padding: 12px 16px; border-radius: 12px;
-          background: #fdf3e3; border: 1px solid #e8c48a; font-size: 13.5px; line-height: 1.6;
-        }
-        .tut-video-note p { margin: 0; }
-      `}</style>
+      {/* CSS migrado para globals.css — cura FOUC (era <style jsx>) */}
     </main>
   );
 }
