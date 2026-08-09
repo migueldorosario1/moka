@@ -116,14 +116,27 @@ export default function Ajuda() {
         <p className="help-kicker">Central de ajuda</p>
         <h1 className="help-title">Como o Moka funciona</h1>
 
-        {/* 🔎 Localizador — busca rápida no FAQ (filtra em tempo real). */}
+        {/* 🔎 Localizador — busca rápida no FAQ (filtra em tempo real).
+            Ícone de lupa à esquerda dentro do campo (pedido do Miguel:
+            "sem ícone de clicar pra buscar"). */}
         <div className="help-localizador">
+          <span className="help-localizador-icon">🔎</span>
           <input
             className="help-busca"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
             placeholder={t("help_search_ph") || "🔎 Localizar uma dúvida... (ex.: custo, chave, vídeo)"}
           />
+          {busca && (
+            <button
+              type="button"
+              className="help-localizador-clear"
+              onClick={() => setBusca("")}
+              aria-label="Limpar"
+            >
+              ✕
+            </button>
+          )}
         </div>
 
         {/* FASE GRATUITA (pivô 2026-08-04): o essencial do BYOK em destaque,
@@ -157,15 +170,7 @@ export default function Ajuda() {
           {resposta && <p className="help-resposta">{resposta}</p>}
         </section>
 
-        {/* Busca */}
-        <input
-          className="help-busca"
-          value={busca}
-          onChange={(e) => setBusca(e.target.value)}
-          placeholder="🔍 Buscar na ajuda (ex.: pontos, Pix, licença…)"
-        />
-
-        {/* Tópicos */}
+        {/* Tópicos — já filtrados pela busca do localizador (lá em cima). */}
         <div className="help-lista">
           {filtrados.map((f) => (
             <details key={f.q} className="help-item">
@@ -174,7 +179,7 @@ export default function Ajuda() {
             </details>
           ))}
           {filtrados.length === 0 && (
-            <p className="help-vazio">Nada encontrado — pergunta pro robô ali em cima 🤖</p>
+            <p className="help-vazio">{t("help_no_results") || "Nada encontrado — pergunta pro Zé Moca ali em cima 🧑‍🌾"}</p>
           )}
         </div>
 
@@ -246,11 +251,22 @@ export default function Ajuda() {
         }
         .ze-moca-cta:hover { background: #8f5530; }
 
-        /* 🔎 Localizador (busca) */
-        .help-localizador { margin-bottom: 24px; }
+        /* 🔎 Localizador (busca) — ícone de lupa + botão limpar */
+        .help-localizador {
+          position: relative;
+          margin-bottom: 24px;
+          display: flex;
+          align-items: center;
+        }
+        .help-localizador-icon {
+          position: absolute;
+          left: 14px;
+          font-size: 17px;
+          pointer-events: none;
+        }
         .help-localizador .help-busca {
           width: 100%;
-          padding: 14px 18px;
+          padding: 14px 44px 14px 42px;
           font-size: 15px;
           border: 2px solid #d9c8b8;
           border-radius: 12px;
@@ -262,6 +278,22 @@ export default function Ajuda() {
           outline: none;
           border-color: #b06a3b;
         }
+        .help-localizador-clear {
+          position: absolute;
+          right: 10px;
+          width: 26px;
+          height: 26px;
+          border: none;
+          background: #e2e8f0;
+          color: #475569;
+          border-radius: 50%;
+          font-size: 13px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .help-localizador-clear:hover { background: #cbd5e1; }
         .help-kicker {
           text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px;
           font-weight: 700; color: #0f7680; margin-bottom: 8px; text-align: center;

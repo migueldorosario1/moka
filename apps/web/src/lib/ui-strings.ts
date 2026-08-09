@@ -441,6 +441,7 @@ export type UIStringKey =
   | "ze_moca_intro"
   | "ze_moca_ask"
   | "help_search_ph"
+  | "help_no_results"
   | "help_what_is_key"
   | "help_key_desc"
   | "help_how_to_get"
@@ -903,6 +904,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ze_moca_intro: "Oi, eu sou o Zé Moca! Sou o guia do Moka. Estou aqui pra te ajudar com qualquer dúvida — pode perguntar qualquer coisa que eu respondo. Te ensino a usar e a configurar.",
     ze_moca_ask: "Conversar com o Zé Moca",
     help_search_ph: "🔎 Localizar uma dúvida... (ex.: custo, chave, vídeo)",
+    help_no_results: "Nada encontrado — pergunta pro Zé Moca ali em cima 🧑‍🌾",
     help_what_is_key: "Uma chave de API é como uma senha que te permite usar a inteligência artificial do provedor escolhido (Z.ai, OpenAI, DeepSeek, etc). Você cria a chave no site do provedor, cola aqui, e o Moka usa ela pra traduzir e explicar os textos. Sua chave fica só no seu dispositivo.",
     help_key_desc: "Como conseguir uma chave (grátis):",
     help_how_to_get: "Como conseguir uma chave (grátis):",
@@ -1354,6 +1356,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ze_moca_intro: "Hi, I'm Zé Moca! I'm the Moka guide. I'm here to help with any question — ask anything and I'll answer. I'll teach you how to use and configure it.",
     ze_moca_ask: "Chat with Zé Moca",
     help_search_ph: "🔎 Find an answer... (e.g.: cost, key, video)",
+    help_no_results: "Nothing found — ask Zé Moca above 🧑‍🌾",
     help_what_is_key: "An API key is like a password that lets you use the AI from the chosen provider (Z.ai, OpenAI, DeepSeek, etc). You create the key on the provider's website, paste it here, and Moka uses it to translate and explain texts. Your key stays only on your device.",
     help_key_desc: "How to get a key (free):",
     help_how_to_get: "How to get a key (free):",
@@ -1805,6 +1808,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ze_moca_intro: "¡Hola, soy Zé Moca! Soy el guía del Moka. Estoy para ayudarte con cualquier duda — pregunta lo que sea y respondo. Te enseño a usarlo y configurarlo.",
     ze_moca_ask: "Hablar con Zé Moca",
     help_search_ph: "🔎 Buscar una duda... (ej.: costo, clave, video)",
+    help_no_results: "Nada encontrado — pregúntale a Zé Moca arriba 🧑‍🌾",
     help_what_is_key: "Una clave de API es como una contraseña que te permite usar la inteligencia artificial del proveedor elegido (Z.ai, OpenAI, DeepSeek, etc). Creas la clave en el sitio del proveedor, la pegas aquí, e Moka la usa para traducir y explicar los textos. Tu clave solo se queda en tu dispositivo.",
     help_key_desc: "Cómo conseguir una clave (gratis):",
     help_how_to_get: "Cómo conseguir una clave (gratis):",
@@ -2256,6 +2260,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ze_moca_intro: "Salut, je suis Zé Moca ! Je suis le guide du Moka. Je suis là pour t'aider avec toute question — pose n'importe quoi et je réponds. Je t'apprends à l'utiliser et le configurer.",
     ze_moca_ask: "Discuter avec Zé Moca",
     help_search_ph: "🔎 Trouver une réponse... (ex. : coût, clé, vidéo)",
+    help_no_results: "Rien trouvé — demande à Zé Moca ci-dessus 🧑‍🌾",
     help_what_is_key: "Une clé d'API est comme un mot de passe qui vous permet d'utiliser l'intelligence artificielle du fournisseur choisi (Z.ai, OpenAI, DeepSeek, etc.). Vous créez la clé sur le site du fournisseur, la collez ici, et Moka l'utilise pour traduire et expliquer les textes. Votre clé reste uniquement sur votre appareil.",
     help_key_desc: "Comment obtenir une clé (gratuit) :",
     help_how_to_get: "Comment obtenir une clé (gratuit) :",
@@ -2707,6 +2712,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ze_moca_intro: "Hi, ich bin Zé Moca! Ich bin der Moka-Guide. Ich bin hier, um bei jeder Frage zu helfen — frag alles und ich antworte. Ich bring dir bei, wie man ihn nutzt und einstellt.",
     ze_moca_ask: "Mit Zé Moca chatten",
     help_search_ph: "🔎 Frage finden... (z.B.: Kosten, Schlüssel, Video)",
+    help_no_results: "Nichts gefunden — frag Zé Moca oben 🧑‍🌾",
     help_what_is_key: "Ein API-Schlüssel ist wie ein Passwort, das es dir ermöglicht, die KI des gewählten Anbieters (Z.ai, OpenAI, DeepSeek usw.) zu nutzen. Du erstellst den Schlüssel auf der Website des Anbieters, fügst ihn hier ein und Moka verwendet ihn, um Texte zu übersetzen und zu erklären. Dein Schlüssel bleibt nur auf deinem Gerät.",
     help_key_desc: "So erhältst du einen Schlüssel (kostenlos):",
     help_how_to_get: "So erhältst du einen Schlüssel (kostenlos):",
@@ -3158,6 +3164,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ze_moca_intro: "Ciao, sono Zé Moca! Sono la guida del Moka. Sono qui per aiutarti con qualsiasi domanda — chiedi qualsiasi cosa e rispondo. Ti insegno a usarlo e configurarlo.",
     ze_moca_ask: "Parla con Zé Moca",
     help_search_ph: "🔎 Trova una risposta... (es.: costo, chiave, video)",
+    help_no_results: "Niente trovato — chiedi a Zé Moca sopra 🧑‍🌾",
     help_what_is_key: "Una chiave API è come una password che ti permette di usare l'intelligenza artificiale del provider scelto (Z.ai, OpenAI, DeepSeek, ecc.). Crei la chiave sul sito del provider, la incolli qui e Moka la usa per tradurre e spiegare i testi. La tua chiave resta solo sul tuo dispositivo.",
     help_key_desc: "Come ottenere una chiave (gratis):",
     help_how_to_get: "Come ottenere una chiave (gratis):",
@@ -3609,6 +3616,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ze_moca_intro: "Привет, я Zé Moca! Я гид Moka. Здесь, чтобы помочь с любым вопросом — спрашивай что угодно, я отвечу. Научу пользоваться и настраивать.",
     ze_moca_ask: "Поговорить с Zé Moca",
     help_search_ph: "🔎 Найти ответ... (напр.: цена, ключ, видео)",
+    help_no_results: "Ничего не найдено — спроси Zé Moca вверху 🧑‍🌾",
     help_what_is_key: "API-ключ — это как пароль, который позволяет использовать искусственный интеллект выбранного провайдера (Z.ai, OpenAI, DeepSeek и т. д.). Вы создаёте ключ на сайте провайдера, вставляете его сюда, и Moka использует его для перевода и объяснения текстов. Ваш ключ хранится только на вашем устройстве.",
     help_key_desc: "Как получить ключ (бесплатно):",
     help_how_to_get: "Как получить ключ (бесплатно):",
@@ -4060,6 +4068,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ze_moca_intro: "嗨，我是 Zé Moca！我是 Moka 的向导。我在这里帮你解答任何问题——尽管问，我来答。教你使用和配置。",
     ze_moca_ask: "与 Zé Moca 对话",
     help_search_ph: "🔎 查找疑问...（例如：费用、密钥、视频）",
+    help_no_results: "未找到 — 问上面的 Zé Moca 🧑‍🌾",
     help_what_is_key: "API 密钥就像密码，允许您使用所选提供商（Z.ai、OpenAI、DeepSeek 等）的人工智能。您在提供商网站上创建密钥，粘贴到这里，Moka 就会用它来翻译和解释文本。您的密钥仅保存在您的设备上。",
     help_key_desc: "如何获取密钥（免费）：",
     help_how_to_get: "如何获取密钥（免费）：",
@@ -4511,6 +4520,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ze_moca_intro: "やあ、Zé Mocaだよ！Mokaのガイド。どんな質問でもどうぞ——答えます。使い方も設定も教えるよ。",
     ze_moca_ask: "Zé Mocaと話す",
     help_search_ph: "🔎 質問を探す...（例：費用、キー、動画）",
+    help_no_results: "見つかりません — 上の Zé Moca に聞いて 🧑‍🌾",
     help_what_is_key: "API キーはパスワードのようなもので、選んだプロバイダー（Z.ai、OpenAI、DeepSeek など）の AI を使用するために使います。プロバイダーのサイトでキーを作成し、ここに貼り付けると、Moka がそのキーを使ってテキストを翻訳・解説します。キーはあなたの端末にのみ保存されます。",
     help_key_desc: "キーの取得方法（無料）：",
     help_how_to_get: "キーの取得方法（無料）：",
@@ -4962,6 +4972,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ze_moca_intro: "안녕, 나는 Zé Moca야! Moka의 가이드지. 어떤 질문이든 도와줄게 — 뭐든 물어봐, 답할게. 사용법과 설정도 가르쳐줘.",
     ze_moca_ask: "Zé Moca와 대화하기",
     help_search_ph: "🔎 답변 찾기... (예: 비용, 키, 영상)",
+    help_no_results: "못 찾았어요 — 위의 Zé Moca에게 물어보세요 🧑‍🌾",
     help_what_is_key: "API 키는 선택한 제공자(Z.ai, OpenAI, DeepSeek 등)의 인공지능을 사용할 수 있게 해주는 비밀번호와 같습니다. 제공자 웹사이트에서 키를 만들고 여기에 붙여넣으면, igot이 그 키를 사용해 텍스트를 번역하고 설명합니다. 키는 기기에만 저장됩니다.",
     help_key_desc: "키 얻는 방법(무료):",
     help_how_to_get: "키 얻는 방법(무료):",
@@ -5413,6 +5424,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ze_moca_intro: "مرحبًا، أنا Zé Moca! أنا دليل Moka. أنا هنا لمساعدتك في أي سؤال — اسأل أي شيء وسأجيب. أعلمك كيفية الاستخدام والإعداد.",
     ze_moca_ask: "تحدث مع Zé Moca",
     help_search_ph: "🔎 ابحث عن سؤال... (مثال: التكلفة، المفتاح، الفيديو)",
+    help_no_results: "لم يُعثر على شيء — اسأل Zé Moca بالأعلى 🧑‍🌾",
     help_what_is_key: "مفتاح API يشبه كلمة المرور التي تتيح لك استخدام الذكاء الاصطناعي للمزوّد المختار (Z.ai، OpenAI، DeepSeek، إلخ). تنشئ المفتاح في موقع المزوّد، تلصقه هنا، ويستخدمه Moka لترجمة النصوص وشرحها. مفتاحك يبقى على جهازك فقط.",
     help_key_desc: "كيفية الحصول على مفتاح (مجاناً):",
     help_how_to_get: "كيفية الحصول على مفتاح (مجاناً):",
@@ -5864,6 +5876,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ze_moca_intro: "नमस्ते, मैं Zé Moca हूँ! मैं Moka का गाइड हूँ। किसी भी सवाल में मदद के लिए यहाँ हूँ — कुछ भी पूछो, मैं जवाब दूँगा। इस्तेमाल और सेटअप सिखाऊँगा।",
     ze_moca_ask: "Zé Moca से बात करें",
     help_search_ph: "🔎 सवाल खोजें... (जैसे: लागत, कुंजी, वीडियो)",
+    help_no_results: "कुछ नहीं मिला — ऊपर Zé Moca से पूछें 🧑‍🌾",
     help_what_is_key: "API कुंजी एक पासवर्ड की तरह है जो आपको चुने हुए प्रदाता (Z.ai, OpenAI, DeepSeek आदि) की कृत्रिम बुद्धिमत्ता का उपयोग करने की अनुमति देती है। आप प्रदाता की वेबसाइट पर कुंजी बनाते हैं, यहाँ पेस्ट करते हैं, और Moka इसका उपयोग टेक्स्ट का अनुवाद और स्पष्टीकरण करने के लिए करता है। आपकी कुंजी केवल आपके डिवाइस पर रहती है।",
     help_key_desc: "कुंजी कैसे प्राप्त करें (मुफ़्त):",
     help_how_to_get: "कुंजी कैसे प्राप्त करें (मुफ़्त):",
