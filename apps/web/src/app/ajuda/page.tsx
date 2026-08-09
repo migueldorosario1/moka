@@ -113,8 +113,8 @@ export default function Ajuda() {
           </div>
         </section>
 
-        <p className="help-kicker">Central de ajuda</p>
-        <h1 className="help-title">Como o Moka funciona</h1>
+        <p className="help-kicker">{t("help_center")}</p>
+        <h1 className="help-title">{t("help_how_works")}</h1>
 
         {/* 🔎 Localizador — busca rápida no FAQ (filtra em tempo real).
             Ícone de lupa à esquerda dentro do campo (pedido do Miguel:
@@ -165,7 +165,7 @@ export default function Ajuda() {
               onChange={(e) => setPergunta(e.target.value)}
               placeholder="Ex.: quanto custa traduzir um livro?"
             />
-            <button type="submit">Perguntar</button>
+            <button type="submit">{t("help_ask_btn")}</button>
           </form>
           {resposta && <p className="help-resposta">{resposta}</p>}
         </section>
@@ -185,11 +185,11 @@ export default function Ajuda() {
 
         {/* Comunidade — Telegram @mokareader (criado pelo Miguel 09/08). */}
         <section className="help-comunidade">
-          <h2>💬 Comunidade</h2>
+          <h2>💬 {t("help_community_title")}</h2>
           <p>
-            Dúvidas, ideias e conversa direta com o time:{" "}
+            {t("help_community_desc")}{" "}
             <a href="https://t.me/mokareader" target="_blank" rel="noreferrer">
-              entre na comunidade do Moka no Telegram →
+              {t("help_community_link")} →
             </a>
           </p>
         </section>

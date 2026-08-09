@@ -539,13 +539,13 @@ export default function HomePage() {
           </a>
         </span>
         <span className="footer-sep">·</span>
-        <Link href="/sobre">Quem somos</Link>
+        <Link href="/sobre">{t("nav_about")}</Link>
         {/* 🤝 Sócios — fora da 1ª fase pública (volta na fase 2).
              Rota /socios preservada internamente.
         <span className="footer-sep">·</span>
         <Link href="/socios">🤝 Sócios</Link> */}
         <span className="footer-sep">·</span>
-        <Link href="/ajuda">Ajuda</Link>
+        <Link href="/ajuda">{t("help_title")}</Link>
       </footer>
 
       {settingsOpen && (
