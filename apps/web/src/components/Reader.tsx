@@ -192,6 +192,18 @@ export function Reader({
     return { text: res.text, lang: audioLang };
   };
 
+  /**
+   * Aviso amigável (na língua do usuário) de que a voz natural precisa da
+   * chave da OpenAI — mostra UMA VEZ por sessão pra não encher o saco.
+   * A voz gratuita do dispositivo continua funcionando (fallback mecânico).
+   */
+  const warnNeuralKeyOnce = () => {
+    if (typeof window === "undefined") return;
+    if (sessionStorage.getItem("moka.ttsWarned") === "1") return;
+    sessionStorage.setItem("moka.ttsWarned", "1");
+    alert(t("tts_neural_hint"));
+  };
+
   const readPageAloud = async () => {
     // Se tá pausado, CONTINUA de onde parou.
     if (tts.state === "paused") {
@@ -237,18 +249,26 @@ export function Reader({
     const prepared = await prepareSpeech(rawText, textLang);
     if (!prepared) return;
 
-    // Tenta voz NEURAL primeiro (se o provedor ativo for OpenAI — tem TTS).
+    // Tenta voz NEURAL primeiro (se o provedor ativo for OpenAI — tem TTS —
+    // E a chave existir; senão cai pro aviso + voz gratuita do dispositivo).
     const config = getConfigSync();
-    if (config && config.providerId === "openai") {
+    const neuralReady =
+      config && config.providerId === "openai" && !!(config.apiKey || "").trim();
+    if (neuralReady) {
       const gen = ttsPrepGen.current;
       setTtsPrep("voice");
       setTtsLoading(true);
-      await tts.speakNeural(prepared.text, prepared.lang, {
+      const neural = await tts.speakNeural(prepared.text, prepared.lang, {
         baseUrl: "https://api.openai.com/v1",
         apiKey: config.apiKey,
         model: "tts-1",
         voice: "nova",
       });
+      // Chave inválida/vencida (400/401/403): já caiu pra voz gratuita —
+      // explica o que houve com um aviso amigável (1× por sessão).
+      if (!neural.ok && (neural.status === 400 || neural.status === 401 || neural.status === 403)) {
+        warnNeuralKeyOnce();
+      }
       if (gen === ttsPrepGen.current) {
         setTtsLoading(false);
         setTtsPrep(null);
@@ -256,18 +276,11 @@ export function Reader({
       return;
     }
 
-    // Aviso: voz neural só com OpenAI. Avisa UMA VEZ (não enche toda hora).
-    const warned = typeof window !== "undefined" && sessionStorage.getItem("moka.ttsWarned") === "1";
-    if (!warned) {
-      sessionStorage.setItem("moka.ttsWarned", "1");
-      alert(
-        "🔊 Para a voz mais natural (qualidade de pessoa lendo), " +
-        "configure a OpenAI como provedor nas Configurações (⚙️).\n\n" +
-        "Por enquanto, será usada a voz do seu dispositivo."
-      );
-    }
+    // Sem chave da OpenAI configurada: avisa (1× por sessão, na língua do
+    // usuário) e segue com a voz GRATUITA do dispositivo.
+    warnNeuralKeyOnce();
 
-    // Senão, usa voz NATIVA do dispositivo.
+    // Usa voz NATIVA do dispositivo.
     setTtsPrep(null);
     setTtsLoading(false);
     tts.speak(prepared.text, prepared.lang);
@@ -1141,9 +1154,16 @@ export function Reader({
     const startBlock = startEl?.closest(
       "p, h1, h2, h3, h4, h5, h6, blockquote, li",
     );
-    if (!startBlock) return;
     const newRange = range.cloneRange();
-    newRange.setStart(startBlock, 0);
+    if (startBlock) {
+      newRange.setStart(startBlock, 0);
+    } else {
+      // PDF: a camada de texto não tem <p> — acha o começo do parágrafo
+      // pela geometria das linhas (indento, espaçamento, fonte, margem).
+      const pdf = pdfParagraphSpanRange(range);
+      if (!pdf) return;
+      newRange.setStart(pdf.first, 0);
+    }
     sel.removeAllRanges();
     sel.addRange(newRange);
     handleSelection(); // reabre o menu com o texto corrigido
@@ -1165,10 +1185,18 @@ export function Reader({
     const endBlock = asEl(range.endContainer)?.closest(
       "p, h1, h2, h3, h4, h5, h6, blockquote, li",
     );
-    if (!startBlock || !endBlock) return;
     const newRange = document.createRange();
-    newRange.setStart(startBlock, 0);
-    newRange.setEnd(endBlock, endBlock.childNodes.length);
+    if (startBlock && endBlock) {
+      newRange.setStart(startBlock, 0);
+      newRange.setEnd(endBlock, endBlock.childNodes.length);
+    } else {
+      // PDF: a camada de texto não tem <p> — expande até os limites do(s)
+      // parágrafo(s) pela geometria das linhas.
+      const pdf = pdfParagraphSpanRange(range);
+      if (!pdf) return;
+      newRange.setStart(pdf.first, 0);
+      newRange.setEnd(pdf.last, pdf.last.childNodes.length);
+    }
     sel.removeAllRanges();
     sel.addRange(newRange);
     handleSelection(); // reabre o menu já com o texto completo
@@ -1377,21 +1405,29 @@ export function Reader({
     if (!prepared) return;
 
     const config = getConfigSync();
-    if (config && config.providerId === "openai") {
+    const neuralReady =
+      config && config.providerId === "openai" && !!(config.apiKey || "").trim();
+    if (neuralReady) {
       const gen = ttsPrepGen.current;
       setTtsPrep("voice");
       setTtsLoading(true);
-      await tts.speakNeural(prepared.text, prepared.lang, {
+      const neural = await tts.speakNeural(prepared.text, prepared.lang, {
         baseUrl: "https://api.openai.com/v1",
         apiKey: config.apiKey,
         model: "tts-1",
         voice: "nova",
       });
+      // Chave inválida (400/401/403): já caiu pra voz gratuita — avisa 1×.
+      if (!neural.ok && (neural.status === 400 || neural.status === 401 || neural.status === 403)) {
+        warnNeuralKeyOnce();
+      }
       if (gen === ttsPrepGen.current) {
         setTtsLoading(false);
         setTtsPrep(null);
       }
     } else {
+      // Sem chave da OpenAI: avisa (1×) e usa a voz gratuita do dispositivo.
+      warnNeuralKeyOnce();
       setTtsPrep(null);
       setTtsLoading(false);
       tts.speak(prepared.text, prepared.lang);
@@ -3213,6 +3249,86 @@ export function Reader({
       />
     </section>
   );
+}
+
+/**
+ * PDF: a camada de texto do pdf.js não tem <p>/<h1> — só <span> posicionados.
+ * Detecta os limites do(s) parágrafo(s) VISUAL(is) que a seleção toca usando
+ * a GEOMETRIA das linhas: indento de primeira linha, espaço vertical extra,
+ * mudança de tamanho de fonte e linha anterior terminando bem antes da
+ * margem direita. Retorna o primeiro span do parágrafo inicial e o último
+ * span do parágrafo final (ou null se não der pra determinar).
+ */
+function pdfParagraphSpanRange(
+  range: Range,
+): { first: Element; last: Element } | null {
+  const asEl = (n: Node): Element | null =>
+    n.nodeType === 1 ? (n as Element) : n.parentElement;
+  const startEl = asEl(range.startContainer);
+  const endEl = asEl(range.endContainer);
+  const layer = startEl?.closest(".pdf-text-layer");
+  if (!layer || !endEl || endEl.closest(".pdf-text-layer") !== layer) return null;
+
+  const spanOf = (el: Element | null): Element | null => {
+    if (!el) return null;
+    const s = el.closest(".pdf-text-layer span");
+    return s && layer.contains(s) ? s : null;
+  };
+  const startSpan = spanOf(startEl);
+  const endSpan = spanOf(endEl);
+  if (!startSpan || !endSpan) return null;
+
+  // Agrupa os spans em LINHAS pelo top do retângulo (tolerância ~meia letra).
+  type Line = { top: number; bottom: number; x0: number; x1: number; h: number; spans: Element[] };
+  const lines: Line[] = [];
+  const lineOfSpan = new Map<Element, number>();
+  for (const s of Array.from(layer.querySelectorAll("span"))) {
+    if (!(s.textContent ?? "").trim()) continue;
+    const r = s.getBoundingClientRect();
+    if (r.width <= 0 && r.height <= 0) continue;
+    const prev = lines[lines.length - 1];
+    if (prev && Math.abs(r.top - prev.top) < Math.max(3, prev.h * 0.5)) {
+      // Mesmo andar: estende a linha.
+      prev.x0 = Math.min(prev.x0, r.left);
+      prev.x1 = Math.max(prev.x1, r.right);
+      prev.bottom = Math.max(prev.bottom, r.bottom);
+      prev.h = Math.max(prev.h, r.height);
+      prev.spans.push(s);
+    } else {
+      lines.push({ top: r.top, bottom: r.bottom, x0: r.left, x1: r.right, h: r.height, spans: [s] });
+    }
+    lineOfSpan.set(s, lines.length - 1);
+  }
+  const li = lineOfSpan.get(startSpan);
+  const lj = lineOfSpan.get(endSpan);
+  if (li === undefined || lj === undefined) return null;
+
+  const rightEdge = lines.reduce((m, l) => Math.max(m, l.x1), 0);
+  /** A linha i começa um parágrafo NOVO (em relação à linha anterior)? */
+  const isParaStart = (i: number): boolean => {
+    if (i <= 0) return true;
+    const prev = lines[i - 1];
+    const cur = lines[i];
+    // 1. Mudança de tamanho de fonte (título, nota).
+    if (Math.abs(cur.h - prev.h) > ((prev.h + cur.h) / 2) * 0.2) return true;
+    // 2. Espaço vertical extra entre as linhas.
+    if (cur.top - prev.bottom > prev.h * 0.5) return true;
+    // 3. Indento de primeira linha.
+    if (cur.x0 - prev.x0 > Math.max(4, cur.h * 0.6)) return true;
+    // 4. Linha anterior terminou bem antes da margem direita (fim de parágrafo).
+    if (rightEdge - prev.x1 > prev.h * 1.2) return true;
+    return false;
+  };
+
+  // Sobe até o começo do parágrafo inicial; desce até o fim do final.
+  let a = Math.min(li, lj);
+  let b = Math.max(li, lj);
+  while (a > 0 && !isParaStart(a)) a--;
+  while (b < lines.length - 1 && !isParaStart(b + 1)) b++;
+
+  const firstSpans = lines[a].spans;
+  const lastSpans = lines[b].spans;
+  return { first: firstSpans[0], last: lastSpans[lastSpans.length - 1] };
 }
 
 /** Escapa HTML pra injetar com segurança no iframe de print. */

@@ -169,7 +169,9 @@ export function useTTS() {
    * Leitura neural via IA (OpenAI TTS).
    * Gera áudio MP3 natural e toca. USA CACHE — se o mesmo texto já foi
    * gerado antes, toca direto sem regenerar (instantâneo).
-   * Se falhar, cai pra voz nativa automaticamente.
+   * Se falhar, cai pra voz nativa automaticamente E reporta o que houve
+   * ({ ok: false, status }) — assim o caller mostra o aviso amigável
+   * na língua do usuário (ex.: chave inválida → 401).
    */
   const speakNeural = useCallback(
     async (
@@ -181,12 +183,13 @@ export function useTTS() {
         model?: string;
         voice?: string;
       },
-    ) => {
-      if (!text.trim()) return;
+    ): Promise<{ ok: boolean; status?: number }> => {
+      if (!text.trim()) return { ok: false };
 
       // Chave do cache = hash simples do texto + voz.
       const cacheKey = `${ttsConfig.voice || "nova"}:${text.slice(0, 200)}`;
 
+      let httpStatus: number | undefined;
       try {
         // Se já tem no cache, toca direto (instantâneo, sem loading).
         const cachedUrl = audioCacheRef.current.get(cacheKey);
@@ -197,7 +200,7 @@ export function useTTS() {
           audio.onerror = () => { setState("idle"); audioRef.current = null; };
           setState("playing");
           await audio.play();
-          return;
+          return { ok: true };
         }
 
         // Gera áudio novo.
@@ -219,6 +222,7 @@ export function useTTS() {
         });
 
         if (!response.ok) {
+          httpStatus = response.status;
           throw new Error(`TTS falhou: ${response.status}`);
         }
 
@@ -232,13 +236,15 @@ export function useTTS() {
         audio.onended = () => { setState("idle"); audioRef.current = null; };
         audio.onerror = () => { setState("idle"); audioRef.current = null; };
         await audio.play();
+        return { ok: true };
       } catch (err) {
         if ((err as Error).name === "AbortError") {
           setState("idle");
-          return;
+          return { ok: false };
         }
         console.warn("TTS neural falhou, usando voz nativa:", err);
         speak(text, lang);
+        return { ok: false, status: httpStatus };
       }
     },
     [stop, speak],
