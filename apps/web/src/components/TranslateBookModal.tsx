@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { ParsedBook } from "@igot/parser";
 import { useI18n } from "./I18nProvider";
 import {
@@ -51,6 +52,11 @@ export function TranslateBookModal({ book, userId, onClose }: TranslateBookModal
   const [error, setError] = useState<string | null>(null);
   const [secs, setSecs] = useState(0);
   const cancelledRef = useRef(false);
+
+  // Portal: escapa de ancestral com containing block do Reader (mesma cura
+  // do AuthModal/SettingsModal/AskModal — BUG "menu cortado/quebra livro").
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   // Cronômetro (roda enquanto traduz/integra).
   useEffect(() => {
@@ -128,7 +134,9 @@ export function TranslateBookModal({ book, userId, onClose }: TranslateBookModal
     ? savedJob.completedVolumes + (savedJob.partialPages.length > 0 ? 0 : 1)
     : 0;
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div className="tb-overlay" onClick={phase === "running" || phase === "merging" ? undefined : onClose}>
       <div className="tb-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={t("tb_title")}>
         <header className="tb-header">
@@ -459,6 +467,7 @@ export function TranslateBookModal({ book, userId, onClose }: TranslateBookModal
           }
         `}</style>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

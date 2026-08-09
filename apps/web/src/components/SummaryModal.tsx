@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { ParsedBook } from "@igot/parser";
 import { useI18n } from "./I18nProvider";
 import { summarizeStream, type BookContext } from "@/lib/ai-client";
@@ -55,6 +56,11 @@ export function SummaryModal({
   const [error, setError] = useState<string | null>(null);
   const [scope, setScope] = useState<"page" | "book" | null>(null);
   const resultRef = useRef<HTMLDivElement>(null);
+
+  // Portal: escapa de ancestral com containing block do Reader (mesma cura
+  // do AuthModal/SettingsModal/AskModal — BUG "menu cortado/quebra livro").
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   const bookCtx: BookContext = {
     bookTitle: book.title,
@@ -113,7 +119,9 @@ export function SummaryModal({
     setError(null);
   };
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div className="summary-overlay" onClick={onClose}>
       <div className="summary-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={t("summary_modal_title")}>
         <header className="summary-header">
@@ -317,6 +325,7 @@ export function SummaryModal({
           }
         `}</style>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

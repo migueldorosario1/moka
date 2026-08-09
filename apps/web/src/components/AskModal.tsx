@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import type { ParsedBook } from "@igot/parser";
 import { useI18n } from "./I18nProvider";
 import { useSpeechRecognition } from "@/hooks/useSpeechRecognition";
@@ -40,6 +41,13 @@ export function AskModal({ book, onClose, onSaveNote, chapterId }: AskModalProps
   const [error, setError] = useState<string | null>(null);
   const [lastQuestion, setLastQuestion] = useState("");
   const resultRef = useRef<HTMLDivElement>(null);
+
+  // Portal: renderiza no <body>, escapando de qualquer ancestral do Reader
+  // com transform/backdrop-filter (containing block) que quebrava o overlay
+  // fixed — o modal "quebrava o livro" (BUG reportado pelo Miguel no iPad).
+  // Mesma cura do AuthModal/SettingsModal. Guarda SSR.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
 
   // Reconhecimento de voz: frase final preenche o campo (pode editar antes de enviar).
   const speech = useSpeechRecognition((text) => {
@@ -108,7 +116,9 @@ export function AskModal({ book, onClose, onSaveNote, chapterId }: AskModalProps
     t("ask_suggestion_theme"),
   ];
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div className="ask-overlay" onClick={handleClose}>
       <div className="ask-modal" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={t("ask_modal_title")}>
         <header className="ask-header">
@@ -391,7 +401,8 @@ export function AskModal({ book, onClose, onSaveNote, chapterId }: AskModalProps
           }
         `}</style>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
