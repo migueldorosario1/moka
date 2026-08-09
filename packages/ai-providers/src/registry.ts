@@ -92,6 +92,15 @@ export const PRESETS: ProviderPreset[] = [
     description: "Modelos Gemini do Google. Janela de contexto enorme, multilíngue.",
   },
   {
+    id: "mistral",
+    name: "Mistral AI",
+    baseUrl: "https://api.mistral.ai/v1",
+    defaultModel: "mistral-small-latest",
+    adapter: "openai",
+    keyUrl: "https://console.mistral.ai/api-keys",
+    description: "Modelos Mistral (Europa). Eficiente, multilíngue, bom custo-benefício.",
+  },
+  {
     id: "grok",
     name: "Grok (xAI)",
     baseUrl: "https://api.x.ai/v1",
