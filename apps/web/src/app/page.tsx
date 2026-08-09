@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -18,6 +19,7 @@ import { useI18n } from "@/components/I18nProvider";
  */
 export default function Capa() {
   const { t } = useI18n();
+  const router = useRouter();
 
   return (
     <main className="igot-shell ft">
@@ -34,6 +36,25 @@ export default function Capa() {
           <Link href="/sobre" className="topbar-about" title="Quem somos — Saiba mais">
             👥 {t("nav_about")}
           </Link>
+          {/* 🤖 Ajuda do Zé Moca (agente-guia) — leva pro /ajuda por enquanto.
+              Futuro: abre o chat do Zé Moca. Ícone divertido ☕ (não ❓). */}
+          <Link
+            href="/ajuda"
+            className="topbar-help"
+            title={t("help_title")}
+            aria-label={t("help_title")}
+          >
+            ☕
+          </Link>
+          {/* ⚙️ Configurações — tem que estar na capa também (não só no leitor). */}
+          <button
+            className="gear"
+            onClick={() => router.push("/configuracoes")}
+            aria-label={t("settings")}
+            title={t("settings")}
+          >
+            ⚙️
+          </button>
           <AuthGate />
           <LangSwitcher />
         </div>

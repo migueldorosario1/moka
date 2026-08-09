@@ -540,6 +540,25 @@ a:hover {
 }
 .topbar-about:hover { background: var(--surface-alt); }
 
+/* Botão de ajuda (Zé Moca) — mesmo estilo do "Quem somos" mas com ☕. */
+.topbar-help {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  font-size: 17px;
+  text-decoration: none;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.topbar-help:hover {
+  background: var(--surface-alt);
+  transform: scale(1.08);
+}
+
 /* Lado esquerdo do topbar: logo + estante */
 .igot-topbar-left {
   display: flex;
