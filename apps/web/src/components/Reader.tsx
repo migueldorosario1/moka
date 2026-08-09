@@ -199,12 +199,18 @@ export function Reader({
    * Aviso amigável (na língua do usuário) de que a voz natural precisa da
    * chave da OpenAI — mostra UMA VEZ por sessão pra não encher o saco.
    * A voz gratuita do dispositivo continua funcionando (fallback mecânico).
+   * Modal com 2 botões: "Configurar voz neural" (→ /configuracoes) ou
+   * "Seguir com voz mecânica gratuita" (só fala). Tem também "não mostrar
+   * de novo" (grava no localStorage — depois muda em Configurações).
    */
+  const [showTtsModal, setShowTtsModal] = useState(false);
   const warnNeuralKeyOnce = () => {
     if (typeof window === "undefined") return;
+    // "Não mostrar de novo" = preferência persistente (não só da sessão).
+    if (window.localStorage.getItem("moka.ttsWarned") === "1") return;
     if (sessionStorage.getItem("moka.ttsWarned") === "1") return;
     sessionStorage.setItem("moka.ttsWarned", "1");
-    alert(t("tts_neural_hint"));
+    setShowTtsModal(true);
   };
 
   const readPageAloud = async () => {
@@ -3250,6 +3256,54 @@ export function Reader({
           }
         }}
       />
+
+      {/* Modal de primeira vez: voz neural (OpenAI) vs mecânica (gratuita).
+          Pedido do Miguel: em vez de um alert() que só diz "configure", um
+          modal com 2 botões de ação + "não mostrar de novo". Depois, a
+          preferência fica acessível em /configuracoes. */}
+      {showTtsModal && (
+        <div
+          className="tts-modal-overlay"
+          onClick={() => setShowTtsModal(false)}
+          role="dialog"
+          aria-modal="true"
+        >
+          <div className="tts-modal-card" onClick={(e) => e.stopPropagation()}>
+            <h3 className="tts-modal-title">🔊 {t("tts_modal_title")}</h3>
+            <p className="tts-modal-body">{t("tts_modal_body")}</p>
+            <div className="tts-modal-actions">
+              {onOpenSettings && (
+                <button
+                  className="tts-modal-btn tts-modal-primary"
+                  onClick={() => {
+                    setShowTtsModal(false);
+                    onOpenSettings(); // → /configuracoes
+                  }}
+                >
+                  ⚙️ {t("tts_modal_configure")}
+                </button>
+              )}
+              <button
+                className="tts-modal-btn tts-modal-secondary"
+                onClick={() => setShowTtsModal(false)}
+              >
+                {t("tts_modal_mechanical")}
+              </button>
+            </div>
+            <button
+              className="tts-modal-dontshow"
+              onClick={() => {
+                if (typeof window !== "undefined") {
+                  window.localStorage.setItem("moka.ttsWarned", "1");
+                }
+                setShowTtsModal(false);
+              }}
+            >
+              {t("tts_modal_dont_show")}
+            </button>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

@@ -70,6 +70,8 @@ export function SettingsForm({
     message: "",
   });
   const [saved, setSaved] = useState(false);
+  // Feedback do botão "mostrar de novo o aviso de voz" (preferência neural/mecânica).
+  const [voicePrefReset, setVoicePrefReset] = useState(false);
 
   // Busca de modelos disponíveis do provedor.
   const [modelsList, setModelsList] = useState<string[] | null>(null);
@@ -574,6 +576,34 @@ export function SettingsForm({
             </optgroup>
           </select>
         </div>
+
+        {/* Preferência de voz: neural (OpenAI) vs mecânica (gratuita).
+            Pedido do Miguel: a pessoa escolhe no primeiro uso, mas pode
+            mudar de ideia aqui. O botão reseta o "não mostrar de novo". */}
+        <div className="field voice-pref-field">
+          <label>🔊 {t("cfg_voice_pref_title")}</label>
+          <p className="hint" style={{ marginBottom: "8px" }}>
+            {t("cfg_voice_pref_body")}
+          </p>
+          <button
+            type="button"
+            className="key-refresh-btn"
+            onClick={() => {
+              if (typeof window !== "undefined") {
+                window.localStorage.removeItem("moka.ttsWarned");
+                sessionStorage.removeItem("moka.ttsWarned");
+              }
+              setVoicePrefReset(true);
+              setTimeout(() => setVoicePrefReset(false), 2500);
+            }}
+          >
+            🔔 {t("cfg_voice_pref_show_again")}
+          </button>
+          {voicePrefReset && (
+            <p className="feedback ok" style={{ marginTop: 6 }}>✓</p>
+          )}
+        </div>
+
         <p className="hint" style={{ marginTop: "4px" }}>
           {t("set_content_lang")}
         </p>

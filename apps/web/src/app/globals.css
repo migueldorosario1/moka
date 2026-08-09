@@ -2562,3 +2562,76 @@ main.igot-shell.ft {
 .bib-btn-abrir { background: #0f7680; }
 .bib-ok { color: #2c7a2c; font-weight: 700; font-size: 13px; }
 .bib-nota { margin-top: 30px; padding-top: 16px; border-top: 1px solid #e8d9c8; color: #8a7a6a; font-size: 12.5px; line-height: 1.6; text-align: center; }
+
+/* ── Modal de primeira vez: voz neural vs mecânica (Reader) ── */
+.tts-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(30, 20, 12, 0.45);
+  -webkit-backdrop-filter: blur(4px);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  padding: 20px;
+}
+.tts-modal-card {
+  background: var(--bg, #faf8f5);
+  border: 1px solid var(--border-soft, #e2e8f0);
+  border-radius: 18px;
+  width: 100%;
+  max-width: 420px;
+  padding: 24px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.18);
+}
+.tts-modal-title {
+  font-family: var(--font-brand, Georgia, serif);
+  font-size: 19px;
+  font-weight: 700;
+  margin: 0 0 10px;
+}
+.tts-modal-body {
+  font-size: 14.5px;
+  line-height: 1.55;
+  color: var(--text-muted, #475569);
+  margin: 0 0 18px;
+}
+.tts-modal-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.tts-modal-btn {
+  padding: 12px 18px;
+  border-radius: 10px;
+  border: 1px solid var(--border, #cbd5e1);
+  font-size: 14.5px;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: center;
+}
+.tts-modal-primary {
+  background: var(--accent, #1e40af);
+  color: #fff;
+  border-color: var(--accent, #1e40af);
+}
+.tts-modal-secondary {
+  background: var(--surface, #fff);
+  color: var(--text, #0f172a);
+}
+.tts-modal-dontshow {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  padding: 6px;
+  background: none;
+  border: none;
+  color: var(--text-muted, #94a3b8);
+  font-size: 12.5px;
+  cursor: pointer;
+  text-decoration: underline;
+}
+.voice-pref-field {
+  margin-top: 14px;
+}
