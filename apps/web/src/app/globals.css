@@ -123,24 +123,49 @@
 }
 
 /* ═══ Contraste de acessibilidade — botões dourados/amarelos ═══
-   O --gold é sempre uma cor clara (dourado/amarelo), então qualquer botão
-   ou elemento que use --gold como fundo PRECISA de texto escuro — senão
-   fica ilegível (texto claro no amarelo claro). Esta regra garante contraste
-   em TODOS os temas. (Reporte do Miguel: "botão amarelo sem contraste" no
-   tema escuro da estante.) */
+   O --gold é sempre uma cor clara (dourado/amarelo). Elementos cujo FUNDO
+   é dourado precisam de texto escuro. Mas elementos que só têm BORDA dourada
+   com fundo --surface (escuro no dark) mantêm var(--text) normal.
+   (Reporte do Miguel: "botão amarelo sem contraste" no tema escuro.) */
 .setup-warning,
 .uploader-error,
+.donate-btn.pix {
+  color: #1a1208 !important; /* fundo claro/dourado → texto escuro */
+}
+/* config-callout tem borda gold mas fundo --surface → manter texto do tema */
 .config-callout,
+.config-callout strong {
+  color: var(--text) !important;
+}
+/* config-callout-btn tem gradiente accent → texto branco */
 .config-callout-btn,
 .add-book-btn,
-.shelf-add-btn,
-.donate-btn.pix {
-  color: #1a1208 !important; /* texto escuro — sempre legível no dourado */
-}
-/* Exceção: botões com gradiente accent (azul/roxo) mantêm texto branco. */
-.add-book-btn,
 .shelf-add-btn {
-  color: #fff8ee !important; /* estes usam gradiente accent, não gold */
+  color: #fff8ee !important;
+}
+
+/* No tema dark/contrast: o add-book-btn (gradiente accent) precisa de um
+   azul MAIS ESCURO pra que o texto branco contraste bem. No dark o accent
+   era azul-claro demais (branco sumia). */
+:root[data-theme="dark"] .add-book-btn,
+:root[data-theme="dark"] .shelf-add-btn,
+:root[data-theme="dark"] .config-callout-btn {
+  background: linear-gradient(180deg, #1d4ed8, #1e3a8a) !important;
+  color: #ffffff !important;
+}
+:root[data-theme="contrast"] .add-book-btn,
+:root[data-theme="contrast"] .shelf-add-btn,
+:root[data-theme="contrast"] .config-callout-btn {
+  background: #000 !important;
+  color: #ffff00 !important;
+  border: 2px solid #ffff00 !important;
+}
+/* Garantia genérica: qualquer elemento com fundo dourado/amarelo DEVE ter
+   texto escuro. Cobre classes que eu possa ter esquecido. */
+:root[data-theme="dark"] [style*="gold"],
+:root[data-theme="dark"] [style*="#f59e0b"],
+:root[data-theme="dark"] [style*="#facc15"] {
+  color: #1a1208 !important;
 }
 
 /* Se o usuário escolheu tema manual, o prefers-color-scheme NÃO sobrescreve
