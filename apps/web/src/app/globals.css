@@ -538,7 +538,7 @@ a:hover {
   white-space: nowrap;
   transition: background 0.15s ease;
 }
-.topbar-about:hover { background: #fff; }
+.topbar-about:hover { background: var(--surface-alt); }
 
 /* Lado esquerdo do topbar: logo + estante */
 .igot-topbar-left {
@@ -1937,7 +1937,7 @@ a:hover {
 }
 .exp-form input:focus {
   border-color: #a35d2f;
-  background: #fff;
+  background: var(--surface);
 }
 .exp-cta {
   background: linear-gradient(135deg, #a35d2f 0%, #7e4522 100%);
@@ -2000,7 +2000,7 @@ a:hover {
   border: 1px solid #e3d6c1;
   border-radius: 12px;
   padding: 8px;
-  background: #fff;
+  background: var(--surface);
 }
 .exp-link {
   color: #0f7680;
@@ -2168,7 +2168,7 @@ main.igot-shell.ft {
   transform: translateY(-3px);
   box-shadow: 0 8px 24px rgba(43, 32, 21, 0.08);
   border-color: var(--ft-copper);
-  background: #fff;
+  background: var(--surface);
 }
 .capa-path b {
   font-family: var(--font-brand);
@@ -2243,7 +2243,7 @@ main.igot-shell.ft {
   transform: translateY(-2px);
   border-color: var(--ft-copper);
   box-shadow: 0 6px 18px rgba(43, 32, 21, 0.07);
-  background: #fff;
+  background: var(--surface);
 }
 .capa-plan b {
   font-family: var(--font-brand);
@@ -2288,7 +2288,7 @@ main.igot-shell.ft {
   box-sizing: border-box;
 }
 .capa-card:hover {
-  background: #fff;
+  background: var(--surface);
   border-color: var(--ft-copper);
   box-shadow: 0 6px 18px rgba(43, 32, 21, 0.07);
   transform: translateY(-2px);
@@ -2600,7 +2600,7 @@ main.igot-shell.ft {
 }
 .shelf-bib-link b { font-family: var(--font-brand); font-size: 15px; }
 .shelf-bib-link span { color: #0f7680; font-weight: 700; }
-.shelf-bib-link:hover { background: #f7e7d7; }
+.shelf-bib-link:hover { background: var(--surface-alt); }
 
 /* ─── /biblioteca (Livraria Livre) — estilos globais pra matar o FOUC:
    styled-jsx injeta depois do primeiro paint na navegação client-side;
@@ -2616,7 +2616,7 @@ main.igot-shell.ft {
   font-family: var(--font-brand); font-weight: 600; font-size: 27px;
   text-align: center; margin: 0 0 10px;
 }
-.bib-sub { color: #66605a; font-size: 14.5px; line-height: 1.6; text-align: center; max-width: 560px; margin: 0 auto 28px; }
+.bib-sub { color: var(--text-muted); font-size: 14.5px; line-height: 1.6; text-align: center; max-width: 560px; margin: 0 auto 28px; }
 .bib-erro { color: #b3261e; text-align: center; margin-bottom: 14px; }
 .bib-legal {
   margin: 0 auto 26px; max-width: 520px; text-align: center;
@@ -2626,7 +2626,7 @@ main.igot-shell.ft {
 }
 .bib-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 18px; }
 .bib-card {
-  background: #fff; border: 1px solid #e8d9c8; display: flex; flex-direction: column;
+  background: var(--surface); border: 1px solid var(--border-soft); display: flex; flex-direction: column;
   border-radius: 14px; overflow: hidden;
   box-shadow: 0 2px 10px rgba(93, 60, 28, 0.06);
   transition: transform 180ms ease, box-shadow 180ms ease;
@@ -2639,7 +2639,7 @@ main.igot-shell.ft {
 .bib-capa {
   position: relative; aspect-ratio: 2 / 3; overflow: hidden;
   background: #f3e9dc center / 42% no-repeat;
-  border-bottom: 1px solid #efe0cd;
+  border-bottom: 1px solid var(--border-soft);
 }
 .bib-capa::before {
   content: "📖"; position: absolute; inset: 0;
@@ -2654,9 +2654,9 @@ main.igot-shell.ft {
 .bib-info { padding: 13px 14px 15px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
 .bib-info h2 { font-family: var(--font-brand); font-size: 15.5px; font-weight: 600; margin: 0; line-height: 1.25; }
 .bib-demo { font-size: 13px; }
-.bib-autor { color: #8a7a6a; font-size: 12.5px; font-style: italic; margin: 0; }
+.bib-autor { color: var(--text-muted); font-size: 12.5px; font-style: italic; margin: 0; }
 .bib-sinopse {
-  color: #66605a; font-size: 12.5px; line-height: 1.55; margin: 0; flex: 1;
+  color: var(--text-muted); font-size: 12.5px; line-height: 1.55; margin: 0; flex: 1;
   display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden;
 }
 .bib-acoes { margin-top: 8px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -2669,7 +2669,7 @@ main.igot-shell.ft {
 .bib-btn:disabled { opacity: 0.6; cursor: wait; }
 .bib-btn-abrir { background: #0f7680; }
 .bib-ok { color: #2c7a2c; font-weight: 700; font-size: 13px; }
-.bib-nota { margin-top: 30px; padding-top: 16px; border-top: 1px solid #e8d9c8; color: #8a7a6a; font-size: 12.5px; line-height: 1.6; text-align: center; }
+.bib-nota { margin-top: 30px; padding-top: 16px; border-top: 1px solid var(--border-soft); color: var(--text-muted); font-size: 12.5px; line-height: 1.6; text-align: center; }
 
 /* ── Modal de primeira vez: voz neural vs mecânica (Reader) ── */
 .tts-modal-overlay {
@@ -2746,9 +2746,9 @@ main.igot-shell.ft {
 
 /* ═══ CSS migrado do SettingsForm (cura FOUC — antes era <style jsx>) ═══ */
         .v3-simple {
-          background: #f7e7d7;
-          border: 1px solid #191919;
-          border-radius: 0;
+          background: var(--surface-alt);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
           padding: 22px 20px;
           margin-bottom: 18px;
         }
@@ -2757,7 +2757,7 @@ main.igot-shell.ft {
           font-family: var(--font-brand);
           font-weight: 600;
           font-size: 21px;
-          color: #191919;
+          color: var(--text);
         }
         .v3-simple-sub {
           margin: 0 0 16px;
@@ -2777,7 +2777,7 @@ main.igot-shell.ft {
           display: flex;
           flex-direction: column;
           gap: 5px;
-          background: #fff;
+          background: var(--surface);
           border: 1px solid #d9c8b8;
           border-radius: 0;
           padding: 16px 14px;
@@ -2891,7 +2891,7 @@ main.igot-shell.ft {
           padding: 6px 12px;
           transition: background 0.15s ease;
         }
-        .settings-quicknav a:hover { background: #fff; }
+        .settings-quicknav a:hover { background: var(--surface); }
 
         .video-section {
           background: #fdf3e3;
