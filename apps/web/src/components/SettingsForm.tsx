@@ -81,6 +81,13 @@ export function SettingsForm({
   // Estado de teste por entry: entryId → 'testing' | 'ok' | 'fail'.
   const [entryTest, setEntryTest] = useState<Record<string, "testing" | "ok" | "fail">>({});
 
+  // Sincroniza a lista de entries quando a config inicial muda (ex.: ao abrir
+  // a página /configuracoes, o pai recarrega o cache fresco e passa novo
+  // `initial`). Sem isto, a lista podia renderizar vazia/desatualizada.
+  useEffect(() => {
+    setEntries(listAllEntriesSync());
+  }, [initial]);
+
   // Salva o rascunho no localStorage sempre que os campos mudam.
   // Assim, se o usuário fechar o modal sem salvar, não perde o que digitou.
   useEffect(() => {

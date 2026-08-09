@@ -186,7 +186,7 @@ export default function BookPage({ params }: { params: { id: string } }) {
           onZoomChange={(z) => updateSession({ zoom: z })}
           onCloseBook={() => router.push("/estante")}
           auth={auth}
-          onOpenSettings={() => setSettingsOpen(true)}
+          onOpenSettings={() => router.push("/configuracoes")}
           settingsOpen={settingsOpen}
           onCloseSettings={() => setSettingsOpen(false)}
           onSettingsSaved={() => setConfigReady(hasConfig())}

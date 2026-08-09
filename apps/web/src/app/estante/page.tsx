@@ -9,7 +9,6 @@ import { LangSwitcher } from "@/components/LangSwitcher";
 import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
 import { useI18n } from "@/components/I18nProvider";
-import { SettingsModal } from "@/components/SettingsModal";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
 import { BackButton } from "@/components/BackButton";
 import { VisitPing } from "@/components/VisitPing";
@@ -40,7 +39,6 @@ export default function HomePage() {
   const [addingBook, setAddingBook] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [configReady, setConfigReady] = useState(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
 
   // Carrega a estante (migrando livro legado primeiro).
   // Só roda UMA VEZ no boot — não re-roda quando auth muda de estado.
@@ -218,7 +216,7 @@ export default function HomePage() {
           <LangSwitcher />
           <button
             className={`gear ${configReady ? "" : "unset"}`}
-            onClick={() => setSettingsOpen(true)}
+            onClick={() => router.push("/configuracoes")}
             aria-label="Configurações de IA"
           >
             ⚙️
@@ -237,7 +235,7 @@ export default function HomePage() {
           onFile={handleFile}
           error={uploadError}
           configReady={configReady}
-          onOpenSettings={() => setSettingsOpen(true)}
+          onOpenSettings={() => router.push("/configuracoes")}
         />
       ) : (
         <div className="shelf-page">
@@ -341,12 +339,6 @@ export default function HomePage() {
         </div>
       )}
 
-      {settingsOpen && (
-        <SettingsModal
-          onClose={() => setSettingsOpen(false)}
-          onSaved={() => setConfigReady(hasConfig())}
-        />
-      )}
           <SiteFooter />
     </main>
   );

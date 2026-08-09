@@ -343,7 +343,7 @@ export default function HomePage() {
           <LangSwitcher />
           <button
             className={`gear ${configReady ? "" : "unset"}`}
-            onClick={() => setSettingsOpen(true)}
+            onClick={() => router.push("/configuracoes")}
             aria-label="Configurações de IA"
             title="Configurações de IA"
           >
@@ -448,7 +448,7 @@ export default function HomePage() {
         {!configReady && (
           <div className="config-callout">
             <strong>{t("video_config_first")}</strong>
-            <button className="config-callout-btn" onClick={() => setSettingsOpen(true)}>
+            <button className="config-callout-btn" onClick={() => router.push("/configuracoes")}>
               {t("video_config_btn")}
             </button>
             <span>{t("video_config_hint")}</span>
