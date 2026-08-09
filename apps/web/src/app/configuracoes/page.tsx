@@ -8,6 +8,7 @@ import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
 import { LlmPriceRanking } from "@/components/LlmPriceRanking";
 import { SettingsForm } from "@/components/SettingsForm";
+import { A11yControls } from "@/components/A11yControls";
 import { useI18n } from "@/components/I18nProvider";
 import type { AIConfig } from "@igot/ai-providers";
 import {
@@ -78,6 +79,10 @@ export default function ConfiguracoesPage() {
             <h1 className="cfg-title">⚙️ {t("cfg_page_title")}</h1>
             <p className="cfg-intro">{t("cfg_intro")}</p>
           </header>
+
+          {/* ♿ Acessibilidade — tema (claro/escuro/contraste/sépia) + tamanho
+              de fonte da interface. Pedido do Miguel 09/08. */}
+          <A11yControls />
 
           <section className="cfg-section">
             <h2 className="cfg-section-title">{t("cfg_keys_section")}</h2>

@@ -60,10 +60,72 @@
   /* Seleção de texto (destaque azul gelo / cobalto) */
   --selection-bg: #bfdbfe;
   --selection-color: #0f172a;
+
+  /* Escala de fonte da interface (acessibilidade — controle do usuário).
+     1 = normal; 1.2 = 20% maior; 0.9 = 10% menor. Aplicado via calc() nos
+     --text-* abaixo. O componente A11yControls ajusta este valor. */
+  --ui-font-scale: 1;
 }
 
+/* ═══ TEMA MANUAL (acessibilidade — pedido do Miguel 09/08) ═══
+   O usuário escolhe o tema no controle de acessibilidade; o JS seta
+   data-theme no <html>. Isto SOBREPÕE o prefers-color-scheme automático. */
+
+/* DARK forte (preto + letra branca) — mais dramático que o automático. */
+:root[data-theme="dark"] {
+  --bg: #0a0a0c;
+  --surface: #16161a;
+  --surface-alt: #1f1f25;
+  --text: #f5f5f7;
+  --text-muted: #a0a0ab;
+  --border: #2e2e36;
+  --border-soft: #232329;
+  --accent: #60a5fa;
+  --accent-soft: #1e293b;
+  --accent-dark: #3b82f6;
+  --gold: #f59e0b;
+  --selection-bg: #1e3a5f;
+  --selection-color: #f5f5f7;
+}
+
+/* ALTO CONTRASTE (preto/branco puro — máxima legibilidade). */
+:root[data-theme="contrast"] {
+  --bg: #000000;
+  --surface: #000000;
+  --surface-alt: #0a0a0a;
+  --text: #ffffff;
+  --text-muted: #e0e0e0;
+  --border: #ffffff;
+  --border-soft: #cccccc;
+  --accent: #ffff00;
+  --accent-soft: #1a1a00;
+  --accent-dark: #ffff00;
+  --gold: #ffff00;
+  --selection-bg: #ffffff;
+  --selection-color: #000000;
+}
+
+/* SEPIA (papel envelhecido — conforto pra leitura longa). */
+:root[data-theme="sepia"] {
+  --bg: #f4ecd8;
+  --surface: #faf3e0;
+  --surface-alt: #ede0c8;
+  --text: #3d2b1f;
+  --text-muted: #6b5544;
+  --border: #c9b896;
+  --border-soft: #ddd0b8;
+  --accent: #8b5a2b;
+  --accent-soft: #e8d8c0;
+  --accent-dark: #6b3a1b;
+  --gold: #b8860b;
+  --selection-bg: #d4c4a8;
+  --selection-color: #3d2b1f;
+}
+
+/* Se o usuário escolheu tema manual, o prefers-color-scheme NÃO sobrescreve
+   (a especificidade de [data-theme] no :root ganha do media query). */
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     /* DARK MODE (Azul Noite Profundo + Safira à meia-luz) */
     --bg: #0b132b;            /* azul noite profundo (fundo) */
     --surface: #1c2541;       /* azul safira escuro (superfícies) */
@@ -3384,4 +3446,98 @@ main.igot-shell.ft {
 .add-key-btn:hover {
   background: var(--accent, #1e40af);
   color: #fff;
+}
+
+/* ═══ Acessibilidade — A11yControls (tema + fonte) ═══ */
+.a11y-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  padding: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 14px;
+  margin-bottom: 20px;
+}
+.a11y-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.a11y-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.a11y-font-val {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-left: 6px;
+}
+.a11y-themes {
+  display: flex;
+  gap: 6px;
+}
+.a11y-theme-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  border: 2px solid var(--border);
+  background: var(--surface-alt);
+  font-size: 18px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.15s, transform 0.1s;
+}
+.a11y-theme-btn:hover {
+  border-color: var(--accent);
+  transform: scale(1.05);
+}
+.a11y-theme-btn.active {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  box-shadow: 0 0 0 2px var(--accent-soft);
+}
+.a11y-font-slider {
+  flex: 1;
+  min-width: 120px;
+  max-width: 200px;
+  height: 6px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: var(--border);
+  border-radius: 3px;
+  outline: none;
+}
+.a11y-font-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--surface);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+.a11y-font-slider::-moz-range-thumb {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--surface);
+}
+
+/* Aplica --ui-font-scale no tamanho de fonte base do body.
+   O controle de acessibilidade ajusta este valor (0.85 a 1.4). */
+html {
+  font-size: calc(16px * var(--ui-font-scale, 1));
 }

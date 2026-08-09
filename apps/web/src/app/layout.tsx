@@ -83,8 +83,23 @@ export default function RootLayout({
           __html: `
             html, body { background: #f0f4f9; color: #0f172a; }
             @media (prefers-color-scheme: dark) {
-              html, body { background: #0b132b; color: #f1f5f9; }
+              html:not([data-theme]), body { background: #0b132b; color: #f1f5f9; }
             }
+            html[data-theme="dark"], html[data-theme="dark"] body { background: #0a0a0c; color: #f5f5f7; }
+            html[data-theme="contrast"], html[data-theme="contrast"] body { background: #000; color: #fff; }
+            html[data-theme="sepia"], html[data-theme="sepia"] body { background: #f4ecd8; color: #3d2b1f; }
+          `,
+        }} />
+        {/* Aplica tema + escala de fonte salvos ANTES do paint (evita flash
+            de tema errado na primeira renderização). Acessibilidade 09/08. */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            try {
+              var t = localStorage.getItem('moka.theme');
+              if (t && t !== 'light') document.documentElement.setAttribute('data-theme', t);
+              var fs = localStorage.getItem('moka.uiFontScale');
+              if (fs) document.documentElement.style.setProperty('--ui-font-scale', fs);
+            } catch (e) {}
           `,
         }} />
       </head>
