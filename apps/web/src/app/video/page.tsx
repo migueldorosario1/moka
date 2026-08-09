@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { SettingsModal } from "@/components/SettingsModal";
-import { InstallPrompt } from "@/components/InstallPrompt";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { AuthGate } from "@/components/AuthGate";
@@ -360,7 +359,6 @@ export default function HomePage() {
           {t("video_hero_2")}
         </h1>
         <p className="hero-sub">{t("video_hero_sub")}</p>
-        <p className="hero-install-note">{t("video_install_note")}</p>
 
         <form className="link-form" onSubmit={handleSubmit}>
           <input
@@ -457,8 +455,6 @@ export default function HomePage() {
           </div>
         )}
       </section>
-
-      <InstallPrompt />
 
       {/* Videoteca */}
       <section className="shelf">
