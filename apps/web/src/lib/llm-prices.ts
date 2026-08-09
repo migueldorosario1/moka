@@ -70,3 +70,102 @@ export function usd(v: number): string {
   if (v >= 0.1) return `$${v.toFixed(3)}`;
   return `$${v.toFixed(4)}`;
 }
+
+// ═══ Preços DINÂMICOS (agente atualizador_precos_llm.py) ═══
+//
+// O ranking hardcoded (LLM_PRICES) é o FALLBACK — nunca deixa a página quebrar.
+// O JSON dinâmico vem do agente (rodando diariamente na Tencent) e traz
+// preços frescos. O Moka faz fetch com cache de 24h (localStorage); se a rede
+// falhar ou o agente sair do ar, usa o fallback. (Pedido do Miguel, 09/08.)
+
+/** URL do JSON canônico do agente. (Fase 1: raw.githubusercontent quando o
+ *  Miguel escolher o repo. Por enquanto, string vazia = só fallback.) */
+export const LLM_PRICES_DYNAMIC_URL = ""; // TODO: preencher quando o agente tiver endpoint público
+
+/** Versão dinâmica do preço (vem do JSON do agente). */
+export interface LlmPriceDynamic {
+  rank?: number;
+  modelo: string;
+  presetId: string;
+  inUsd: number;
+  outUsd: number;
+  nota?: string;
+}
+
+/** Resultado do fetch dinâmico. */
+export interface LlmPricesFetchResult {
+  prices: LlmPrice[];        // sempre válido (dinâmico ou fallback)
+  updated_at: string | null; // ISO date do agente, ou null se fallback
+  usd_brl: number | null;
+}
+
+const CACHE_KEY = "moka.llmPricesCache";
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24h
+
+/**
+ * Busca os preços de LLM (dinâmico com cache 24h, fallback hardcoded).
+ * Chamar no client (useEffect). Nunca lança — sempre retorna algo usável.
+ */
+export async function fetchLlmPrices(): Promise<LlmPricesFetchResult> {
+  // Sem URL configurada → só fallback (fase 1 até o Miguel publicar o endpoint).
+  if (!LLM_PRICES_DYNAMIC_URL) {
+    return { prices: LLM_PRICES, updated_at: null, usd_brl: null };
+  }
+
+  // Cache: se tem no localStorage e não expirou, usa.
+  if (typeof window !== "undefined") {
+    try {
+      const raw = window.localStorage.getItem(CACHE_KEY);
+      if (raw) {
+        const cached = JSON.parse(raw) as { at: number; data: LlmPricesFetchResult };
+        if (Date.now() - cached.at < CACHE_TTL_MS) {
+          return cached.data;
+        }
+      }
+    } catch {
+      // cache corrompido — ignora
+    }
+  }
+
+  // Fetch do agente.
+  try {
+    const res = await fetch(LLM_PRICES_DYNAMIC_URL, { cache: "no-store" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    // Converte o formato do agente ({id, nome, preset_id, input_usd, output_usd})
+    // pro formato do Moka ({modelo, presetId, inUsd, outUsd}).
+    const prices: LlmPrice[] = (data.modelos || []).map((m: any, i: number) => ({
+      rank: m.rank ?? i + 1,
+      modelo: m.nome ?? m.id,
+      presetId: m.preset_id ?? m.presetId ?? "",
+      inUsd: Number(m.input_usd ?? m.inUsd ?? 0),
+      outUsd: Number(m.output_usd ?? m.outUsd ?? 0),
+      nota: m.tags?.join(", "),
+    }));
+    if (prices.length === 0) throw new Error("JSON vazio");
+
+    // Reordena por custo de resumo (caso o agente não tenha mandado ordenado).
+    prices.sort((a, b) => custoResumo(a) - custoResumo(b));
+    prices.forEach((p, i) => (p.rank = i + 1));
+
+    const result: LlmPricesFetchResult = {
+      prices,
+      updated_at: data.updated_at ?? null,
+      usd_brl: data.usd_brl ?? null,
+    };
+
+    // Salva no cache.
+    if (typeof window !== "undefined") {
+      try {
+        window.localStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), data: result }));
+      } catch {
+        // storage cheio — ignora
+      }
+    }
+    return result;
+  } catch (e) {
+    // Rede falhou / JSON inválido → fallback hardcoded.
+    console.warn("fetchLlmPrices: usando fallback hardcoded:", e);
+    return { prices: LLM_PRICES, updated_at: null, usd_brl: null };
+  }
+}

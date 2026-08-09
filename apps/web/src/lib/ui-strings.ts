@@ -375,6 +375,7 @@ export type UIStringKey =
   | "free_desc"
   | "byok_get_key"
   | "rank_title"
+  | "rank_updated"
   | "rank_sub"
   | "rank_col_model"
   | "rank_col_io"
@@ -840,6 +841,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_video: "⚠️ E vídeo? É outro sistema: com legenda é grátis; sem legenda, a chave precisa ser de transcrição de áudio (Whisper/OpenAI) — preço por hora: US$ 0,04–0,36.",
     tut_cta: "Pronto! Comece pela sua estante →",
     rank_title: "🏆 Ranking de preços das IAs",
+    rank_updated: "Preços atualizados em",
     rank_sub: "Quanto custa usar cada IA com a SUA chave (BYOK) — valores oficiais de cada provedor (jul/2026).",
     rank_col_model: "IA (modelo)",
     rank_col_io: "$/1M tokens (in/out)",
@@ -1276,6 +1278,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_video: "⚠️ And video? It's another system: with captions it's free; without captions, the key must be for audio transcription (Whisper/OpenAI) — price per hour: US$ 0.04–0.36.",
     tut_cta: "Done! Start with your shelf →",
     rank_title: "🏆 AI price ranking",
+    rank_updated: "Prices updated on",
     rank_sub: "What it costs to use each AI with YOUR key (BYOK) — official prices from each provider (Jul/2026).",
     rank_col_model: "AI (model)",
     rank_col_io: "$/1M tokens (in/out)",
@@ -1712,6 +1715,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_video: "⚠️ ¿Y el video? Es otro sistema: con subtítulos es gratis; sin subtítulos, la clave debe ser de transcripción de audio (Whisper/OpenAI) — precio por hora: US$ 0,04–0,36.",
     tut_cta: "¡Listo! Empieza por tu estante →",
     rank_title: "🏆 Ranking de precios de las IAs",
+    rank_updated: "Precios actualizados el",
     rank_sub: "Cuánto cuesta usar cada IA con TU clave (BYOK) — precios oficiales de cada proveedor (jul/2026).",
     rank_col_model: "IA (modelo)",
     rank_col_io: "$/1M tokens (ent/sal)",
@@ -2148,6 +2152,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_video: "⚠️ Et la vidéo ? C'est un autre système : avec sous-titres c'est gratuit ; sans sous-titres, la clé doit être pour la transcription audio (Whisper/OpenAI) — prix par heure : 0,04–0,36 $US.",
     tut_cta: "Prêt ! Commencez par votre étagère →",
     rank_title: "🏆 Classement des prix des IA",
+    rank_updated: "Prix mis à jour le",
     rank_sub: "Ce que coûte chaque IA avec VOTRE clé (BYOK) — prix officiels de chaque fournisseur (juil. 2026).",
     rank_col_model: "IA (modèle)",
     rank_col_io: "$/1M tokens (entrée/sortie)",
@@ -2584,6 +2589,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_video: "⚠️ Und Video? Anderes System: mit Untertiteln gratis; ohne Untertitel braucht der Schlüssel eine Audio-Transkription (Whisper/OpenAI) — Preis pro Stunde: 0,04–0,36 US$.",
     tut_cta: "Fertig! Starten Sie mit Ihrem Regal →",
     rank_title: "🏆 KI-Preisranking",
+    rank_updated: "Preise aktualisiert am",
     rank_sub: "Was es kostet, jede KI mit IHREM Schlüssel (BYOK) zu nutzen — offizielle Preise der Anbieter (Juli 2026).",
     rank_col_model: "KI (Modell)",
     rank_col_io: "$/1M Tokens (Ein/Aus)",
@@ -3020,6 +3026,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_video: "⚠️ E il video? È un altro sistema: con sottotitoli è gratis; senza sottotitoli, la chiave deve essere per la trascrizione audio (Whisper/OpenAI) — prezzo all'ora: 0,04–0,36 US$.",
     tut_cta: "Fatto! Inizia dalla tua libreria →",
     rank_title: "🏆 Classifica dei prezzi delle IA",
+    rank_updated: "Prezzi aggiornati il",
     rank_sub: "Quanto costa usare ogni IA con la TUA chiave (BYOK) — prezzi ufficiali di ogni provider (lug 2026).",
     rank_col_model: "IA (modello)",
     rank_col_io: "$/1M token (in/out)",
@@ -3456,6 +3463,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_video: "⚠️ А видео? Это другая система: с субтитрами — бесплатно; без субтитров нужен ключ для аудио-транскрипции (Whisper/OpenAI) — цена за час: $0,04–0,36.",
     tut_cta: "Готово! Начните с вашей полки →",
     rank_title: "🏆 Рейтинг цен ИИ",
+    rank_updated: "Цены обновлены",
     rank_sub: "Сколько стоит каждый ИИ с ВАШИМ ключом (BYOK) — официальные цены провайдеров (июль 2026).",
     rank_col_model: "ИИ (модель)",
     rank_col_io: "$/1M токенов (вход/выход)",
@@ -3892,6 +3900,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_video: "⚠️ 视频呢？是另一套系统：有字幕免费；无字幕需要音频转写密钥（Whisper/OpenAI）——每小时价格：$0.04–0.36。",
     tut_cta: "完成！从您的书架开始 →",
     rank_title: "🏆 AI 价格排名",
+    rank_updated: "价格更新于",
     rank_sub: "使用您自己的密钥 (BYOK) 调用各 AI 的成本——各提供商官方价格（2026年7月）。",
     rank_col_model: "AI（模型）",
     rank_col_io: "$/百万 token（输入/输出）",
@@ -4328,6 +4337,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_video: "⚠️ 動画は？別システムです：字幕ありは無料；字幕なしは音声転写（Whisper/OpenAI）のキーが必要——1時間の価格：$0.04–0.36。",
     tut_cta: "完了！本棚から始めましょう →",
     rank_title: "🏆 AI価格ランキング",
+    rank_updated: "価格更新日：",
     rank_sub: "あなたのキー (BYOK) で各AIを使うコスト——各プロバイダの公式価格（2026年7月）。",
     rank_col_model: "AI（モデル）",
     rank_col_io: "$/100万トークン（入力/出力）",
@@ -4764,6 +4774,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_video: "⚠️ 영상은? 다른 시스템입니다: 자막 있으면 무료; 자막 없으면 오디오 전사 (Whisper/OpenAI) 키가 필요 — 시간당 가격: $0.04–0.36.",
     tut_cta: "완료! 내 책장부터 시작 →",
     rank_title: "🏆 AI 가격 랭킹",
+    rank_updated: "가격 업데이트:",
     rank_sub: "여러분의 키 (BYOK) 로 각 AI를 쓰는 비용 — 각 제공업체 공식 가격 (2026년 7월).",
     rank_col_model: "AI (모델)",
     rank_col_io: "$/100만 토큰 (입력/출력)",
@@ -5200,6 +5211,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_video: "⚠️ والفيديو؟ نظام آخر: مع الترجمة مجاني؛ بدونها تحتاج مفتاح تفريغ صوتي (Whisper/OpenAI) — السعر بالساعة: $0.04–0.36.",
     tut_cta: "تم! ابدأ من مكتبتك →",
     rank_title: "🏆 ترتيب أسعار الذكاء الاصطناعي",
+    rank_updated: "تحديث الأسعار في",
     rank_sub: "تكلفة استخدام كل ذكاء اصطناعي بمفتاحك (BYOK) — الأسعار الرسمية لكل مزود (يوليو 2026).",
     rank_col_model: "الذكاء (النموذج)",
     rank_col_io: "$/مليون رمز (إدخال/إخراج)",
@@ -5636,6 +5648,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_video: "⚠️ और वीडियो? दूसरी प्रणाली है: सबटाइटल हो तो मुफ़्त; न हो तो ऑडियो ट्रांसक्रिप्शन (Whisper/OpenAI) की कुंजी चाहिए — प्रति घंटा कीमत: $0.04–0.36.",
     tut_cta: "हो गया! अपनी शेल्फ़ से शुरू करें →",
     rank_title: "🏆 AI मूल्य रैंकिंग",
+    rank_updated: "मूल्य अपडेट किए गए",
     rank_sub: "अपनी खुद की कुंजी (BYOK) से हर AI के उपयोग की लागत — हर प्रोवाइडर की आधिकारिक कीमतें (जुलाई 2026)।",
     rank_col_model: "AI (मॉडल)",
     rank_col_io: "$/1M टोकन (इन/आउट)",

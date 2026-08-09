@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useI18n } from "./I18nProvider";
 import {
   LLM_PRICES,
@@ -7,6 +8,8 @@ import {
   custoResumo,
   custoTraducao,
   usd,
+  fetchLlmPrices,
+  type LlmPrice,
 } from "@/lib/llm-prices";
 
 /**
@@ -14,14 +17,35 @@ import {
  * "a pessoa paga pela API dela — o que a gente pode colocar como informação
  * é o ranking de preço". Tabela simpática comparando os modelos que o Moka
  * aceita (BYOK), + o aviso de que VÍDEO é outro sistema (preço por minuto).
+ *
+ * Desde 09/08: preços DINÂMICOS — fetchLlmPrices() busca o JSON do agente
+ * atualizador (diário) com cache 24h; se falhar, usa fallback hardcoded.
+ * Mostra "atualizado em DD/MM/AAAA" quando os dados são frescos.
  */
 export function LlmPriceRanking() {
   const { t } = useI18n();
+  const [prices, setPrices] = useState<LlmPrice[]>(LLM_PRICES);
+  const [updatedAt, setUpdatedAt] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchLlmPrices().then((r) => {
+      setPrices(r.prices);
+      setUpdatedAt(r.updated_at);
+    });
+  }, []);
+
+  // Formata "atualizado em DD/MM/AAAA" se tiver data do agente.
+  const atualizadoEm = updatedAt
+    ? new Date(updatedAt).toLocaleDateString("pt-BR")
+    : null;
 
   return (
     <section className="lpr">
       <h2 className="lpr-title">{t("rank_title")}</h2>
       <p className="lpr-sub">{t("rank_sub")}</p>
+      {atualizadoEm && (
+        <p className="lpr-updated">↻ {t("rank_updated") || "Preços atualizados em"} {atualizadoEm}</p>
+      )}
 
       <div className="lpr-scroll">
         <table className="lpr-table">
@@ -35,7 +59,7 @@ export function LlmPriceRanking() {
             </tr>
           </thead>
           <tbody>
-            {LLM_PRICES.map((m) => (
+            {prices.map((m) => (
               <tr key={m.modelo} className={m.rank === 1 ? "lpr-first" : ""}>
                 <td className="lpr-rank">
                   {m.rank === 1 ? "🥇" : m.rank === 2 ? "🥈" : m.rank === 3 ? "🥉" : m.rank}
@@ -72,6 +96,7 @@ export function LlmPriceRanking() {
         .lpr { margin: 22px 0 8px; }
         .lpr-title { font-family: var(--font-brand); font-size: 20px; font-weight: 600; margin: 0 0 6px; text-align: center; }
         .lpr-sub { color: #66605a; font-size: 13.5px; text-align: center; max-width: 540px; margin: 0 auto 14px; line-height: 1.5; }
+        .lpr-updated { text-align: center; font-size: 12px; color: #0f7680; margin: 0 0 10px; }
         .lpr-scroll { overflow-x: auto; border: 1px solid #d9c8b8; border-radius: 12px; background: #fff; }
         .lpr-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
         .lpr-table th {
