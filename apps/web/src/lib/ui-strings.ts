@@ -449,6 +449,7 @@ export type UIStringKey =
   | "help_community_desc"
   | "help_community_link"
   | "tut_ranking_link"
+  | "set_tutorial_banner"
   | "help_what_is_key"
   | "help_key_desc"
   | "help_how_to_get"
@@ -919,6 +920,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     help_community_desc: "Dúvidas, ideias e conversa direta com o time:",
     help_community_link: "entre na comunidade do Moka no Telegram",
     tut_ranking_link: "🏆 Ranking de preços",
+    set_tutorial_banner: "❓ Tutorial completo — o que cada ícone faz, como usar o Moka",
     help_what_is_key: "Uma chave de API é como uma senha que te permite usar a inteligência artificial do provedor escolhido (Z.ai, OpenAI, DeepSeek, etc). Você cria a chave no site do provedor, cola aqui, e o Moka usa ela pra traduzir e explicar os textos. Sua chave fica só no seu dispositivo.",
     help_key_desc: "Como conseguir uma chave (grátis):",
     help_how_to_get: "Como conseguir uma chave (grátis):",
@@ -1378,6 +1380,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     help_community_desc: "Questions, ideas and direct chat with the team:",
     help_community_link: "join the Moka community on Telegram",
     tut_ranking_link: "🏆 Price ranking",
+    set_tutorial_banner: "❓ Full tutorial — what each icon does, how to use Moka",
     help_what_is_key: "An API key is like a password that lets you use the AI from the chosen provider (Z.ai, OpenAI, DeepSeek, etc). You create the key on the provider's website, paste it here, and Moka uses it to translate and explain texts. Your key stays only on your device.",
     help_key_desc: "How to get a key (free):",
     help_how_to_get: "How to get a key (free):",
@@ -1837,6 +1840,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     help_community_desc: "Dudas, ideas y chat directo con el equipo:",
     help_community_link: "únete a la comunidad de Moka en Telegram",
     tut_ranking_link: "🏆 Ranking de precios",
+    set_tutorial_banner: "❓ Tutorial completo — qué hace cada icono, cómo usar Moka",
     help_what_is_key: "Una clave de API es como una contraseña que te permite usar la inteligencia artificial del proveedor elegido (Z.ai, OpenAI, DeepSeek, etc). Creas la clave en el sitio del proveedor, la pegas aquí, e Moka la usa para traducir y explicar los textos. Tu clave solo se queda en tu dispositivo.",
     help_key_desc: "Cómo conseguir una clave (gratis):",
     help_how_to_get: "Cómo conseguir una clave (gratis):",
@@ -2296,6 +2300,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     help_community_desc: "Questions, idées et chat direct avec l'équipe :",
     help_community_link: "rejoignez la communauté Moka sur Telegram",
     tut_ranking_link: "🏆 Classement des prix",
+    set_tutorial_banner: "❓ Tutoriel complet — à quoi sert chaque icône, comment utiliser Moka",
     help_what_is_key: "Une clé d'API est comme un mot de passe qui vous permet d'utiliser l'intelligence artificielle du fournisseur choisi (Z.ai, OpenAI, DeepSeek, etc.). Vous créez la clé sur le site du fournisseur, la collez ici, et Moka l'utilise pour traduire et expliquer les textes. Votre clé reste uniquement sur votre appareil.",
     help_key_desc: "Comment obtenir une clé (gratuit) :",
     help_how_to_get: "Comment obtenir une clé (gratuit) :",
@@ -2755,6 +2760,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     help_community_desc: "Fragen, Ideen und direkter Chat mit dem Team:",
     help_community_link: "tritt der Moka-Community auf Telegram bei",
     tut_ranking_link: "🏆 Preis-Ranking",
+    set_tutorial_banner: "❓ Vollständiges Tutorial — was jedes Symbol tut, wie man Moka nutzt",
     help_what_is_key: "Ein API-Schlüssel ist wie ein Passwort, das es dir ermöglicht, die KI des gewählten Anbieters (Z.ai, OpenAI, DeepSeek usw.) zu nutzen. Du erstellst den Schlüssel auf der Website des Anbieters, fügst ihn hier ein und Moka verwendet ihn, um Texte zu übersetzen und zu erklären. Dein Schlüssel bleibt nur auf deinem Gerät.",
     help_key_desc: "So erhältst du einen Schlüssel (kostenlos):",
     help_how_to_get: "So erhältst du einen Schlüssel (kostenlos):",
@@ -3214,6 +3220,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     help_community_desc: "Domande, idee e chat diretta con il team:",
     help_community_link: "unisciti alla community di Moka su Telegram",
     tut_ranking_link: "🏆 Classifica prezzi",
+    set_tutorial_banner: "❓ Tutorial completo — cosa fa ogni icona, come usare Moka",
     help_what_is_key: "Una chiave API è come una password che ti permette di usare l'intelligenza artificiale del provider scelto (Z.ai, OpenAI, DeepSeek, ecc.). Crei la chiave sul sito del provider, la incolli qui e Moka la usa per tradurre e spiegare i testi. La tua chiave resta solo sul tuo dispositivo.",
     help_key_desc: "Come ottenere una chiave (gratis):",
     help_how_to_get: "Come ottenere una chiave (gratis):",
@@ -3673,6 +3680,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     help_community_desc: "Вопросы, идеи и прямой чат с командой:",
     help_community_link: "присоединяйтесь к сообществу Moka в Telegram",
     tut_ranking_link: "🏆 Рейтинг цен",
+    set_tutorial_banner: "❓ Полный туториал — что делает каждая иконка, как пользоваться Moka",
     help_what_is_key: "API-ключ — это как пароль, который позволяет использовать искусственный интеллект выбранного провайдера (Z.ai, OpenAI, DeepSeek и т. д.). Вы создаёте ключ на сайте провайдера, вставляете его сюда, и Moka использует его для перевода и объяснения текстов. Ваш ключ хранится только на вашем устройстве.",
     help_key_desc: "Как получить ключ (бесплатно):",
     help_how_to_get: "Как получить ключ (бесплатно):",
@@ -4132,6 +4140,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     help_community_desc: "问题、想法和与团队直接聊天：",
     help_community_link: "加入 Moka 的 Telegram 社区",
     tut_ranking_link: "🏆 价格排名",
+    set_tutorial_banner: "❓ 完整教程 — 每个图标的作用，如何使用 Moka",
     help_what_is_key: "API 密钥就像密码，允许您使用所选提供商（Z.ai、OpenAI、DeepSeek 等）的人工智能。您在提供商网站上创建密钥，粘贴到这里，Moka 就会用它来翻译和解释文本。您的密钥仅保存在您的设备上。",
     help_key_desc: "如何获取密钥（免费）：",
     help_how_to_get: "如何获取密钥（免费）：",
@@ -4591,6 +4600,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     help_community_desc: "質問、アイデア、チームとの直接チャット：",
     help_community_link: "TelegramのMokaコミュニティに参加",
     tut_ranking_link: "🏆 価格ランキング",
+    set_tutorial_banner: "❓ 完全チュートリアル — 各アイコンの役割、Mokaの使い方",
     help_what_is_key: "API キーはパスワードのようなもので、選んだプロバイダー（Z.ai、OpenAI、DeepSeek など）の AI を使用するために使います。プロバイダーのサイトでキーを作成し、ここに貼り付けると、Moka がそのキーを使ってテキストを翻訳・解説します。キーはあなたの端末にのみ保存されます。",
     help_key_desc: "キーの取得方法（無料）：",
     help_how_to_get: "キーの取得方法（無料）：",
@@ -5050,6 +5060,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     help_community_desc: "질문, 아이디어, 팀과 직접 채팅:",
     help_community_link: "Telegram에서 Moka 커뮤니티에 참여",
     tut_ranking_link: "🏆 가격 순위",
+    set_tutorial_banner: "❓ 전체 튜토리얼 — 각 아이콘의 기능, Moka 사용법",
     help_what_is_key: "API 키는 선택한 제공자(Z.ai, OpenAI, DeepSeek 등)의 인공지능을 사용할 수 있게 해주는 비밀번호와 같습니다. 제공자 웹사이트에서 키를 만들고 여기에 붙여넣으면, igot이 그 키를 사용해 텍스트를 번역하고 설명합니다. 키는 기기에만 저장됩니다.",
     help_key_desc: "키 얻는 방법(무료):",
     help_how_to_get: "키 얻는 방법(무료):",
@@ -5509,6 +5520,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     help_community_desc: "أسئلة وأفكار ودردشة مباشرة مع الفريق:",
     help_community_link: "انضم إلى مجتمع Moka على Telegram",
     tut_ranking_link: "🏆 ترتيب الأسعار",
+    set_tutorial_banner: "❓ دليل كامل — وظيفة كل أيقونة، كيفية استخدام Moka",
     help_what_is_key: "مفتاح API يشبه كلمة المرور التي تتيح لك استخدام الذكاء الاصطناعي للمزوّد المختار (Z.ai، OpenAI، DeepSeek، إلخ). تنشئ المفتاح في موقع المزوّد، تلصقه هنا، ويستخدمه Moka لترجمة النصوص وشرحها. مفتاحك يبقى على جهازك فقط.",
     help_key_desc: "كيفية الحصول على مفتاح (مجاناً):",
     help_how_to_get: "كيفية الحصول على مفتاح (مجاناً):",
@@ -5968,6 +5980,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     help_community_desc: "प्रश्न, विचार और टीम के साथ सीधी चैट:",
     help_community_link: "Telegram पर Moka समुदाय में शामिल हों",
     tut_ranking_link: "🏆 मूल्य रैंकिंग",
+    set_tutorial_banner: "❓ पूरा ट्यूटोरियल — हर आइकन का काम, Moka का उपयोग कैसे करें",
     help_what_is_key: "API कुंजी एक पासवर्ड की तरह है जो आपको चुने हुए प्रदाता (Z.ai, OpenAI, DeepSeek आदि) की कृत्रिम बुद्धिमत्ता का उपयोग करने की अनुमति देती है। आप प्रदाता की वेबसाइट पर कुंजी बनाते हैं, यहाँ पेस्ट करते हैं, और Moka इसका उपयोग टेक्स्ट का अनुवाद और स्पष्टीकरण करने के लिए करता है। आपकी कुंजी केवल आपके डिवाइस पर रहती है।",
     help_key_desc: "कुंजी कैसे प्राप्त करें (मुफ़्त):",
     help_how_to_get: "कुंजी कैसे प्राप्त करें (मुफ़्त):",

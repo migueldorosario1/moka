@@ -957,7 +957,7 @@ export function SettingsForm({
 
       {/* Link pra tutorial completo */}
       <a href="/ajuda" target="_blank" rel="noreferrer" className="help-link-banner">
-        ❓ Tutorial completo — o que cada ícone faz, como usar o Moka →
+        {t("set_tutorial_banner")} →
       </a>
 
       {/* Doação */}
