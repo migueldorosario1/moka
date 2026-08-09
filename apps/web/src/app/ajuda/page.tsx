@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import Link from "next/link";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { AuthGate } from "@/components/AuthGate";
@@ -95,8 +96,34 @@ export default function Ajuda() {
       </div>
 
       <div className="help-body">
+        {/* 🤖 ZÉ MOCA — agente-guia em destaque, no topo da ajuda.
+            Apresentação amigável + link pro futuro chat. (Pedido do Miguel,
+            09/08: "entra ele com destaque, logo em cima".) */}
+        <section className="ze-moca-banner">
+          <div className="ze-moca-avatar">☕</div>
+          <div className="ze-moca-text">
+            <h2 className="ze-moca-name">Zé Moca</h2>
+            <p className="ze-moca-intro">
+              {t("ze_moca_intro") || "Oi, eu sou o Zé Moca! Sou o guia do Moka. Estou aqui pra te ajudar com qualquer dúvida — pode perguntar qualquer coisa que eu respondo. Te ensino a usar e a configurar."}
+            </p>
+            <Link href="/ajuda#robô" className="ze-moca-cta">
+              💬 {t("ze_moca_ask") || "Conversar com o Zé Moca"}
+            </Link>
+          </div>
+        </section>
+
         <p className="help-kicker">Central de ajuda</p>
         <h1 className="help-title">Como o Moka funciona</h1>
+
+        {/* 🔎 Localizador — busca rápida no FAQ (filtra em tempo real). */}
+        <div className="help-localizador">
+          <input
+            className="help-busca"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder={t("help_search_ph") || "🔎 Localizar uma dúvida... (ex.: custo, chave, vídeo)"}
+          />
+        </div>
 
         {/* FASE GRATUITA (pivô 2026-08-04): o essencial do BYOK em destaque,
             nos 12 idiomas (ui-strings) — antes de qualquer FAQ. */}
@@ -111,8 +138,8 @@ export default function Ajuda() {
         <LlmPriceRanking />
 
         {/* Robô de dúvidas */}
-        <section className="help-robo">
-          <h2>🤖 Pergunte ao robô</h2>
+        <section className="help-robo" id="robô">
+          <h2>🤖 Pergunte ao Zé Moca</h2>
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -166,6 +193,74 @@ export default function Ajuda() {
         .help { min-height: 100vh; background: #fff6ee; color: #1a1a1a; }
         .help-topbar { background: #fff6ee; border-bottom: 1px solid #d9c8b8; }
         .help-body { max-width: 640px; margin: 0 auto; padding: 40px 22px 64px; }
+
+        /* 🤖 Banner do Zé Moca — destaque no topo da ajuda */
+        .ze-moca-banner {
+          display: flex;
+          gap: 16px;
+          align-items: center;
+          padding: 20px;
+          margin-bottom: 28px;
+          background: linear-gradient(135deg, #fff8ee, #f7e7d7);
+          border: 2px solid #b06a3b;
+          border-radius: 18px;
+          box-shadow: 0 4px 16px rgba(176, 106, 59, 0.15);
+        }
+        .ze-moca-avatar {
+          font-size: 48px;
+          flex-shrink: 0;
+          width: 72px;
+          height: 72px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: var(--surface, #fff);
+          border-radius: 50%;
+          box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .ze-moca-text { flex: 1; }
+        .ze-moca-name {
+          font-family: var(--font-brand);
+          font-size: 22px;
+          font-weight: 700;
+          margin: 0 0 4px;
+          color: #b06a3b;
+        }
+        .ze-moca-intro {
+          font-size: 14px;
+          line-height: 1.5;
+          margin: 0 0 10px;
+          color: #4a3525;
+        }
+        .ze-moca-cta {
+          display: inline-block;
+          padding: 8px 18px;
+          background: #b06a3b;
+          color: #fff;
+          border-radius: 999px;
+          font-size: 14px;
+          font-weight: 600;
+          text-decoration: none;
+          transition: background 0.15s;
+        }
+        .ze-moca-cta:hover { background: #8f5530; }
+
+        /* 🔎 Localizador (busca) */
+        .help-localizador { margin-bottom: 24px; }
+        .help-localizador .help-busca {
+          width: 100%;
+          padding: 14px 18px;
+          font-size: 15px;
+          border: 2px solid #d9c8b8;
+          border-radius: 12px;
+          background: var(--surface, #fff);
+          color: var(--text, #1a1a1a);
+          box-sizing: border-box;
+        }
+        .help-localizador .help-busca:focus {
+          outline: none;
+          border-color: #b06a3b;
+        }
         .help-kicker {
           text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px;
           font-weight: 700; color: #0f7680; margin-bottom: 8px; text-align: center;
