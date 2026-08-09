@@ -310,6 +310,7 @@ export type UIStringKey =
   | "set_btn_update"
   | "set_btn_add"
   | "set_test_connection"
+  | "set_refresh_key"
   | "set_testing"
   | "set_cole_key"
   | "set_clear_all"
@@ -737,6 +738,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     set_btn_update: "💾 Atualizar",
     set_btn_add: "💾 Adicionar chave",
     set_test_connection: "Testar conexão",
+    set_refresh_key: "Atualizar",
     set_testing: "Testando…",
     set_cole_key: "Cole a chave primeiro.",
     set_clear_all: "Limpar tudo",
@@ -1156,6 +1158,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     set_btn_update: "💾 Update",
     set_btn_add: "💾 Add key",
     set_test_connection: "Test connection",
+    set_refresh_key: "Refresh",
     set_testing: "Testing…",
     set_cole_key: "Cole a chave primeiro.",
     set_clear_all: "Clear all",
@@ -1572,6 +1575,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     set_btn_update: "💾 Actualizar",
     set_btn_add: "💾 Añadir clave",
     set_test_connection: "Probar conexión",
+    set_refresh_key: "Actualizar",
     set_testing: "Probando…",
     set_cole_key: "Cole a chave primeiro.",
     set_clear_all: "Borrar todo",
@@ -1988,6 +1992,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     set_btn_update: "💾 Mettre à jour",
     set_btn_add: "💾 Ajouter la clé",
     set_test_connection: "Tester la connexion",
+    set_refresh_key: "Mettre à jour",
     set_testing: "Test…",
     set_cole_key: "Cole a chave primeiro.",
     set_clear_all: "Tout effacer",
@@ -2404,6 +2409,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     set_btn_update: "💾 Aktualisieren",
     set_btn_add: "💾 Schlüssel hinzufügen",
     set_test_connection: "Verbindung testen",
+    set_refresh_key: "Aktualisieren",
     set_testing: "Testen…",
     set_cole_key: "Cole a chave primeiro.",
     set_clear_all: "Alles löschen",
@@ -2820,6 +2826,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     set_btn_update: "💾 Aggiorna",
     set_btn_add: "💾 Aggiungi chiave",
     set_test_connection: "Testa connessione",
+    set_refresh_key: "Aggiorna",
     set_testing: "Test…",
     set_cole_key: "Cole a chave primeiro.",
     set_clear_all: "Cancella tutto",
@@ -3236,6 +3243,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     set_btn_update: "💾 Обновить",
     set_btn_add: "💾 Добавить ключ",
     set_test_connection: "Проверить подключение",
+    set_refresh_key: "Обновить",
     set_testing: "Проверка…",
     set_cole_key: "Cole a chave primeiro.",
     set_clear_all: "Очистить всё",
@@ -3652,6 +3660,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     set_btn_update: "💾 更新",
     set_btn_add: "💾 添加密钥",
     set_test_connection: "测试连接",
+    set_refresh_key: "更新",
     set_testing: "测试中…",
     set_cole_key: "Cole a chave primeiro.",
     set_clear_all: "清空全部",
@@ -4068,6 +4077,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     set_btn_update: "💾 更新",
     set_btn_add: "💾 キーを追加",
     set_test_connection: "接続テスト",
+    set_refresh_key: "更新",
     set_testing: "テスト中…",
     set_cole_key: "Cole a chave primeiro.",
     set_clear_all: "すべて消去",
@@ -4484,6 +4494,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     set_btn_update: "💾 업데이트",
     set_btn_add: "💾 키 추가",
     set_test_connection: "연결 테스트",
+    set_refresh_key: "업데이트",
     set_testing: "테스트 중…",
     set_cole_key: "Cole a chave primeiro.",
     set_clear_all: "모두 지우기",
@@ -4900,6 +4911,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     set_btn_update: "💾 تحديث",
     set_btn_add: "💾 إضافة مفتاح",
     set_test_connection: "اختبار الاتصال",
+    set_refresh_key: "تحديث",
     set_testing: "جارٍ الاختبار…",
     set_cole_key: "Cole a chave primeiro.",
     set_clear_all: "مسح الكل",
@@ -5316,6 +5328,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     set_btn_update: "💾 अपडेट करें",
     set_btn_add: "💾 कुंजी जोड़ें",
     set_test_connection: "कनेक्शन जाँचें",
+    set_refresh_key: "अपडेट करें",
     set_testing: "जाँच हो रही है…",
     set_cole_key: "Cole a chave primeiro.",
     set_clear_all: "सब साफ़ करें",

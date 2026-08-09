@@ -441,6 +441,23 @@ export function SettingsForm({
             {showKey ? "🙈" : "👁"}
           </button>
         </div>
+        {/* Atualizar (= testar a chave) — pedido do Miguel: botão logo
+            embaixo do campo, pra revalidar/trocar a chave sem caçar lá
+            nas ações do fim. O olhinho 👁 acima fica onde está. */}
+        <button
+          type="button"
+          className="key-refresh-btn"
+          onClick={handleTest}
+          disabled={!apiKey.trim() || test.status === "testing"}
+        >
+          🔄 {test.status === "testing" ? t("set_testing") : t("set_refresh_key")}
+        </button>
+        {test.status !== "idle" && test.status !== "testing" && (
+          <p className={`feedback ${test.status === "ok" ? "ok" : "err"}`} style={{ marginTop: 6 }}>
+            {test.status === "ok" ? "✓ " : "⚠️ "}
+            {test.message}
+          </p>
+        )}
         <p className="hint privacy">
           {t("set_key_privacy")}
         </p>
@@ -1069,6 +1086,23 @@ export function SettingsForm({
           border-radius: 8px;
           padding: 0 14px;
           font-size: 16px;
+        }
+        .key-refresh-btn {
+          margin-top: 8px;
+          padding: 7px 16px;
+          border-radius: 8px;
+          border: 1px solid var(--border);
+          background: var(--surface);
+          color: var(--text);
+          font-size: 13px;
+          cursor: pointer;
+        }
+        .key-refresh-btn:hover:not(:disabled) {
+          border-color: var(--accent);
+        }
+        .key-refresh-btn:disabled {
+          opacity: 0.4;
+          cursor: not-allowed;
         }
         .hint {
           margin: 0;
