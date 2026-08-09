@@ -818,6 +818,19 @@ export function Reader({
   const [overlayMode, setOverlayMode] = useState<"translate" | "explain" | null>(null);
   const [translatingPage, setTranslatingPage] = useState(false);
   const [currentPageText, setCurrentPageText] = useState("");
+  // BUG-20260809-MOKA-SLIDER-RENDER-RACE: rascunho do slider durante o
+  // arrasto — o knob segue o dedo imediatamente, mas o salto de página real
+  // só é commitado após 120ms de silêncio. Antes, cada micromovimento do
+  // arrasto disparava um render completo que era cancelado logo em seguida;
+  // a chuva de cancelamentos podia travar a página final em "Carregando…".
+  const [sliderDraft, setSliderDraft] = useState<number | null>(null);
+  const sliderTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (sliderTimerRef.current) clearTimeout(sliderTimerRef.current);
+    },
+    [],
+  );
 
   const chapter = book.chapters[chapterIdx];
   const [pdfNumPages, setPdfNumPages] = useState(0);
@@ -942,6 +955,20 @@ export function Reader({
       pendingPage.current = local;
       setChapterIdx(target);
     }
+  };
+
+  /** Slider da nav bar (BUG-20260809): o knob acompanha o dedo na hora
+      (sliderDraft), mas o salto de página de verdade só acontece depois de
+      120ms sem mover — evita a chuva de renders cancelados que travava a
+      página final em "Carregando página…". */
+  const handleSliderChange = (v: number) => {
+    setSliderDraft(v);
+    if (sliderTimerRef.current) clearTimeout(sliderTimerRef.current);
+    sliderTimerRef.current = setTimeout(() => {
+      sliderTimerRef.current = null;
+      setSliderDraft(null);
+      goToGlobalPage(v);
+    }, 120);
   };
 
   // Ao trocar de CAPÍTULO: abre na página local pendente (navegação entre
@@ -1726,8 +1753,8 @@ export function Reader({
             type="range"
             min={0}
             max={totalPages - 1}
-            value={globalPageIdx}
-            onChange={(e) => goToGlobalPage(Number(e.target.value))}
+            value={sliderDraft ?? globalPageIdx}
+            onChange={(e) => handleSliderChange(Number(e.target.value))}
             className="nav-slider"
             aria-label={t("reader_nav_label")}
           />
@@ -1739,7 +1766,7 @@ export function Reader({
             ›
           </button>
           <span className="nav-counter-bottom">
-            {globalPageIdx + 1}/{totalPages}
+            {(sliderDraft ?? globalPageIdx) + 1}/{totalPages}
           </span>
         </div>
       )}

@@ -159,6 +159,15 @@ export function PdfPageCanvas({
   const docRef = useRef<Awaited<ReturnType<typeof loadDoc>> | null>(null);
   const renderTaskRef = useRef<{ cancel: () => void } | null>(null);
   const textLayerHandleRef = useRef<{ cancel: () => void } | null>(null);
+  // SEQ de render (BUG-20260809-MOKA-SLIDER-RENDER-RACE): cada corrida do
+  // effect de página recebe um número. Se o número mudar no meio do caminho
+  // (slider girou de novo / outra página pedida), a corrida ficou VELHA e
+  // para ANTES de tocar no canvas. Antes dessa guarda, uma corrida velha
+  // cancelada enquanto aguardava o getPage seguia em frente e iniciava um
+  // render "zumbi" no canvas compartilhado — a página atual colidia
+  // ("Cannot use the same canvas during multiple render() operations") ou
+  // esperava pra sempre, travando em "Carregando página…".
+  const renderSeqRef = useRef(0);
 
   // `pageReady` controla a opacidade do canvas/text-layer. Só vira true DEPOIS
   // que o render do canvas E da text-layer terminam — evita o flash feio.
@@ -228,6 +237,9 @@ export function PdfPageCanvas({
     let cancelled = false;
     let localRenderTask: { cancel: () => void } | null = null;
     let localTextLayer: { cancel: () => void } | null = null;
+    // Esta corrida fica "velha" se outro render começar (slider girou etc.).
+    const seq = ++renderSeqRef.current;
+    const stale = () => cancelled || seq !== renderSeqRef.current;
 
     // Esconde a página antiga imediatamente (mostra spinner).
     setPageReady(false);
@@ -254,7 +266,16 @@ export function PdfPageCanvas({
 
     (async () => {
       try {
-        const page = await doc.getPage(pageNum);
+        // Clamp no número REAL de páginas do PDF: o slider do Reader usa o
+        // maior valor entre chapters e numPages; se chapters for maior, o
+        // getPage estouraria com índice inválido.
+        const numPages = (doc as { numPages?: number }).numPages;
+        const target = numPages ? Math.min(pageNum, numPages) : pageNum;
+        const page = await doc.getPage(target);
+        // BUG-20260809: se esta corrida ficou velha enquanto aguardava o
+        // getPage, PARA AQUI — antes ela seguia e iniciava um render zumbi
+        // no canvas compartilhado, travando a página atual.
+        if (stale()) return;
 
         const baseViewport = page.getViewport({ scale: 1 });
 
@@ -299,22 +320,40 @@ export function PdfPageCanvas({
 
         // Render do canvas (fiel ao PDF). Usamos transform de escala pra
         // alta nitidez — mesma fórmula dos exemplos oficiais do pdfjs.
-        const task = page.render({
+        if (stale()) return;
+        const renderParams = {
           canvasContext: ctx,
           viewport,
           transform:
             outputScale !== 1 ? [outputScale, 0, 0, outputScale, 0, 0] : undefined,
-        });
+        };
+        let task: ReturnType<typeof page.render>;
+        try {
+          task = page.render(renderParams);
+        } catch (err) {
+          // BUG-20260809: "Cannot use the same canvas during multiple
+          // render() operations" = um render zumbi de corrida antiga ainda
+          // ocupa o canvas. Em vez de mostrar erro cru pro leitor: dá um
+          // tempo pra ele terminar e tenta DE NOVO uma única vez.
+          const msg0 = err instanceof Error ? err.message : String(err);
+          if (/same canvas/i.test(msg0)) {
+            await new Promise((r) => setTimeout(r, 180));
+            if (stale()) return;
+            task = page.render(renderParams);
+          } else {
+            throw err;
+          }
+        }
         localRenderTask = task;
         renderTaskRef.current = task;
         await task.promise;
 
-        if (cancelled) return;
+        if (stale()) return;
 
         // Camada de texto selecionável (a peça que mantém a IA funcionando).
         const TextLayerClass = await getTextLayerClass();
         const textContent = await page.getTextContent();
-        if (cancelled) return;
+        if (stale()) return;
 
         const textLayer = new TextLayerClass({
           textContentSource: textContent,
@@ -332,7 +371,7 @@ export function PdfPageCanvas({
         end.className = "endOfContent";
         textLayerDiv.appendChild(end);
 
-        if (cancelled) return;
+        if (stale()) return;
 
         // Entrega ao pai o texto concatenado da página (pra "Traduzir página").
         // Heurística simples: junta os str dos items, quebrando linha quando
@@ -349,11 +388,14 @@ export function PdfPageCanvas({
         // PRONTO: só agora revelamos a página, já 100% alinhada.
         concluiu = true;
         clearTimeout(watchdog);
+        // Página renderizou bem — libera o "crédito" de retry do watchdog
+        // pra este número de página (se travar de novo no futuro, re-tenta).
+        lastRetryPage.current = null;
         setPageReady(true);
         // Entrega o canvas ao pai (pra snapshot/foto da página).
         if (canvas) onCanvasReady?.(canvas);
       } catch (err) {
-        if (cancelled) return;
+        if (stale()) return;
         concluiu = true;
         clearTimeout(watchdog);
         // RenderingCancelledException é esperada em re-renders; ignora.
