@@ -222,6 +222,7 @@ export type UIStringKey =
   | "tts_modal_body"
   | "tts_modal_configure"
   | "tts_modal_mechanical"
+  | "tts_neural_activate"
   | "tts_modal_dont_show"
   | "cfg_voice_pref_title"
   | "cfg_voice_pref_body"
@@ -614,6 +615,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tts_modal_body: "Para ouvir com voz natural (qualidade de pessoa lendo), configure a sua chave da OpenAI. Ou siga agora com a voz mecânica gratuita do seu dispositivo.",
     tts_modal_configure: "Configurar voz neural",
     tts_modal_mechanical: "Seguir com voz mecânica gratuita",
+    tts_neural_activate: "Vocẽ tem uma chave OpenAI, mas ela não está ativa. Ative a OpenAI nas Configurações (⚙️) para ouvir com voz natural.",
     tts_modal_dont_show: "Não mostrar de novo",
     cfg_voice_pref_title: "Preferência de voz",
     cfg_voice_pref_body: "Escolha como o Moka lê em voz alta: voz neural (OpenAI, qualidade de pessoa lendo) ou voz mecânica gratuita do dispositivo. Você pode rever o aviso a qualquer momento.",
@@ -1047,6 +1049,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tts_modal_body: "To listen with a natural voice (like a person reading), set up your OpenAI key. Or continue now with your device's free mechanical voice.",
     tts_modal_configure: "Set up neural voice",
     tts_modal_mechanical: "Continue with free mechanical voice",
+    tts_neural_activate: "You have an OpenAI key, but it's not active. Activate OpenAI in Settings (⚙️) to listen with a natural voice.",
     tts_modal_dont_show: "Don't show again",
     cfg_voice_pref_title: "Voice preference",
     cfg_voice_pref_body: "Choose how Moka reads aloud: neural voice (OpenAI, like a person reading) or your device's free mechanical voice. You can review the prompt anytime.",
@@ -1476,6 +1479,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tts_modal_body: "Para escuchar con voz natural (como una persona leyendo), configura tu clave de OpenAI. O continúa ahora con la voz mecánica gratuita de tu dispositivo.",
     tts_modal_configure: "Configurar voz natural",
     tts_modal_mechanical: "Seguir con voz mecánica gratuita",
+    tts_neural_activate: "Tienes una clave OpenAI, pero no está activa. Actívala en Configuración (⚙️) para escuchar con voz natural.",
     tts_modal_dont_show: "No mostrar de nuevo",
     cfg_voice_pref_title: "Preferencia de voz",
     cfg_voice_pref_body: "Elige cómo lee Moka en voz alta: voz natural (OpenAI, como una persona leyendo) o voz mecánica gratuita del dispositivo. Puedes revisar el aviso cuando quieras.",
@@ -1905,6 +1909,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tts_modal_body: "Pour écouter avec une voix naturelle (comme une personne qui lit), configurez votre clé OpenAI. Ou continuez avec la voix mécanique gratuite de votre appareil.",
     tts_modal_configure: "Configurer la voix naturelle",
     tts_modal_mechanical: "Continuer avec la voix mécanique gratuite",
+    tts_neural_activate: "Vous avez une clé OpenAI, mais elle n'est pas active. Activez OpenAI dans les Paramètres (⚙️) pour écouter avec une voix naturelle.",
     tts_modal_dont_show: "Ne plus afficher",
     cfg_voice_pref_title: "Préférence de voix",
     cfg_voice_pref_body: "Choisissez comment Moka lit à voix haute : voix naturelle (OpenAI, comme une personne qui lit) ou voix mécanique gratuite de l'appareil. Vous pouvez revoir l'avis à tout moment.",
@@ -2334,6 +2339,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tts_modal_body: "Um mit einer natürlichen Stimme zu hören (wie eine Person, die vorliest), hinterlege deinen OpenAI-Schlüssel. Oder nutze jetzt die kostenlose maschinelle Stimme deines Geräts.",
     tts_modal_configure: "Neuronale Stimme einrichten",
     tts_modal_mechanical: "Mit kostenloser maschineller Stimme fortfahren",
+    tts_neural_activate: "Du hast einen OpenAI-Schlüssel, aber er ist nicht aktiv. Aktiviere OpenAI in den Einstellungen (⚙️), um mit natürlicher Stimme zu hören.",
     tts_modal_dont_show: "Nicht wieder anzeigen",
     cfg_voice_pref_title: "Stimmeinstellung",
     cfg_voice_pref_body: "Wähle, wie Moka vorliest: neuronale Stimme (OpenAI, wie eine Person liest) oder kostenlose maschinelle Stimme des Geräts. Du kannst den Hinweis jederzeit wieder anzeigen.",
@@ -2763,6 +2769,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tts_modal_body: "Per ascoltare con una voce naturale (come una persona che legge), configura la tua chiave OpenAI. Oppure continua ora con la voce meccanica gratuita del tuo dispositivo.",
     tts_modal_configure: "Configura voce naturale",
     tts_modal_mechanical: "Continua con voce meccanica gratuita",
+    tts_neural_activate: "Hai una chiave OpenAI, ma non è attiva. Attiva OpenAI nelle Impostazioni (⚙️) per ascoltare con voce naturale.",
     tts_modal_dont_show: "Non mostrare più",
     cfg_voice_pref_title: "Preferenza voce",
     cfg_voice_pref_body: "Scegli come Moka legge ad alta voce: voce naturale (OpenAI, come una persona che legge) o voce meccanica gratuita del dispositivo. Puoi rivedere l'avviso in qualsiasi momento.",
@@ -3192,6 +3199,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tts_modal_body: "Чтобы слушать естественным голосом (как читает человек), добавьте ключ OpenAI. Или продолжите с бесплатным машинным голосом вашего устройства.",
     tts_modal_configure: "Настроить естественный голос",
     tts_modal_mechanical: "Продолжить с бесплатным машинным голосом",
+    tts_neural_activate: "У вас есть ключ OpenAI, но он не активен. Активируйте OpenAI в Настройках (⚙️), чтобы слушать естественным голосом.",
     tts_modal_dont_show: "Больше не показывать",
     cfg_voice_pref_title: "Настройка голоса",
     cfg_voice_pref_body: "Выберите, как Moka читает вслух: естественный голос (OpenAI, как читает человек) или бесплатный машинный голос устройства. Вы можете снова включить подсказку в любой момент.",
@@ -3621,6 +3629,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tts_modal_body: "要用自然语音收听（像真人朗读），请配置你的 OpenAI 密钥。或者现在就用设备的免费机械语音继续。",
     tts_modal_configure: "配置自然语音",
     tts_modal_mechanical: "继续使用免费机械语音",
+    tts_neural_activate: "你有一把 OpenAI 密钥，但未启用。请在设置（⚙️）中启用 OpenAI，以自然语音收听。",
     tts_modal_dont_show: "不再显示",
     cfg_voice_pref_title: "语音偏好",
     cfg_voice_pref_body: "选择 Moka 如何朗读：自然语音（OpenAI，像真人朗读）或设备的免费机械语音。你可以随时重新查看提示。",
@@ -4050,6 +4059,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tts_modal_body: "自然な音声（人が読み上げるような品質）で聞くには、OpenAI キーを設定してください。または今はデバイスの無料機械音声で続けます。",
     tts_modal_configure: "自然音声を設定する",
     tts_modal_mechanical: "無料の機械音声で続ける",
+    tts_neural_activate: "OpenAI キーはありますが有効ではありません。設定（⚙️）で OpenAI を有効化して自然音声で聞いてください。",
     tts_modal_dont_show: "今後表示しない",
     cfg_voice_pref_title: "音声の設定",
     cfg_voice_pref_body: "Mokaがどう読み上げるか選べます：自然音声（OpenAI、人が読むような品質）またはデバイスの無料機械音声。いつでも案内を再表示できます。",
@@ -4479,6 +4489,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tts_modal_body: "자연스러운 음성(사람이 읽어주는 품질)으로 들으려면 OpenAI 키를 설정하세요. 아니면 기기의 무료 기계 음성으로 계속합니다.",
     tts_modal_configure: "자연 음성 설정하기",
     tts_modal_mechanical: "무료 기계 음성으로 계속",
+    tts_neural_activate: "OpenAI 키가 있지만 활성화되어 있지 않습니다. 설정(⚙️)에서 OpenAI를 활성화하여 자연 음성으로 들으세요.",
     tts_modal_dont_show: "다시 표시하지 않기",
     cfg_voice_pref_title: "음성 설정",
     cfg_voice_pref_body: "Moka가 어떻게 읽어줄지 선택하세요: 자연 음성(OpenAI, 사람이 읽는 품질) 또는 기기의 무료 기계 음성. 언제든 안내를 다시 볼 수 있습니다.",
@@ -4908,6 +4919,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tts_modal_body: "للاستماع بصوت طبيعي (كأن شخصًا يقرأ)، أضِف مفتاح OpenAI. أو تابع الآن بالصوت الميكانيكي المجاني لجهازك.",
     tts_modal_configure: "إعداد الصوت الطبيعي",
     tts_modal_mechanical: "المتابعة بالصوت الميكانيكي المجاني",
+    tts_neural_activate: "لديك مفتاح OpenAI لكنه غير نشط. فعّل OpenAI في الإعدادات (⚙️) للاستماع بصوت طبيعي.",
     tts_modal_dont_show: "عدم الإظهار مجددًا",
     cfg_voice_pref_title: "تفضيل الصوت",
     cfg_voice_pref_body: "اختر كيف يقرأ Moka بصوت عالٍ: صوت طبيعي (OpenAI، كأن شخصًا يقرأ) أو الصوت الميكانيكي المجاني للجهاز. يمكنك إعادة عرض التنبيه في أي وقت.",
@@ -5337,6 +5349,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tts_modal_body: "प्राकृतिक आवाज़ (जैसे कोई व्यक्ति पढ़ रहा हो) सुनने के लिए अपनी OpenAI कुंजी सेट करें। या अपने डिवाइस की निःशुल्क यांत्रिक आवाज़ से जारी रखें।",
     tts_modal_configure: "प्राकृतिक आवाज़ सेट करें",
     tts_modal_mechanical: "निःशुल्क यांत्रिक आवाज़ से जारी रखें",
+    tts_neural_activate: "आपके पास OpenAI कुंजी है, लेकिन वह सक्रिय नहीं है। प्राकृतिक आवाज़ सुनने के लिए सेटिंग्स (⚙️) में OpenAI सक्रिय करें।",
     tts_modal_dont_show: "पुनः न दिखाएँ",
     cfg_voice_pref_title: "आवाज़ प्राथमिकता",
     cfg_voice_pref_body: "चुनें कि Moka कैसे पढ़े: प्राकृतिक आवाज़ (OpenAI, जैसे कोई व्यक्ति पढ़ रहा हो) या डिवाइस की निःशुल्क यांत्रिक आवाज़। आप कभी भी सूचना दोबारा देख सकते हैं।",

@@ -10,7 +10,7 @@ import { useI18n } from "./I18nProvider";
 import { CloseAppButton } from "./CloseAppButton";
 import { LangSwitcher } from "./LangSwitcher";
 import { useTTS } from "@/hooks/useTTS";
-import { getTargetLang, getAudioLang, getConfigSync } from "@/lib/config";
+import { getTargetLang, getAudioLang, getConfigSync, listAllEntriesSync } from "@/lib/config";
 import { SettingsModal } from "./SettingsModal";
 import { AskModal } from "./AskModal";
 import { PageActionModal } from "./PageActionModal";
@@ -258,8 +258,9 @@ export function Reader({
     const prepared = await prepareSpeech(rawText, textLang);
     if (!prepared) return;
 
-    // Tenta voz NEURAL primeiro (se o provedor ativo for OpenAI — tem TTS —
-    // E a chave existir; senão cai pro aviso + voz gratuita do dispositivo).
+    // Tenta voz NEURAL primeiro (se o provedor ATIVO for OpenAI — tem TTS).
+    // Caso especial: há OpenAI no cofre mas OUTRA IA está ativa → avisa que é
+    // só ativar a OpenAI pra ter voz natural (ideia de ecossistema do Miguel).
     const config = getConfigSync();
     const neuralReady =
       config && config.providerId === "openai" && !!(config.apiKey || "").trim();
@@ -282,6 +283,21 @@ export function Reader({
         setTtsLoading(false);
         setTtsPrep(null);
       }
+      return;
+    }
+
+    // Não há OpenAI ativa. Mas há OpenAI NO COFRE (inativa)? Avisa que é só
+    // ativar — voz neural a um clique de distância.
+    const hasInactiveOpenAI = listAllEntriesSync().some(
+      (e) => e.providerId === "openai" && !e.active,
+    );
+    if (hasInactiveOpenAI) {
+      setShowTtsModal(false); // não mostra o modal genérico
+      alert(t("tts_neural_activate"));
+      // Mesmo assim, fala com a voz mecânica (não deixa o usuário sem áudio).
+      setTtsPrep(null);
+      setTtsLoading(false);
+      tts.speak(prepared.text, prepared.lang);
       return;
     }
 
@@ -385,10 +401,12 @@ export function Reader({
     return () => document.removeEventListener("fullscreenchange", onFsChange);
   }, []);
 
-  // Garante que o menu superior fique SEMPRE visível ao abrir configurações ou ao carregar a obra.
+  // Garante que o menu superior fique SEMPRE visível ao abrir configurações,
+  // ao carregar a obra, ao abrir modais (fala/tradução/ajuda) — cura definitiva
+  // do BUG-20260801-MOKA-MENU-SUPERIOR-SOME: qualquer interação reexibe o menu.
   useEffect(() => {
-    setMenuVisible(true);
-  }, [book, settingsOpen]);
+    if (!isFullscreen) setMenuVisible(true);
+  }, [book, settingsOpen, isFullscreen, showTtsModal, transBookOpen, askOpen, summaryOpen]);
 
   /** Esta página já está marcada? (lookup rápido no array de bookmarks). */
   const isBookmarked = bookmarks.some((b) => b.chapterIdx === chapterIdx);
@@ -1435,8 +1453,17 @@ export function Reader({
         setTtsPrep(null);
       }
     } else {
-      // Sem chave da OpenAI: avisa (1×) e usa a voz gratuita do dispositivo.
-      warnNeuralKeyOnce();
+      // Sem chave da OpenAI ativa. Mas há OpenAI NO COFRE (inativa)? Avisa
+      // que é só ativar — voz neural a um clique.
+      const hasInactiveOpenAI = listAllEntriesSync().some(
+        (e) => e.providerId === "openai" && !e.active,
+      );
+      if (hasInactiveOpenAI) {
+        alert(t("tts_neural_activate"));
+      } else {
+        // Sem OpenAI nenhuma: aviso genérico (1×).
+        warnNeuralKeyOnce();
+      }
       setTtsPrep(null);
       setTtsLoading(false);
       tts.speak(prepared.text, prepared.lang);
@@ -1687,10 +1714,16 @@ export function Reader({
                 que faz: antes era ☕ (a marca!), e o usuário tocava sem querer
                 achando que era "menu do Moka" → o menu sumia do nada (bug
                 crônico reportado pelo Miguel, 2026-08-01). O ☕ ficou só no
-                botão flutuante que TRAZ o menu de volta. */}
+                botão flutuante que TRAZ o menu de volta.
+                CURA DEFINITIVA (09/08): o botão só funciona em FULLSCREEN
+                (modo imersivo explícito). Fora de fullscreen, o menu NUNCA
+                some — acaba o "menu travou/sumiu sem querer" reportado pelo
+                Miguel ao mexer no campo de fala/configurações. */}
             <button
-              onClick={() => setMenuVisible((v) => !v)}
+              onClick={() => isFullscreen && setMenuVisible((v) => !v)}
               className="icon-btn menu-toggle-btn"
+              disabled={!isFullscreen}
+              style={{ opacity: isFullscreen ? 1 : 0.35, cursor: isFullscreen ? "pointer" : "not-allowed" }}
               title={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
               aria-label={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
             >
