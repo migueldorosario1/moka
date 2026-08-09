@@ -122,6 +122,27 @@
   --selection-color: #3d2b1f;
 }
 
+/* ═══ Contraste de acessibilidade — botões dourados/amarelos ═══
+   O --gold é sempre uma cor clara (dourado/amarelo), então qualquer botão
+   ou elemento que use --gold como fundo PRECISA de texto escuro — senão
+   fica ilegível (texto claro no amarelo claro). Esta regra garante contraste
+   em TODOS os temas. (Reporte do Miguel: "botão amarelo sem contraste" no
+   tema escuro da estante.) */
+.setup-warning,
+.uploader-error,
+.config-callout,
+.config-callout-btn,
+.add-book-btn,
+.shelf-add-btn,
+.donate-btn.pix {
+  color: #1a1208 !important; /* texto escuro — sempre legível no dourado */
+}
+/* Exceção: botões com gradiente accent (azul/roxo) mantêm texto branco. */
+.add-book-btn,
+.shelf-add-btn {
+  color: #fff8ee !important; /* estes usam gradiente accent, não gold */
+}
+
 /* Se o usuário escolheu tema manual, o prefers-color-scheme NÃO sobrescreve
    (a especificidade de [data-theme] no :root ganha do media query). */
 @media (prefers-color-scheme: dark) {
