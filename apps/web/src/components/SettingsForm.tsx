@@ -180,6 +180,33 @@ export function SettingsForm({
     }, 4000);
   };
 
+  /** "Testar todas" — testa cada chave cadastrada e monta um relatório
+   * verde ✅ / vermelho ❌. Pedido do Miguel: "testar todas, dá um
+   * relatóriozinho de chave verde e vermelho". */
+  const [testingAll, setTestingAll] = useState(false);
+  const [testAllReport, setTestAllReport] = useState<
+    Array<{ name: string; ok: boolean; message: string }>
+  >([]);
+  const handleTestAll = async () => {
+    if (entries.length === 0) return;
+    setTestingAll(true);
+    setTestAllReport([]);
+    const report: Array<{ name: string; ok: boolean; message: string }> = [];
+    for (const e of entries) {
+      const config = getConfigById(e.id);
+      const name = e.label || PRESETS.find((p) => p.id === e.providerId)?.name || e.providerId;
+      if (!config) {
+        report.push({ name, ok: false, message: "Chave não encontrada no cofre" });
+        setTestAllReport([...report]);
+        continue;
+      }
+      const result = await testConnection(config);
+      report.push({ name, ok: result.ok, message: result.message });
+      setTestAllReport([...report]); // atualiza incremental (a pessoa vê cada uma testar)
+    }
+    setTestingAll(false);
+  };
+
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!apiKey.trim()) return;
@@ -387,9 +414,36 @@ export function SettingsForm({
       {/* ═══ Botão "+ Adicionar nova chave" — sempre visível (pedido do Miguel).
           Abre o formulário limpo. Se o form já tá aberto, some. ═══ */}
       {!showForm && (
-        <button type="button" className="add-key-btn" onClick={handleAddNew}>
-          ➕ {t("cfg_add_key")}
-        </button>
+        <div className="key-list-actions">
+          <button type="button" className="add-key-btn" onClick={handleAddNew}>
+            ➕ {t("cfg_add_key")}
+          </button>
+          {entries.length > 0 && (
+            <button
+              type="button"
+              className="test-all-btn"
+              onClick={handleTestAll}
+              disabled={testingAll}
+            >
+              {testingAll ? "⏳" : "🧪"} {t("cfg_test_all")}
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Relatório "Testar todas" — lista verde ✅ / vermelho ❌. */}
+      {(testingAll || testAllReport.length > 0) && (
+        <div className="test-all-report">
+          <h4>{t("cfg_test_all_report")}</h4>
+          {testAllReport.map((r, i) => (
+            <div key={i} className={`test-all-row ${r.ok ? "ok" : "fail"}`}>
+              <span className="test-all-icon">{r.ok ? "✅" : "❌"}</span>
+              <span className="test-all-name">{r.name}</span>
+              <span className="test-all-msg">{r.message}</span>
+            </div>
+          ))}
+          {testingAll && <p className="test-all-loading">⏳ {t("set_testing")}…</p>}
+        </div>
       )}
 
       {/* ═══ FORMULÁRIO de adicionar/editar — escondido por trás do botão. ═══ */}
