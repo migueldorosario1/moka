@@ -183,12 +183,12 @@ export default function Ajuda() {
           )}
         </div>
 
-        {/* Comunidade */}
+        {/* Comunidade — Telegram @mokareader (criado pelo Miguel 09/08). */}
         <section className="help-comunidade">
           <h2>💬 Comunidade</h2>
           <p>
             Dúvidas, ideias e conversa direta com o time:{" "}
-            <a href="https://t.me/mokacomunidade" target="_blank" rel="noreferrer">
+            <a href="https://t.me/mokareader" target="_blank" rel="noreferrer">
               entre na comunidade do Moka no Telegram →
             </a>
           </p>
