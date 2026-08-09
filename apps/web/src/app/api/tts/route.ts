@@ -16,10 +16,13 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 // Hosts permitidos pra TTS (mesma allowlist do proxy + audio/speech).
+// Grok (xAI) e Groq adicionados: ambos têm TTS OpenAI-compatible.
 const TTS_HOSTS = new Set<string>([
   "api.openai.com",
   "api.deepseek.com",
   "api.together.xyz",
+  "api.x.ai",
+  "api.groq.com",
 ]);
 
 interface TTSBody {

@@ -72,6 +72,9 @@ export function SettingsForm({
   const [saved, setSaved] = useState(false);
   // Feedback do botão "mostrar de novo o aviso de voz" (preferência neural/mecânica).
   const [voicePrefReset, setVoicePrefReset] = useState(false);
+  // Formulário de adicionar/editar chave: escondido por trás de um botão
+  // (pedido do Miguel: a lista aparece primeiro; o form só abre ao clicar).
+  const [showForm, setShowForm] = useState(false);
 
   // Busca de modelos disponíveis do provedor.
   const [modelsList, setModelsList] = useState<string[] | null>(null);
@@ -194,12 +197,25 @@ export function SettingsForm({
     setApiKey("");
     setLabel("");
     setEditingId(null);
+    setShowForm(false); // fecha o form, volta pra lista (pedido do Miguel)
     // Limpa o rascunho (já salvou, não precisa mais).
     if (typeof window !== "undefined") {
       window.localStorage.removeItem(DRAFT_KEY);
     }
     onSaved();
     setTimeout(() => setSaved(false), 2500);
+  };
+
+  /** Abre o formulário LIMPO pra adicionar uma nova chave (pedido do Miguel). */
+  const handleAddNew = () => {
+    setEditingId(null);
+    setApiKey("");
+    setLabel("");
+    setModel("");
+    setBaseUrl("");
+    setProviderId(PRESETS[0].id);
+    setTest({ status: "idle", message: "" });
+    setShowForm(true);
   };
 
   /** Troca a entry ativa (qual está em uso). */
@@ -241,6 +257,7 @@ export function SettingsForm({
     setLabel(entry.label ?? "");
     setBaseUrl(cfg?.baseUrl ?? "");
     setAdvancedOpen(true);
+    setShowForm(true); // abre o form preenchido (pedido do Miguel)
   };
 
   const handleClear = () => {
@@ -283,14 +300,6 @@ export function SettingsForm({
         <p className="v3-simple-note" style={{ marginTop: 10 }}>{t("keys3_same")}</p>
       </div>
 
-      {/* ═══ Atalhos rápidos: só âncoras vivas (Ajuda = banner ❓ Tutorial
-          lá embaixo → /ajuda; Quem somos = rodapé global — pedido do Miguel,
-          05/08: nada de parede de texto nas configurações) ═══ */}
-      <nav className="settings-quicknav">
-        <a href="#advanced-settings">🔧 {t("nav_advanced")}</a>
-        <a href="#video">🎬 {t("nav_video")}</a>
-      </nav>
-
       {/* ═══ BYOK: sua chave de IA (sempre aberta na fase gratuita —
           antes ficava atrás da licença paga) ═══ */}
       <details className="v3-advanced" id="advanced-settings" open>
@@ -299,7 +308,8 @@ export function SettingsForm({
           <span className="v3-advanced-hint">{t("set_keys_hint")}</span>
         </summary>
 
-      {/* Minhas chaves cadastradas — cada uma com provedor + MODELO visível */}
+      {/* ═══ LISTA DE CHAVES NO TOPO — primeira coisa que aparece.
+          Cada card com botão testar/usar/editar/remover. ═══ */}
       {entries.length > 0 && (
         <div className="saved-providers">
           <p className="saved-providers-title">{t("set_my_keys", { n: entries.length })}</p>
@@ -365,6 +375,18 @@ export function SettingsForm({
           </div>
         </div>
       )}
+
+      {/* ═══ Botão "+ Adicionar nova chave" — sempre visível (pedido do Miguel).
+          Abre o formulário limpo. Se o form já tá aberto, some. ═══ */}
+      {!showForm && (
+        <button type="button" className="add-key-btn" onClick={handleAddNew}>
+          ➕ {t("cfg_add_key")}
+        </button>
+      )}
+
+      {/* ═══ FORMULÁRIO de adicionar/editar — escondido por trás do botão. ═══ */}
+      {showForm && (
+        <>
 
       {/* Separador visual */}
       <div className="section-divider">
@@ -760,6 +782,9 @@ export function SettingsForm({
         </p>
       )}
 
+        </> // fecha o <> do {showForm && (
+      )}
+
       </details>
 
       {/* ═══ 🎬 VÍDEO & TRANSCRIÇÃO — seção própria em destaque (pedido do
@@ -795,7 +820,7 @@ export function SettingsForm({
                 await setWhisperKey(whisperDraft.trim());
                 setWhisperDraft("");
                 setWhisperMasked(await getWhisperKeyMasked());
-                setVideoMsg(whisperDraft.trim() ? "✅ Chave Whisper salva." : "🗑 Chave Whisper removida.");
+                setVideoMsg(whisperDraft.trim() ? t("cfg_whisper_saved") : t("cfg_whisper_removed"));
               }}
             >
               💾 Salvar
@@ -822,7 +847,7 @@ export function SettingsForm({
                   });
                   const env = await res.json();
                   if ((env.status ?? 200) >= 400) throw new Error(`OpenAI respondeu ${env.status}.`);
-                  setVideoMsg("✅ Chave OpenAI válida — Whisper pronto.");
+                  setVideoMsg(t("cfg_whisper_valid"));
                 } catch (err) {
                   setVideoMsg(`❌ ${err instanceof Error ? err.message : String(err)}`);
                 } finally {
@@ -830,220 +855,14 @@ export function SettingsForm({
                 }
               }}
             >
-              {testingVideo ? "Testando…" : "🔌 Testar"}
+              {testingVideo ? t("cfg_whisper_testing") : "🔌 " + t("set_test_connection")}
             </button>
           </div>
           {videoMsg && <p className="feedback">{videoMsg}</p>}
         </div>
       </section>
 
-      <style jsx>{`
-        .v3-simple {
-          background: #f7e7d7;
-          border: 1px solid #191919;
-          border-radius: 0;
-          padding: 22px 20px;
-          margin-bottom: 18px;
-        }
-        .v3-simple-title {
-          margin: 0 0 8px;
-          font-family: var(--font-brand);
-          font-weight: 600;
-          font-size: 21px;
-          color: #191919;
-        }
-        .v3-simple-sub {
-          margin: 0 0 16px;
-          color: var(--text);
-          font-size: 14.5px;
-          line-height: 1.55;
-        }
-        .v3-plans {
-          display: flex;
-          gap: 12px;
-          flex-wrap: wrap;
-        }
-        .v3-plan {
-          position: relative;
-          flex: 1;
-          min-width: 150px;
-          display: flex;
-          flex-direction: column;
-          gap: 5px;
-          background: #fff;
-          border: 1px solid #d9c8b8;
-          border-radius: 0;
-          padding: 16px 14px;
-          text-decoration: none;
-          color: #191919;
-        }
-        .v3-plan b { font-family: var(--font-brand); font-size: 17px; font-weight: 600; }
-        .v3-plan-price { font-family: var(--font-brand); color: #191919; font-weight: 600; font-size: 16px; }
-        .v3-plan-desc { color: var(--text-muted); font-size: 12.5px; line-height: 1.4; }
-        .v3-plan-featured {
-          border-color: #191919;
-          background: #fff1e5;
-        }
-        .v3-plan-teste {
-          border-color: #191919;
-          background: #f5e0cb;
-        }
-        .v3-plan-byok {
-          background: #eaf3f4;
-          border-top: 3px solid #0f7680;
-        }
-        .v3-plan-livre {
-          background: #eef7ee;
-          border-top: 3px solid #2c7a2c;
-        }
-        .v3-plan-featured:hover { background: #f5e0cb; }
-        .v3-plan-badge {
-          position: absolute;
-          top: -10px;
-          left: 12px;
-          background: #0f7680;
-          color: #fff;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          font-size: 10px;
-          font-weight: 700;
-          padding: 3px 10px;
-        }
-        .v3-plan-soon {
-          align-self: flex-start;
-          margin-top: 2px;
-          text-transform: uppercase;
-          letter-spacing: 0.1em;
-          font-size: 10px;
-          font-weight: 700;
-          color: var(--text-muted);
-          border: 1px solid var(--border);
-          padding: 3px 10px;
-        }
-        .v3-simple-note {
-          margin: 14px 0 0;
-          font-size: 13px;
-          color: var(--text-muted);
-        }
-        .v3-simple-note a { color: var(--accent-dark); font-weight: 700; }
-        .v3-advanced-locked {
-          padding: 14px 16px;
-          background: var(--surface);
-          font-size: 14px;
-        }
-        .v3-advanced-locked p { margin: 0; line-height: 1.55; }
-        .v3-advanced {
-          border: 1px solid var(--border);
-          border-radius: 0;
-          padding: 0 16px 16px;
-          margin-bottom: 14px;
-          background: var(--surface);
-        }
-        .v3-advanced summary {
-          cursor: pointer;
-          padding: 14px 0;
-          font-size: 14.5px;
-          color: var(--text);
-          list-style: none;
-        }
-        .v3-advanced summary::-webkit-details-marker { display: none; }
-        .v3-advanced summary::before { content: "▸ "; color: var(--accent); }
-        .v3-advanced[open] summary::before { content: "▾ "; }
-        .v3-conta {
-          margin-top: 14px; padding: 14px; border: 1px dashed var(--border);
-          border-radius: 10px; background: var(--surface);
-        }
-        .v3-conta-titulo { font-weight: 700; font-size: 13.5px; margin: 0 0 8px; }
-        .v3-conta-logado { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
-        .v3-conta-logado p { margin: 0; font-size: 14px; }
-        .v3-advanced-hint {
-          display: block;
-          margin-top: 4px;
-          font-size: 12.5px;
-          font-weight: 400;
-          color: var(--text-muted);
-          line-height: 1.45;
-        }
-
-        /* ═══ QA-FEATURE (Kimi 3, 2026-08-05): atalhos rápidos no topo +
-          seção própria de Vídeo & Transcrição (pedido do Miguel) ═══ */
-        .settings-quicknav {
-          display: flex;
-          flex-wrap: wrap;
-          gap: 8px;
-          margin: 0 0 18px;
-        }
-        .settings-quicknav a {
-          font-size: 11.5px;
-          font-weight: 800;
-          text-decoration: none;
-          color: var(--accent-dark);
-          background: rgba(255, 255, 255, 0.6);
-          border: 1px solid var(--border);
-          border-radius: 999px;
-          padding: 6px 12px;
-          transition: background 0.15s ease;
-        }
-        .settings-quicknav a:hover { background: #fff; }
-
-        .video-section {
-          background: #fdf3e3;
-          border: 2px solid var(--accent-dark, #b45309);
-          border-radius: 16px;
-          padding: 20px;
-          margin: 0 0 18px;
-        }
-        .video-section-title {
-          margin: 0 0 6px;
-          font-family: var(--font-brand);
-          font-size: 20px;
-          font-weight: 900;
-          color: var(--text);
-        }
-        .video-section-sub {
-          margin: 0 0 16px;
-          font-size: 13px;
-          line-height: 1.6;
-          color: var(--text-muted);
-        }
-        .video-block { margin-bottom: 14px; }
-        .video-block-title {
-          margin: 0 0 10px;
-          font-size: 14px;
-          line-height: 1.55;
-        }
-        .video-block-note {
-          font-size: 12.5px;
-          color: var(--text-muted);
-          font-weight: 400;
-        }
-        .video-advanced {
-          border: 1px dashed var(--border);
-          border-radius: 12px;
-          padding: 10px 14px;
-          margin-top: 4px;
-          background: rgba(255, 255, 255, 0.5);
-        }
-        .video-advanced summary {
-          cursor: pointer;
-          font-size: 13px;
-          font-weight: 700;
-          color: var(--text);
-        }
-        .video-advanced-hint {
-          font-size: 11.5px;
-          font-weight: 400;
-          color: var(--text-muted);
-        }
-        .video-iproyal {
-          margin: 14px 0 0;
-          padding-top: 12px;
-          border-top: 1px solid var(--border-soft);
-          font-size: 12px;
-          line-height: 1.55;
-          color: var(--text-muted);
-        }
-      `}</style>
+      {/* CSS migrado para globals.css — cura o FOUC (era <style jsx>) */}
 
       {/* Link pra tutorial completo */}
       <a href="/ajuda" target="_blank" rel="noreferrer" className="help-link-banner">
@@ -1079,533 +898,7 @@ export function SettingsForm({
         </div>
       </div>
 
-      <style jsx>{`
-        .settings-form {
-          display: flex;
-          flex-direction: column;
-          gap: 20px;
-        }
-        .field {
-          display: flex;
-          flex-direction: column;
-          gap: 6px;
-        }
-        .field label {
-          font-size: 14px;
-          font-weight: 600;
-        }
-        .field input,
-        .field select {
-          padding: 10px 12px;
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          background: var(--bg);
-          color: var(--text);
-          font-size: 14px;
-          font-family: inherit;
-        }
-        .field input:focus,
-        .field select:focus {
-          outline: none;
-          border-color: var(--accent);
-        }
-        .key-row {
-          display: flex;
-          gap: 8px;
-        }
-        .key-row input {
-          flex: 1;
-          font-family: ui-monospace, "SF Mono", Consolas, monospace;
-        }
-        .ghost {
-          border: 1px solid var(--border);
-          background: var(--surface);
-          border-radius: 8px;
-          padding: 0 14px;
-          font-size: 16px;
-        }
-        .key-refresh-btn {
-          margin-top: 8px;
-          padding: 7px 16px;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-          background: var(--surface);
-          color: var(--text);
-          font-size: 13px;
-          cursor: pointer;
-        }
-        .key-refresh-btn:hover:not(:disabled) {
-          border-color: var(--accent);
-        }
-        .key-refresh-btn:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
-        .hint {
-          margin: 0;
-          font-size: 12.5px;
-          color: var(--text-muted);
-          line-height: 1.5;
-        }
-        .hint.privacy {
-          background: var(--surface-alt);
-          padding: 8px 10px;
-          border-radius: 6px;
-        }
-        .hint a {
-          color: var(--accent);
-        }
-        .advanced-toggle {
-          align-self: flex-start;
-          background: transparent;
-          border: none;
-          color: var(--text-muted);
-          font-size: 13px;
-          padding: 0;
-        }
-        .advanced {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-          padding: 16px;
-          background: var(--surface-alt);
-          border-radius: 8px;
-        }
-        .muted {
-          font-weight: 400;
-          color: var(--text-muted);
-          font-size: 12px;
-        }
-        .model-row {
-          display: flex;
-          gap: 8px;
-        }
-        .model-row input {
-          flex: 1;
-          font-family: ui-monospace, "SF Mono", Consolas, monospace;
-        }
-        .models-list {
-          margin-top: 8px;
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          overflow: hidden;
-        }
-        .models-list-header {
-          display: flex;
-          align-items: stretch;
-          border-bottom: 1px solid var(--border);
-        }
-        .model-search {
-          flex: 1;
-          padding: 8px 10px;
-          border: none;
-          background: var(--surface);
-          color: var(--text);
-          font-size: 13px;
-        }
-        .model-search:focus {
-          outline: none;
-          background: var(--bg);
-        }
-        .models-close-btn {
-          border: none;
-          border-left: 1px solid var(--border);
-          background: var(--surface);
-          color: var(--text-muted);
-          padding: 0 12px;
-          font-size: 14px;
-          cursor: pointer;
-        }
-        .models-close-btn:hover {
-          background: #faf0e8;
-          color: #a04020;
-        }
-        /* Botão de teste (🔌) — feedback visual por estado. */
-        .test-btn.test-ok {
-          background: #f0f2e4;
-          border-color: #6b8e3d;
-        }
-        .test-btn.test-fail {
-          background: #faf0e8;
-          border-color: #a04020;
-        }
-        .test-btn:disabled {
-          opacity: 0.6;
-          cursor: wait;
-        }
-        .models-scroll {
-          max-height: 200px;
-          overflow-y: auto;
-          display: flex;
-          flex-direction: column;
-        }
-        .model-item {
-          text-align: left;
-          border: none;
-          background: transparent;
-          color: var(--text);
-          padding: 8px 12px;
-          font-size: 13px;
-          font-family: ui-monospace, "SF Mono", Consolas, monospace;
-          cursor: pointer;
-          border-bottom: 1px solid var(--border);
-        }
-        .model-item:last-child {
-          border-bottom: none;
-        }
-        .model-item:hover {
-          background: var(--accent-soft);
-          color: var(--accent);
-        }
-        .model-item.selected {
-          background: #f0f2e4;
-          color: #6b8e3d;
-          font-weight: 600;
-        }
-        .model-select-bar {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 8px 12px;
-          background: #f4f8f4;
-          border-top: 1px solid var(--border);
-          font-size: 13px;
-        }
-        .model-select-bar strong {
-          color: #2c7a2c;
-          font-family: ui-monospace, "SF Mono", Consolas, monospace;
-        }
-        .model-ok-btn {
-          background: #2c7a2c !important;
-          color: #ffffff !important;
-          border: none !important;
-          padding: 5px 12px !important;
-          border-radius: 6px !important;
-          font-weight: 600 !important;
-          font-size: 12.5px !important;
-          cursor: pointer;
-        }
-        .model-ok-btn:hover {
-          background: #226222 !important;
-        }
-        .actions {
-          display: flex;
-          gap: 10px;
-          flex-wrap: wrap;
-        }
-        .actions button {
-          padding: 10px 18px;
-          border-radius: 8px;
-          border: 1px solid var(--border);
-          background: var(--surface);
-          color: var(--text);
-          font-size: 14px;
-        }
-        .actions button.primary {
-          background: var(--accent);
-          color: white;
-          border-color: var(--accent);
-          font-weight: 600;
-        }
-        .actions button:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
-        .actions button.danger {
-          color: var(--accent);
-        }
-        .feedback {
-          margin: 0;
-          padding: 10px 12px;
-          border-radius: 8px;
-          font-size: 13px;
-        }
-        .feedback.ok {
-          background: #f0f2e4;
-          color: #6b8e3d;
-          border: 1px solid #c8d4a8;
-        }
-        .feedback.err {
-          background: #faf0e8;
-          color: #a04020;
-          border: 1px solid #e0c0a8;
-        }
-
-        /* Badge "chave atual" ao lado do label */
-        .existing-key-badge {
-          font-weight: 400;
-          font-size: 11px;
-          color: var(--text-muted);
-          margin-left: 8px;
-          font-family: ui-monospace, "SF Mono", Consolas, monospace;
-          background: var(--surface-alt);
-          padding: 2px 6px;
-          border-radius: 4px;
-        }
-
-        /* Lista de provedores cadastrados */
-        .saved-providers {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-        .saved-providers-title {
-          margin: 0;
-          font-size: 13px;
-          font-weight: 600;
-          color: var(--text-muted);
-        }
-        .saved-providers-list {
-          display: flex;
-          flex-direction: column;
-          gap: 8px;
-        }
-        .saved-provider-card {
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          gap: 10px;
-          padding: 10px 12px;
-          border: 1px solid var(--border);
-          border-radius: 10px;
-          background: var(--surface);
-        }
-        .saved-provider-card.active {
-          border-color: var(--accent);
-          background: var(--accent-soft);
-        }
-        .saved-provider-info {
-          display: flex;
-          flex-direction: column;
-          gap: 2px;
-          min-width: 0;
-          flex: 1;
-        }
-        .saved-provider-name {
-          font-weight: 600;
-          font-size: 14px;
-          display: flex;
-          align-items: center;
-          gap: 4px;
-        }
-        .active-dot {
-          color: var(--accent);
-          font-size: 10px;
-        }
-        .saved-provider-key {
-          font-size: 12px;
-          color: var(--text-muted);
-          font-family: ui-monospace, "SF Mono", Consolas, monospace;
-        }
-        .saved-provider-model {
-          font-size: 11px;
-          color: var(--text-muted);
-          font-style: italic;
-        }
-        .saved-provider-actions {
-          display: flex;
-          gap: 4px;
-          flex-shrink: 0;
-        }
-        .mini-btn {
-          border: 1px solid var(--border);
-          background: var(--surface);
-          color: var(--text);
-          border-radius: 6px;
-          font-size: 12px;
-          padding: 4px 8px;
-          cursor: pointer;
-          transition: var(--transition);
-        }
-        .mini-btn:hover {
-          border-color: var(--accent);
-        }
-        .use-btn {
-          background: var(--accent);
-          color: white;
-          border-color: var(--accent);
-          font-weight: 600;
-        }
-        .use-btn:hover {
-          opacity: 0.85;
-        }
-        .remove-btn:hover {
-          border-color: #a04020;
-          color: #a04020;
-        }
-
-        /* Separador de seção */
-        /* Seção de 3 idiomas */
-        .lang-section {
-          display: flex;
-          flex-direction: column;
-          gap: 16px;
-          padding: 16px;
-          background: var(--surface-alt);
-          border-radius: 10px;
-          border: 1px solid var(--border);
-        }
-        .section-divider {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin: 4px 0;
-          color: var(--text-muted);
-          font-size: 12px;
-          font-weight: 600;
-        }
-        .section-divider::before,
-        .section-divider::after {
-          content: "";
-          flex: 1;
-          height: 1px;
-          background: var(--border);
-        }
-
-        /* Seção de ajuda */
-        /* Banner de link pro tutorial */
-        .help-link-banner {
-          display: block;
-          padding: 12px 16px;
-          background: var(--accent-soft);
-          border: 1px solid var(--accent);
-          border-radius: 10px;
-          color: var(--accent) !important;
-          font-size: 14px;
-          font-weight: 600;
-          text-decoration: none;
-          transition: all 150ms ease;
-        }
-        .help-link-banner:hover {
-          background: var(--accent);
-          color: white !important;
-        }
-        .help-section {
-          border: 1px solid var(--border);
-          border-radius: 8px;
-          background: var(--surface-alt);
-          padding: 0;
-        }
-        .help-section summary {
-          padding: 12px 14px;
-          cursor: pointer;
-          font-size: var(--text-sm);
-          font-weight: 600;
-          color: var(--text-muted);
-          list-style: none;
-        }
-        .help-section summary::-webkit-details-marker {
-          display: none;
-        }
-        .help-section summary::before {
-          content: "▸ ";
-        }
-        .help-section[open] summary::before {
-          content: "▾ ";
-        }
-        .help-content {
-          padding: 0 14px 14px;
-          font-size: var(--text-sm);
-          line-height: 1.6;
-          color: var(--text-muted);
-        }
-        .help-content p {
-          margin: 0 0 8px;
-        }
-        .help-content ul {
-          margin: 0 0 8px;
-          padding-left: 20px;
-        }
-        .help-content a {
-          color: var(--accent);
-        }
-
-        /* Quem somos */
-        .about-section {
-          border-top: 1px solid var(--border);
-          padding-top: 12px;
-        }
-        .about-section summary {
-          cursor: pointer;
-          font-size: var(--text-xs);
-          color: var(--text-muted);
-          list-style: none;
-        }
-        .about-section summary::-webkit-details-marker {
-          display: none;
-        }
-        .about-content {
-          padding-top: 10px;
-          font-size: var(--text-xs);
-          line-height: 1.7;
-          color: var(--text-muted);
-        }
-        .about-content p {
-          margin: 0 0 8px;
-        }
-
-        /* Doação */
-        /* Banner Premium */
-        .premium-banner {
-          display: block;
-          text-align: center;
-          padding: 14px 18px;
-          background: linear-gradient(135deg, var(--accent), var(--gold, #c89968));
-          color: white !important;
-          border-radius: 12px;
-          font-size: 14px;
-          font-weight: 600;
-          text-decoration: none;
-          transition: all 150ms ease;
-        }
-        .premium-banner:hover {
-          transform: scale(1.02);
-          box-shadow: 0 4px 16px rgba(176, 106, 59, 0.3);
-        }
-        .donate-section {
-          text-align: center;
-          padding-top: 12px;
-          border-top: 1px solid var(--border);
-        }
-        .donate-title {
-          font-size: var(--text-sm);
-          color: var(--text-muted);
-          margin: 0 0 10px;
-        }
-        .donate-options {
-          display: flex;
-          gap: 10px;
-          justify-content: center;
-          flex-wrap: wrap;
-        }
-        .donate-btn {
-          display: inline-block;
-          padding: 8px 18px;
-          text-decoration: none;
-          border-radius: 20px;
-          font-size: var(--text-sm);
-          font-weight: 600;
-          cursor: pointer;
-          transition: var(--transition);
-          font-family: inherit;
-        }
-        .donate-btn.paypal {
-          background: #0070ba;
-          color: white;
-          border: 1px solid #0070ba;
-        }
-        .donate-btn.paypal:hover {
-          background: #005ea6;
-        }
-        .donate-btn.pix {
-          background: #32bcad;
-          color: white;
-          border: 1px solid #32bcad;
-        }
-        .donate-btn.pix:hover {
-          background: #25a89a;
-        }
-      `}</style>
+      {/* CSS migrado para globals.css — cura o FOUC (era <style jsx>) */}
     </form>
   );
 }

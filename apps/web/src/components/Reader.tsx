@@ -88,6 +88,40 @@ const FONT_SCALE_KEY = "moka.fontScale";
  * do IndexedDB no boot) e notificam o pai via `onChapterChange/onZoomChange`
  * pra persistência. Internamente continuam useState.
  */
+/**
+ * Provedores que têm voz neural (TTS) compatível com o endpoint /api/tts.
+ * Adicionado Grok (xAI) e Groq em 09/08 (pedido do Miguel) — ambos têm TTS.
+ */
+const NEURAL_TTS_PROVIDERS = new Set(["openai", "grok", "groq"]);
+
+/**
+ * Retorna a config de TTS (baseUrl, model, voice) pro provedor ativo, ou
+ * null se o provedor não tem TTS. O baseUrl vem do config do usuário (se
+ * custom) ou do preset do registry. Voz padrão: "nova" (OpenAI), "alloy"
+ * (fallback universal OpenAI-compatible).
+ */
+function getNeuralTtsConfig(config: {
+  providerId: string;
+  apiKey: string;
+  baseUrl?: string;
+  model?: string;
+}): { baseUrl: string; apiKey: string; model: string; voice: string } | null {
+  if (!NEURAL_TTS_PROVIDERS.has(config.providerId)) return null;
+  if (!(config.apiKey || "").trim()) return null;
+  // baseUrl/model custom do usuário, senão defaults do preset.
+  const PRESET_BASE: Record<string, string> = {
+    openai: "https://api.openai.com/v1",
+    grok: "https://api.x.ai/v1",
+    groq: "https://api.groq.com/openai/v1",
+  };
+  const baseUrl = config.baseUrl || PRESET_BASE[config.providerId] || PRESET_BASE.openai;
+  // Modelo de TTS: se o usuário customizou um modelo de chat, ignoramos pra TTS
+  // (TTS usa modelo específico). OpenAI = tts-1; demais = fallback tts-1.
+  const model = "tts-1";
+  const voice = "nova"; // voz feminina agradável, disponível na OpenAI
+  return { baseUrl, apiKey: config.apiKey, model, voice };
+}
+
 export function Reader({
   book,
   pdfSource,
@@ -258,22 +292,14 @@ export function Reader({
     const prepared = await prepareSpeech(rawText, textLang);
     if (!prepared) return;
 
-    // Tenta voz NEURAL primeiro (se o provedor ATIVO for OpenAI — tem TTS).
-    // Caso especial: há OpenAI no cofre mas OUTRA IA está ativa → avisa que é
-    // só ativar a OpenAI pra ter voz natural (ideia de ecossistema do Miguel).
+    // Tenta voz NEURAL primeiro (se o provedor ATIVO tem TTS: OpenAI/Grok/Groq).
     const config = getConfigSync();
-    const neuralReady =
-      config && config.providerId === "openai" && !!(config.apiKey || "").trim();
-    if (neuralReady) {
+    const ttsCfg = config ? getNeuralTtsConfig(config) : null;
+    if (ttsCfg) {
       const gen = ttsPrepGen.current;
       setTtsPrep("voice");
       setTtsLoading(true);
-      const neural = await tts.speakNeural(prepared.text, prepared.lang, {
-        baseUrl: "https://api.openai.com/v1",
-        apiKey: config.apiKey,
-        model: "tts-1",
-        voice: "nova",
-      });
+      const neural = await tts.speakNeural(prepared.text, prepared.lang, ttsCfg);
       // Chave inválida/vencida (400/401/403): já caiu pra voz gratuita —
       // explica o que houve com um aviso amigável (1× por sessão).
       if (!neural.ok && (neural.status === 400 || neural.status === 401 || neural.status === 403)) {
@@ -286,15 +312,14 @@ export function Reader({
       return;
     }
 
-    // Não há OpenAI ativa. Mas há OpenAI NO COFRE (inativa)? Avisa que é só
-    // ativar — voz neural a um clique de distância.
-    const hasInactiveOpenAI = listAllEntriesSync().some(
-      (e) => e.providerId === "openai" && !e.active,
+    // Não há provedor de TTS ativo. Mas há um (OpenAI/Grok/Groq) NO COFRE
+    // inativo? Avisa que é só ativar — voz neural a um clique.
+    const hasInactiveTts = listAllEntriesSync().some(
+      (e) => NEURAL_TTS_PROVIDERS.has(e.providerId) && !e.active,
     );
-    if (hasInactiveOpenAI) {
-      setShowTtsModal(false); // não mostra o modal genérico
+    if (hasInactiveTts) {
+      setShowTtsModal(false);
       alert(t("tts_neural_activate"));
-      // Mesmo assim, fala com a voz mecânica (não deixa o usuário sem áudio).
       setTtsPrep(null);
       setTtsLoading(false);
       tts.speak(prepared.text, prepared.lang);
@@ -1432,18 +1457,12 @@ export function Reader({
     if (!prepared) return;
 
     const config = getConfigSync();
-    const neuralReady =
-      config && config.providerId === "openai" && !!(config.apiKey || "").trim();
-    if (neuralReady) {
+    const ttsCfg = config ? getNeuralTtsConfig(config) : null;
+    if (ttsCfg) {
       const gen = ttsPrepGen.current;
       setTtsPrep("voice");
       setTtsLoading(true);
-      const neural = await tts.speakNeural(prepared.text, prepared.lang, {
-        baseUrl: "https://api.openai.com/v1",
-        apiKey: config.apiKey,
-        model: "tts-1",
-        voice: "nova",
-      });
+      const neural = await tts.speakNeural(prepared.text, prepared.lang, ttsCfg);
       // Chave inválida (400/401/403): já caiu pra voz gratuita — avisa 1×.
       if (!neural.ok && (neural.status === 400 || neural.status === 401 || neural.status === 403)) {
         warnNeuralKeyOnce();
@@ -1453,15 +1472,15 @@ export function Reader({
         setTtsPrep(null);
       }
     } else {
-      // Sem chave da OpenAI ativa. Mas há OpenAI NO COFRE (inativa)? Avisa
-      // que é só ativar — voz neural a um clique.
-      const hasInactiveOpenAI = listAllEntriesSync().some(
-        (e) => e.providerId === "openai" && !e.active,
+      // Sem provedor de TTS ativo. Mas há um (OpenAI/Grok/Groq) NO COFRE
+      // inativo? Avisa que é só ativar.
+      const hasInactiveTts = listAllEntriesSync().some(
+        (e) => NEURAL_TTS_PROVIDERS.has(e.providerId) && !e.active,
       );
-      if (hasInactiveOpenAI) {
+      if (hasInactiveTts) {
         alert(t("tts_neural_activate"));
       } else {
-        // Sem OpenAI nenhuma: aviso genérico (1×).
+        // Sem TTS nenhum: aviso genérico (1×).
         warnNeuralKeyOnce();
       }
       setTtsPrep(null);

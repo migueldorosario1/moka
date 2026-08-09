@@ -91,6 +91,24 @@ export const PRESETS: ProviderPreset[] = [
     keyUrl: "https://aistudio.google.com/app/apikey",
     description: "Modelos Gemini do Google. Janela de contexto enorme, multilíngue.",
   },
+  {
+    id: "grok",
+    name: "Grok (xAI)",
+    baseUrl: "https://api.x.ai/v1",
+    defaultModel: "grok-3-mini",
+    adapter: "openai",
+    keyUrl: "https://console.x.ai",
+    description: "Modelos Grok da xAI. Tem voz neural (TTS) e transcrição (STT) — ótimo pra ler em voz alta e vídeos.",
+  },
+  {
+    id: "groq",
+    name: "Groq",
+    baseUrl: "https://api.groq.com/openai/v1",
+    defaultModel: "llama-3.3-70b-versatile",
+    adapter: "openai",
+    keyUrl: "https://console.groq.com/keys",
+    description: "Inferência ultrarrápida (LPU). Modelos open-source a preço baixo. Tem TTS e Whisper.",
+  },
 ];
 
 /** Retorna o preset pelo id, ou undefined. */
