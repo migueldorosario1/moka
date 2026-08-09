@@ -5,6 +5,7 @@ import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
+import { ZeMocaAvatar } from "@/components/ZeMocaAvatar";
 import { useI18n } from "@/components/I18nProvider";
 
 /** Links diretos pra pegar a chave (neutros de idioma). */
@@ -36,8 +37,8 @@ export default function Tutorial() {
   ];
 
   return (
-    <main className="igot-shell ft">
-      <div className="igot-topbar">
+    <main className="help">
+      <div className="igot-topbar help-topbar">
         <div className="igot-topbar-left">
           <Link href="/" className="brand" title="MOKA — Ir para página central">
             <CafezinhoLogo size={26} opacity={0.85} />
@@ -50,9 +51,20 @@ export default function Tutorial() {
         </div>
       </div>
 
-      <div className="capa-body" style={{ maxWidth: 640, margin: "0 auto" }}>
-        <h1 className="capa-tagline" style={{ fontSize: 26 }}>{t("tut_title")}</h1>
-        <p style={{ color: "var(--text-muted)", lineHeight: 1.6, marginTop: 8 }}>{t("tut_intro")}</p>
+      <div className="help-body">
+        {/* 🤖 Zé Moca no topo — o roceiro que te ensina (pedido do Miguel). */}
+        <section className="ze-moca-banner">
+          <div className="ze-moca-avatar"><ZeMocaAvatar size={72} /></div>
+          <div className="ze-moca-text">
+            <h2 className="ze-moca-name">Zé Moca</h2>
+            <p className="ze-moca-intro">
+              {t("ze_moca_intro") || "Oi, eu sou o Zé Moca! Vou te ensinar tudo, passo a passo. Em 5 minutos você tá lendo com IA."}
+            </p>
+          </div>
+        </section>
+
+        <p className="help-kicker">{t("tut_title")}</p>
+        <h1 className="help-title">{t("tut_intro")}</h1>
 
         {/* 🔑 "O que é API?" — pedido do Miguel (05/08): o tutorial tem que
             abrir explicando o que é a API, antes de qualquer passo */}
@@ -98,7 +110,7 @@ export default function Tutorial() {
             {t("tut_cta")}
           </Link>
         </p>
-      </div>
+      </div>{/* fim help-body */}
 
       <SiteFooter />
 
