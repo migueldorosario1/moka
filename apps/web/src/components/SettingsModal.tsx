@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import type { AIConfig } from "@igot/ai-providers";
 import { getConfigSync, loadConfigCache, invalidateConfigCache } from "@/lib/config";
 import { useI18n } from "./I18nProvider";
@@ -24,6 +25,13 @@ export function SettingsModal({ onClose, onSaved }: SettingsModalProps) {
   const { t } = useI18n();
   const [config, setConfig] = useState<AIConfig | null>(null);
 
+  // Portal: o modal é renderizado direto no <body>, ESCAPANDO de qualquer
+  // ancestral com transform/filter/contain que criaria containing block e
+  // quebraria o overlay (mesma cura do BUG-20260805-MOKA-LOGIN-MODAL-FAIXA-
+  // CORTADA, aplicada no AuthModal). Guarda SSR: createPortal só no client.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   // Lê a config FRESCA a cada abertura do modal.
   // invalidateConfigCache força reler do localStorage (descriptografando de novo)
   // — assim pega mudanças feitas fora (ex.: outra aba, ou clear anterior).
@@ -41,7 +49,9 @@ export function SettingsModal({ onClose, onSaved }: SettingsModalProps) {
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div
       className="settings-overlay"
       onClick={onClose}
@@ -178,6 +188,7 @@ export function SettingsModal({ onClose, onSaved }: SettingsModalProps) {
           }
         }
       `}</style>
-    </div>
+    </div>,
+    document.body,
   );
 }
