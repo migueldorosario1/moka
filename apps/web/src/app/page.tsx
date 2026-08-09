@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
+import { ZeMocaAvatar } from "@/components/ZeMocaAvatar";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { SiteFooter } from "@/components/SiteFooter";
 import { AuthGate } from "@/components/AuthGate";
@@ -44,7 +45,7 @@ export default function Capa() {
             title={t("help_title")}
             aria-label={t("help_title")}
           >
-            ☕
+            <ZeMocaAvatar size={32} />
           </Link>
           {/* ⚙️ Configurações — tem que estar na capa também (não só no leitor). */}
           <button

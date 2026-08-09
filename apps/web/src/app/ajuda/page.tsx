@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
+import { ZeMocaAvatar } from "@/components/ZeMocaAvatar";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -100,7 +101,7 @@ export default function Ajuda() {
             Apresentação amigável + link pro futuro chat. (Pedido do Miguel,
             09/08: "entra ele com destaque, logo em cima".) */}
         <section className="ze-moca-banner">
-          <div className="ze-moca-avatar">☕</div>
+          <div className="ze-moca-avatar"><ZeMocaAvatar size={72} /></div>
           <div className="ze-moca-text">
             <h2 className="ze-moca-name">Zé Moca</h2>
             <p className="ze-moca-intro">
