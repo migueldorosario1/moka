@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
@@ -38,6 +39,8 @@ export default function ConfiguracoesPage() {
   const [configReady, setConfigReady] = useState(false);
 
   // Lê a config FRESCA no boot da página (descriptografa o cofre).
+  const router = useRouter();
+
   useEffect(() => {
     invalidateConfigCache();
     loadConfigCache().then(() => {
@@ -69,6 +72,15 @@ export default function ConfiguracoesPage() {
         <div className="igot-topbar-actions">
           <AuthGate />
           <LangSwitcher />
+          {/* ✕ Fechar — volta pra onde o usuário veio (estante, leitor, vídeo). */}
+          <button
+            className="cfg-close-btn"
+            onClick={() => router.back()}
+            aria-label={t("close")}
+            title={t("close")}
+          >
+            ✕
+          </button>
         </div>
       </div>
 
@@ -105,6 +117,24 @@ export default function ConfiguracoesPage() {
           font-weight: 600;
           color: var(--text-muted);
           margin-left: 4px;
+        }
+        .cfg-close-btn {
+          width: 36px;
+          height: 36px;
+          border-radius: 50%;
+          border: 1px solid var(--border);
+          background: var(--surface-alt);
+          color: var(--text);
+          font-size: 15px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background var(--transition);
+        }
+        .cfg-close-btn:hover {
+          background: var(--accent-soft);
+          border-color: var(--accent);
         }
         .cfg-body {
           flex: 1;

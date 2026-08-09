@@ -64,11 +64,33 @@ export async function parsePDF(input: PDFParseInput): Promise<ParsedBook> {
       const info = meta.info as Record<string, unknown>;
       const title = info["Title"];
       const author = info["Author"];
-      if (typeof title === "string" && title) metadata.title = title;
-      if (typeof author === "string" && author) metadata.author = author;
+      if (typeof title === "string" && title.trim()) metadata.title = title.trim();
+      if (typeof author === "string" && author.trim()) metadata.author = author.trim();
     }
   } catch {
     /* metadados são best-effort */
+  }
+
+  // FALLBACK de título: se a metadata não trouxer, lê a 1ª página e pega
+  // a primeira linha de texto significativa (geralmente é o título do livro).
+  // Pedido do Miguel: "ele consegue ler o título do livro, não fica com o
+  // nome do arquivo".
+  if (!metadata.title) {
+    try {
+      const page1 = await doc.getPage(1);
+      const content = await page1.getTextContent();
+      const lines = (content.items as Array<{ str?: string }>)
+        .map((it) => (it.str ?? "").trim())
+        .filter((s) => s.length >= 3); // ignora linhas muito curtas (lixo)
+      if (lines.length > 0) {
+        // Pega a 1ª linha real (título costuma ser o texto mais no topo).
+        // Remove caracteres estranhos e limita o tamanho.
+        const candidate = lines[0].replace(/\s+/g, " ").slice(0, 120);
+        if (candidate.length >= 3) metadata.title = candidate;
+      }
+    } catch {
+      /* fallback de título é best-effort */
+    }
   }
 
   await doc.destroy();
