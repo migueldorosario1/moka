@@ -6,7 +6,7 @@ import {
   setConfig, setActiveEntry, removeEntry, updateEntryLabel,
   clearConfig, getTargetLang, setTargetLang,
   getAudioLang, setAudioLang,
-  listAllEntriesSync, getConfigById,
+  listAllEntriesSync, getConfigById, loadConfigCache,
   setWhisperKey, getWhisperKeyMasked,
 } from "@/lib/config";
 import { testConnection, listModels } from "@/lib/ai-client";
@@ -75,6 +75,9 @@ export function SettingsForm({
   // Formulário de adicionar/editar chave: escondido por trás de um botão
   // (pedido do Miguel: a lista aparece primeiro; o form só abre ao clicar).
   const [showForm, setShowForm] = useState(false);
+  // Campos avançados (apelido, modelo, baseUrl): escondidos por padrão pra
+  // simplificar (pedido do Miguel: menos campos visíveis).
+  const [showAdvancedFields, setShowAdvancedFields] = useState(false);
 
   // Busca de modelos disponíveis do provedor.
   const [modelsList, setModelsList] = useState<string[] | null>(null);
@@ -192,7 +195,10 @@ export function SettingsForm({
     setTargetLang(targetLang);
     setAudioLang(audioLang);
     setSaved(true);
-    setEntries(listAllEntriesSync()); // atualiza a lista
+    // FORÇA recarga do cache (descriptografa de novo) antes de reler a lista —
+    // sem isto, a nova entry podia não aparecer (bug reportado pelo Miguel).
+    await loadConfigCache();
+    setEntries(listAllEntriesSync());
     // Limpa o formulário pra próxima entrada.
     setApiKey("");
     setLabel("");
@@ -221,6 +227,7 @@ export function SettingsForm({
   /** Troca a entry ativa (qual está em uso). */
   const handleActivate = async (id: string) => {
     await setActiveEntry(id);
+    await loadConfigCache();
     setEntries(listAllEntriesSync());
     onSaved();
   };
@@ -238,6 +245,7 @@ export function SettingsForm({
       setLabel("");
       setEditingId(null);
     }
+    await loadConfigCache();
     setEntries(listAllEntriesSync());
     onSaved();
   };
@@ -429,7 +437,9 @@ export function SettingsForm({
         )}
       </div>
 
-      {/* Nome/etiqueta opcional (pra distinguir múltiplas do mesmo provedor) */}
+      {/* Nome/etiqueta opcional — escondido por padrão (simplificação, pedido
+          do Miguel: menos campos visíveis). Só aparece em "opções avançadas". */}
+      {showAdvancedFields && (
       <div className="field">
         <label htmlFor="label">
           {t("set_label")} <span className="muted">{t("set_label_hint")}</span>
@@ -444,6 +454,7 @@ export function SettingsForm({
           spellCheck={false}
         />
       </div>
+      )} {/* fim showAdvancedFields (apelido) */}
 
       {/* Chave */}
       <div className="field">
@@ -631,7 +642,21 @@ export function SettingsForm({
         </p>
       </div>
 
-      {/* Modelo — SEMPRE VISÍVEL */}
+      {/* ⚙️ Opções avançadas — esconde apelido/modelo/baseUrl por padrão
+          (simplificação, pedido do Miguel: menos campos visíveis). */}
+      <button
+        type="button"
+        className="advanced-toggle"
+        onClick={() => setShowAdvancedFields((v) => !v)}
+        aria-expanded={showAdvancedFields}
+      >
+        {showAdvancedFields ? "▾" : "▸"} {t("set_advanced")}
+      </button>
+
+      {/* Modelo + baseUrl — só em opções avançadas (era "sempre visível"). */}
+      {showAdvancedFields && (
+      <>
+      {/* Modelo */}
       <div className="field">
         <label htmlFor="model">
           {t("set_model")}
@@ -757,6 +782,8 @@ export function SettingsForm({
           </div>
         </div>
       )}
+      </>
+      )} {/* fim showAdvancedFields (modelo + baseUrl) */}
 
       {/* Ações */}
       <div className="actions">
