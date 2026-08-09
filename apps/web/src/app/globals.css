@@ -3536,8 +3536,20 @@ main.igot-shell.ft {
   border: 2px solid var(--surface);
 }
 
-/* Aplica --ui-font-scale no tamanho de fonte base do body.
-   O controle de acessibilidade ajusta este valor (0.85 a 1.4). */
+/* Aplica --ui-font-scale em TODA a interface (acessibilidade).
+   Usa CSS `zoom` porque a maioria dos componentes usa px fixo (não rem) —
+   o zoom escala tudo visualmente, incluindo fontes em px, sem quebrar layout.
+   Suportado em Chrome, Safari, Edge e Firefox (desde 2024). */
 html {
-  font-size: calc(16px * var(--ui-font-scale, 1));
+  font-size: 16px;
+}
+body {
+  zoom: var(--ui-font-scale, 1);
+}
+/* Fallback: navegadores sem suporte a zoom (raros) — usa transform. */
+@supports not (zoom: 1) {
+  body {
+    transform: scale(var(--ui-font-scale, 1));
+    transform-origin: top center;
+  }
 }
