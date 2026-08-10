@@ -5540,6 +5540,10 @@ transition: width 200ms ease, max-height 200ms ease;
 .ai-panel-overlay .ai-panel.ai-size-small { width: 100%; max-height: 40vh; }
 .ai-panel-overlay .ai-panel.ai-size-half { width: 100%; max-height: 70vh; }
 .ai-panel-overlay .ai-panel.ai-size-full { width: 100%; max-height: 100vh; height: 100vh; }
+/* Overlay acompanha o tamanho do AIPanel (FORA do media query — funciona no iPad paisagem). */
+.ai-panel-overlay:has(.ai-size-small) { max-height: 40vh !important; }
+.ai-panel-overlay:has(.ai-size-half) { max-height: 70vh !important; }
+.ai-panel-overlay:has(.ai-size-full) { max-height: 100vh !important; top: 0 !important; bottom: 0 !important; }
 /* Botões de tamanho */
 .ai-size-btns {
 display: flex;
