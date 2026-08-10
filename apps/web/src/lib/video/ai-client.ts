@@ -309,12 +309,10 @@ export async function correctTranscript(
   segments: TranscriptSegment[],
   onChunk: (text: string) => void,
 ): Promise<string> {
-  // Pega a transcrição e limita a 6000 chars (evita loop/gasto excessivo).
-  let transcript = fullOrSampledTranscript(segments);
-  if (transcript.length > 6000) transcript = transcript.slice(0, 6000) + "...";
+  const transcript = fullOrSampledTranscript(segments);
 
   const p = await provider();
-  // Usa COMPLETE (sem streaming/stream) com texto DENTRO do prompt —
+  // Usa COMPLETE (sem streaming) com texto DENTRO do prompt —
   // evita o bug de loop/repetição que acontecia com context+stream.
   const prompt =
     `${videoHeader(meta)}\n\n` +
@@ -325,14 +323,13 @@ export async function correctTranscript(
     "2. CORRIJA erros de português e pontuação.\n" +
     "3. DIVIDA em parágrafos curtos (2-3 frases cada).\n" +
     "4. MANTENHA o conteúdo fiel — não adicione nem remova informações.\n" +
-    "5. NÃO inclua timestamps.\n" +
-    "6. NÃO repita trechos — cada frase aparece UMA VEZ apenas.\n\n" +
+    "5. NÃO inclua timestamps.\n\n" +
     "Devolva APENAS o texto corrigido.\n\n" +
     `TRANSCRIÇÃO:\n${transcript}`;
 
   const result = await p.complete(prompt, {
     systemPrompt: systemPrompt(),
-    maxTokens: 4000,
+    maxTokens: 8000,
     temperature: 0.3,
   });
   onChunk(result.text);
