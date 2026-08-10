@@ -87,7 +87,7 @@ export default function VideoPage() {
   const [panel, setPanel] = useState<PanelState>(null);
   // Modo de visualização da transcrição: "timecode" (com timestamps) ou
   // "edited" (texto limpo formatado pela IA). Pedido do Miguel 10/08.
-  const [transcriptView, setTranscriptView] = useState<"timecode" | "edited" | "ai">("edited");
+  const [transcriptView, setTranscriptView] = useState<"timecode" | "edited">("edited");
   // Texto corrigido pela IA (preenchido sob demanda quando clicar em "editada").
   const [transcriptEdited, setTranscriptEdited] = useState<string | null>(null);
   const [transcriptEditing, setTranscriptEditing] = useState(false);
@@ -442,26 +442,6 @@ export default function VideoPage() {
                   onClick={() => setTranscriptView("edited")}
                 >
                   📄 Texto limpo
-                </button>
-                <button
-                  className={`transcript-view-btn ${transcriptView === "ai" ? "active" : ""}`}
-                  onClick={() => {
-                    setTranscriptView("ai");
-                    if (!transcriptEdited && !transcriptEditing && video?.segments?.length) {
-                      setTranscriptEditing(true);
-                      let acc = "";
-                      correctTranscript(video.meta, video.segments, (chunk) => {
-                        acc += chunk;
-                        setTranscriptEdited(acc);
-                      }).then(() => {
-                        setTranscriptEditing(false);
-                      }).catch(() => {
-                        setTranscriptEditing(false);
-                      });
-                    }
-                  }}
-                >
-                  {transcriptEditing ? "⏳ Corrigindo…" : "🤖 Corrigida com IA"}
                 </button>
               </div>
               {transcriptView === "timecode" ? (
