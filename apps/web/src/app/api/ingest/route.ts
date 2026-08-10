@@ -931,13 +931,18 @@ export async function POST(req: Request) {
         return respond({ meta, transcriptSource: "captions", segments });
       }
 
-      // Sem legendas acessíveis → motor da casa (Transkriptor + pontos).
-      if (!transkriptorEnabled()) {
+      // Sem legendas acessíveis.
+      // Se a pessoa mandou chave OpenAI (header x-openai-key), TENTA
+      // transcrever com Whisper — não bloqueia com mensagem de "configure".
+      // (Pedido do Miguel 10/08: "já tô com OpenAI configurada, não bloqueia!")
+      const hasOpenAIKey = !!(req.headers.get("x-openai-key") || "").trim();
+      if (!transkriptorEnabled() && !hasOpenAIKey) {
         return respond(
-          { error: SERVERLESS_NOTE_NO_CAPTIONS, needsWhisperKey: false, meta },
+          { error: SERVERLESS_NOTE_NO_CAPTIONS, needsWhisperKey: true, meta },
           { status: 428 },
         );
       }
+      // Tem chave ou motor da casa → tenta transcrever.
       return await handleTranscricaoSubmit(url, videoId, meta, payload);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
