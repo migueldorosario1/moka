@@ -724,19 +724,11 @@ export function SettingsForm({
 
       {/* ⚙️ Opções avançadas — esconde apelido/modelo/baseUrl por padrão
           (simplificação, pedido do Miguel: menos campos visíveis). */}
-      <button
-        type="button"
-        className="advanced-toggle"
-        onClick={() => setShowAdvancedFields((v) => !v)}
-        aria-expanded={showAdvancedFields}
-      >
-        {showAdvancedFields ? "▾" : "▸"} {t("set_advanced")}
-      </button>
 
+      {/* Modelo — SEMPRE VISÍVEL (pedido do Miguel: "tem que ter campo de
+          modelo, escolher qual modelo usar"). Sem modelo, provedores como
+          Gemini dão 404 (modelo padrão descontinuado). */}
       {/* Modelo + baseUrl — só em opções avançadas (era "sempre visível"). */}
-      {showAdvancedFields && (
-      <>
-      {/* Modelo */}
       <div className="field">
         <label htmlFor="model">
           {t("set_model")}
@@ -862,8 +854,6 @@ export function SettingsForm({
           </div>
         </div>
       )}
-      </>
-      )} {/* fim showAdvancedFields (modelo + baseUrl) */}
 
       {/* Ações */}
       <div className="actions">

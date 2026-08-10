@@ -93,7 +93,7 @@ export const PRESETS: ProviderPreset[] = [
     id: "gemini",
     name: "Google Gemini",
     baseUrl: "https://generativelanguage.googleapis.com/v1beta",
-    defaultModel: "gemini-2.0-flash",
+    defaultModel: "gemini-2.5-flash",
     adapter: "gemini",
     keyUrl: "https://aistudio.google.com/app/apikey",
     usageUrl: "https://aistudio.google.com/usage",
