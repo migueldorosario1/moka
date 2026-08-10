@@ -309,24 +309,34 @@ export async function correctTranscript(
   segments: TranscriptSegment[],
   onChunk: (text: string) => void,
 ): Promise<string> {
-  const transcript = fullOrSampledTranscript(segments);
-  return runStream(
+  // Pega a transcrição e limita a 6000 chars (evita loop/gasto excessivo).
+  let transcript = fullOrSampledTranscript(segments);
+  if (transcript.length > 6000) transcript = transcript.slice(0, 6000) + "...";
+
+  const p = await provider();
+  // Usa COMPLETE (sem streaming/stream) com texto DENTRO do prompt —
+  // evita o bug de loop/repetição que acontecia com context+stream.
+  const prompt =
     `${videoHeader(meta)}\n\n` +
-      "Você é um editor profissional. O texto abaixo é uma TRANSCRIÇÃO AUTOMÁTICA " +
-      "(gerada por IA de reconhecimento de fala) e pode conter ERROS de nomes próprios, " +
-      "cargos, partidos, instituições, lugares e termos técnicos.\n\n" +
-      "Sua tarefa:\n" +
-      "1. CORRIJA todos os nomes próprios que estiverem errados (ex: se diz 'Elmano' mas " +
-      "o correto é 'Elmano de Freitas', corrija; se diz 'o governador do Cera' mas é " +
-      "'governador do Ceará', corrija).\n" +
-      "2. CORRIJA erros de português, pontuação e formatação.\n" +
-      "3. DIVIDA em PARÁGRAFOS de no máximo 2 frases cada.\n" +
-      "4. MANTENHA o conteúdo fiel ao original — não adicione nem remova informações.\n" +
-      "5. NÃO inclua timestamps nem marcadores de tempo.\n\n" +
-      "Devolva APENAS o texto corrigido e formatado, sem comentários.",
-    { context: transcript, maxTokens: 4000 },
-    onChunk,
-  );
+    "Você é um editor profissional. Corrija a transcrição abaixo (gerada por IA de " +
+    "reconhecimento de fala, pode ter erros de nomes próprios, cargos, instituições).\n\n" +
+    "Regras:\n" +
+    "1. CORRIJA nomes próprios, cargos, partidos, instituições e lugares.\n" +
+    "2. CORRIJA erros de português e pontuação.\n" +
+    "3. DIVIDA em parágrafos curtos (2-3 frases cada).\n" +
+    "4. MANTENHA o conteúdo fiel — não adicione nem remova informações.\n" +
+    "5. NÃO inclua timestamps.\n" +
+    "6. NÃO repita trechos — cada frase aparece UMA VEZ apenas.\n\n" +
+    "Devolva APENAS o texto corrigido.\n\n" +
+    `TRANSCRIÇÃO:\n${transcript}`;
+
+  const result = await p.complete(prompt, {
+    systemPrompt: systemPrompt(),
+    maxTokens: 4000,
+    temperature: 0.3,
+  });
+  onChunk(result.text);
+  return result.text;
 }
 
 // ─── ❓ Perguntar sobre o vídeo (Q&A com busca no contexto) ─────────────
