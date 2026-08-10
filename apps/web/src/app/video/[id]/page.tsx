@@ -227,9 +227,10 @@ export default function VideoPage() {
     (kind: ToolKind) => {
       if (kind === "transcript") {
         setPanel({ kind: "transcript", text: "", streaming: false });
-        // Default é "edited" (texto limpo) — já dispara a correção pela IA.
+        // Default é "edited" (texto limpo em parágrafos) — instantâneo, sem IA.
         setTranscriptView("edited");
         setTranscriptEdited(null);
+        setTranscriptEditing(false);
         return;
       }
       if (kind === "summary") {
@@ -438,25 +439,33 @@ export default function VideoPage() {
                 </button>
                 <button
                   className={`transcript-view-btn ${transcriptView === "edited" ? "active" : ""}`}
-                  onClick={() => {
-                    // Se ainda não corrigiu, chama a IA pra corrigir nomes + paragrafos.
-                    if (!transcriptEdited && !transcriptEditing && video?.segments?.length) {
-                      setTranscriptEditing(true);
-                      let acc = "";
-                      correctTranscript(video.meta, video.segments, (chunk) => {
-                        acc += chunk;
-                        setTranscriptEdited(acc);
-                      }).then(() => {
-                        setTranscriptEditing(false);
-                      }).catch(() => {
-                        setTranscriptEditing(false);
-                      });
-                    }
-                  }}
+                  onClick={() => setTranscriptView("edited")}
                 >
-                  {transcriptEditing ? "⏳ Corrigindo…" : "📄 Editada (texto limpo)"}
+                  📄 Editada (texto limpo)
                 </button>
               </div>
+              {/* Botão opcional: corrige nomes com IA (só se a pessoa quiser). */}
+              {transcriptView === "edited" && !transcriptEdited && !transcriptEditing && (
+                <button
+                  className="key-refresh-btn"
+                  style={{ marginBottom: 12 }}
+                  onClick={() => {
+                    if (!video?.segments?.length) return;
+                    setTranscriptEditing(true);
+                    let acc = "";
+                    correctTranscript(video.meta, video.segments, (chunk) => {
+                      acc += chunk;
+                      setTranscriptEdited(acc);
+                    }).then(() => {
+                      setTranscriptEditing(false);
+                    }).catch(() => {
+                      setTranscriptEditing(false);
+                    });
+                  }}
+                >
+                  🔄 Corrigir nomes com IA
+                </button>
+              )}
               {transcriptView === "timecode" ? (
                 video.segments.map((s, i) => (
                   <p key={i} className="transcript-line">
