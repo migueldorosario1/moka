@@ -87,7 +87,7 @@ export default function VideoPage() {
   const [panel, setPanel] = useState<PanelState>(null);
   // Modo de visualização da transcrição: "timecode" (com timestamps) ou
   // "edited" (texto limpo formatado pela IA). Pedido do Miguel 10/08.
-  const [transcriptView, setTranscriptView] = useState<"timecode" | "edited">("edited");
+  const [transcriptView, setTranscriptView] = useState<"timecode" | "edited" | "ai">("edited");
   // Texto corrigido pela IA (preenchido sob demanda quando clicar em "editada").
   const [transcriptEdited, setTranscriptEdited] = useState<string | null>(null);
   const [transcriptEditing, setTranscriptEditing] = useState(false);
@@ -441,7 +441,27 @@ export default function VideoPage() {
                   className={`transcript-view-btn ${transcriptView === "edited" ? "active" : ""}`}
                   onClick={() => setTranscriptView("edited")}
                 >
-                  📄 Editada (texto limpo)
+                  📄 Texto limpo
+                </button>
+                <button
+                  className={`transcript-view-btn ${transcriptView === "ai" ? "active" : ""}`}
+                  onClick={() => {
+                    setTranscriptView("ai");
+                    if (!transcriptEdited && !transcriptEditing && video?.segments?.length) {
+                      setTranscriptEditing(true);
+                      let acc = "";
+                      correctTranscript(video.meta, video.segments, (chunk) => {
+                        acc += chunk;
+                        setTranscriptEdited(acc);
+                      }).then(() => {
+                        setTranscriptEditing(false);
+                      }).catch(() => {
+                        setTranscriptEditing(false);
+                      });
+                    }
+                  }}
+                >
+                  {transcriptEditing ? "⏳ Corrigindo…" : "🤖 Corrigida com IA"}
                 </button>
               </div>
               {transcriptView === "timecode" ? (
@@ -451,25 +471,28 @@ export default function VideoPage() {
                     <span>{s.text}</span>
                   </p>
                 ))
+              ) : transcriptView === "edited" ? (
+                <div className="transcript-edited">
+                  {(() => {
+                    const fullText = video.segments.map((s) => s.text).join(" ");
+                    const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
+                    const paragraphs: string[] = [];
+                    for (let i = 0; i < sentences.length; i += 2) {
+                      paragraphs.push(sentences.slice(i, i + 2).join(" ").trim());
+                    }
+                    return paragraphs.map((p, i) => <p key={i}>{p}</p>);
+                  })()}
+                </div>
               ) : (
+                /* Modo "ai" (corrigida com IA) */
                 <div className="transcript-edited">
                   {transcriptEdited ? (
                     <Markdown text={transcriptEdited} />
-                  ) : transcriptEditing ? (
+                  ) : (
                     <div className="panel-thinking">
                       <div className="spinner" />
-                      <p>O Moka está corrigindo os nomes e formatando…</p>
+                      <p>🤖 A IA está corrigindo nomes e formatando a transcrição…</p>
                     </div>
-                  ) : (
-                    (() => {
-                      const fullText = video.segments.map((s) => s.text).join(" ");
-                      const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
-                      const paragraphs: string[] = [];
-                      for (let i = 0; i < sentences.length; i += 2) {
-                        paragraphs.push(sentences.slice(i, i + 2).join(" ").trim());
-                      }
-                      return paragraphs.map((p, i) => <p key={i}>{p}</p>);
-                    })()
                   )}
                 </div>
               )}
