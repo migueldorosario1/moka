@@ -103,7 +103,7 @@ export const PRESETS: ProviderPreset[] = [
     id: "mistral",
     name: "Mistral AI",
     baseUrl: "https://api.mistral.ai/v1",
-    defaultModel: "mistral-small-latest",
+    defaultModel: "mistral-large-latest",
     adapter: "openai",
     keyUrl: "https://console.mistral.ai/api-keys",
     usageUrl: "https://console.mistral.ai/usage",
