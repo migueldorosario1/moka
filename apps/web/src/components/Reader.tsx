@@ -10,7 +10,7 @@ import { useI18n } from "./I18nProvider";
 import { CloseAppButton } from "./CloseAppButton";
 import { LangSwitcher } from "./LangSwitcher";
 import { useTTS } from "@/hooks/useTTS";
-import { getTargetLang, getAudioLang, getConfigSync, listAllEntriesSync, getTtsVoice } from "@/lib/config";
+import { getTargetLang, getAudioLang, getConfigSync, listAllEntriesSync, getTtsVoice, getEntryForVoice } from "@/lib/config";
 import { SettingsModal } from "./SettingsModal";
 import { AskModal } from "./AskModal";
 import { PageActionModal } from "./PageActionModal";
@@ -292,9 +292,9 @@ export function Reader({
     const prepared = await prepareSpeech(rawText, textLang);
     if (!prepared) return;
 
-    // Tenta voz NEURAL primeiro (se o provedor ATIVO tem TTS: OpenAI/Grok/Groq).
-    const config = getConfigSync();
-    const ttsCfg = config ? getNeuralTtsConfig(config) : null;
+    // Tenta voz NEURAL primeiro (se há entry marcada pra voz — OpenAI/Grok/Groq).
+    const voiceConfig = getEntryForVoice();
+    const ttsCfg = voiceConfig ? getNeuralTtsConfig(voiceConfig) : null;
     if (ttsCfg) {
       const gen = ttsPrepGen.current;
       setTtsPrep("voice");
@@ -1486,8 +1486,8 @@ export function Reader({
     const prepared = await prepareSpeech(text, book.language || "en");
     if (!prepared) return;
 
-    const config = getConfigSync();
-    const ttsCfg = config ? getNeuralTtsConfig(config) : null;
+    const voiceConfig = getEntryForVoice();
+    const ttsCfg = voiceConfig ? getNeuralTtsConfig(voiceConfig) : null;
     if (ttsCfg) {
       const gen = ttsPrepGen.current;
       setTtsPrep("voice");

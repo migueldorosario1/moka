@@ -15,6 +15,7 @@ import {
   hasConfig,
   loadConfigCache,
   getConfigSync,
+  getEntryForVideo,
   getWhisperKey,
   getIngestServer,
 } from "@/lib/config";
@@ -256,9 +257,10 @@ export default function HomePage() {
           // (Antes só usava Whisper separada — agora OpenAI ativa também serve.)
           let whisperKey = (await getWhisperKey()) ?? "";
           if (!whisperKey) {
-            const config = getConfigSync();
-            if (config && (config.providerId === "openai" || config.providerId === "grok" || config.providerId === "groq")) {
-              whisperKey = config.apiKey;
+            // Usa a entry marcada pra vídeo (useForVideo), senão a ativa.
+            const videoConfig = getEntryForVideo();
+            if (videoConfig) {
+              whisperKey = videoConfig.apiKey;
             }
           }
           const txRes = await postIngest(

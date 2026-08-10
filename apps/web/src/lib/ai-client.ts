@@ -16,7 +16,7 @@ import {
   ProxyStreamError,
   type AIConfig,
 } from "@igot/ai-providers";
-import { getConfigSync, getTargetLang } from "./config";
+import { getConfigSync, getEntryForText, getTargetLang } from "./config";
 import { t } from "./messages";
 
 /** Contexto da obra relevante para as ações. */
@@ -50,7 +50,7 @@ function buildContext(ctx: BookContext): string | undefined {
  *  FASE GRATUITA (pivô 2026-08-04): não existe mais IA da casa/pontos —
  *  sem chave configurada, o erro guia a pessoa a colocar a própria. */
 function resolveProvider() {
-  const config = getConfigSync();
+  const config = getEntryForText();
   if (!config) {
     throw new Error(
       "Para usar a IA, abra as ⚙️ Configurações e cole a SUA chave de IA " +

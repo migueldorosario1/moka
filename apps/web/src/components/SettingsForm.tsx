@@ -6,11 +6,11 @@ import {
   setConfig, setActiveEntry, removeEntry, updateEntryLabel,
   clearConfig, getTargetLang, setTargetLang,
   getAudioLang, setAudioLang,
-  listAllEntriesSync, getConfigById, loadConfigCache, getConfigSync,
+  listAllEntriesSync, getConfigById, loadConfigCache, getConfigSync, getEntryForVoice,
   setWhisperKey, getWhisperKeyMasked,
   getTtsVoice, setTtsVoice,
   getTtsMode, setTtsMode,
-  getTtsVoiceKey, setTtsVoiceKey,
+  setUseForText, setUseForVoice, setUseForVideo,
   TTS_VOICES_OPENAI, TTS_VOICES_GROK,
 } from "@/lib/config";
 import { testConnection, listModels } from "@/lib/ai-client";
@@ -390,7 +390,6 @@ const TTS_TEST_PHRASES: Record<string, string> = {
               const name = PRESETS.find((pr) => pr.id === e.providerId)?.name ?? e.providerId;
               const displayName = e.label || name;
               const hasTTS = ["openai", "grok", "groq"].includes(e.providerId);
-              const isVoiceKey = getTtsVoiceKey() === e.id;
               return (
                 <div
                   key={e.id}
@@ -405,25 +404,40 @@ const TTS_TEST_PHRASES: Record<string, string> = {
                     <span className="saved-provider-model">
                       🧩 {e.model || PRESETS.find((pr) => pr.id === e.providerId)?.defaultModel || t("set_default_model")}
                     </span>
-                    {/* Checkbox "usar para voz neural" — só pra OpenAI/Grok/Groq.
-                        Marca esta chave como a que o Moka usa pra TTS. */}
-                    {hasTTS && (
+                    {/* 3 checkboxes por função (mix de IAs — pedido do Miguel). */}
+                    <div className="use-for-row">
+                      {/* ☑️ Texto — qualquer IA pode */}
                       <label className="tts-checkbox-row">
                         <input
                           type="checkbox"
-                          checked={isVoiceKey}
-                          onChange={() => {
-                            if (isVoiceKey) {
-                              setTtsVoiceKey("");
-                            } else {
-                              setTtsVoiceKey(e.id);
-                            }
-                            setEntries(listAllEntriesSync());
-                          }}
+                          checked={!!e.useForText}
+                          onChange={() => { setUseForText(e.id); setEntries(listAllEntriesSync()); }}
                         />
-                        🎙️ {t("cfg_use_for_voice") || "Usar para voz neural"}
+                        📖 {"Tradução/Explicação"}
                       </label>
-                    )}
+                      {/* ☑️ Vídeo — só OpenAI/Grok/Groq */}
+                      {hasTTS && (
+                        <label className="tts-checkbox-row">
+                          <input
+                            type="checkbox"
+                            checked={!!e.useForVideo}
+                            onChange={() => { setUseForVideo(e.id); setEntries(listAllEntriesSync()); }}
+                          />
+                          🎬 {"Transcrição"}
+                        </label>
+                      )}
+                      {/* ☑️ Voz neural — só OpenAI/Grok/Groq */}
+                      {hasTTS && (
+                        <label className="tts-checkbox-row">
+                          <input
+                            type="checkbox"
+                            checked={!!e.useForVoice}
+                            onChange={() => { setUseForVoice(e.id); setEntries(listAllEntriesSync()); }}
+                          />
+                          🎙️ {"Voz neural"}
+                        </label>
+                      )}
+                    </div>
                   </div>
                   <div className="saved-provider-actions">
                     {!e.active && (
@@ -947,12 +961,10 @@ const TTS_TEST_PHRASES: Record<string, string> = {
                 onClick={async () => {
                   setTestingVoice(true);
                   try {
-                    const config = getConfigSync();
-                    if (!config) { alert("Cadastre uma chave primeiro."); return; }
-                    const TTS_PROVIDERS = ["openai", "grok", "groq"];
-                    if (!TTS_PROVIDERS.includes(config.providerId)) { alert("Voz neural precisa de OpenAI, Grok ou Groq ativo."); return; }
+                    const voiceConfig = getEntryForVoice();
+                    if (!voiceConfig) { alert("Cadastre OpenAI, Grok ou Groq e marque ☑️ Voz neural."); return; }
                     const PRESET_BASE: Record<string, string> = { openai: "https://api.openai.com/v1", grok: "https://api.x.ai/v1", groq: "https://api.groq.com/openai/v1" };
-                    const ttsBaseUrl = config.baseUrl || PRESET_BASE[config.providerId] || PRESET_BASE.openai;
+                    const ttsBaseUrl = voiceConfig.baseUrl || PRESET_BASE[voiceConfig.providerId] || PRESET_BASE.openai;
                     const res = await fetch("/api/tts", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
@@ -962,7 +974,7 @@ const TTS_TEST_PHRASES: Record<string, string> = {
                     voice: ttsVoice,
                     model: "tts-1",
                     baseUrl: ttsBaseUrl,
-                    apiKey: config.apiKey,
+                    apiKey: voiceConfig.apiKey,
                   }),
                     });
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);

@@ -34,6 +34,12 @@ export interface VaultEntry {
   /** Nome customizado opcional pra distinguishir múltiplas do mesmo provedor. */
   label?: string;
   savedAt: number;
+  /** Marca esta entry como a IA pra tradução/explicação (qualquer provedor). */
+  useForText?: boolean;
+  /** Marca esta entry como a IA pra transcrição de vídeo (só openai/grok/groq). */
+  useForVideo?: boolean;
+  /** Marca esta entry como a IA pra voz neural (só openai/grok/groq). */
+  useForVoice?: boolean;
 }
 
 /** Versão mascarada de uma chave pra exibir na UI (sk-***...abc). */
@@ -67,6 +73,9 @@ interface SerializedVault {
     baseUrl?: string;
     label?: string;
     savedAt: number;
+    useForText?: boolean;
+    useForVideo?: boolean;
+    useForVoice?: boolean;
   }>;
   activeId: string | null;
 }
@@ -99,6 +108,9 @@ async function ensureCache(): Promise<void> {
               baseUrl: e.baseUrl,
               label: e.label,
               savedAt: e.savedAt,
+              useForText: e.useForText,
+              useForVideo: e.useForVideo,
+              useForVoice: e.useForVoice,
             });
           } catch {
             // chave corrompida — pula
@@ -191,6 +203,9 @@ async function persist(): Promise<void> {
         baseUrl: e.baseUrl,
         label: e.label,
         savedAt: e.savedAt,
+        useForText: e.useForText,
+        useForVideo: e.useForVideo,
+        useForVoice: e.useForVoice,
       })),
     ),
     activeId: cachedActiveId,
@@ -342,6 +357,9 @@ export function listAllEntriesSync(): Array<{
   model?: string;
   label?: string;
   active: boolean;
+  useForText?: boolean;
+  useForVideo?: boolean;
+  useForVoice?: boolean;
 }> {
   if (!cachedEntries) return [];
   return cachedEntries.map((e) => ({
@@ -351,6 +369,9 @@ export function listAllEntriesSync(): Array<{
     model: e.model,
     label: e.label,
     active: e.id === cachedActiveId,
+    useForText: e.useForText,
+    useForVideo: e.useForVideo,
+    useForVoice: e.useForVoice,
   }));
 }
 
@@ -450,6 +471,60 @@ export function getAudioLang(): string {
 export function setAudioLang(lang: string): void {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(AUDIO_LANG_KEY, lang);
+}
+
+// ─── Seleção por função (mix de IAs — pedido do Miguel 10/08) ──────────
+// Cada entry pode ser marcada pra Texto, Vídeo ou Voz. O Moka usa a entry
+// marcada pra cada função. Se nenhuma marcada, fallback pra entry ativa.
+
+const TTS_CAPABLE = ["openai", "grok", "groq"];
+
+/** Retorna a config da entry marcada pra TEXTO (tradução/explicação).
+ *  Se nenhuma marcada, usa a ativa (fallback — não quebra o que existe). */
+export function getEntryForText(): AIConfig | null {
+  if (!cachedEntries) return getConfigSync();
+  const marked = cachedEntries.find((e) => e.useForText);
+  if (marked) return { providerId: marked.providerId, apiKey: marked.apiKey, model: marked.model, baseUrl: marked.baseUrl };
+  return getConfigSync();
+}
+
+/** Retorna a config da entry marcada pra VOZ NEURAL.
+ *  Só busca em openai/grok/groq. Se nenhuma marcada, usa a ativa se for TTS. */
+export function getEntryForVoice(): AIConfig | null {
+  if (!cachedEntries) return getConfigSync();
+  const marked = cachedEntries.find((e) => e.useForVoice && TTS_CAPABLE.includes(e.providerId));
+  if (marked) return { providerId: marked.providerId, apiKey: marked.apiKey, model: marked.model, baseUrl: marked.baseUrl };
+  const active = getConfigSync();
+  if (active && TTS_CAPABLE.includes(active.providerId)) return active;
+  return null;
+}
+
+/** Retorna a config da entry marcada pra VÍDEO (transcrição).
+ *  Só busca em openai/grok/groq. Se nenhuma marcada, usa a ativa se for TTS. */
+export function getEntryForVideo(): AIConfig | null {
+  if (!cachedEntries) return getConfigSync();
+  const marked = cachedEntries.find((e) => e.useForVideo && TTS_CAPABLE.includes(e.providerId));
+  if (marked) return { providerId: marked.providerId, apiKey: marked.apiKey, model: marked.model, baseUrl: marked.baseUrl };
+  const active = getConfigSync();
+  if (active && TTS_CAPABLE.includes(active.providerId)) return active;
+  return null;
+}
+
+/** Marca uma entry pra uma função (single-select: desmarca as outras). */
+export function setUseForText(entryId: string): void {
+  if (!cachedEntries) return;
+  cachedEntries.forEach((e) => { e.useForText = e.id === entryId ? !e.useForText : false; });
+  persist();
+}
+export function setUseForVoice(entryId: string): void {
+  if (!cachedEntries) return;
+  cachedEntries.forEach((e) => { e.useForVoice = e.id === entryId ? !e.useForVoice : false; });
+  persist();
+}
+export function setUseForVideo(entryId: string): void {
+  if (!cachedEntries) return;
+  cachedEntries.forEach((e) => { e.useForVideo = e.id === entryId ? !e.useForVideo : false; });
+  persist();
 }
 
 // ─── Voz TTS (qual voz neural usar — OpenAI/Grok) ──────────────────────
