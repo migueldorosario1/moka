@@ -606,170 +606,8 @@ export function SettingsForm({
         </p>
       </div>
 
-      {/* ═══ 3 IDIOMAS SEPARADOS ═══ */}
-      <div className="lang-section">
-        {/* 1. Idioma da INTERFACE */}
-        <div className="field">
-          <label htmlFor="ui-lang">🖥️ {t("set_ui_lang")}</label>
-          <p className="hint" style={{ marginBottom: "6px" }}>
-            {t("set_ui_lang_hint")}
-          </p>
-          <select
-            id="ui-lang"
-            value={uiLang}
-            onChange={(e) => setUILang(e.target.value)}
-          >
-            <option value="pt-BR">🇧🇷 Português</option>
-            <option value="en">🇺🇸 English</option>
-            <option value="es">🇪🇸 Español</option>
-            <option value="fr">🇫🇷 Français</option>
-            <option value="de">🇩🇪 Deutsch</option>
-            <option value="it">🇮🇹 Italiano</option>
-            <option value="ru">🇷🇺 Русский</option>
-            <option value="zh">🇨🇳 中文</option>
-            <option value="ja">🇯🇵 日本語</option>
-            <option value="ko">🇰🇷 한국어</option>
-            <option value="ar">🇸🇦 العربية</option>
-            <option value="hi">🇮🇳 हिन्दी</option>
-          </select>
-        </div>
-
-        {/* 2. Idioma das TRADUÇÕES e EXPLICAÇÕES (texto escrito) */}
-        <div className="field">
-          <label htmlFor="lang">📝 {t("set_ai_lang")}</label>
-          <p className="hint" style={{ marginBottom: "6px" }}>
-            {t("set_ai_lang_hint")}
-          </p>
-          <select
-            id="lang"
-            value={targetLang}
-            onChange={(e) => {
-              setLang(e.target.value);
-              setTargetLang(e.target.value);
-            }}
-          >
-            <optgroup label="Mais comuns">
-              <option value="pt-BR">🇧🇷 Português (Brasil)</option>
-              <option value="en">🇺🇸 English</option>
-              <option value="es">🇪🇸 Español</option>
-              <option value="fr">🇫🇷 Français</option>
-            </optgroup>
-            <optgroup label="Asiáticos">
-              <option value="zh">🇨🇳 中文 (Chinês)</option>
-              <option value="ja">🇯🇵 日本語 (Japonês)</option>
-              <option value="ko">🇰🇷 한국어 (Coreano)</option>
-              <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
-              <option value="ar">🇸🇦 العربية (Árabe)</option>
-            </optgroup>
-            <optgroup label="Europeus">
-              <option value="de">🇩🇪 Deutsch (Alemão)</option>
-              <option value="it">🇮🇹 Italiano</option>
-              <option value="nl">🇳🇱 Nederlands (Holandês)</option>
-              <option value="ru">🇷🇺 Русский (Russo)</option>
-              <option value="pl">🇵🇱 Polski (Polonês)</option>
-              <option value="tr">🇹🇷 Türkçe (Turco)</option>
-              <option value="uk">🇺🇦 Українська (Ucraniano)</option>
-            </optgroup>
-            <optgroup label="Outros">
-              <option value="he">🇮🇱 עברית (Hebraico)</option>
-              <option value="id">🇮🇩 Bahasa Indonesia</option>
-              <option value="vi">🇻🇳 Tiếng Việt (Vietnamita)</option>
-              <option value="th">🇹🇭 ไทย (Tailandês)</option>
-            </optgroup>
-          </select>
-        </div>
-
-        {/* 3. Idioma do ÁUDIO FALADO (leitura em voz alta) */}
-        <div className="field">
-          <label htmlFor="audio-lang">🔊 {t("set_audio_lang")}</label>
-          <p className="hint" style={{ marginBottom: "6px" }}>
-            {t("set_audio_lang_hint")}
-          </p>
-          <select
-            id="audio-lang"
-            value={audioLang}
-            onChange={(e) => {
-              setAudioLangState(e.target.value);
-              setAudioLang(e.target.value);
-            }}
-          >
-            <option value="original">📖 {t("set_audio_original")}</option>
-            <optgroup label={t("set_audio_specific")}>
-              <option value="pt-BR">🇧🇷 Português</option>
-              <option value="en">🇺🇸 English</option>
-              <option value="es">🇪🇸 Español</option>
-              <option value="fr">🇫🇷 Français</option>
-              <option value="de">🇩🇪 Deutsch</option>
-              <option value="it">🇮🇹 Italiano</option>
-              <option value="ru">🇷🇺 Русский</option>
-              <option value="zh">🇨🇳 中文</option>
-              <option value="ja">🇯🇵 日本語</option>
-              <option value="ko">🇰🇷 한국어</option>
-              <option value="ar">🇸🇦 العربية</option>
-              <option value="hi">🇮🇳 हिन्दी</option>
-            </optgroup>
-          </select>
-        </div>
-
-        {/* Preferência de voz: neural (OpenAI) vs mecânica (gratuita).
-            Pedido do Miguel: a pessoa escolhe no primeiro uso, mas pode
-            mudar de ideia aqui. O botão reseta o "não mostrar de novo". */}
-        <div className="field voice-pref-field">
-          <label>🔊 {t("cfg_voice_pref_title")}</label>
-          <p className="hint" style={{ marginBottom: "8px" }}>
-            {t("cfg_voice_pref_body")}
-          </p>
-
-          {/* Dropdown de voz neural (OpenAI/Grok) — escolhe qual voz usar. */}
-          <label htmlFor="tts-voice" style={{ fontSize: 13, fontWeight: 600, display: "block", marginBottom: 4 }}>
-            {t("cfg_choose_voice") || "Escolher voz neural"}:
-          </label>
-          <select
-            id="tts-voice"
-            value={ttsVoice}
-            onChange={(e) => {
-              setTtsVoice(e.target.value);
-              setTtsVoiceState(e.target.value);
-            }}
-            style={{ marginBottom: 10, padding: "8px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
-          >
-            {/* Vozes da OpenAI */}
-            <optgroup label="OpenAI">
-              {TTS_VOICES_OPENAI.map((v) => (
-                <option key={v.id} value={v.id}>{v.label}</option>
-              ))}
-            </optgroup>
-            {/* Vozes do Grok (xAI) */}
-            <optgroup label="Grok (xAI)">
-              {TTS_VOICES_GROK.map((v) => (
-                <option key={v.id} value={v.id}>{v.label}</option>
-              ))}
-            </optgroup>
-          </select>
-
-          <button
-            type="button"
-            className="key-refresh-btn"
-            onClick={() => {
-              if (typeof window !== "undefined") {
-                window.localStorage.removeItem("moka.ttsWarned");
-                sessionStorage.removeItem("moka.ttsWarned");
-              }
-              setVoicePrefReset(true);
-              setTimeout(() => setVoicePrefReset(false), 2500);
-            }}
-          >
-            🔔 {t("cfg_voice_pref_show_again")}
-          </button>
-          {voicePrefReset && (
-            <p className="feedback ok" style={{ marginTop: 6 }}>✓</p>
-          )}
-        </div>
-
-        <p className="hint" style={{ marginTop: "4px" }}>
-          {t("set_content_lang")}
-        </p>
-      </div>
+      {/* ═══ 3 IDIOMAS SEPARADOS — MOVIDO PRA CÁ (era dentro do details).
+          Pedido do Miguel 10/08: "joga todo esse bloco de idioma pra baixo". ═══ */}
 
       {/* ⚙️ Opções avançadas — esconde apelido/modelo/baseUrl por padrão
           (simplificação, pedido do Miguel: menos campos visíveis). */}
@@ -933,80 +771,113 @@ export function SettingsForm({
 
       </details>
 
-      {/* ═══ 🎬 VÍDEO & TRANSCRIÇÃO — seção própria em destaque (pedido do
-          Miguel, 05/08): antes ficava enterrada dentro de "Quem somos", miúda
-          e sem título. Agora: título em negrito, âncora direta (#video) e o
-          mesmo porte visual das outras seções. ═══ */}
-      <section id="video" className="video-section">
-        <h3 className="video-section-title">🎬 {t("vid_section_title")}</h3>
-        <p className="video-section-sub">{t("vid_cfg_diff")}</p>
-
-        {/* 3.1 — Chave de transcrição (OpenAI/Whisper) — para vídeos sem legenda */}
-        <div className="video-block">
-          <p className="video-block-title">
-            🎙 <strong>{t("vid_whisper_title")}</strong>{" "}
-            <a href="https://platform.openai.com/api-keys" target="_blank" rel="noreferrer" style={{ color: "var(--accent-dark)", fontWeight: 700 }}>
-              {t("vid_cfg_getkey")}
-            </a>{" "}
-            <span className="video-block-note">{t("vid_cfg_price")}</span>
+      {/* ═══ 3 IDIOMAS + VOZ — MOVIDO PRA CÁ (pedido Miguel 10/08: "joga
+          o bloco de idioma pra baixo"). Fica depois das chaves. ═══ */}
+      <div className="lang-section">
+        {/* 1. Idioma da INTERFACE */}
+        <div className="field">
+          <label htmlFor="ui-lang">🖥️ {t("set_ui_lang")}</label>
+          <p className="hint" style={{ marginBottom: "6px" }}>
+            {t("set_ui_lang_hint")}
           </p>
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-            <input
-              type="password"
-              value={whisperDraft}
-              onChange={(e) => setWhisperDraft(e.target.value)}
-              placeholder={whisperMasked ?? "sk-…"}
-              autoComplete="off"
-              style={{ flex: 1, minWidth: 180, padding: "10px 12px", border: "1px solid var(--border)", borderRadius: 8, background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
-            />
-            <button
-              type="button"
-              className="btn-ghost"
-              onClick={async () => {
-                await setWhisperKey(whisperDraft.trim());
-                setWhisperDraft("");
-                setWhisperMasked(await getWhisperKeyMasked());
-                setVideoMsg(whisperDraft.trim() ? t("cfg_whisper_saved") : t("cfg_whisper_removed"));
-              }}
-            >
-              💾 Salvar
-            </button>
-            <button
-              type="button"
-              className="btn-ghost"
-              disabled={testingVideo}
-              onClick={async () => {
-                setTestingVideo(true);
-                setVideoMsg(null);
-                try {
-                  const key = whisperDraft.trim() || (await (await import("@/lib/config")).getWhisperKey()) || "";
-                  if (!key) throw new Error("Cole a chave pra testar.");
-                  const res = await fetch("/api/proxy", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                      url: "https://api.openai.com/v1/models",
-                      method: "GET",
-                      headers: { Authorization: `Bearer ${key}` },
-                      body: "",
-                    }),
-                  });
-                  const env = await res.json();
-                  if ((env.status ?? 200) >= 400) throw new Error(`OpenAI respondeu ${env.status}.`);
-                  setVideoMsg(t("cfg_whisper_valid"));
-                } catch (err) {
-                  setVideoMsg(`❌ ${err instanceof Error ? err.message : String(err)}`);
-                } finally {
-                  setTestingVideo(false);
-                }
-              }}
-            >
-              {testingVideo ? t("cfg_whisper_testing") : "🔌 " + t("set_test_connection")}
-            </button>
-          </div>
-          {videoMsg && <p className="feedback">{videoMsg}</p>}
+          <select id="ui-lang" value={uiLang} onChange={(e) => setUILang(e.target.value)}>
+            <option value="pt-BR">🇧🇷 Português</option>
+            <option value="en">🇺🇸 English</option>
+            <option value="es">🇪🇸 Español</option>
+            <option value="fr">🇫🇷 Français</option>
+            <option value="de">🇩🇪 Deutsch</option>
+            <option value="it">🇮🇹 Italiano</option>
+            <option value="ru">🇷🇺 Русский</option>
+            <option value="zh">🇨🇳 中文</option>
+            <option value="ja">🇯🇵 日本語</option>
+            <option value="ko">🇰🇷 한국어</option>
+            <option value="ar">🇸🇦 العربية</option>
+            <option value="hi">🇮🇳 हिन्दी</option>
+          </select>
         </div>
-      </section>
+        {/* 2. Idioma das TRADUÇÕES */}
+        <div className="field">
+          <label htmlFor="lang">📝 {t("set_ai_lang")}</label>
+          <p className="hint" style={{ marginBottom: "6px" }}>{t("set_ai_lang_hint")}</p>
+          <select id="lang" value={targetLang} onChange={(e) => { setLang(e.target.value); setTargetLang(e.target.value); }}>
+            <optgroup label="Mais comuns">
+              <option value="pt-BR">🇧🇷 Português (Brasil)</option>
+              <option value="en">🇺🇸 English</option>
+              <option value="es">🇪🇸 Español</option>
+              <option value="fr">🇫🇷 Français</option>
+            </optgroup>
+            <optgroup label="Asiáticos">
+              <option value="zh">🇨🇳 中文 (Chinês)</option>
+              <option value="ja">🇯🇵 日本語 (Japonês)</option>
+              <option value="ko">🇰🇷 한국어 (Coreano)</option>
+              <option value="hi">🇮🇳 हिन्दी (Hindi)</option>
+              <option value="ar">🇸🇦 العربية (Árabe)</option>
+            </optgroup>
+            <optgroup label="Europeus">
+              <option value="de">🇩🇪 Deutsch (Alemão)</option>
+              <option value="it">🇮🇹 Italiano</option>
+              <option value="nl">🇳🇱 Nederlands (Holandês)</option>
+              <option value="ru">🇷🇺 Русский (Russo)</option>
+              <option value="pl">🇵🇱 Polski (Polonês)</option>
+              <option value="tr">🇹🇷 Türkçe (Turco)</option>
+              <option value="uk">🇺🇦 Українська (Ucraniano)</option>
+            </optgroup>
+            <optgroup label="Outros">
+              <option value="he">🇮🇱 עברית (Hebraico)</option>
+              <option value="id">🇮🇩 Bahasa Indonesia</option>
+              <option value="vi">🇻🇳 Tiếng Việt (Vietnamita)</option>
+              <option value="th">🇹🇭 ไทย (Tailandês)</option>
+            </optgroup>
+          </select>
+        </div>
+        {/* 3. Idioma do ÁUDIO FALADO */}
+        <div className="field">
+          <label htmlFor="audio-lang">🔊 {t("set_audio_lang")}</label>
+          <p className="hint" style={{ marginBottom: "6px" }}>{t("set_audio_lang_hint")}</p>
+          <select id="audio-lang" value={audioLang} onChange={(e) => { setAudioLangState(e.target.value); setAudioLang(e.target.value); }}>
+            <option value="original">📖 {t("set_audio_original")}</option>
+            <optgroup label={t("set_audio_specific")}>
+              <option value="pt-BR">🇧🇷 Português</option>
+              <option value="en">🇺🇸 English</option>
+              <option value="es">🇪🇸 Español</option>
+              <option value="fr">🇫🇷 Français</option>
+              <option value="de">🇩🇪 Deutsch</option>
+              <option value="it">🇮🇹 Italiano</option>
+              <option value="ru">🇷🇺 Русский</option>
+              <option value="zh">🇨🇳 中文</option>
+              <option value="ja">🇯🇵 日本語</option>
+              <option value="ko">🇰🇷 한국어</option>
+              <option value="ar">🇸🇦 العربية</option>
+              <option value="hi">🇮🇳 हिन्दी</option>
+            </optgroup>
+          </select>
+        </div>
+        {/* Preferência de voz (dropdown + reset) */}
+        <div className="field voice-pref-field">
+          <label>🔊 {t("cfg_voice_pref_title")}</label>
+          <p className="hint" style={{ marginBottom: "8px" }}>{t("cfg_voice_pref_body")}</p>
+          <label htmlFor="tts-voice" style={{ fontSize: 13, fontWeight: 600, display: "block", marginBottom: 4 }}>
+            {t("cfg_choose_voice")}:
+          </label>
+          <select id="tts-voice" value={ttsVoice} onChange={(e) => { setTtsVoice(e.target.value); setTtsVoiceState(e.target.value); }} style={{ marginBottom: 10, padding: "8px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", fontSize: 14 }}>
+            <optgroup label="OpenAI">
+              {TTS_VOICES_OPENAI.map((v) => (<option key={v.id} value={v.id}>{v.label}</option>))}
+            </optgroup>
+            <optgroup label="Grok (xAI)">
+              {TTS_VOICES_GROK.map((v) => (<option key={v.id} value={v.id}>{v.label}</option>))}
+            </optgroup>
+          </select>
+          <button type="button" className="key-refresh-btn" onClick={() => { if (typeof window !== "undefined") { window.localStorage.removeItem("moka.ttsWarned"); sessionStorage.removeItem("moka.ttsWarned"); } setVoicePrefReset(true); setTimeout(() => setVoicePrefReset(false), 2500); }}>
+            🔔 {t("cfg_voice_pref_show_again")}
+          </button>
+          {voicePrefReset && (<p className="feedback ok" style={{ marginTop: 6 }}>✓</p>)}
+        </div>
+        <p className="hint" style={{ marginTop: "4px" }}>{t("set_content_lang")}</p>
+      </div>
+
+      {/* 🎬 VÍDEO & TRANSCRIÇÃO REMOVIDO (pedido do Miguel 10/08): agora o
+          OpenAI/Grok entram como modelos normais com checkbox "usar pra voz
+          neural". Não precisa mais de seção Whisper separada. */}
 
       {/* CSS migrado para globals.css — cura o FOUC (era <style jsx>) */}
 
