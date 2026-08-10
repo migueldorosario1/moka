@@ -7,7 +7,6 @@ import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
-import { LlmPriceRanking } from "@/components/LlmPriceRanking";
 import { SettingsForm } from "@/components/SettingsForm";
 import { A11yControls } from "@/components/A11yControls";
 import { useI18n } from "@/components/I18nProvider";
@@ -59,9 +58,8 @@ export default function ConfiguracoesPage() {
   };
 
   return (
-    <main className="igot-shell">
-      {/* TopBar — mesmo padrão das páginas-ferramenta, sem engrenagem
-          (a própria página É a configuração). */}
+    <main className="cfg-page">
+      {/* TopBar — NÃO fixo (rola com a página, pedido do Miguel 09/08). */}
       <div className="igot-topbar">
         <div className="igot-topbar-left">
           <Link href="/estante" className="brand" title="Voltar à estante">
@@ -84,109 +82,26 @@ export default function ConfiguracoesPage() {
         </div>
       </div>
 
-      {/* Corpo largo e respirável */}
-      <div className="cfg-body">
-        <div className="cfg-container">
-          <header className="cfg-header">
-            <h1 className="cfg-title">⚙️ {t("cfg_page_title")}</h1>
-            <p className="cfg-intro">{t("cfg_intro")}</p>
-          </header>
+      {/* Corpo largo e respirável — rola naturalmente com a página. */}
+      <div className="cfg-container">
+        <header className="cfg-header">
+          <h1 className="cfg-title">⚙️ {t("cfg_page_title")}</h1>
+          <p className="cfg-intro">{t("cfg_intro")}</p>
+        </header>
 
-          {/* ♿ Acessibilidade — tema (claro/escuro/contraste/sépia) + tamanho
-              de fonte da interface. Pedido do Miguel 09/08. */}
-          <A11yControls />
+        {/* ♿ Acessibilidade — tema (claro/escuro/contraste/sépia) + tamanho
+            de fonte da interface. Pedido do Miguel 09/08. */}
+        <A11yControls />
 
-          <section className="cfg-section">
-            <h2 className="cfg-section-title">{t("cfg_keys_section")}</h2>
-            <SettingsForm initial={config} onSaved={handleSaved} />
-          </section>
-
-          <section className="cfg-section">
-            <h2 className="cfg-section-title">{t("cfg_ranking_section")}</h2>
-            <LlmPriceRanking />
-          </section>
-        </div>
+        <section className="cfg-section">
+          <h2 className="cfg-section-title">{t("cfg_keys_section")}</h2>
+          <SettingsForm initial={config} onSaved={handleSaved} />
+        </section>
       </div>
 
       <SiteFooter />
 
-      <style jsx>{`
-        .cfg-topbar-label {
-          font-family: var(--font-brand);
-          font-size: 15px;
-          font-weight: 600;
-          color: var(--text-muted);
-          margin-left: 4px;
-        }
-        .cfg-close-btn {
-          width: 36px;
-          height: 36px;
-          border-radius: 50%;
-          border: 1px solid var(--border);
-          background: var(--surface-alt);
-          color: var(--text);
-          font-size: 15px;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transition: background var(--transition);
-        }
-        .cfg-close-btn:hover {
-          background: var(--accent-soft);
-          border-color: var(--accent);
-        }
-        .cfg-body {
-          flex: 1;
-          overflow-y: auto;
-          background: var(--bg);
-        }
-        .cfg-container {
-          max-width: 760px;
-          margin: 0 auto;
-          padding: 28px 20px 40px;
-        }
-        .cfg-header {
-          margin-bottom: 24px;
-        }
-        .cfg-title {
-          font-family: var(--font-brand);
-          font-size: 26px;
-          font-weight: 700;
-          margin: 0 0 10px;
-          color: var(--text);
-        }
-        .cfg-intro {
-          font-size: 15px;
-          line-height: 1.6;
-          color: var(--text-muted);
-          margin: 0;
-          max-width: 640px;
-        }
-        .cfg-section {
-          margin-bottom: 32px;
-        }
-        .cfg-section-title {
-          font-family: var(--font-brand);
-          font-size: 18px;
-          font-weight: 600;
-          margin: 0 0 14px;
-          padding-bottom: 8px;
-          border-bottom: 1px solid var(--border-soft);
-          color: var(--text);
-        }
-        @media (max-width: 600px) {
-          .cfg-container {
-            padding: 18px 14px 32px;
-          }
-          .cfg-title {
-            font-size: 22px;
-          }
-          .cfg-intro {
-            font-size: 14px;
-          }
-        }
-      `}</style>
+      {/* CSS migrado para globals.css */}
     </main>
   );
 }

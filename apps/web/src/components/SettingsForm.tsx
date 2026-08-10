@@ -8,6 +8,8 @@ import {
   getAudioLang, setAudioLang,
   listAllEntriesSync, getConfigById, loadConfigCache,
   setWhisperKey, getWhisperKeyMasked,
+  getTtsVoice, setTtsVoice,
+  TTS_VOICES_OPENAI, TTS_VOICES_GROK,
 } from "@/lib/config";
 import { testConnection, listModels } from "@/lib/ai-client";
 import { PIX_KEY, PIX_HOLDER } from "@/lib/donate";
@@ -72,6 +74,8 @@ export function SettingsForm({
   const [saved, setSaved] = useState(false);
   // Feedback do botão "mostrar de novo o aviso de voz" (preferência neural/mecânica).
   const [voicePrefReset, setVoicePrefReset] = useState(false);
+  // Voz neural escolhida (OpenAI/Grok) — persiste no localStorage.
+  const [ttsVoice, setTtsVoiceState] = useState(getTtsVoice());
   // Formulário de adicionar/editar chave: escondido por trás de um botão
   // (pedido do Miguel: a lista aparece primeiro; o form só abre ao clicar).
   const [showForm, setShowForm] = useState(false);
@@ -698,6 +702,34 @@ export function SettingsForm({
           <p className="hint" style={{ marginBottom: "8px" }}>
             {t("cfg_voice_pref_body")}
           </p>
+
+          {/* Dropdown de voz neural (OpenAI/Grok) — escolhe qual voz usar. */}
+          <label htmlFor="tts-voice" style={{ fontSize: 13, fontWeight: 600, display: "block", marginBottom: 4 }}>
+            {t("cfg_choose_voice") || "Escolher voz neural"}:
+          </label>
+          <select
+            id="tts-voice"
+            value={ttsVoice}
+            onChange={(e) => {
+              setTtsVoice(e.target.value);
+              setTtsVoiceState(e.target.value);
+            }}
+            style={{ marginBottom: 10, padding: "8px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", fontSize: 14 }}
+          >
+            {/* Vozes da OpenAI */}
+            <optgroup label="OpenAI">
+              {TTS_VOICES_OPENAI.map((v) => (
+                <option key={v.id} value={v.id}>{v.label}</option>
+              ))}
+            </optgroup>
+            {/* Vozes do Grok (xAI) */}
+            <optgroup label="Grok (xAI)">
+              {TTS_VOICES_GROK.map((v) => (
+                <option key={v.id} value={v.id}>{v.label}</option>
+              ))}
+            </optgroup>
+          </select>
+
           <button
             type="button"
             className="key-refresh-btn"

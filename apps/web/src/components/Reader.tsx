@@ -10,7 +10,7 @@ import { useI18n } from "./I18nProvider";
 import { CloseAppButton } from "./CloseAppButton";
 import { LangSwitcher } from "./LangSwitcher";
 import { useTTS } from "@/hooks/useTTS";
-import { getTargetLang, getAudioLang, getConfigSync, listAllEntriesSync } from "@/lib/config";
+import { getTargetLang, getAudioLang, getConfigSync, listAllEntriesSync, getTtsVoice } from "@/lib/config";
 import { SettingsModal } from "./SettingsModal";
 import { AskModal } from "./AskModal";
 import { PageActionModal } from "./PageActionModal";
@@ -118,7 +118,7 @@ function getNeuralTtsConfig(config: {
   // Modelo de TTS: se o usuário customizou um modelo de chat, ignoramos pra TTS
   // (TTS usa modelo específico). OpenAI = tts-1; demais = fallback tts-1.
   const model = "tts-1";
-  const voice = "nova"; // voz feminina agradável, disponível na OpenAI
+  const voice = getTtsVoice(); // voz escolhida pelo usuário nas Configurações
   return { baseUrl, apiKey: config.apiKey, model, voice };
 }
 

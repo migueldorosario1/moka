@@ -452,6 +452,37 @@ export function setAudioLang(lang: string): void {
   window.localStorage.setItem(AUDIO_LANG_KEY, lang);
 }
 
+// ─── Voz TTS (qual voz neural usar — OpenAI/Grok) ──────────────────────
+const TTS_VOICE_KEY = "moka.ttsVoice";
+
+/** Vozes disponíveis por provedor (pesquisa 09/08/2026). */
+export const TTS_VOICES_OPENAI = [
+  { id: "nova", label: "Nova (feminina, clara)" },
+  { id: "alloy", label: "Alloy (neutra)" },
+  { id: "echo", label: "Echo (masculina, quente)" },
+  { id: "fable", label: "Fable (narrativa)" },
+  { id: "onyx", label: "Onyx (masculina, grave)" },
+  { id: "shimmer", label: "Shimmer (feminina, brilhante)" },
+];
+
+export const TTS_VOICES_GROK = [
+  { id: "ara", label: "Ara (quente, conversacional)" },
+  { id: "eve", label: "Eve (energética)" },
+  { id: "leo", label: "Leo (autoritária)" },
+  { id: "rex", label: "Rex (profissional)" },
+  { id: "sal", label: "Sal (neutra)" },
+];
+
+export function getTtsVoice(): string {
+  if (typeof window === "undefined") return "nova";
+  return window.localStorage.getItem(TTS_VOICE_KEY) ?? "nova";
+}
+
+export function setTtsVoice(voice: string): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(TTS_VOICE_KEY, voice);
+}
+
 // ─── Seção de VÍDEO (fusão Moka Reader + Moka Video, V 2.0) ────────────
 // Funções trazidas do app Moka Video: chave Whisper, servidor próprio de
 // ingestão e auto-detecção do motor local (lê vídeos pelo IP do usuário).

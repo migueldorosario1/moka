@@ -7101,3 +7101,83 @@ opacity: 1;
 background: rgba(0, 0, 0, 0.2) !important;
 }
 
+
+
+/* ═══ CSS migrado de configuracoes/page (cura FOUC) ═══ */
+
+.cfg-topbar-label {
+font-family: var(--font-brand);
+font-size: 15px;
+font-weight: 600;
+color: var(--text-muted);
+margin-left: 4px;
+}
+.cfg-close-btn {
+width: 36px;
+height: 36px;
+border-radius: 50%;
+border: 1px solid var(--border);
+background: var(--surface-alt);
+color: var(--text);
+font-size: 15px;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: background var(--transition);
+}
+.cfg-close-btn:hover {
+background: var(--accent-soft);
+border-color: var(--accent);
+}
+.cfg-body {
+flex: 1;
+overflow-y: auto;
+background: var(--bg);
+}
+.cfg-container {
+max-width: 760px;
+margin: 0 auto;
+padding: 28px 20px 40px;
+}
+.cfg-header {
+margin-bottom: 24px;
+}
+.cfg-title {
+font-family: var(--font-brand);
+font-size: 26px;
+font-weight: 700;
+margin: 0 0 10px;
+color: var(--text);
+}
+.cfg-intro {
+font-size: 15px;
+line-height: 1.6;
+color: var(--text-muted);
+margin: 0;
+max-width: 640px;
+}
+.cfg-section {
+margin-bottom: 32px;
+}
+.cfg-section-title {
+font-family: var(--font-brand);
+font-size: 18px;
+font-weight: 600;
+margin: 0 0 14px;
+padding-bottom: 8px;
+border-bottom: 1px solid var(--border-soft);
+color: var(--text);
+}
+@media (max-width: 600px) {
+.cfg-container {
+padding: 18px 14px 32px;
+}
+.cfg-title {
+font-size: 22px;
+}
+.cfg-intro {
+font-size: 14px;
+}
+}
+
