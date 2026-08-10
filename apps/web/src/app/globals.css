@@ -7222,3 +7222,20 @@ font-size: 14px;
   opacity: 0.4;
   cursor: not-allowed;
 }
+
+/* ═══ Checkbox "usar para voz neural" no card da chave ═══ */
+.tts-checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--text-muted);
+  cursor: pointer;
+}
+.tts-checkbox-row input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}

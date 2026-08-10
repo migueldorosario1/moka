@@ -9,6 +9,7 @@ import {
   listAllEntriesSync, getConfigById, loadConfigCache,
   setWhisperKey, getWhisperKeyMasked,
   getTtsVoice, setTtsVoice,
+  getTtsVoiceKey, setTtsVoiceKey,
   TTS_VOICES_OPENAI, TTS_VOICES_GROK,
 } from "@/lib/config";
 import { testConnection, listModels } from "@/lib/ai-client";
@@ -358,6 +359,8 @@ export function SettingsForm({
             {entries.map((e) => {
               const name = PRESETS.find((pr) => pr.id === e.providerId)?.name ?? e.providerId;
               const displayName = e.label || name;
+              const hasTTS = ["openai", "grok", "groq"].includes(e.providerId);
+              const isVoiceKey = getTtsVoiceKey() === e.id;
               return (
                 <div
                   key={e.id}
@@ -372,6 +375,25 @@ export function SettingsForm({
                     <span className="saved-provider-model">
                       🧩 {e.model || PRESETS.find((pr) => pr.id === e.providerId)?.defaultModel || t("set_default_model")}
                     </span>
+                    {/* Checkbox "usar para voz neural" — só pra OpenAI/Grok/Groq.
+                        Marca esta chave como a que o Moka usa pra TTS. */}
+                    {hasTTS && (
+                      <label className="tts-checkbox-row">
+                        <input
+                          type="checkbox"
+                          checked={isVoiceKey}
+                          onChange={() => {
+                            if (isVoiceKey) {
+                              setTtsVoiceKey("");
+                            } else {
+                              setTtsVoiceKey(e.id);
+                            }
+                            setEntries(listAllEntriesSync());
+                          }}
+                        />
+                        🎙️ {t("cfg_use_for_voice") || "Usar para voz neural"}
+                      </label>
+                    )}
                   </div>
                   <div className="saved-provider-actions">
                     {!e.active && (

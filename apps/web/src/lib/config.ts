@@ -483,6 +483,21 @@ export function setTtsVoice(voice: string): void {
   window.localStorage.setItem(TTS_VOICE_KEY, voice);
 }
 
+// ─── Qual chave (entry) usar pra voz neural ────────────────────────────
+const TTS_VOICE_KEY_ID = "moka.ttsVoiceKeyId";
+
+/** ID da entry do cofre que o Moka usa pra voz neural (TTS).
+ *  Vazio = usa a entry ativa (comportamento padrão). */
+export function getTtsVoiceKey(): string {
+  if (typeof window === "undefined") return "";
+  return window.localStorage.getItem(TTS_VOICE_KEY_ID) ?? "";
+}
+
+export function setTtsVoiceKey(entryId: string): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(TTS_VOICE_KEY_ID, entryId);
+}
+
 // ─── Seção de VÍDEO (fusão Moka Reader + Moka Video, V 2.0) ────────────
 // Funções trazidas do app Moka Video: chave Whisper, servidor próprio de
 // ingestão e auto-detecção do motor local (lê vídeos pelo IP do usuário).

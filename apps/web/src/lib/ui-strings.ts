@@ -235,6 +235,7 @@ export type UIStringKey =
   | "cfg_voice_pref_body"
   | "cfg_voice_pref_show_again"
   | "cfg_choose_voice"
+  | "cfg_use_for_voice"
   | "cfg_add_key"
   | "cfg_test_all"
   | "cfg_test_all_report"
@@ -659,6 +660,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cfg_voice_pref_body: "Escolha como o Moka lê em voz alta: voz neural (OpenAI, qualidade de pessoa lendo) ou voz mecânica gratuita do dispositivo. Você pode rever o aviso a qualquer momento.",
     cfg_voice_pref_show_again: "Mostrar de novo o aviso de voz",
     cfg_choose_voice: "Escolher voz neural",
+    cfg_use_for_voice: "Usar para voz neural",
     cfg_add_key: "+ Adicionar nova chave",
     cfg_test_all: "Testar todas",
     cfg_test_all_report: "Relatório de chaves",
@@ -1124,6 +1126,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cfg_voice_pref_body: "Choose how Moka reads aloud: neural voice (OpenAI, like a person reading) or your device's free mechanical voice. You can review the prompt anytime.",
     cfg_voice_pref_show_again: "Show the voice prompt again",
     cfg_choose_voice: "Choose neural voice",
+    cfg_use_for_voice: "Use for neural voice",
     cfg_add_key: "+ Add new key",
     cfg_test_all: "Test all",
     cfg_test_all_report: "Key report",
@@ -1585,6 +1588,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cfg_voice_pref_body: "Elige cómo lee Moka en voz alta: voz natural (OpenAI, como una persona leyendo) o voz mecánica gratuita del dispositivo. Puedes revisar el aviso cuando quieras.",
     cfg_voice_pref_show_again: "Mostrar de nuevo el aviso de voz",
     cfg_choose_voice: "Elegir voz natural",
+    cfg_use_for_voice: "Usar para voz natural",
     cfg_add_key: "+ Añadir nueva clave",
     cfg_test_all: "Probar todas",
     cfg_test_all_report: "Informe de claves",
@@ -2046,6 +2050,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cfg_voice_pref_body: "Choisissez comment Moka lit à voix haute : voix naturelle (OpenAI, comme une personne qui lit) ou voix mécanique gratuite de l'appareil. Vous pouvez revoir l'avis à tout moment.",
     cfg_voice_pref_show_again: "Afficher à nouveau l'avis vocal",
     cfg_choose_voice: "Choisir la voix naturelle",
+    cfg_use_for_voice: "Utiliser pour la voix naturelle",
     cfg_add_key: "+ Ajouter une nouvelle clé",
     cfg_test_all: "Tout tester",
     cfg_test_all_report: "Rapport des clés",
@@ -2507,6 +2512,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cfg_voice_pref_body: "Wähle, wie Moka vorliest: neuronale Stimme (OpenAI, wie eine Person liest) oder kostenlose maschinelle Stimme des Geräts. Du kannst den Hinweis jederzeit wieder anzeigen.",
     cfg_voice_pref_show_again: "Stimmhinweis wieder anzeigen",
     cfg_choose_voice: "Neuronale Stimme wählen",
+    cfg_use_for_voice: "Für neuronale Stimme verwenden",
     cfg_add_key: "+ Neuen Schlüssel hinzufügen",
     cfg_test_all: "Alle testen",
     cfg_test_all_report: "Schlüssel-Bericht",
@@ -2968,6 +2974,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cfg_voice_pref_body: "Scegli come Moka legge ad alta voce: voce naturale (OpenAI, come una persona che legge) o voce meccanica gratuita del dispositivo. Puoi rivedere l'avviso in qualsiasi momento.",
     cfg_voice_pref_show_again: "Mostra di nuovo l'avviso vocale",
     cfg_choose_voice: "Scegli voce naturale",
+    cfg_use_for_voice: "Usa per voce naturale",
     cfg_add_key: "+ Aggiungi nuova chiave",
     cfg_test_all: "Testa tutte",
     cfg_test_all_report: "Rapporto chiavi",
@@ -3429,6 +3436,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cfg_voice_pref_body: "Выберите, как Moka читает вслух: естественный голос (OpenAI, как читает человек) или бесплатный машинный голос устройства. Вы можете снова включить подсказку в любой момент.",
     cfg_voice_pref_show_again: "Показать подсказку о голосе снова",
     cfg_choose_voice: "Выбрать нейроголос",
+    cfg_use_for_voice: "Использовать для нейроголоса",
     cfg_add_key: "+ Добавить новый ключ",
     cfg_test_all: "Проверить все",
     cfg_test_all_report: "Отчёт по ключам",
@@ -3890,6 +3898,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cfg_voice_pref_body: "选择 Moka 如何朗读：自然语音（OpenAI，像真人朗读）或设备的免费机械语音。你可以随时重新查看提示。",
     cfg_voice_pref_show_again: "重新显示语音提示",
     cfg_choose_voice: "选择神经语音",
+    cfg_use_for_voice: "用于神经语音",
     cfg_add_key: "+ 添加新密钥",
     cfg_test_all: "全部测试",
     cfg_test_all_report: "密钥报告",
@@ -4351,6 +4360,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cfg_voice_pref_body: "Mokaがどう読み上げるか選べます：自然音声（OpenAI、人が読むような品質）またはデバイスの無料機械音声。いつでも案内を再表示できます。",
     cfg_voice_pref_show_again: "音声案内を再度表示",
     cfg_choose_voice: "ニューラル音声を選ぶ",
+    cfg_use_for_voice: "ニューラル音声に使用",
     cfg_add_key: "+ 新しいキーを追加",
     cfg_test_all: "すべてテスト",
     cfg_test_all_report: "キーレポート",
@@ -4812,6 +4822,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cfg_voice_pref_body: "Moka가 어떻게 읽어줄지 선택하세요: 자연 음성(OpenAI, 사람이 읽는 품질) 또는 기기의 무료 기계 음성. 언제든 안내를 다시 볼 수 있습니다.",
     cfg_voice_pref_show_again: "음성 안내 다시 표시",
     cfg_choose_voice: "신경 음성 선택",
+    cfg_use_for_voice: "신경 음성에 사용",
     cfg_add_key: "+ 새 키 추가",
     cfg_test_all: "모두 테스트",
     cfg_test_all_report: "키 보고서",
@@ -5273,6 +5284,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cfg_voice_pref_body: "اختر كيف يقرأ Moka بصوت عالٍ: صوت طبيعي (OpenAI، كأن شخصًا يقرأ) أو الصوت الميكانيكي المجاني للجهاز. يمكنك إعادة عرض التنبيه في أي وقت.",
     cfg_voice_pref_show_again: "إظهار تنبيه الصوت مرة أخرى",
     cfg_choose_voice: "اختر الصوت العصبي",
+    cfg_use_for_voice: "استخدم للصوت العصبي",
     cfg_add_key: "+ إضافة مفتاح جديد",
     cfg_test_all: "اختبار الكل",
     cfg_test_all_report: "تقرير المفاتيح",
@@ -5734,6 +5746,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cfg_voice_pref_body: "चुनें कि Moka कैसे पढ़े: प्राकृतिक आवाज़ (OpenAI, जैसे कोई व्यक्ति पढ़ रहा हो) या डिवाइस की निःशुल्क यांत्रिक आवाज़। आप कभी भी सूचना दोबारा देख सकते हैं।",
     cfg_voice_pref_show_again: "आवाज़ सूचना दोबारा दिखाएँ",
     cfg_choose_voice: "न्यूरल आवाज़ चुनें",
+    cfg_use_for_voice: "न्यूरल आवाज़ के लिए उपयोग",
     cfg_add_key: "+ नई कुंजी जोड़ें",
     cfg_test_all: "सभी जाँचें",
     cfg_test_all_report: "कुंजी रिपोर्ट",
