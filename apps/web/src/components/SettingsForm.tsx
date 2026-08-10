@@ -355,25 +355,8 @@ const TTS_TEST_PHRASES: Record<string, string> = {
           só no dispositivo, criptografada). Nada de planos/pontos/licença —
           a versão paga está preservada no backup pré-pivô (tag
           `pre-pivot-pago-v4.3`) e volta na Fase 2. ═══ */}
-      <div className="v3-simple">
-        <h3 className="v3-simple-title">🆓 {t("free_title")}</h3>
-        <p className="v3-simple-sub">{t("free_desc")}</p>
-        <p className="v3-simple-sub" style={{ marginTop: 6 }}>{t("byok_cost")}</p>
-      </div>
-
-      {/* 🗝 Três jeitos de usar (pedido do Miguel, 05/08): explica SIMPLES
-          que texto/voz/vídeo usam chaves diferentes — e que UMA OpenAI cobre
-          voz neural + transcrição de vídeo. */}
-      <div className="v3-simple" style={{ background: "var(--surface)" }}>
-        <h3 className="v3-simple-title" style={{ fontSize: 17 }}>{t("keys3_title")}</h3>
-        <p className="v3-simple-sub">{t("keys3_text")}</p>
-        <p className="v3-simple-sub" style={{ marginTop: 6 }}>{t("keys3_voice")}</p>
-        <p className="v3-simple-sub" style={{ marginTop: 6 }}>{t("keys3_video")}</p>
-        <p className="v3-simple-note" style={{ marginTop: 10 }}>{t("keys3_same")}</p>
-      </div>
-
-      {/* ═══ BYOK: sua chave de IA (sempre aberta na fase gratuita —
-          antes ficava atrás da licença paga) ═══ */}
+      {/* ═══ BYOK: sua chave de IA — PRIMEIRA COISA (a pessoa usa direto).
+          Pedido do Miguel 10/08: 'começa com sua chave de IA direto'. ═══ */}
       <details className="v3-advanced" id="advanced-settings" open>
         <summary>
           <strong>{t("set_keys_title")}</strong>
@@ -830,8 +813,22 @@ const TTS_TEST_PHRASES: Record<string, string> = {
 
       </details>
 
-      {/* ═══ 3 IDIOMAS + VOZ — MOVIDO PRA CÁ (pedido Miguel 10/08: "joga
-          o bloco de idioma pra baixo"). Fica depois das chaves. ═══ */}
+      {/* 🆓 Moka gratuito + 🗝 3 jeitos — MOVIDOS PRA BAIXO (pedido Miguel 10/08:
+          'bota lá pra baixo, começa com sua chave de IA direto'). */}
+      <div className="v3-simple">
+        <h3 className="v3-simple-title">🆓 {t("free_title")}</h3>
+        <p className="v3-simple-sub">{t("free_desc")}</p>
+        <p className="v3-simple-sub" style={{ marginTop: 6 }}>{t("byok_cost")}</p>
+      </div>
+      <div className="v3-simple" style={{ background: "var(--surface)" }}>
+        <h3 className="v3-simple-title" style={{ fontSize: 17 }}>{t("keys3_title")}</h3>
+        <p className="v3-simple-sub">{t("keys3_text")}</p>
+        <p className="v3-simple-sub" style={{ marginTop: 6 }}>{t("keys3_voice")}</p>
+        <p className="v3-simple-sub" style={{ marginTop: 6 }}>{t("keys3_video")}</p>
+        <p className="v3-simple-note" style={{ marginTop: 10 }}>{t("keys3_same")}</p>
+      </div>
+
+      {/* ═══ 3 IDIOMAS + VOZ ═══ */}
       <div className="lang-section">
         {/* 1. Idioma da INTERFACE */}
         <div className="field">
