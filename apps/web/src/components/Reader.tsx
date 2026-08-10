@@ -336,6 +336,16 @@ export function Reader({
     tts.speak(prepared.text, prepared.lang);
   };
   const [chapterIdx, setChapterIdxState] = useState(initialChapterIdx);
+  // Salva no localStorage a CADA mudança de página (síncrono, não debounce).
+  const goToChapter = useCallback((n: number) => {
+    setChapterIdxState(n);
+    if (typeof window !== "undefined" && book.title) {
+      const key = "moka.chap." + book.title.replace(/[^a-zA-Z0-9]/g, "").slice(0, 40);
+      window.localStorage.setItem(key, String(n));
+      window.localStorage.setItem("moka.lastChapter", String(n));
+    }
+    onChapterChange?.(n);
+  }, [book.title, onChapterChange]);
   /** Página LOCAL dentro do capítulo (só EPUB — PDF tem 1 página por índice). */
   const [pageIdx, setPageIdx] = useState(0);
   /** Pulo pendente: ao trocar de capítulo, abre nesta página local (ex.: última ao voltar). */
@@ -966,6 +976,12 @@ export function Reader({
   const setChapterIdx = (n: number | ((prev: number) => number)) => {
     setChapterIdxState((prev) => {
       const next = typeof n === "function" ? n(prev) : n;
+      // Salva no localStorage a CADA mudança (síncrono — sobrevive a F5).
+      if (typeof window !== "undefined" && book.title) {
+        const key = "moka.chap." + book.title.replace(/[^a-zA-Z0-9]/g, "").slice(0, 40);
+        window.localStorage.setItem(key, String(next));
+        window.localStorage.setItem("moka.lastChapter", String(next));
+      }
       onChapterChange?.(next);
       return next;
     });
