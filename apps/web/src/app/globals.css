@@ -7181,3 +7181,44 @@ font-size: 14px;
 }
 }
 
+
+/* ═══ Botões Testar + Salvar (separados, lado a lado) ═══ */
+.key-action-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 8px;
+}
+.key-test-btn {
+  flex: 1;
+  padding: 11px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.key-test-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+.key-save-btn {
+  flex: 1;
+  padding: 11px 16px;
+  border-radius: 10px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.key-save-btn:hover:not(:disabled) {
+  filter: brightness(1.08);
+}
+.key-test-btn:disabled,
+.key-save-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

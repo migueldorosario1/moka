@@ -137,6 +137,8 @@ export function SettingsForm({
     }
   };
 
+  /** TESTAR — só verifica se a chave funciona (não salva no cofre).
+   *  Pedido do Miguel: "botão testar separado do salvar". */
   const handleTest = async () => {
     if (!apiKey.trim()) {
       setTest({ status: "fail", message: t("set_cole_key") });
@@ -156,22 +158,6 @@ export function SettingsForm({
           ? { status: "ok", message: result.message }
           : { status: "fail", message: result.message },
       );
-      // Se passou no teste E o form tá aberto (adicionando/editando),
-      // SALVA automaticamente e volta pra lista (pedido do Miguel: "quando
-      // você atualiza já entraria automaticamente o bloco dele").
-      if (result.ok && showForm) {
-        await setConfig(config, { entryId: editingId ?? undefined, label: label.trim() || undefined });
-        await loadConfigCache();
-        setEntries(listAllEntriesSync());
-        setApiKey("");
-        setLabel("");
-        setEditingId(null);
-        setShowForm(false);
-        if (typeof window !== "undefined") {
-          window.localStorage.removeItem(DRAFT_KEY);
-        }
-        onSaved();
-      }
     } catch (err) {
       setTest({
         status: "fail",
@@ -567,17 +553,26 @@ export function SettingsForm({
             {showKey ? "🙈" : "👁"}
           </button>
         </div>
-        {/* Atualizar (= testar a chave) — pedido do Miguel: botão logo
-            embaixo do campo, pra revalidar/trocar a chave sem caçar lá
-            nas ações do fim. O olhinho 👁 acima fica onde está. */}
-        <button
-          type="button"
-          className="key-refresh-btn"
-          onClick={handleTest}
-          disabled={!apiKey.trim() || test.status === "testing"}
-        >
-          🔄 {test.status === "testing" ? t("set_testing") : t("set_refresh_key")}
-        </button>
+        {/* Botões SEPARADOS: Testar (só verifica) + Salvar (grava no cofre).
+            Pedido do Miguel: "botão testar separado do salvar". */}
+        <div className="key-action-row">
+          <button
+            type="button"
+            className="key-test-btn"
+            onClick={handleTest}
+            disabled={!apiKey.trim() || test.status === "testing"}
+          >
+            🧪 {test.status === "testing" ? t("set_testing") : t("set_test_connection")}
+          </button>
+          <button
+            type="button"
+            className="key-save-btn"
+            onClick={(e) => handleSave(e as unknown as React.FormEvent)}
+            disabled={!apiKey.trim()}
+          >
+            💾 {editingId ? t("set_btn_update") : t("set_btn_add")}
+          </button>
+        </div>
         {test.status !== "idle" && test.status !== "testing" && (
           <p className={`feedback ${test.status === "ok" ? "ok" : "err"}`} style={{ marginTop: 6 }}>
             {test.status === "ok" ? "✓ " : "⚠️ "}
