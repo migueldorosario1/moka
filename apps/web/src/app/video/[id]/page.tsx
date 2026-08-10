@@ -47,8 +47,8 @@ const TOOLS: Array<{
   { kind: "characters", icon: "👥", label: "Personagens", title: "Personagens — quem fala e quem aparece" },
   { kind: "politics", icon: "🏛️", label: "Política", title: "Contexto político — onde isso se encaixa" },
   { kind: "critique", icon: "🖊️", label: "Crítica", title: "Crítica — teses, argumentos, vieses e veredito" },
+  { kind: "transcript", icon: "📜", label: "Transcrição", title: "Transcrição completa" },
   { kind: "ask", icon: "❓", label: "Perguntar", title: "Pergunte qualquer coisa sobre o vídeo — a IA pesquisa na transcrição" },
-  { kind: "transcript", icon: "📜", label: "Transcrição", title: "Transcrição completa, com tempos" },
 ];
 
 /** Rótulos das ferramentas via i18n (bandeirinha traduz — pedido do Miguel). */
@@ -84,6 +84,9 @@ export default function VideoPage() {
   const [video, setVideo] = useState<VideoRecord | null>(null);
   const [loading, setLoading] = useState(true);
   const [panel, setPanel] = useState<PanelState>(null);
+  // Modo de visualização da transcrição: "timecode" (com timestamps) ou
+  // "edited" (texto limpo formatado pela IA). Pedido do Miguel 10/08.
+  const [transcriptView, setTranscriptView] = useState<"timecode" | "edited">("timecode");
   const [minutes, setMinutes] = useState(3);
   const [summaryPickerOpen, setSummaryPickerOpen] = useState(false);
   const [configReady, setConfigReady] = useState(false);
@@ -418,12 +421,35 @@ export default function VideoPage() {
 
           {panel?.kind === "transcript" && (
             <div className="transcript">
-              {video.segments.map((s, i) => (
-                <p key={i} className="transcript-line">
-                  <span className="transcript-time">{formatTime(s.start)}</span>
-                  <span>{s.text}</span>
-                </p>
-              ))}
+              {/* 2 sub-botões: timecode vs editada (pedido do Miguel 10/08). */}
+              <div className="transcript-view-toggle">
+                <button
+                  className={`transcript-view-btn ${transcriptView === "timecode" ? "active" : ""}`}
+                  onClick={() => setTranscriptView("timecode")}
+                >
+                  🕐 Com timecode
+                </button>
+                <button
+                  className={`transcript-view-btn ${transcriptView === "edited" ? "active" : ""}`}
+                  onClick={() => setTranscriptView("edited")}
+                >
+                  📄 Editada (texto limpo)
+                </button>
+              </div>
+              {transcriptView === "timecode" ? (
+                video.segments.map((s, i) => (
+                  <p key={i} className="transcript-line">
+                    <span className="transcript-time">{formatTime(s.start)}</span>
+                    <span>{s.text}</span>
+                  </p>
+                ))
+              ) : (
+                <div className="transcript-edited">
+                  {video.segments.map((s, i) => (
+                    <span key={i}>{s.text} </span>
+                  ))}
+                </div>
+              )}
             </div>
           )}
 
