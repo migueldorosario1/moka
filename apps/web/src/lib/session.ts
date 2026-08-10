@@ -29,8 +29,17 @@ export function useSession(userId: string | null = null) {
   const [booting, setBooting] = useState(true);
   const [book, setBook] = useState<ParsedBook | null>(null);
   const [pdfSource, setPdfSource] = useState<ArrayBuffer | null>(null);
-  const [chapterIdx, setChapterIdx] = useState(0);
-  const [zoom, setZoom] = useState(1);
+  // Lê do localStorage SÍNCRONO (antes do primeiro render) — sobrevive a F5.
+  const [chapterIdx, setChapterIdx] = useState(() => {
+    if (typeof window === "undefined") return 0;
+    const fb = Number(window.localStorage.getItem("moka.lastChapter"));
+    return fb > 0 ? fb : 0;
+  });
+  const [zoom, setZoom] = useState(() => {
+    if (typeof window === "undefined") return 1;
+    const fb = Number(window.localStorage.getItem("moka.lastZoom"));
+    return fb > 0 ? fb : 1;
+  });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   // Traduções por página + notas salvas (persistidas no IndexedDB).
