@@ -444,28 +444,6 @@ export default function VideoPage() {
                   📄 Editada (texto limpo)
                 </button>
               </div>
-              {/* Botão opcional: corrige nomes com IA (só se a pessoa quiser). */}
-              {transcriptView === "edited" && !transcriptEdited && !transcriptEditing && (
-                <button
-                  className="key-refresh-btn"
-                  style={{ marginBottom: 12 }}
-                  onClick={() => {
-                    if (!video?.segments?.length) return;
-                    setTranscriptEditing(true);
-                    let acc = "";
-                    correctTranscript(video.meta, video.segments, (chunk) => {
-                      acc += chunk;
-                      setTranscriptEdited(acc);
-                    }).then(() => {
-                      setTranscriptEditing(false);
-                    }).catch(() => {
-                      setTranscriptEditing(false);
-                    });
-                  }}
-                >
-                  🔄 Corrigir nomes com IA
-                </button>
-              )}
               {transcriptView === "timecode" ? (
                 video.segments.map((s, i) => (
                   <p key={i} className="transcript-line">
