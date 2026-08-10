@@ -1252,7 +1252,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
         keys3_text: "📖 Text (translate, summarize, explain books & videos): any key from the ranking — the cheapest works great.",
         keys3_voice: "🔊 Neural voice (Moka reads aloud — books & videos): some AIs work (OpenAI, Grok, etc.).",
         keys3_video: "🎬 Video without captions (Moka listens & transcribes): OpenAI key (Whisper).",
-        keys3_same: "💡 The SAME OpenAI key covers neural voice AND video transcription — one key solves both.",
+        keys3_same: "💡 You can use the same key for neural voice and video transcription, or separate them (OpenAI, Grok, etc.).",
     set_model_casa: "House AI model",
     set_model_tokens: "tokens per point",
     set_model_mult: "costs {n}× more points",

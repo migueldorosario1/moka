@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { ZeMocaAvatar } from "@/components/ZeMocaAvatar";
 import { LangSwitcher } from "@/components/LangSwitcher";
@@ -100,6 +101,7 @@ function lang_fallback_noanswer(): string {
 
 export default function Ajuda() {
   const { t, lang } = useI18n();
+  const router = useRouter();
   const [busca, setBusca] = useState("");
   const [pergunta, setPergunta] = useState("");
   const [resposta, setResposta] = useState("");
@@ -125,6 +127,14 @@ export default function Ajuda() {
           </a>
         </div>
         <div className="igot-topbar-actions">
+          <button
+            className="gear"
+            onClick={() => router.push("/configuracoes")}
+            aria-label={t("settings")}
+            title={t("settings")}
+          >
+            ⚙️
+          </button>
           <AuthGate />
           <LangSwitcher />
         </div>
