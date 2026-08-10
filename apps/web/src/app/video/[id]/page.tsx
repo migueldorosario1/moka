@@ -25,6 +25,7 @@ import {
   characters,
   politicalContext,
   critique,
+  correctTranscript,
   setVideoContentLang,
 } from "@/lib/video/ai-client";
 import { detectContentLang, LANG_NOMES } from "@/lib/lang-detect";
@@ -87,6 +88,9 @@ export default function VideoPage() {
   // Modo de visualização da transcrição: "timecode" (com timestamps) ou
   // "edited" (texto limpo formatado pela IA). Pedido do Miguel 10/08.
   const [transcriptView, setTranscriptView] = useState<"timecode" | "edited">("timecode");
+  // Texto corrigido pela IA (preenchido sob demanda quando clicar em "editada").
+  const [transcriptEdited, setTranscriptEdited] = useState<string | null>(null);
+  const [transcriptEditing, setTranscriptEditing] = useState(false);
   const [minutes, setMinutes] = useState(3);
   const [summaryPickerOpen, setSummaryPickerOpen] = useState(false);
   const [configReady, setConfigReady] = useState(false);
@@ -431,9 +435,24 @@ export default function VideoPage() {
                 </button>
                 <button
                   className={`transcript-view-btn ${transcriptView === "edited" ? "active" : ""}`}
-                  onClick={() => setTranscriptView("edited")}
+                  onClick={() => {
+                    setTranscriptView("edited");
+                    // Se ainda não corrigiu, chama a IA pra corrigir nomes + paragrafos.
+                    if (!transcriptEdited && !transcriptEditing && video?.segments?.length) {
+                      setTranscriptEditing(true);
+                      let acc = "";
+                      correctTranscript(video.meta, video.segments, (chunk) => {
+                        acc += chunk;
+                        setTranscriptEdited(acc);
+                      }).then(() => {
+                        setTranscriptEditing(false);
+                      }).catch(() => {
+                        setTranscriptEditing(false);
+                      });
+                    }
+                  }}
                 >
-                  📄 Editada (texto limpo)
+                  {transcriptEditing ? "⏳ Corrigindo…" : "📄 Editada (texto limpo)"}
                 </button>
               </div>
               {transcriptView === "timecode" ? (
@@ -445,16 +464,24 @@ export default function VideoPage() {
                 ))
               ) : (
                 <div className="transcript-edited">
-                  {(() => {
-                    // Texto limpo com PARÁGRAFOS de 2 frases (pedido Miguel).
-                    const fullText = video.segments.map((s) => s.text).join(" ");
-                    const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
-                    const paragraphs: string[] = [];
-                    for (let i = 0; i < sentences.length; i += 2) {
-                      paragraphs.push(sentences.slice(i, i + 2).join(" ").trim());
-                    }
-                    return paragraphs.map((p, i) => <p key={i}>{p}</p>);
-                  })()}
+                  {transcriptEdited ? (
+                    <Markdown text={transcriptEdited} />
+                  ) : transcriptEditing ? (
+                    <div className="panel-thinking">
+                      <div className="spinner" />
+                      <p>O Moka está corrigindo os nomes e formatando…</p>
+                    </div>
+                  ) : (
+                    (() => {
+                      const fullText = video.segments.map((s) => s.text).join(" ");
+                      const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
+                      const paragraphs: string[] = [];
+                      for (let i = 0; i < sentences.length; i += 2) {
+                        paragraphs.push(sentences.slice(i, i + 2).join(" ").trim());
+                      }
+                      return paragraphs.map((p, i) => <p key={i}>{p}</p>);
+                    })()
+                  )}
                 </div>
               )}
             </div>

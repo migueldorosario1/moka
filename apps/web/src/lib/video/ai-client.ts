@@ -302,6 +302,33 @@ export async function critique(
   );
 }
 
+// ─── 📄 Transcrição corrigida (nomes + parágrafos) ─────────────────────
+
+export async function correctTranscript(
+  meta: VideoMeta,
+  segments: TranscriptSegment[],
+  onChunk: (text: string) => void,
+): Promise<string> {
+  const transcript = fullOrSampledTranscript(segments);
+  return runStream(
+    `${videoHeader(meta)}\n\n` +
+      "Você é um editor profissional. O texto abaixo é uma TRANSCRIÇÃO AUTOMÁTICA " +
+      "(gerada por IA de reconhecimento de fala) e pode conter ERROS de nomes próprios, " +
+      "cargos, partidos, instituições, lugares e termos técnicos.\n\n" +
+      "Sua tarefa:\n" +
+      "1. CORRIJA todos os nomes próprios que estiverem errados (ex: se diz 'Elmano' mas " +
+      "o correto é 'Elmano de Freitas', corrija; se diz 'o governador do Cera' mas é " +
+      "'governador do Ceará', corrija).\n" +
+      "2. CORRIJA erros de português, pontuação e formatação.\n" +
+      "3. DIVIDA em PARÁGRAFOS de no máximo 2 frases cada.\n" +
+      "4. MANTENHA o conteúdo fiel ao original — não adicione nem remova informações.\n" +
+      "5. NÃO inclua timestamps nem marcadores de tempo.\n\n" +
+      "Devolva APENAS o texto corrigido e formatado, sem comentários.",
+    { context: transcript, maxTokens: 4000 },
+    onChunk,
+  );
+}
+
 // ─── ❓ Perguntar sobre o vídeo (Q&A com busca no contexto) ─────────────
 
 const STOPWORDS = new Set(
