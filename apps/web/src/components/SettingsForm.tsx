@@ -47,6 +47,23 @@ export function SettingsForm({
   // Rascunho persistente: salva o que o usuário digitou no localStorage pra
   // não perder se fechar o modal sem salvar. Limpo após salvar com sucesso.
   const DRAFT_KEY = "moka.settingsDraft";
+
+/** Frases de teste de voz — SEM gênero (neutro), no idioma do áudio falado.
+ *  (Pedido do Miguel: "não use gênero sexual, tem voz feminina"). */
+const TTS_TEST_PHRASES: Record<string, string> = {
+  "pt-BR": "Olá! Esta é uma amostra de voz. O Moka pode ler qualquer texto em voz alta.",
+  en: "Hello! This is a voice sample. Moka can read any text aloud.",
+  es: "¡Hola! Esta es una muestra de voz. Moka puede leer cualquier texto en voz alta.",
+  fr: "Bonjour ! Ceci est un échantillon de voix. Moka peut lire tout texte à voix haute.",
+  de: "Hallo! Dies ist eine Sprachprobe. Moka kann jeden Text vorlesen.",
+  it: "Ciao! Questo è un campione vocale. Moka può leggere qualsiasi testo ad alta voce.",
+  ru: "Здравствуйте! Это образец голоса. Moka может читать любой текст вслух.",
+  zh: "你好！这是语音样本。Moka 可以大声朗读任何文本。",
+  ja: "こんにちは！これは音声サンプルです。Mokaはどんなテキストでも読み上げできます。",
+  ko: "안녕하세요! 이것은 음성 샘플입니다. Moka는 어떤 텍스트든 소리 내어 읽을 수 있습니다.",
+  ar: "مرحبًا! هذه عينة صوتية. يمكن لـ Moka قراءة أي نص بصوت عالٍ.",
+  hi: "नमस्ते! यह एक आवाज़ नमूना है। Moka किसी भी टेक्स्ट को पढ़ सकता है।",
+};
   const loadDraft = (): Partial<{
     providerId: string; apiKey: string; model: string; baseUrl: string; label: string;
   }> => {
@@ -939,7 +956,14 @@ export function SettingsForm({
                     const res = await fetch("/api/tts", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ text: "Oi, eu sou o Zé Moca! Tô aqui pra te ajudar com qualquer trem.", voice: ttsVoice, model: "tts-1", baseUrl: ttsBaseUrl, apiKey: config.apiKey }),
+                      body: JSON.stringify({
+                    // Frase de teste SEM gênero, no idioma do áudio falado.
+                    text: TTS_TEST_PHRASES[audioLang] || TTS_TEST_PHRASES["en"] || "Hello, this is a voice test. The Moka reader can read any text aloud.",
+                    voice: ttsVoice,
+                    model: "tts-1",
+                    baseUrl: ttsBaseUrl,
+                    apiKey: config.apiKey,
+                  }),
                     });
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
                     const blob = await res.blob();
