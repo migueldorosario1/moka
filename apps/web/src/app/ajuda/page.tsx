@@ -18,13 +18,13 @@ import { useI18n } from "@/components/I18nProvider";
 
 interface Faq { q: string; a: string; tags: string[] }
 
-const FAQ: Faq[] = [
+const FAQ_PT: Faq[] = [
   { q: "O que é o Moka?", tags: ["moka", "que", "é", "app", "aplicativo"],
     a: "O Moka é um leitor com inteligência artificial: ele resume vídeos do YouTube e livros (EPUB/PDF) em minutos, traduz, explica, identifica personagens e responde perguntas sobre o conteúdo — no seu idioma. E é GRATUITO." },
   { q: "O Moka é grátis mesmo?", tags: ["grátis", "gratuito", "preço", "custa", "valor", "quanto", "pontos", "ponto", "créditos", "saldo"],
     a: "Sim — o Moka é grátis de verdade: você não compra nada aqui. A IA roda com a SUA chave de API (a chave da sua inteligência artificial), e você paga o provedor diretamente pelo que usar — centavos por livro/vídeo. Se quiser apoiar o projeto, tem o botão de doação no rodapé. ☕" },
   { q: "Quanto vou gastar com a minha própria API?", tags: ["gasto", "custo", "api", "provedor", "estimativa", "400", "paginas", "páginas"],
-    a: "Pouco: com a IA mais econômica (DeepSeek V4 Flash), resumir um livro de 400 páginas custa ~R$ 0,02 e traduzir o livro inteiro ~R$ 0,15. Com modelos premium (Claude Opus, GPT-5), sobe pra centavos/reais por livro. Veja o Ranking de Preços das IAs aqui embaixo — dá pra comparar e escolher." },
+    a: "Pouco: com a IA mais econômica (DeepSeek V4 Flash), resumir um livro de 400 páginas custa centavos. Com modelos premium (Claude Opus, GPT-5), sobe pra centavos/reais por livro. Veja o Ranking de Preços das IAs aqui embaixo — dá pra comparar e escolher." },
   { q: "Como consigo uma chave de API?", tags: ["comprar", "compra", "chave", "api", "conseguir", "key", "onde"],
     a: "Em 1 minuto, no site do provedor que você escolher (DeepSeek, OpenAI, Z.ai, Qwen, Kimi, Anthropic, Gemini...): crie a conta, gere a chave e cole nas ⚙️ Configurações do Moka. Ela fica salva só no seu dispositivo, criptografada — nunca passa pelos nossos servidores." },
   { q: "Vídeo usa a mesma chave?", tags: ["vídeo", "video", "youtube", "transcrever", "legenda", "whisper", "áudio"],
@@ -38,11 +38,38 @@ const FAQ: Faq[] = [
   { q: "O Moka funciona em outros idiomas?", tags: ["idioma", "língua", "inglês", "espanhol", "tradução"],
     a: "Sim. A interface fala 12 idiomas (bandeirinha no topo), o Moka detecta automaticamente o idioma do vídeo ou livro e responde no SEU idioma. Um vídeo em inglês vira resumo em português sem você configurar nada." },
   { q: "Preciso instalar alguma coisa?", tags: ["instalar", "baixar", "download", "app"],
-    a: "Não. O Moka funciona no navegador, no celular e no computador. Se quiser, dá pra instalar como aplicativo (o botão aparece na página inicial) — é grátis e não passa por loja." },
+    a: "Não. O Moka funciona no navegador, no celular e no computador. Se quiser, dá pra instalar como aplicativo — é grátis." },
   { q: "Preciso criar conta?", tags: ["conta", "cadastro", "login", "google", "email", "senha", "registrar"],
-    a: "Não é obrigatório — mas vale a pena: entrando com Google ou e-mail, sua biblioteca (livros, anotações, traduções e progresso) fica guardada na nuvem e abre em qualquer aparelho. O cadastro por e-mail pede confirmação no seu e-mail; tem 'esqueci a senha' também." },
+    a: "Não é obrigatório — mas vale a pena: entrando com Google ou e-mail, sua biblioteca (livros, anotações, traduções e progresso) fica guardada na nuvem e abre em qualquer aparelho." },
   { q: "Quem faz o Moka?", tags: ["quem", "cafezinho", "empresa", "time"],
     a: "O Moka é feito pelo time de O Cafezinho, com carinho de jornalista e precisão de engenharia. É gratuito — quem quiser apoiar, tem a doação no rodapé (PayPal e Pix)." },
+];
+
+const FAQ_EN: Faq[] = [
+  { q: "What is Moka?", tags: ["moka", "what", "is", "app"],
+    a: "Moka is a reader with artificial intelligence: it summarizes YouTube videos and books (EPUB/PDF) in minutes, translates, explains, identifies characters and answers questions about the content — in your language. And it's FREE." },
+  { q: "Is Moka really free?", tags: ["free", "price", "cost", "how much", "credits", "points"],
+    a: "Yes — Moka is truly free: you don't buy anything here. The AI runs with YOUR API key (your AI's key), and you pay the provider directly for what you use — pennies per book/video. If you want to support the project, there's a donation button in the footer. ☕" },
+  { q: "How much will I spend with my own API?", tags: ["spend", "cost", "api", "provider", "estimate", "400", "pages"],
+    a: "Very little: with the cheapest AI (DeepSeek V4 Flash), summarizing a 400-page book costs pennies. With premium models (Claude Opus, GPT-5), it goes up to cents per book. See the AI Price Ranking below — you can compare and choose." },
+  { q: "How do I get an API key?", tags: ["buy", "purchase", "key", "api", "get", "where"],
+    a: "In 1 minute, on the provider's website you choose (DeepSeek, OpenAI, Z.ai, Qwen, Kimi, Anthropic, Gemini...): create an account, generate the key and paste it in Moka's ⚙️ Settings. It's stored only on your device, encrypted — never goes through our servers." },
+  { q: "Does video use the same key?", tags: ["video", "youtube", "transcribe", "caption", "whisper", "audio"],
+    a: "Careful: video is ANOTHER system. Video WITH captions is free and costs nothing. Video WITHOUT captions needs an audio transcription API (e.g.: OpenAI/Whisper) — not every text API works for this. Price: ~US$ 0.04–0.36 per hour of video, depending on the service." },
+  { q: "What is an API key?", tags: ["api", "what is", "password", "works"],
+    a: "It's like a password that connects Moka to the AI you chose (DeepSeek, OpenAI…). You create yours for free on the provider's website and add credit there (card) — Moka doesn't sell credit. The complete step-by-step is in /tutorial." },
+  { q: "Which AI should I choose?", tags: ["ai", "llm", "model", "deepseek", "openai", "groq", "claude", "gemini", "choose", "best"],
+    a: "To start: the most economical that works very well is DeepSeek V4 Flash (pennies per book). If you want maximum literary quality, Claude and GPT-5 are the premium ones — and cost more. The Price Ranking below compares all models Moka accepts." },
+  { q: "Is my key safe?", tags: ["data", "privacy", "security", "safe", "key", "server"],
+    a: "Yes. Your key stays only on your device (encrypted in the browser) — never goes to our servers. Your books and videos also stay on your device; if you sign in with Google/email, your library syncs to the cloud to open on any device." },
+  { q: "Does Moka work in other languages?", tags: ["language", "english", "spanish", "translation"],
+    a: "Yes. The interface speaks 12 languages (flag at the top), Moka automatically detects the language of the video or book and responds in YOUR language. An English video becomes a summary in Portuguese without you configuring anything." },
+  { q: "Do I need to install anything?", tags: ["install", "download", "app"],
+    a: "No. Moka works in the browser, on your phone and computer. If you want, you can install it as an app — it's free." },
+  { q: "Do I need to create an account?", tags: ["account", "signup", "login", "google", "email", "password", "register"],
+    a: "It's not mandatory — but worth it: signing in with Google or email, your library (books, notes, translations and progress) is saved in the cloud and opens on any device." },
+  { q: "Who makes Moka?", tags: ["who", "cafezinho", "company", "team"],
+    a: "Moka is made by the O Cafezinho team, with a journalist's care and engineering precision. It's free — if you want to support it, there's a donation button in the footer (PayPal and Pix)." },
 ];
 
 /** Normaliza (minúsculas, sem acento) pra busca e pro robô. */
@@ -51,27 +78,34 @@ function norm(s: string): string {
 }
 
 /** Robô de dúvidas: pontua cada item do FAQ por palavras da pergunta. */
-function responder(pergunta: string): string {
+function responder(pergunta: string, faqList: Faq[]): string {
   const palavras = norm(pergunta).split(/[^a-z0-9]+/).filter((w) => w.length > 2);
   let melhor: Faq | null = null;
   let melhorScore = 0;
-  for (const item of FAQ) {
+  for (const item of faqList) {
     const alvo = norm(item.q + " " + item.tags.join(" "));
     let score = 0;
     for (const p of palavras) if (alvo.includes(p)) score += p.length > 5 ? 2 : 1;
     if (score > melhorScore) { melhorScore = score; melhor = item; }
   }
   if (!melhor || melhorScore < 2) {
-    return "Hmm, não tenho certeza da resposta pra essa. Tenta perguntar de outro jeito — ou traz pra comunidade, que a gente responde rapidinho. Enquanto isso, os tópicos abaixo cobrem o essencial. 👇";
+    return lang_fallback_noanswer();
   }
   return melhor.a;
 }
 
+function lang_fallback_noanswer(): string {
+  return "Hmm, not sure about that one. Try asking differently — or bring it to the community. Meanwhile, the topics below cover the essentials. 👇";
+}
+
 export default function Ajuda() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const [busca, setBusca] = useState("");
   const [pergunta, setPergunta] = useState("");
   const [resposta, setResposta] = useState("");
+
+  // FAQ no idioma da interface (PT ou EN; outros idiomas usam EN como fallback).
+  const FAQ = lang === "pt-BR" ? FAQ_PT : FAQ_EN;
 
   const filtrados = useMemo(() => {
     const q = norm(busca);
@@ -79,7 +113,7 @@ export default function Ajuda() {
     return FAQ.filter(
       (f) => norm(f.q).includes(q) || f.tags.some((tg) => norm(tg).includes(q)) || norm(f.a).includes(q),
     );
-  }, [busca]);
+  }, [busca, FAQ]);
 
   return (
     <main className="help">
@@ -157,7 +191,7 @@ export default function Ajuda() {
           <form
             onSubmit={(e) => {
               e.preventDefault();
-              if (pergunta.trim()) setResposta(responder(pergunta));
+              if (pergunta.trim()) setResposta(responder(pergunta, FAQ));
             }}
           >
             <input
