@@ -181,7 +181,7 @@ export default function BookPage({ params }: { params: { id: string } }) {
           onSelection={handleSelection}
           panelVisible={panelVisible}
           onTogglePanel={() => setPanelVisible((v) => !v)}
-          initialChapterIdx={session.chapterIdx || (typeof window !== "undefined" ? Number(window.localStorage.getItem("moka.lastChapter")) || 0 : 0)}
+          initialChapterIdx={session.chapterIdx || (typeof window !== "undefined" && session.book?.title ? Number(window.localStorage.getItem("moka.chap." + session.book.title.replace(/[^a-zA-Z0-9]/g, "").slice(0, 40))) || 0 : 0)}
           initialZoom={session.zoom || (typeof window !== "undefined" ? Number(window.localStorage.getItem("moka.lastZoom")) || 1 : 1)}
           onChapterChange={(n) => updateSession({ chapterIdx: n })}
           onZoomChange={(z) => updateSession({ zoom: z })}

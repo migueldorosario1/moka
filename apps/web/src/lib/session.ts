@@ -30,8 +30,10 @@ export function useSession(userId: string | null = null) {
   const [book, setBook] = useState<ParsedBook | null>(null);
   const [pdfSource, setPdfSource] = useState<ArrayBuffer | null>(null);
   // Lê do localStorage SÍNCRONO (antes do primeiro render) — sobrevive a F5.
+  // Chave genérica (ainda não sabe qual livro é; atualizada no debounce).
   const [chapterIdx, setChapterIdx] = useState(() => {
     if (typeof window === "undefined") return 0;
+    // Tenta a chave genérica (fallback).
     const fb = Number(window.localStorage.getItem("moka.lastChapter"));
     return fb > 0 ? fb : 0;
   });
@@ -154,9 +156,10 @@ export function useSession(userId: string | null = null) {
           if (newCloudId) cloudIdRef.current = newCloudId;
         })
         .catch((err) => console.warn("Falha ao gravar:", err));
-      // FALLBACK: também salva no localStorage (instantâneo, sobrevive a F5).
-      if (typeof window !== "undefined") {
-        window.localStorage.setItem("moka.lastChapter", String(chapRef.current));
+      // FALLBACK: também salva no localStorage POR LIVRO (instantâneo, sobrevive a F5).
+      if (typeof window !== "undefined" && bookRef.current?.title) {
+        const key = "moka.chap." + bookRef.current.title.replace(/[^a-zA-Z0-9]/g, "").slice(0, 40);
+        window.localStorage.setItem(key, String(chapRef.current));
         window.localStorage.setItem("moka.lastZoom", String(zoomRef.current));
       }
     }, DEBOUNCE_MS);
