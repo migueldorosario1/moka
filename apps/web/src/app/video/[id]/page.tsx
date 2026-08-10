@@ -445,9 +445,16 @@ export default function VideoPage() {
                 ))
               ) : (
                 <div className="transcript-edited">
-                  {video.segments.map((s, i) => (
-                    <span key={i}>{s.text} </span>
-                  ))}
+                  {(() => {
+                    // Texto limpo com PARÁGRAFOS de 2 frases (pedido Miguel).
+                    const fullText = video.segments.map((s) => s.text).join(" ");
+                    const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [fullText];
+                    const paragraphs: string[] = [];
+                    for (let i = 0; i < sentences.length; i += 2) {
+                      paragraphs.push(sentences.slice(i, i + 2).join(" ").trim());
+                    }
+                    return paragraphs.map((p, i) => <p key={i}>{p}</p>);
+                  })()}
                 </div>
               )}
             </div>

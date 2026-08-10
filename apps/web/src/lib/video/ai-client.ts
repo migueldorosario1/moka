@@ -155,7 +155,9 @@ export async function quickExplain(
     `${videoHeader(meta)}\n\n` +
       "Explique em 5 a 8 linhas O QUE FOI este vídeo: quem fala, sobre o quê, " +
       "qual a tese principal e qual a conclusão. Direto ao ponto, como quem " +
-      "conta pra um amigo que não tem tempo de assistir.",
+      "conta pra um amigo que não tem tempo de assistir.\n" +
+      "IMPORTANTE: corrija nomes próprios, cargos e instituições que possam " +
+      "ter sido transcritos errado (o texto vem de transcrição automática).",
     { context: transcript, maxTokens: 700 },
     onChunk,
   );
@@ -182,7 +184,10 @@ export async function summarize(
       : minutes <= 5
         ? "Estruture em parágrafos curtos: contexto, pontos principais, conclusão."
         : "Estruture com subtítulos (###), cobrindo as seções do vídeo em ordem, com os argumentos centrais de cada uma.") +
-    " Não invente nada que não esteja no material.";
+    " Não invente nada que não esteja no material.\n" +
+    "IMPORTANTE: corrija nomes próprios, cargos, partidos e instituições " +
+    "que possam ter sido transcritos errado (o texto vem de transcrição " +
+    "automática por IA — pode ter erros de nomes).";
 
   // Vídeo curto/transcrição pequena: uma chamada só com transcrição inteira.
   if (transcript.length <= MAPREDUCE_THRESHOLD) {
@@ -239,9 +244,14 @@ export async function characters(
     `${videoHeader(meta)}\n\n` +
       "Identifique os PERSONAGENS do vídeo — quem fala e quem é citado com " +
       "relevância. Para cada um:\n" +
-      "- **Nome** (ou descrição, se o nome não aparecer)\n" +
+      "- **Nome CORRETO** (corrija erros de transcrição — se ouviu 'Elmano' " +
+      "mas o correto é 'Elmano de Freitas', use o nome correto; se é político, " +
+      "confirme cargo e partido)\n" +
       "- Papel no vídeo (apresentador, entrevistado, citado…)\n" +
       "- O que diz ou o que dizem sobre ele, em 1-2 linhas\n" +
+      "IMPORTANTE: os nomes podem ter sido transcritos errado pelo Whisper. " +
+      "CORRIJA nomes próprios, cargos, partidos e instituições baseado no " +
+      "contexto. Se não tiver certeza do nome, indique.\n" +
       "Se houver só um falante, diga isso e descreva o estilo/posição dele.",
     { context: transcript, maxTokens: 1400 },
     onChunk,
