@@ -6,7 +6,7 @@ import {
   setConfig, setActiveEntry, removeEntry, updateEntryLabel,
   clearConfig, getTargetLang, setTargetLang,
   getAudioLang, setAudioLang,
-  listAllEntriesSync, getConfigById, loadConfigCache,
+  listAllEntriesSync, getConfigById, loadConfigCache, getConfigSync,
   setWhisperKey, getWhisperKeyMasked,
   getTtsVoice, setTtsVoice,
   getTtsVoiceKey, setTtsVoiceKey,
@@ -77,6 +77,8 @@ export function SettingsForm({
   const [voicePrefReset, setVoicePrefReset] = useState(false);
   // Voz neural escolhida (OpenAI/Grok) — persiste no localStorage.
   const [ttsVoice, setTtsVoiceState] = useState(getTtsVoice());
+  // Estado do botão "▶ Escutar voz" (gera amostra de áudio).
+  const [testingVoice, setTestingVoice] = useState(false);
   // Formulário de adicionar/editar chave: escondido por trás de um botão
   // (pedido do Miguel: a lista aparece primeiro; o form só abre ao clicar).
   const [showForm, setShowForm] = useState(false);
@@ -870,6 +872,41 @@ export function SettingsForm({
           <button type="button" className="key-refresh-btn" onClick={() => { if (typeof window !== "undefined") { window.localStorage.removeItem("moka.ttsWarned"); sessionStorage.removeItem("moka.ttsWarned"); } setVoicePrefReset(true); setTimeout(() => setVoicePrefReset(false), 2500); }}>
             🔔 {t("cfg_voice_pref_show_again")}
           </button>
+          {/* ▶ Escutar amostra da voz — gera um áudio curto de teste. */}
+          <button
+            type="button"
+            className="key-refresh-btn"
+            style={{ marginLeft: 8 }}
+            disabled={testingVoice}
+            onClick={async () => {
+              setTestingVoice(true);
+              try {
+                const config = getConfigSync();
+                if (!config) { alert("Cadastre uma chave primeiro."); return; }
+                // Verifica se o provedor ativo tem TTS
+                const TTS_PROVIDERS = ["openai", "grok", "groq"];
+                if (!TTS_PROVIDERS.includes(config.providerId)) { alert("Voz neural precisa de OpenAI, Grok ou Groq ativo."); return; }
+                const PRESET_BASE: Record<string, string> = { openai: "https://api.openai.com/v1", grok: "https://api.x.ai/v1", groq: "https://api.groq.com/openai/v1" };
+                const ttsBaseUrl = config.baseUrl || PRESET_BASE[config.providerId] || PRESET_BASE.openai;
+                const res = await fetch("/api/tts", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ text: "Oi, eu sou o Zé Moca! Tô aqui pra te ajudar com qualquer trem.", voice: ttsVoice, model: "tts-1", baseUrl: ttsBaseUrl, apiKey: config.apiKey }),
+                });
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const blob = await res.blob();
+                const url = URL.createObjectURL(blob);
+                const audio = new Audio(url);
+                audio.play();
+              } catch (e) {
+                alert(`❌ ${e instanceof Error ? e.message : String(e)}`);
+              } finally {
+                setTestingVoice(false);
+              }
+            }}
+          >
+            {testingVoice ? "⏳" : "▶"} Escutar voz
+          </button>
           {voicePrefReset && (<p className="feedback ok" style={{ marginTop: 6 }}>✓</p>)}
         </div>
         <p className="hint" style={{ marginTop: "4px" }}>{t("set_content_lang")}</p>
@@ -886,34 +923,9 @@ export function SettingsForm({
         {t("set_tutorial_banner")} →
       </a>
 
-      {/* Doação */}
-      <div className="donate-section">
-        <p className="donate-title">{t("donate_title")}</p>
-        <div className="donate-options">
-          <a
-            href="https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=migueldorosario%40gmail.com&item_name=Moka+Reader&currency_code=BRL"
-            target="_blank"
-            rel="noreferrer"
-            className="donate-btn paypal"
-          >
-            {t("donate_paypal")}
-          </a>
-          <button
-            type="button"
-            className="donate-btn pix"
-            onClick={() => {
-              // Chave única no lib/donate.ts (decisão do Miguel, 07/08).
-              navigator.clipboard?.writeText(PIX_KEY).then(() => {
-                alert(`PIX copiado!\n\nChave: ${PIX_KEY}\nNome: ${PIX_HOLDER}`);
-              }).catch(() => {
-                alert(`PIX: ${PIX_KEY}\nNome: ${PIX_HOLDER}`);
-              });
-            }}
-          >
-            {t("donate_pix")}
-          </button>
-        </div>
-      </div>
+      {/* Doação REMOVIDA daqui (duplicava com o SiteFooter da página —
+          reporte do Miguel: "apoia o projeto aparece 2 vezes". O rodapé
+          global já tem PayPal + PIX. */}
 
       {/* CSS migrado para globals.css — cura o FOUC (era <style jsx>) */}
     </form>

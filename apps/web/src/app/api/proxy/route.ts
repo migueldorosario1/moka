@@ -29,6 +29,9 @@ const ALLOWED_HOSTS = new Set<string>([
   "api.anthropic.com",
   "generativelanguage.googleapis.com",
   "api.together.xyz",
+  "api.x.ai",
+  "api.groq.com",
+  "api.mistral.ai",
 ]);
 
 /** Hosts locais permitidos (para self-hosted / desenvolvimento). */
