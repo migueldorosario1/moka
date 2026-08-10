@@ -20,7 +20,7 @@
 import { NextResponse } from "next/server";
 import { execFile } from "node:child_process";
 import { promisify } from "node:util";
-import { mkdtemp, rm, readdir, readFile } from "node:fs/promises";
+import { mkdtemp, rm, readdir, readFile, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import {
@@ -770,6 +770,39 @@ async function handleTranscricaoSubmit(
   return respond({ meta, pending: true, orderId }, { status: 202 });
 }
 
+/**
+ * Transcrição DIRETA com Whisper usando a chave OpenAI do usuário (BYOK).
+ * Sem pontos, sem conta da casa. Baixa o áudio (yt-dlp) + transcreve (Whisper).
+ * Só funciona em servidor com yt-dlp+ffmpeg — na Vercel serverless falha
+ * (o caller captura e dá mensagem honesta pro usuário).
+ */
+async function transcribeWithWhisperDirect(
+  url: string,
+  videoId: string,
+  meta: IngestMeta,
+  openaiKey: string,
+  req: Request,
+): Promise<Response> {
+  const dir = path.join(require("os").tmpdir(), `whisper_${videoId}_${Date.now()}`);
+  await mkdir(dir, { recursive: true });
+  try {
+    const chunks = await downloadAudioChunks(url, dir);
+    const allSegments: Segment[] = [];
+    for (const chunkPath of chunks) {
+      const segs = await whisperChunk(chunkPath, openaiKey);
+      allSegments.push(...segs);
+    }
+    return respond({
+      meta,
+      transcriptSource: "whisper",
+      segments: allSegments,
+    });
+  } finally {
+    // Limpa arquivos temporários.
+    try { await rm(dir, { recursive: true, force: true }); } catch {}
+  }
+}
+
 /** step "status": polling do cliente até a transcrição ficar pronta. */
 async function handleTranscricaoStatus(payload: IngestBody) {
   const orderId = payload.orderId?.trim();
@@ -942,7 +975,21 @@ export async function POST(req: Request) {
           { status: 428 },
         );
       }
-      // Tem chave ou motor da casa → tenta transcrever.
+      // Tem chave OpenAI → transcreve com Whisper DIRETO (sem pontos).
+      if (hasOpenAIKey) {
+        const openaiKey = (req.headers.get("x-openai-key") || "").trim();
+        try {
+          return await transcribeWithWhisperDirect(url, videoId, meta, openaiKey, req);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          console.error("[ingest] Whisper direto falhou:", msg);
+          return respond(
+            { error: "O Moka tentou transcrever o áudio, mas o servidor não conseguiu baixar o vídeo (yt-dlp/ffmpeg). Esta função roda melhor no aplicativo instalado ou num servidor próprio. Por enquanto, tente vídeos COM legenda. 🙏", meta },
+            { status: 501 },
+          );
+        }
+      }
+      // Motor da casa (Transkriptor + pontos) — só se não tem chave.
       return await handleTranscricaoSubmit(url, videoId, meta, payload);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
