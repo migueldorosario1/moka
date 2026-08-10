@@ -14,6 +14,7 @@ import { useI18n } from "@/components/I18nProvider";
 import {
   hasConfig,
   loadConfigCache,
+  getConfigSync,
   getWhisperKey,
   getIngestServer,
 } from "@/lib/config";
@@ -250,7 +251,16 @@ export default function HomePage() {
         if (pendingJob) {
           txData = { pending: true, orderId: pendingJob.orderId, meta: pendingJob.meta };
         } else {
-          const whisperKey = (await getWhisperKey()) ?? "";
+          // Chave pra transcrever: usa a chave de vídeo (Whisper) SE existir,
+          // senão usa a chave OpenAI ATIVA do cofre (mesma de texto).
+          // (Antes só usava Whisper separada — agora OpenAI ativa também serve.)
+          let whisperKey = (await getWhisperKey()) ?? "";
+          if (!whisperKey) {
+            const config = getConfigSync();
+            if (config && (config.providerId === "openai" || config.providerId === "grok" || config.providerId === "groq")) {
+              whisperKey = config.apiKey;
+            }
+          }
           const txRes = await postIngest(
             { url: link, step: "transcript", ...contaBody },
             whisperKey ? { "x-openai-key": whisperKey } : {},
