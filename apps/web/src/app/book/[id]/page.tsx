@@ -24,6 +24,7 @@ export default function BookPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
   const [action, setAction] = useState<SelectionAction | null>(null);
+  const [aiPanelSize, setAiPanelSize] = useState<"small" | "half" | "full">("small");
   // Painel oculto/mostrado (separado de ter ação ou não).
   // Ocultar NÃO perde a ação — só esconde visualmente.
   const [panelVisible, setPanelVisible] = useState(false);
@@ -235,12 +236,13 @@ export default function BookPage({ params }: { params: { id: string } }) {
       {/* AIPanel FORA do grid do workspace — não interfere no layout.
           Flutua como overlay independente. */}
       {action && panelVisible && (
-        <div className="ai-panel-overlay">
+        <div className={`ai-panel-overlay ai-overlay-${aiPanelSize}`}>
           <AIPanel
             action={action}
             book={session.book}
             onClose={() => { setAction(null); setPanelVisible(false); }}
             onHide={handleHidePanel}
+            onSizeChange={(size: "small" | "half" | "full") => setAiPanelSize(size)}
             onSaveNote={(entry) =>
               updateSession({
                 notes: [

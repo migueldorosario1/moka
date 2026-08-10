@@ -16,6 +16,8 @@ interface AIPanelProps {
   onHide?: () => void;
   /** Salvar a resposta atual como anotação. */
   onSaveNote?: (entry: { kind: "translate" | "explain" | "ask"; source: string; result: string; chapterId?: string }) => void;
+  /** Avisa o pai quando o tamanho muda (pra ajustar o overlay no iPad). */
+  onSizeChange?: (size: "small" | "half" | "full") => void;
 }
 
 interface PanelState {
@@ -30,7 +32,7 @@ interface PanelState {
  * Quando recebe uma `action` (Traduzir/Explicar), chama o ai-client (que
  * fala com o provedor escolhido pelo usuário, via proxy) e mostra o resultado.
  */
-export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelProps) {
+export function AIPanel({ action, book, onClose, onHide, onSaveNote, onSizeChange }: AIPanelProps) {
   const { t, lang } = useI18n();
   const [state, setState] = useState<PanelState>({
     loading: false,
@@ -151,19 +153,19 @@ export function AIPanel({ action, book, onClose, onHide, onSaveNote }: AIPanelPr
           <div className="ai-size-btns">
             <button
               className={`ai-size-btn ${panelSize === "small" ? "active" : ""}`}
-              onClick={() => setPanelSize("small")}
+              onClick={() => { setPanelSize("small"); onSizeChange?.("small"); }}
               title={t("ai_size_small")}
               aria-label={t("ai_size_small")}
             >▫</button>
             <button
               className={`ai-size-btn ${panelSize === "half" ? "active" : ""}`}
-              onClick={() => setPanelSize("half")}
+              onClick={() => { setPanelSize("half"); onSizeChange?.("half"); }}
               title={t("ai_size_half")}
               aria-label={t("ai_size_half")}
             >▭</button>
             <button
               className={`ai-size-btn ${panelSize === "full" ? "active" : ""}`}
-              onClick={() => setPanelSize("full")}
+              onClick={() => { setPanelSize("full"); onSizeChange?.("full"); }}
               title={t("ai_size_full")}
               aria-label={t("ai_size_full")}
             >⛶</button>
