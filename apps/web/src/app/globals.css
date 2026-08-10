@@ -467,36 +467,28 @@ a:hover {
     bottom: 10px !important;
     width: auto !important;
     height: auto !important;
-    max-height: 60vh;
+    max-height: 40vh;
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     overflow: hidden;
     transition: max-height 0.3s ease;
   }
-  .ai-panel-overlay.panel-size-half {
-    max-height: 50vh;
-  }
-  .ai-panel-overlay.panel-size-full {
-    max-height: 95vh;
-    top: 10px !important;
-  }
-  .ai-panel-overlay .ai-panel {
-    height: auto;
-    max-height: 60vh;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-  }
   /* Quando o AIPanel muda de tamanho, o overlay acompanha. */
   .ai-panel-overlay:has(.ai-size-half) {
-    max-height: 50vh !important;
+    max-height: 70vh !important;
   }
   .ai-panel-overlay:has(.ai-size-full) {
     max-height: 95vh !important;
     top: 10px !important;
   }
+  .ai-panel-overlay .ai-panel {
+    height: auto;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+  }
   .ai-panel-overlay .ai-body {
-    max-height: 50vh;
+    max-height: 60vh;
     overflow-y: auto;
   }
 }
@@ -5544,9 +5536,9 @@ transition: width 200ms ease, max-height 200ms ease;
 .ai-panel.ai-size-small { width: 420px; }
 .ai-panel.ai-size-half { width: 50%; }
 .ai-panel.ai-size-full { width: 100%; }
-/* No overlay (mobile/fixed): 3 alturas */
-.ai-panel-overlay .ai-panel.ai-size-small { width: 100%; max-height: 240px; }
-.ai-panel-overlay .ai-panel.ai-size-half { width: 100%; max-height: 50vh; }
+/* No overlay (mobile/fixed): 3 alturas — small maior, half bem maior */
+.ai-panel-overlay .ai-panel.ai-size-small { width: 100%; max-height: 40vh; }
+.ai-panel-overlay .ai-panel.ai-size-half { width: 100%; max-height: 70vh; }
 .ai-panel-overlay .ai-panel.ai-size-full { width: 100%; max-height: 100vh; height: 100vh; }
 /* Botões de tamanho */
 .ai-size-btns {
