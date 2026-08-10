@@ -467,20 +467,37 @@ a:hover {
     bottom: 10px !important;
     width: auto !important;
     height: auto !important;
-    max-height: 260px;
+    max-height: 60vh;
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
     overflow: hidden;
+    transition: max-height 0.3s ease;
+  }
+  .ai-panel-overlay.panel-size-half {
+    max-height: 50vh;
+  }
+  .ai-panel-overlay.panel-size-full {
+    max-height: 95vh;
+    top: 10px !important;
   }
   .ai-panel-overlay .ai-panel {
     height: auto;
-    max-height: 260px;
+    max-height: 60vh;
     border-radius: var(--radius-lg);
     overflow: hidden;
   }
+  /* Quando o AIPanel muda de tamanho, o overlay acompanha. */
+  .ai-panel-overlay:has(.ai-size-half) {
+    max-height: 50vh !important;
+  }
+  .ai-panel-overlay:has(.ai-size-full) {
+    max-height: 95vh !important;
+    top: 10px !important;
+  }
   .ai-panel-overlay .ai-body {
-    max-height: 120px;
+    max-height: 50vh;
+    overflow-y: auto;
   }
 }
 .igot-loading {
