@@ -975,17 +975,37 @@ export async function POST(req: Request) {
           { status: 428 },
         );
       }
-      // Tem chave OpenAI → transcreve com Whisper DIRETO (sem pontos).
+      // Tem chave OpenAI → DELEGA pro worker na NYC (tem yt-dlp + ffmpeg).
       if (hasOpenAIKey) {
         const openaiKey = (req.headers.get("x-openai-key") || "").trim();
         try {
-          return await transcribeWithWhisperDirect(url, videoId, meta, openaiKey, req);
+          const workerRes = await fetch("http://142.93.48.252:8421/ingest", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-worker-key": "moka-worker-2026",
+            },
+            body: JSON.stringify({
+              url,
+              step: "transcript",
+              x_openai_key: openaiKey,
+            }),
+            signal: AbortSignal.timeout(280_000), // 4.5min (limite Vercel: 5min)
+          });
+          const workerData = await workerRes.json();
+          if (!workerRes.ok) {
+            return respond(
+              { error: workerData.error || "Worker falhou ao transcrever.", meta },
+              { status: workerRes.status },
+            );
+          }
+          return respond(workerData);
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
-          console.error("[ingest] Whisper direto falhou:", msg);
+          console.error("[ingest] Worker NYC falhou:", msg);
           return respond(
-            { error: "O Moka tentou transcrever o áudio, mas o servidor não conseguiu baixar o vídeo (yt-dlp/ffmpeg). Esta função roda melhor no aplicativo instalado ou num servidor próprio. Por enquanto, tente vídeos COM legenda. 🙏", meta },
-            { status: 501 },
+            { error: "O servidor de transcrição demorou ou falhou. Tente um vídeo mais curto, ou tente de novo em alguns minutos. 🙏", meta },
+            { status: 504 },
           );
         }
       }
