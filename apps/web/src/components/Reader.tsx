@@ -336,6 +336,13 @@ export function Reader({
     tts.speak(prepared.text, prepared.lang);
   };
   const [chapterIdx, setChapterIdxState] = useState(initialChapterIdx);
+  // Quando initialChapterIdx muda (IndexedDB carregou DEPOIS do render),
+  // atualiza o chapterIdx. Isto é o que faltava pro cache funcionar.
+  useEffect(() => {
+    if (initialChapterIdx > 0 && initialChapterIdx !== chapterIdx) {
+      setChapterIdxState(initialChapterIdx);
+    }
+  }, [initialChapterIdx]);
   // Salva no localStorage a CADA mudança de página (síncrono, não debounce).
   const goToChapter = useCallback((n: number) => {
     setChapterIdxState(n);
