@@ -64,19 +64,23 @@ export async function POST(req: Request) {
 
   try {
     const cleanBaseUrl = baseUrl.replace(/\/$/, "");
-    const response = await fetch(`${cleanBaseUrl}/audio/speech`, {
+
+    // GROK (xAI) usa endpoint /tts com formato DIFERENTE do OpenAI:
+    // - endpoint: /v1/tts (não /audio/speech)
+    // - campos: text, voice_id, language (não input, voice, model)
+    const isGrok = hostname === "api.x.ai";
+    const ttsUrl = isGrok ? `${cleanBaseUrl}/tts` : `${cleanBaseUrl}/audio/speech`;
+    const body = isGrok
+      ? JSON.stringify({ text: truncated, voice_id: voice, language: "pt" })
+      : JSON.stringify({ model, input: truncated, voice, response_format: "mp3", speed: 1.0 });
+
+    const response = await fetch(ttsUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${apiKey}`,
       },
-      body: JSON.stringify({
-        model,
-        input: truncated,
-        voice,
-        response_format: "mp3",
-        speed: 1.0,
-      }),
+      body,
     });
 
     if (!response.ok) {

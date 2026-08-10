@@ -606,6 +606,21 @@ export function SettingsForm({
         <p className="hint privacy">
           {t("set_key_privacy")}
         </p>
+
+        {/* 💡 Dica rápida de modelo — ajuda a pessoa a saber qual usar. */}
+        <p className="hint" style={{ marginTop: 6, fontSize: 12.5, lineHeight: 1.5 }}>
+          {preset?.id === "openai" && "💡 OpenAI: gpt-4o-mini (barato) ou gpt-5 (premium). Para voz neural: tts-1."}
+          {preset?.id === "deepseek" && "💡 DeepSeek: deepseek-chat (texto). DeepSeek não faz voz neural."}
+          {preset?.id === "zai" && "💡 Z.ai: glm-4.6 (padrão) ou glm-4-flash (mais barato). Z.ai não faz voz neural."}
+          {preset?.id === "grok" && "💡 Grok: grok-4.20-0309-non-reasoning (texto rápido). Voz neural: qualquer modelo (o TTS é separado)."}
+          {preset?.id === "groq" && "💡 Groq: llama-3.3-70b-versatile (texto). Groq também transcreve vídeo (Whisper)."}
+          {preset?.id === "mistral" && "💡 Mistral: mistral-large-latest (padrão). Mistral não faz voz neural."}
+          {preset?.id === "anthropic" && "💡 Anthropic: claude-haiku-4-5 (rápido) ou claude-opus-4-7 (premium). Não faz voz neural."}
+          {preset?.id === "gemini" && "💡 Gemini: gemini-2.5-flash (padrão, barato). Gemini não faz voz neural."}
+          {preset?.id === "together" && "💡 Together: Llama-3.3-70B (open source). Together não faz voz neural."}
+          {preset?.id === "kimi" && "💡 Kimi: kimi-k3 (pesquisa profunda). Kimi não faz voz neural."}
+          {preset?.id === "qwen" && "💡 Qwen: qwen-plus (padrão). Qwen não faz voz neural."}
+        </p>
       </div>
 
       {/* ═══ 3 IDIOMAS SEPARADOS — MOVIDO PRA CÁ (era dentro do details).
