@@ -59,8 +59,9 @@ export function useSession(userId: string | null = null) {
   // Importante: o IndexedDB pode demorar, falhar silenciosamente (modo
   // privado do Safari/iOS) ou nunca disparar os callbacks. Pra nunca
   // travar o app em "Carregando…", usamos um TIMEOUT de segurança: se a
-  // hidratação não resolver em 3s, desistimos e seguimos (app funciona sem
-  // persistência — o usuário pode abrir um livro normalmente).
+  // hidratação não resolver em 8s (aumentado de 3s — iPad é mais lento),
+  // desistimos e seguimos (app funciona sem persistência).
+  // FALLBACK: também lemos o chapterIdx do localStorage (instantâneo, não falha).
   useEffect(() => {
     let cancelled = false;
     let timedOut = false;
@@ -69,9 +70,25 @@ export function useSession(userId: string | null = null) {
       timedOut = true;
       if (!cancelled) {
         console.warn("Timeout na hidratação da sessão — seguindo sem persistência.");
+        // FALLBACK: tenta ler do localStorage (instantâneo, sobrevive a F5).
+        if (typeof window !== "undefined") {
+          const fbChapter = Number(window.localStorage.getItem("moka.lastChapter"));
+          if (fbChapter > 0) setChapterIdx(fbChapter);
+          const fbZoom = Number(window.localStorage.getItem("moka.lastZoom"));
+          if (fbZoom > 0) setZoom(fbZoom);
+        }
         setBooting(false);
       }
-    }, 3000);
+    }, 8000);
+
+    // FALLBACK INSTANTÂNEO: lê do localStorage ANTES do IndexedDB.
+    // Sobrevive a F5/refresh e é síncrono (não falha no Safari privado).
+    if (typeof window !== "undefined") {
+      const fbChapter = Number(window.localStorage.getItem("moka.lastChapter"));
+      if (fbChapter > 0) setChapterIdx(fbChapter);
+      const fbZoom = Number(window.localStorage.getItem("moka.lastZoom"));
+      if (fbZoom > 0) setZoom(fbZoom);
+    }
 
     (async () => {
       try {
@@ -128,6 +145,11 @@ export function useSession(userId: string | null = null) {
           if (newCloudId) cloudIdRef.current = newCloudId;
         })
         .catch((err) => console.warn("Falha ao gravar:", err));
+      // FALLBACK: também salva no localStorage (instantâneo, sobrevive a F5).
+      if (typeof window !== "undefined") {
+        window.localStorage.setItem("moka.lastChapter", String(chapRef.current));
+        window.localStorage.setItem("moka.lastZoom", String(zoomRef.current));
+      }
     }, DEBOUNCE_MS);
     return () => clearTimeout(t);
   }, [book, chapterIdx, zoom, translations, notes, booting]);
