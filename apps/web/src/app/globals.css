@@ -149,13 +149,15 @@
    era azul-claro demais (branco sumia). */
 :root[data-theme="dark"] .add-book-btn,
 :root[data-theme="dark"] .shelf-add-btn,
-:root[data-theme="dark"] .config-callout-btn {
+:root[data-theme="dark"] .config-callout-btn,
+:root[data-theme="dark"] .link-submit {
   background: linear-gradient(180deg, #1d4ed8, #1e3a8a) !important;
   color: #ffffff !important;
 }
 :root[data-theme="contrast"] .add-book-btn,
 :root[data-theme="contrast"] .shelf-add-btn,
-:root[data-theme="contrast"] .config-callout-btn {
+:root[data-theme="contrast"] .config-callout-btn,
+:root[data-theme="contrast"] .link-submit {
   background: #000 !important;
   color: #ffff00 !important;
   border: 2px solid #ffff00 !important;
