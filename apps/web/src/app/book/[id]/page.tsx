@@ -181,8 +181,8 @@ export default function BookPage({ params }: { params: { id: string } }) {
           onSelection={handleSelection}
           panelVisible={panelVisible}
           onTogglePanel={() => setPanelVisible((v) => !v)}
-          initialChapterIdx={session.chapterIdx}
-          initialZoom={session.zoom}
+          initialChapterIdx={session.chapterIdx || (typeof window !== "undefined" ? Number(window.localStorage.getItem("moka.lastChapter")) || 0 : 0)}
+          initialZoom={session.zoom || (typeof window !== "undefined" ? Number(window.localStorage.getItem("moka.lastZoom")) || 1 : 1)}
           onChapterChange={(n) => updateSession({ chapterIdx: n })}
           onZoomChange={(z) => updateSession({ zoom: z })}
           onCloseBook={() => router.push("/estante")}
