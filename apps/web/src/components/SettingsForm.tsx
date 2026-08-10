@@ -152,6 +152,22 @@ export function SettingsForm({
           ? { status: "ok", message: result.message }
           : { status: "fail", message: result.message },
       );
+      // Se passou no teste E o form tá aberto (adicionando/editando),
+      // SALVA automaticamente e volta pra lista (pedido do Miguel: "quando
+      // você atualiza já entraria automaticamente o bloco dele").
+      if (result.ok && showForm) {
+        await setConfig(config, { entryId: editingId ?? undefined, label: label.trim() || undefined });
+        await loadConfigCache();
+        setEntries(listAllEntriesSync());
+        setApiKey("");
+        setLabel("");
+        setEditingId(null);
+        setShowForm(false);
+        if (typeof window !== "undefined") {
+          window.localStorage.removeItem(DRAFT_KEY);
+        }
+        onSaved();
+      }
     } catch (err) {
       setTest({
         status: "fail",
