@@ -1190,6 +1190,10 @@ export function Reader({
     setMenu({ x: clampedX, y: Math.max(20, y), text, placement });
   };
 
+  // Guard: ignora o próximo selectionchange causado pelo NOSSO removeAllRanges.
+  // Movido pra CIMA das funções que o usam (snap/expand).
+  const ignoreNextSelChange = useRef(false);
+
   /**
    * Botão "⇤" do menu de seleção: move o INÍCIO da seleção pro começo do
    * parágrafo onde ela começa, mantendo o fim. Saída determinística pra
@@ -1218,7 +1222,9 @@ export function Reader({
     }
     sel.removeAllRanges();
     sel.addRange(newRange);
-    handleSelection(); // reabre o menu com o texto corrigido
+    // No iPad, a seleção recém-adicionada pode não estar disponível
+    // sincronicamente — dá um respiro antes de reabrir o menu.
+    setTimeout(() => handleSelection(), 50);
   };
 
   /**
@@ -1249,9 +1255,12 @@ export function Reader({
       newRange.setStart(pdf.first, 0);
       newRange.setEnd(pdf.last, pdf.last.childNodes.length);
     }
+    // Guard: evita que o selectionchange feche o menu.
+    ignoreNextSelChange.current = true;
     sel.removeAllRanges();
     sel.addRange(newRange);
-    handleSelection(); // reabre o menu já com o texto completo
+    // No iPad, dá um respiro antes de reabrir o menu (seleção assíncrona).
+    setTimeout(() => handleSelection(), 50);
   };
 
   /**
@@ -1261,8 +1270,6 @@ export function Reader({
    * quando a seleção estabiliza (debounce curto: 180ms pra aparecer antes do
    * menu nativo do iOS, que costuma demorar ~300ms).
    */
-  // Guard: ignora o próximo selectionchange causado pelo NOSSO removeAllRanges.
-  const ignoreNextSelChange = useRef(false);
 
   /** Limpa o highlight customizado (chamar ao trocar página/fechar menu). */
   const clearCustomHighlight = useCallback(() => {
