@@ -9,6 +9,7 @@ import {
   listAllEntriesSync, getConfigById, loadConfigCache, getConfigSync,
   setWhisperKey, getWhisperKeyMasked,
   getTtsVoice, setTtsVoice,
+  getTtsMode, setTtsMode,
   getTtsVoiceKey, setTtsVoiceKey,
   TTS_VOICES_OPENAI, TTS_VOICES_GROK,
 } from "@/lib/config";
@@ -79,6 +80,16 @@ export function SettingsForm({
   const [ttsVoice, setTtsVoiceState] = useState(getTtsVoice());
   // Estado do botão "▶ Escutar voz" (gera amostra de áudio).
   const [testingVoice, setTestingVoice] = useState(false);
+  // Modo de voz: "neural" (OpenAI/Grok) ou "mechanical" (gratuita do dispositivo).
+  // Escolha DIRETA nas configurações (sem popup). Pedido do Miguel 10/08.
+  const [voiceMode, setVoiceModeState] = useState<"neural" | "mechanical">(() => {
+    if (typeof window === "undefined") return "neural";
+    return getTtsMode();
+  });
+  const setVoiceMode = (mode: "neural" | "mechanical") => {
+    setVoiceModeState(mode);
+    setTtsMode(mode);
+  };
   // Formulário de adicionar/editar chave: escondido por trás de um botão
   // (pedido do Miguel: a lista aparece primeiro; o form só abre ao clicar).
   const [showForm, setShowForm] = useState(false);
@@ -873,56 +884,78 @@ export function SettingsForm({
         <div className="field voice-pref-field">
           <label>🔊 {t("cfg_voice_pref_title")}</label>
           <p className="hint" style={{ marginBottom: "8px" }}>{t("cfg_voice_pref_body")}</p>
-          <label htmlFor="tts-voice" style={{ fontSize: 13, fontWeight: 600, display: "block", marginBottom: 4 }}>
-            {t("cfg_choose_voice")}:
-          </label>
-          <select id="tts-voice" value={ttsVoice} onChange={(e) => { setTtsVoice(e.target.value); setTtsVoiceState(e.target.value); }} style={{ marginBottom: 10, padding: "8px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", fontSize: 14 }}>
-            <optgroup label="OpenAI">
-              {TTS_VOICES_OPENAI.map((v) => (<option key={v.id} value={v.id}>{v.label}</option>))}
-            </optgroup>
-            <optgroup label="Grok (xAI)">
-              {TTS_VOICES_GROK.map((v) => (<option key={v.id} value={v.id}>{v.label}</option>))}
-            </optgroup>
-          </select>
-          <button type="button" className="key-refresh-btn" onClick={() => { if (typeof window !== "undefined") { window.localStorage.removeItem("moka.ttsWarned"); sessionStorage.removeItem("moka.ttsWarned"); } setVoicePrefReset(true); setTimeout(() => setVoicePrefReset(false), 2500); }}>
-            🔔 {t("cfg_voice_pref_show_again")}
-          </button>
-          {/* ▶ Escutar amostra da voz — gera um áudio curto de teste. */}
-          <button
-            type="button"
-            className="key-refresh-btn"
-            style={{ marginLeft: 8 }}
-            disabled={testingVoice}
-            onClick={async () => {
-              setTestingVoice(true);
-              try {
-                const config = getConfigSync();
-                if (!config) { alert("Cadastre uma chave primeiro."); return; }
-                // Verifica se o provedor ativo tem TTS
-                const TTS_PROVIDERS = ["openai", "grok", "groq"];
-                if (!TTS_PROVIDERS.includes(config.providerId)) { alert("Voz neural precisa de OpenAI, Grok ou Groq ativo."); return; }
-                const PRESET_BASE: Record<string, string> = { openai: "https://api.openai.com/v1", grok: "https://api.x.ai/v1", groq: "https://api.groq.com/openai/v1" };
-                const ttsBaseUrl = config.baseUrl || PRESET_BASE[config.providerId] || PRESET_BASE.openai;
-                const res = await fetch("/api/tts", {
-                  method: "POST",
-                  headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ text: "Oi, eu sou o Zé Moca! Tô aqui pra te ajudar com qualquer trem.", voice: ttsVoice, model: "tts-1", baseUrl: ttsBaseUrl, apiKey: config.apiKey }),
-                });
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-                const audio = new Audio(url);
-                audio.play();
-              } catch (e) {
-                alert(`❌ ${e instanceof Error ? e.message : String(e)}`);
-              } finally {
-                setTestingVoice(false);
-              }
-            }}
-          >
-            {testingVoice ? "⏳" : "▶"} Escutar voz
-          </button>
-          {voicePrefReset && (<p className="feedback ok" style={{ marginTop: 6 }}>✓</p>)}
+
+          {/* Radio: voz neural vs mecânica — escolha DIRETA (sem popup).
+              Persiste em localStorage. Pedido do Miguel 10/08. */}
+          <div className="voice-mode-radios">
+            <label className="voice-radio">
+              <input
+                type="radio"
+                name="voice-mode"
+                checked={voiceMode === "neural"}
+                onChange={() => setVoiceMode("neural")}
+              />
+              🎙️ {"Voz neural (OpenAI/Grok)"}
+            </label>
+            <label className="voice-radio">
+              <input
+                type="radio"
+                name="voice-mode"
+                checked={voiceMode === "mechanical"}
+                onChange={() => setVoiceMode("mechanical")}
+              />
+              🗣️ {"Voz mecânica gratuita"}
+            </label>
+          </div>
+
+          {/* Dropdown de voz neural — só aparece se escolheu neural. */}
+          {voiceMode === "neural" && (
+            <>
+              <label htmlFor="tts-voice" style={{ fontSize: 13, fontWeight: 600, display: "block", marginBottom: 4, marginTop: 10 }}>
+                {t("cfg_choose_voice")}:
+              </label>
+              <select id="tts-voice" value={ttsVoice} onChange={(e) => { setTtsVoice(e.target.value); setTtsVoiceState(e.target.value); }} style={{ marginBottom: 10, padding: "8px 12px", borderRadius: 8, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", fontSize: 14 }}>
+                <optgroup label="OpenAI">
+                  {TTS_VOICES_OPENAI.map((v) => (<option key={v.id} value={v.id}>{v.label}</option>))}
+                </optgroup>
+                <optgroup label="Grok (xAI)">
+                  {TTS_VOICES_GROK.map((v) => (<option key={v.id} value={v.id}>{v.label}</option>))}
+                </optgroup>
+              </select>
+              {/* ▶ Escutar amostra da voz — gera um áudio curto de teste. */}
+              <button
+                type="button"
+                className="key-refresh-btn"
+                disabled={testingVoice}
+                onClick={async () => {
+                  setTestingVoice(true);
+                  try {
+                    const config = getConfigSync();
+                    if (!config) { alert("Cadastre uma chave primeiro."); return; }
+                    const TTS_PROVIDERS = ["openai", "grok", "groq"];
+                    if (!TTS_PROVIDERS.includes(config.providerId)) { alert("Voz neural precisa de OpenAI, Grok ou Groq ativo."); return; }
+                    const PRESET_BASE: Record<string, string> = { openai: "https://api.openai.com/v1", grok: "https://api.x.ai/v1", groq: "https://api.groq.com/openai/v1" };
+                    const ttsBaseUrl = config.baseUrl || PRESET_BASE[config.providerId] || PRESET_BASE.openai;
+                    const res = await fetch("/api/tts", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ text: "Oi, eu sou o Zé Moca! Tô aqui pra te ajudar com qualquer trem.", voice: ttsVoice, model: "tts-1", baseUrl: ttsBaseUrl, apiKey: config.apiKey }),
+                    });
+                    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    new Audio(url).play();
+                  } catch (e) {
+                    alert(`❌ ${e instanceof Error ? e.message : String(e)}`);
+                  } finally {
+                    setTestingVoice(false);
+                  }
+                }}
+              >
+                {testingVoice ? "⏳" : "▶"} Escutar voz
+              </button>
+            </>
+          )}
         </div>
         <p className="hint" style={{ marginTop: "4px" }}>{t("set_content_lang")}</p>
       </div>

@@ -478,6 +478,21 @@ export function getTtsVoice(): string {
   return window.localStorage.getItem(TTS_VOICE_KEY) ?? "nova";
 }
 
+// ─── Modo de voz: "neural" ou "mechanical" (escolha direta, sem popup) ──
+const TTS_MODE_KEY = "moka.ttsMode";
+
+export function getTtsMode(): "neural" | "mechanical" {
+  if (typeof window === "undefined") return "neural";
+  return (window.localStorage.getItem(TTS_MODE_KEY) as "neural" | "mechanical") ?? "neural";
+}
+
+export function setTtsMode(mode: "neural" | "mechanical"): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(TTS_MODE_KEY, mode);
+  // Marca como "avisado" pra não mostrar o popup antigo.
+  window.localStorage.setItem("moka.ttsWarned", "1");
+}
+
 export function setTtsVoice(voice: string): void {
   if (typeof window === "undefined") return;
   window.localStorage.setItem(TTS_VOICE_KEY, voice);

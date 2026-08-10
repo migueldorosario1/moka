@@ -7239,3 +7239,24 @@ font-size: 14px;
   cursor: pointer;
   accent-color: var(--accent);
 }
+
+/* ═══ Radio buttons de modo de voz (neural/mecânica) ═══ */
+.voice-mode-radios {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 8px;
+}
+.voice-radio {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--text);
+  cursor: pointer;
+}
+.voice-radio input[type="radio"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
