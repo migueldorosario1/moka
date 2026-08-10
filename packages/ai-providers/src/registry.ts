@@ -113,7 +113,7 @@ export const PRESETS: ProviderPreset[] = [
     id: "grok",
     name: "Grok (xAI)",
     baseUrl: "https://api.x.ai/v1",
-    defaultModel: "grok-3-mini",
+    defaultModel: "grok-4.20-0309-non-reasoning",
     adapter: "openai",
     keyUrl: "https://console.x.ai",
     usageUrl: "https://console.x.ai/billing",

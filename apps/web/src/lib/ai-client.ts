@@ -580,9 +580,9 @@ export async function testConnection(
     const provider = getProvider(config, transport);
     const result = await provider.complete("Diga apenas: OK", {
       temperature: 0,
-      // 100 tokens: modelos de raciocínio (gpt-5.5, o-series) consomem
-      // reasoning_tokens antes de responder — 16 não sobrava nada pro "OK".
-      maxTokens: 100,
+      // 300 tokens: modelos de raciocínio (Grok 4, gpt-5.5, o-series) consomem
+      // muitos reasoning_tokens antes de responder — 100 não sobrava pro "OK".
+      maxTokens: 300,
     });
     return {
       ok: true,

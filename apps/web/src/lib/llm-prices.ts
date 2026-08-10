@@ -42,7 +42,7 @@ export const LLM_PRICES: LlmPrice[] = [
   { rank: 10, modelo: "Qwen3 Max (Alibaba)", presetId: "qwen", inUsd: 0.78, outUsd: 3.9 },
   { rank: 11, modelo: "Kimi K2.6 (Moonshot)", presetId: "kimi", inUsd: 0.95, outUsd: 4.0 },
   { rank: 12, modelo: "Claude Haiku 4.5 (Anthropic)", presetId: "anthropic", inUsd: 1.0, outUsd: 5.0 },
-  { rank: 13, modelo: "Grok 3 mini (xAI)", presetId: "grok", inUsd: 0.3, outUsd: 0.5, nota: "neural voice + transcription" },
+  { rank: 13, modelo: "Grok 4.20 (xAI)", presetId: "grok", inUsd: 0.3, outUsd: 0.5, nota: "neural voice + transcription" },
   { rank: 14, modelo: "GPT-5 (OpenAI)", presetId: "openai", inUsd: 1.25, outUsd: 10.0 },
   { rank: 15, modelo: "GLM-5.1 (Z.ai)", presetId: "zai", inUsd: 1.4, outUsd: 4.4, nota: "new generation" },
   { rank: 16, modelo: "DeepSeek V4 Pro", presetId: "deepseek", inUsd: 1.74, outUsd: 3.48, nota: "DeepSeek flagship" },
