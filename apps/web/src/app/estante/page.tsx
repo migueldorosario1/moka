@@ -200,7 +200,7 @@ export default function HomePage() {
   );
 
   return (
-    <main className="igot-shell">
+    <main className="estante-page">
       <VisitPing />
       {/* TopBar com logo clicável */}
       <div className="igot-topbar">

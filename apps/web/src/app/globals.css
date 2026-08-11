@@ -7317,3 +7317,9 @@ font-size: 14px;
   gap: 6px;
   margin-top: 6px;
 }
+
+/* Estante como página normal (não igot-shell que prende) */
+.estante-page {
+  min-height: 100vh;
+  background: var(--bg);
+}
