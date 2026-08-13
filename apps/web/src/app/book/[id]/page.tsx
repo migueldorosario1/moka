@@ -3,6 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Reader } from "@/components/Reader";
+import { RequireAuth } from "@/components/RequireAuth";
 import { useI18n } from "@/components/I18nProvider";
 import { AIPanel } from "@/components/AIPanel";
 import { hasConfig, loadConfigCache } from "@/lib/config";
@@ -173,6 +174,7 @@ export default function BookPage({ params }: { params: { id: string } }) {
   }
 
   return (
+    <RequireAuth>
     <main className="igot-shell">
       <div className={`igot-workspace igot-workspace-no-topbar ${action ? "has-panel" : ""}`}>
         <Reader
@@ -260,6 +262,7 @@ export default function BookPage({ params }: { params: { id: string } }) {
       )}
       {/* CSS migrado para globals.css — cura FOUC (era <style jsx>) */}
     </main>
+    </RequireAuth>
   );
 }
 

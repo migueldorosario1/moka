@@ -6758,6 +6758,56 @@ text-align: center;
 font-size: 13.5px;
 color: var(--accent);
 }
+
+/* ─── RequireAuth (login obrigatório, 13/08) ─────────────────────────── */
+.require-auth {
+min-height: 70vh;
+display: flex;
+align-items: center;
+justify-content: center;
+padding: 24px;
+}
+.require-auth-card {
+text-align: center;
+max-width: 420px;
+padding: 40px 28px;
+background: var(--card, #fff);
+border: 1px solid var(--border, #e5e0d8);
+border-radius: 20px;
+box-shadow: 0 8px 30px rgba(0,0,0,.06);
+}
+.require-auth-logo {
+font-size: 44px;
+line-height: 1;
+margin-bottom: 14px;
+}
+.require-auth-title {
+margin: 0 0 8px;
+font-family: var(--font-display, inherit);
+font-size: 24px;
+color: var(--text, #1a1714);
+}
+.require-auth-sub {
+margin: 0 0 22px;
+font-size: 15.5px;
+line-height: 1.55;
+color: var(--muted, #6b6257);
+}
+.require-auth-cta {
+padding: 13px 26px;
+border: 0;
+border-radius: 999px;
+background: var(--accent, #b3502e);
+color: #fff;
+font-size: 15.5px;
+font-weight: 700;
+cursor: pointer;
+transition: transform .12s, box-shadow .12s;
+}
+.require-auth-cta:hover {
+transform: translateY(-1px);
+box-shadow: 0 6px 18px rgba(179,80,46,.3);
+}
 .reader-text {
 max-width: 680px;
 margin: 0 auto;

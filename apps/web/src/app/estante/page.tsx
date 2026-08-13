@@ -7,6 +7,7 @@ import { Uploader } from "@/components/Uploader";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { AuthGate } from "@/components/AuthGate";
+import { RequireAuth } from "@/components/RequireAuth";
 import { SiteFooter } from "@/components/SiteFooter";
 import { useI18n } from "@/components/I18nProvider";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
@@ -200,6 +201,7 @@ export default function HomePage() {
   );
 
   return (
+    <RequireAuth>
     <main className="estante-page">
       <VisitPing />
       {/* TopBar com logo clicável */}
@@ -341,5 +343,6 @@ export default function HomePage() {
 
           <SiteFooter />
     </main>
+    </RequireAuth>
   );
 }
