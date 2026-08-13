@@ -17,7 +17,7 @@ import { PageActionModal } from "./PageActionModal";
 import { TranslateBookModal } from "./TranslateBookModal";
 import { translatePageStream, explainPageStream, translateStream, explainStream, translateForSpeech } from "@/lib/ai-client";
 import { blocksToText, paginateBlocks } from "@/lib/paginate";
-import { copyDiagnostics, installGlobalErrorCapture, setDiagContext } from "@/lib/diagnostics";
+import { copyDiagnostics, installGlobalErrorCapture, setDiagContext, buildMailtoLink, getSuggestedCauses } from "@/lib/diagnostics";
 
 interface ReaderProps {
   book: ParsedBook;
@@ -1880,18 +1880,47 @@ export function Reader({
               </div>
             ) : pageTranslation?.startsWith("⚠️") ? (
               <div className="page-ai-error">
-                <div>{pageTranslation}</div>
-                {/* 📋 Copiar diagnóstico (pedido Miguel, 13/08): aparece SÓ
-                    quando a tradução falha. Copia o relatório completo pra
-                    colar pro Kimi analisar. */}
-                <button
-                  type="button"
-                  onClick={handleCopyDiag}
-                  className="diag-copy-btn"
-                  title="Copia um relatório com os detalhes do erro (ação, livro, página, provedor, modelo) pra você me mandar"
-                >
-                  {diagCopied ? "✅ Copiado! Cole pra mim" : "📋 Copiar diagnóstico"}
-                </button>
+                {/* Recado humanizado (pedido Miguel, 13/08) */}
+                <div className="diag-sorry">
+                  😔 Desculpe o transtorno — ocorreu um erro. Agradecemos se
+                  enviar o diagnóstico pro nosso especialista analisar e
+                  resolver o quanto antes.
+                </div>
+                <div className="diag-err-text">{pageTranslation}</div>
+
+                {/* Causas auto-corrigíveis (autocura): o usuário tenta resolver
+                    sozinho ANTES de chamar o suporte. */}
+                {getSuggestedCauses().length > 0 && (
+                  <div className="diag-causes">
+                    <strong>Possíveis causas que você mesmo pode corrigir:</strong>
+                    <ul>
+                      {getSuggestedCauses().map((c) => (
+                        <li key={c.text}>
+                          <a href={c.href} target="_blank" rel="noreferrer">{c.text}</a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+
+                {/* Ações: ENVIAR (mailto, sem servidor) + COPIAR. */}
+                <div className="diag-actions">
+                  <a
+                    href={buildMailtoLink()}
+                    className="diag-copy-btn diag-send-btn"
+                    title="Abre seu app de e-mail com o diagnóstico pronto pro suporte (info@mokareader.com) — é só confirmar o envio"
+                  >
+                    📤 Enviar diagnóstico
+                  </a>
+                  <button
+                    type="button"
+                    onClick={handleCopyDiag}
+                    className="diag-copy-btn"
+                    title="Copia o relatório pra você me mandar"
+                  >
+                    {diagCopied ? "✅ Copiado!" : "📋 Copiar"}
+                  </button>
+                </div>
               </div>
             ) : (
               (pageTranslation ?? "").split(/\n{2,}/).map((para, i) => (

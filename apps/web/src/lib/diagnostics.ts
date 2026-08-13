@@ -203,6 +203,72 @@ export async function copyDiagnostics(): Promise<boolean> {
   }
 }
 
+// ─── Feedback / autocura (pedido do Miguel, 13/08) ─────────────────────
+
+/** E-mail do suporte Moka (memória de bugs — eu leio via IMAP). */
+export const SUPPORT_EMAIL = "info@mokareader.com";
+
+/**
+ * Monta um link `mailto:` com o diagnóstico pré-preenchido endereçado ao
+ * suporte. FUNCIONA SEM SERVIDOR: abre o app de e-mail do usuário já com
+ * tudo preenchido — ele só confirma o envio. (Caminho imediato, sem config.)
+ */
+export function buildMailtoLink(): string {
+  const e = getLastError();
+  const subject = encodeURIComponent(
+    `[Moka Diagnóstico] ${e?.kind ?? "erro"}${e?.bookTitle ? ` — ${e.bookTitle}` : ""}`,
+  );
+  const body = encodeURIComponent(buildReport());
+  // mailto tem limite de tamanho em alguns clientes — corta o body se enorme.
+  const safeBody = body.length > 18000 ? body.slice(0, 18000) + encodeURIComponent("\n…(relatório truncado)") : body;
+  return `mailto:${SUPPORT_EMAIL}?subject=${subject}&body=${safeBody}`;
+}
+
+/** Uma causa auto-corrigível, com link pra solução. */
+export interface DiagCause {
+  /** Texto da causa (na língua da UI). */
+  text: string;
+  /** Link pra solução (âncora do /ajuda ou /tutorial). */
+  href: string;
+}
+
+/**
+ * Mapeia o ÚLTIMO erro (status HTTP) pras causas prováveis que o PRÓPRIO
+ * usuário pode corrigir, cada uma com link pro tutorial. Autocura (C2).
+ */
+export function getSuggestedCauses(): DiagCause[] {
+  const e = getLastError();
+  if (!e) return [];
+  const s = e.status;
+  const msg = (e.message + " " + (e.providerDetail ?? "")).toLowerCase();
+  const out: DiagCause[] = [];
+  const seen = new Set<string>();
+  const add = (text: string, href: string) => {
+    if (!seen.has(text)) { seen.add(text); out.push({ text, href }); }
+  };
+
+  if (s === 401 || s === 403 || /invalid|unauthoriz|api.?key|autentica/.test(msg)) {
+    add("Sua chave de IA pode estar inválida ou sem permissão.", "/ajuda");
+  }
+  if (s === 429 || /quota|credit|insufficient|saldo|rate.?limit|limite/.test(msg)) {
+    add("Crédito/limite da sua IA pode ter acabado (recarregue o provedor).", "/ajuda");
+  }
+  if (s === 404 || /model.*not.*found|modelo.*não/.test(msg)) {
+    add("O modelo escolhido pode não existir mais — troque nas Configurações.", "/ajuda");
+  }
+  if (/failed to fetch|network|load failed|timeout|abort|demorou/.test(msg)) {
+    add("Conexão lenta ou a IA demorou demais — tente de novo.", "/ajuda");
+  }
+  if (/configur|abra as|cole a sua chave|nenhuma ia/.test(msg)) {
+    add("Nenhuma IA configurada — configure sua chave (leva 1 minuto).", "/tutorial");
+  }
+  // Se nada casou, causa genérica.
+  if (out.length === 0) {
+    add("Pode ser algo temporário — tente de novo. Se persistir, envie o diagnóstico.", "/ajuda");
+  }
+  return out;
+}
+
 /** Instala o capturador de erros GLOBAIS (1x). Pega o que não passa pelo ai-client. */
 export function installGlobalErrorCapture(): void {
   if (installed || typeof window === "undefined") return;
