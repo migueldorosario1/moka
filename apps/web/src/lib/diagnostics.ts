@@ -22,7 +22,7 @@
 import { getEntryForText, getTargetLang } from "./config";
 
 /** Versão do app (atualizar quando subir de versão). */
-export const APP_VERSION = "6.6";
+export const APP_VERSION = "6.8";
 
 /** Contexto "onde estou" — preenchido pelo Reader conforme navega. */
 export interface DiagContextInfo {

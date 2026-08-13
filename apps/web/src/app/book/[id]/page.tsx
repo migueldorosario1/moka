@@ -221,11 +221,11 @@ export default function BookPage({ params }: { params: { id: string } }) {
           bookmarks={session.bookmarks ?? []}
           onToggleBookmark={(chapIdx, meta) => {
             const existing = session.bookmarks ?? [];
-            const has = existing.some((b) => b.chapterIdx === chapIdx);
+            const has = existing.some((b) => b.chapterIdx === chapIdx && (b.pageIdx ?? 0) === (meta?.pageIdx ?? 0));
             updateSession({
               bookmarks: has
-                ? existing.filter((b) => b.chapterIdx !== chapIdx)
-                : [...existing, { chapterIdx: chapIdx, savedAt: Date.now(), pageLabel: meta?.pageLabel, preview: meta?.preview }],
+                ? existing.filter((b) => !(b.chapterIdx === chapIdx && (b.pageIdx ?? 0) === (meta?.pageIdx ?? 0)))
+                : [...existing, { chapterIdx: chapIdx, pageIdx: meta?.pageIdx ?? 0, savedAt: Date.now(), pageLabel: meta?.pageLabel, preview: meta?.preview }],
             });
           }}
           onGoToShelf={() => {

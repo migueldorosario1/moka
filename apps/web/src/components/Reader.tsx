@@ -54,10 +54,10 @@ interface ReaderProps {
   onRemoveNote?: (id: string) => void;
   /** Salva uma nota (auto-save de tradução/explicação em fullscreen). */
   onSaveNote?: (entry: { kind: "translate" | "explain" | "ask" | "summary"; source: string; result: string; chapterId?: string }) => void;
-  /** Marcadores salvos (chapterIdx + timestamp + prévia do texto). */
-  bookmarks?: Array<{ chapterIdx: number; savedAt: number; pageLabel?: string; preview?: string }>;
-  /** Adiciona/remove um marcador da página atual (com prévia pra achar depois). */
-  onToggleBookmark?: (chapterIdx: number, meta?: { pageLabel?: string; preview?: string }) => void;
+  /** Marcadores salvos (chapterIdx + pageIdx local + timestamp + prévia). */
+  bookmarks?: Array<{ chapterIdx: number; pageIdx?: number; savedAt: number; pageLabel?: string; preview?: string }>;
+  /** Adiciona/remove um marcador da página atual (com página local + prévia). */
+  onToggleBookmark?: (chapterIdx: number, meta?: { pageIdx?: number; pageLabel?: string; preview?: string }) => void;
   /** Volta pra estante (home). */
   onGoToShelf?: () => void;
   /** Painel da IA visível? (pra botão de toggle). */
@@ -532,17 +532,18 @@ export function Reader({
     if (!isFullscreen) setMenuVisible(true);
   }, [book, settingsOpen, isFullscreen, showTtsModal, transBookOpen, askOpen, summaryOpen]);
 
-  /** Esta página já está marcada? (lookup rápido no array de bookmarks). */
-  const isBookmarked = bookmarks.some((b) => b.chapterIdx === chapterIdx);
+  /** Esta página já está marcada? Compara capítulo E página local
+   *  (pedido Miguel, 13/08: "o 🔖 tem que aparecer só na página marcada"). */
+  const isBookmarked = bookmarks.some((b) => b.chapterIdx === chapterIdx && (b.pageIdx ?? 0) === pageIdx);
 
-  /** Marca/desmarca a página atual — salvando o rótulo + as primeiras ~50
-   *  palavras (pedido Miguel, 13/08). SEMPRE pede confirmação antes (avisozinho
-   *  na língua do usuário). */
+  /** Marca/desmarca a página atual — salvando o rótulo + a página local + as
+   *  primeiras ~50 palavras (pedido Miguel, 13/08). SEMPRE pede confirmação
+   *  antes (avisozinho na língua do usuário). */
   const toggleBookmark = () => {
     const m = CONFIRM_MSGS[lang] ?? CONFIRM_MSGS["en"] ?? CONFIRM_MSGS["pt-BR"];
     if (!window.confirm(isBookmarked ? m.unmark : m.mark)) return;
     const preview = (currentPageText || "").trim().split(/\s+/).filter(Boolean).slice(0, 50).join(" ");
-    onToggleBookmark?.(chapterIdx, { pageLabel, preview });
+    onToggleBookmark?.(chapterIdx, { pageIdx, pageLabel, preview });
   };
 
   /**
@@ -1155,6 +1156,28 @@ export function Reader({
     pendingPage.current = null;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [chapterIdx]);
+
+  // ─── Cache de POSIÇÃO EXATA (pedido Miguel, 13/08): antes o cache salvava
+  // só o chapterIdx → reiniciava no começo do capítulo. Agora salva/restaura
+  // o índice GLOBAL de página, voltando na página exata em que parou. ────
+  const posKey = "moka.pos." + book.title.replace(/[^a-zA-Z0-9]/g, "").slice(0, 40);
+  const restoredPos = useRef(false);
+  // Restaura a posição exata UMA vez (depois que a paginação do EPUB carrega).
+  useEffect(() => {
+    if (restoredPos.current || typeof window === "undefined") return;
+    if (isEpub && !chapterPages) return; // EPUB: espera a paginação carregar
+    const saved = Number(window.localStorage.getItem(posKey));
+    restoredPos.current = true;
+    if (saved > 0 && saved < totalPages && saved !== globalPageIdx) {
+      goToGlobalPage(saved);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [chapterPages, globalPageIdx]);
+  // Salva a posição exata sempre que muda (só depois da 1ª restauração).
+  useEffect(() => {
+    if (!restoredPos.current || typeof window === "undefined") return;
+    window.localStorage.setItem(posKey, String(globalPageIdx));
+  }, [globalPageIdx, posKey]);
 
   // Ao trocar de PÁGINA (capítulo ou página local): RESTAURA do mapa de
   // traduções se houver tradução salva pra essa página (não re-traduz).
@@ -2272,11 +2295,17 @@ export function Reader({
                               type="button"
                               className="bookmark-goto"
                               onClick={() => {
-                                // Navega pra página marcada (pedido Miguel, 13/08):
-                                // reseta a página local, rola pro topo e fecha o painel.
-                                pendingPage.current = 0;
+                                // Navega pra página marcada (pedido Miguel, 13/08).
+                                // Seta a página LOCAL pendente ANTES de trocar de
+                                // capítulo (o useEffect [chapterIdx] aplica
+                                // pendingPage). Assim volta na página exata, não no
+                                // começo do capítulo.
+                                pendingPage.current = bm.pageIdx ?? 0;
+                                if (bm.chapterIdx === chapterIdx) {
+                                  // Mesmo capítulo: aplica direto a página local.
+                                  setPageIdx(bm.pageIdx ?? 0);
+                                }
                                 setChapterIdx(bm.chapterIdx);
-                                setPageIdx(0);
                                 setNotesOpen(false);
                                 setTimeout(() => scrollRef.current?.scrollTo({ top: 0 }), 60);
                               }}

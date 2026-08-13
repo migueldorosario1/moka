@@ -59,8 +59,9 @@ export interface Session {
    * timestamp de criação, pra lista ordenada no painel de marcadores.
    * `pageLabel`/`preview` (opcionais, 13/08) = rótulo da página + primeiras
    * palavras, pra o leitor saber qual página marcou (pedido do Miguel).
+   * `pageIdx` (13/08) = página LOCAL dentro do capítulo (pra voltar na exata).
    */
-  bookmarks?: Array<{ chapterIdx: number; savedAt: number; pageLabel?: string; preview?: string }>;
+  bookmarks?: Array<{ chapterIdx: number; pageIdx?: number; savedAt: number; pageLabel?: string; preview?: string }>;
 }
 
 /**
