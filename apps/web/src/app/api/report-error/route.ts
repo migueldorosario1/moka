@@ -124,7 +124,34 @@ export async function POST(req: Request) {
       replied = true;
     }
 
-    return NextResponse.json({ ok: true, replied });
+    // 3) Issue no GitHub (painel público, pedido do Miguel, 13/08): cada relatório
+    //    vira um card no repo moka com o label "user-report". PRIVACIDADE: o body
+    //    é o `report` (diagnóstico técnico — SEM chave, SEM e-mail do usuário;
+    //    o e-mail só vai no e-mail interno acima). Token GITHUB_TOKEN_MOKA na Vercel.
+    let github = false;
+    if (process.env.GITHUB_TOKEN_MOKA) {
+      try {
+        const title = `[Relato] ${body.kind ?? "erro"}${body.bookTitle ? ` — ${body.bookTitle}` : ""}`;
+        const ghRes = await fetch("https://api.github.com/repos/migueldorosario1/moka/issues", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${process.env.GITHUB_TOKEN_MOKA}`,
+            Accept: "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+          },
+          body: JSON.stringify({
+            title,
+            body: report,
+            labels: ["user-report"],
+          }),
+        });
+        github = ghRes.ok;
+      } catch {
+        github = false; // GitHub fora do ar não derruba o e-mail
+      }
+    }
+
+    return NextResponse.json({ ok: true, replied, github });
   } catch (err) {
     return NextResponse.json(
       { ok: false, error: `Falha ao enviar: ${err instanceof Error ? err.message : String(err)}` },
