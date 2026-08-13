@@ -17,6 +17,7 @@ import {
   type AIConfig,
 } from "@igot/ai-providers";
 import { getConfigSync, getEntryForText, getTargetLang } from "./config";
+import { captureError } from "./diagnostics";
 import { t } from "./messages";
 
 /** Contexto da obra relevante para as ações. */
@@ -67,8 +68,24 @@ function resolveProvider() {
  * próxima ação. O idioma acompanha o que o usuário configurou (targetLang):
  * configurou em inglês? vê erros em inglês. Português? em português.
  */
-function toMessage(err: unknown): string {
+function toMessage(err: unknown, kind = "ai", textLen?: number): string {
   const lang = getTargetLang();
+
+  // Diagnóstico (pedido do Miguel, 13/08): registra o erro técnico + status
+  // HTTP do provedor pra eu poder analisar depois. NUNCA inclui a chave.
+  // Em try/catch pra o diagnóstico NUNCA quebrar o fluxo principal.
+  try {
+    captureError({
+      kind,
+      message: err instanceof Error ? err.message : String(err),
+      status: err instanceof ProxyStreamError ? err.statusCode : undefined,
+      providerDetail: err instanceof ProxyStreamError ? err.providerDetail : undefined,
+      stack: err instanceof Error ? err.stack : undefined,
+      textLen,
+    });
+  } catch {
+    /* diagnóstico nunca quebra o fluxo */
+  }
 
   // Erro do proxy-stream com status HTTP do provedor.
   if (err instanceof ProxyStreamError) {
@@ -271,7 +288,7 @@ export async function translatePageStream(
     }
     return { ok: true, text: full };
   } catch (err) {
-    return { ok: false, error: toMessage(err) };
+    return { ok: false, error: toMessage(err, "translate-page", text.length) };
   }
 }
 
@@ -325,7 +342,7 @@ export async function explainPageStream(
     }
     return { ok: true, text: full };
   } catch (err) {
-    return { ok: false, error: toMessage(err) };
+    return { ok: false, error: toMessage(err, "explain-page", text.length) };
   }
 }
 

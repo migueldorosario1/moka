@@ -17,6 +17,7 @@ import { PageActionModal } from "./PageActionModal";
 import { TranslateBookModal } from "./TranslateBookModal";
 import { translatePageStream, explainPageStream, translateStream, explainStream, translateForSpeech } from "@/lib/ai-client";
 import { blocksToText, paginateBlocks } from "@/lib/paginate";
+import { copyDiagnostics, installGlobalErrorCapture, setDiagContext } from "@/lib/diagnostics";
 
 interface ReaderProps {
   book: ParsedBook;
@@ -353,6 +354,32 @@ export function Reader({
     }
     onChapterChange?.(n);
   }, [book.title, onChapterChange]);
+
+  // ─── Diagnóstico de erros (pedido do Miguel, 13/08) ──────────────────
+  // Instala o capturador de erros GLOBAIS 1x e mantém o "contexto" (livro/
+  // página) atualizado pra o relatório sair completo quando algo falha.
+  const [diagCopied, setDiagCopied] = useState(false);
+  useEffect(() => {
+    installGlobalErrorCapture();
+  }, []);
+  useEffect(() => {
+    setDiagContext({
+      bookTitle: book.title,
+      bookAuthor: book.author,
+      bookFormat: book.sourceFormat,
+      pageLabel: `pág. ${chapterIdx + 1}`,
+    });
+  }, [book.title, book.author, book.sourceFormat, chapterIdx]);
+
+  /** Copia o relatório de diagnóstico pro clipboard e mostra "Copiado!". */
+  const handleCopyDiag = async () => {
+    const ok = await copyDiagnostics();
+    if (ok) {
+      setDiagCopied(true);
+      setTimeout(() => setDiagCopied(false), 2500);
+    }
+  };
+
   /** Página LOCAL dentro do capítulo (só EPUB — PDF tem 1 página por índice). */
   const [pageIdx, setPageIdx] = useState(0);
   /** Pulo pendente: ao trocar de capítulo, abre nesta página local (ex.: última ao voltar). */
@@ -1852,7 +1879,20 @@ export function Reader({
                 <span>{t("reader_translating_page_sub")}</span>
               </div>
             ) : pageTranslation?.startsWith("⚠️") ? (
-              <div className="page-ai-error">{pageTranslation}</div>
+              <div className="page-ai-error">
+                <div>{pageTranslation}</div>
+                {/* 📋 Copiar diagnóstico (pedido Miguel, 13/08): aparece SÓ
+                    quando a tradução falha. Copia o relatório completo pra
+                    colar pro Kimi analisar. */}
+                <button
+                  type="button"
+                  onClick={handleCopyDiag}
+                  className="diag-copy-btn"
+                  title="Copia um relatório com os detalhes do erro (ação, livro, página, provedor, modelo) pra você me mandar"
+                >
+                  {diagCopied ? "✅ Copiado! Cole pra mim" : "📋 Copiar diagnóstico"}
+                </button>
+              </div>
             ) : (
               (pageTranslation ?? "").split(/\n{2,}/).map((para, i) => (
                 <p key={i}>{para}</p>

@@ -6734,6 +6734,30 @@ color: var(--accent);
 font-size: 15px;
 line-height: 1.6;
 }
+/* Botão "📋 Copiar diagnóstico" — aparece junto do erro de IA (13/08). */
+.diag-copy-btn {
+display: block;
+margin: 12px auto 0;
+padding: 9px 16px;
+border: 1px solid var(--accent);
+border-radius: 999px;
+background: transparent;
+color: var(--accent);
+font-size: 14px;
+font-weight: 600;
+cursor: pointer;
+transition: background .15s, color .15s;
+}
+.diag-copy-btn:hover {
+background: var(--accent);
+color: #fff;
+}
+.diag-copy-msg {
+margin: 8px 0 0;
+text-align: center;
+font-size: 13.5px;
+color: var(--accent);
+}
 .reader-text {
 max-width: 680px;
 margin: 0 auto;

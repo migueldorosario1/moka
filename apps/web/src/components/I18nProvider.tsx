@@ -14,6 +14,7 @@ import {
   translate,
   type UIStringKey,
 } from "@/lib/i18n";
+import { installGlobalErrorCapture } from "@/lib/diagnostics";
 
 interface I18nContextValue {
   /** Idioma atual da interface (ex: "pt-BR", "en"). */
@@ -44,6 +45,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const detected = detectUILang();
     setLangState(detected);
+    // Captura de erros GLOBAIS (pedido Miguel, 13/08): qualquer erro não
+    // tratado no app vira um relatório copiável (pro Kimi analisar).
+    installGlobalErrorCapture();
   }, []);
 
   // Atualiza <html lang> quando muda (acessibilidade + SEO).

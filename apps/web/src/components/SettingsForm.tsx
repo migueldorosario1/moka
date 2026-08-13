@@ -14,6 +14,7 @@ import {
   TTS_VOICES_OPENAI, TTS_VOICES_GROK,
 } from "@/lib/config";
 import { testConnection, listModels } from "@/lib/ai-client";
+import { copyDiagnostics, hasRecentError } from "@/lib/diagnostics";
 import { PIX_KEY, PIX_HOLDER } from "@/lib/donate";
 import { useI18n } from "./I18nProvider";
 
@@ -43,6 +44,8 @@ export function SettingsForm({
   const [whisperMasked, setWhisperMasked] = useState<string | null>(null);
   const [videoMsg, setVideoMsg] = useState<string | null>(null);
   const [testingVideo, setTestingVideo] = useState(false);
+  // Feedback do botão "copiar diagnóstico" (13/08).
+  const [diagMsg, setDiagMsg] = useState<string | null>(null);
 
   // Rascunho persistente: salva o que o usuário digitou no localStorage pra
   // não perder se fechar o modal sem salvar. Limpo após salvar com sucesso.
@@ -998,6 +1001,23 @@ const TTS_TEST_PHRASES: Record<string, string> = {
           neural". Não precisa mais de seção Whisper separada. */}
 
       {/* CSS migrado para globals.css — cura o FOUC (era <style jsx>) */}
+
+      {/* 📋 Copiar diagnóstico (pedido Miguel, 13/08): sempre visível, pra
+          copiar o último erro mesmo depois dele sumir da tela. Monta um
+          relatório com contexto (ação, livro, página, provedor, modelo). */}
+      <button
+        type="button"
+        onClick={async () => {
+          const ok = await copyDiagnostics();
+          setDiagMsg(ok ? "✅ Diagnóstico copiado! Cole e me mande." : "⚠️ Não consegui copiar — me conta o que aconteceu.");
+          setTimeout(() => setDiagMsg(null), 4000);
+        }}
+        className="diag-copy-btn"
+        title="Copia um relatório com os detalhes do último erro (sem sua chave) pra você me mandar"
+      >
+        📋 {hasRecentError() ? "Copiar diagnóstico do último erro" : "Copiar diagnóstico"}
+      </button>
+      {diagMsg && <p className="diag-copy-msg">{diagMsg}</p>}
 
       {/* Link pra tutorial completo */}
       <a href="/ajuda" target="_blank" rel="noreferrer" className="help-link-banner">
