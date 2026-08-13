@@ -6430,16 +6430,14 @@ color: var(--accent);
 /* Itens do modal de marcadores */
 .bookmark-item {
 display: flex;
-flex-direction: column;
-align-items: flex-start;
-gap: 2px;
+flex-direction: row;
+align-items: stretch;
+gap: 6px;
 width: 100%;
-text-align: left;
-padding: 13px 16px;
+padding: 6px;
 border: 1px solid var(--border-soft);
 background: var(--surface);
 border-radius: var(--radius);
-cursor: pointer;
 transition: border-color var(--transition), background var(--transition);
 color: var(--text);
 }
@@ -6447,6 +6445,47 @@ color: var(--text);
 border-color: var(--accent);
 background: var(--accent-soft);
 }
+/* Área clicável que navega pra página (conteúdo empilhado). */
+.bookmark-goto {
+flex: 1;
+display: flex;
+flex-direction: column;
+align-items: flex-start;
+gap: 2px;
+text-align: left;
+padding: 8px 10px;
+border: 0;
+background: transparent;
+color: inherit;
+cursor: pointer;
+font: inherit;
+}
+/* Lixeira do marcador (com confirmação no clique). */
+.bookmark-delete {
+flex: 0 0 auto;
+align-self: flex-start;
+padding: 8px;
+border: 0;
+background: transparent;
+cursor: pointer;
+font-size: 15px;
+opacity: .5;
+border-radius: 8px;
+transition: opacity .15s, background .15s;
+}
+.bookmark-delete:hover {
+opacity: 1;
+background: var(--accent-soft);
+}
+/* Indicador 🔖 na "chave de zoom" quando a página está marcada (13/08). */
+.zoom-rail-bookmark {
+margin-top: 6px;
+font-size: 18px;
+text-align: center;
+filter: drop-shadow(0 1px 2px rgba(0,0,0,.25));
+animation: bmPop .18s ease;
+}
+@keyframes bmPop { from { transform: scale(.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 .bookmark-label {
 font-weight: 600;
 font-size: var(--text-sm);

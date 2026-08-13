@@ -75,6 +75,26 @@ const ZOOM_STEP = 0.2;
 /** Limites do controle de tamanho da fonte de leitura (A−/A+). */
 const FONT_SCALE_MIN = 0.7;
 const FONT_SCALE_MAX = 1.8;
+
+/**
+ * Mensagens de confirmação (pedido do Miguel, 13/08): marcar/desmarcar
+ * marcador, apagar anotação/marcador — sempre "um avisozinho, na língua do
+ * usuário". Mapa autocontido (não mexe no ui-strings gigante).
+ */
+const CONFIRM_MSGS: Record<string, { mark: string; unmark: string; deleteNote: string; deleteBookmark: string }> = {
+  "pt-BR": { mark: "Marcar esta página?", unmark: "Desmarcar esta página?", deleteNote: "Apagar esta anotação?", deleteBookmark: "Apagar este marcador?" },
+  en: { mark: "Bookmark this page?", unmark: "Remove the bookmark from this page?", deleteNote: "Delete this note?", deleteBookmark: "Delete this bookmark?" },
+  es: { mark: "¿Marcar esta página?", unmark: "¿Quitar el marcador de esta página?", deleteNote: "¿Eliminar esta nota?", deleteBookmark: "¿Eliminar este marcador?" },
+  fr: { mark: "Marquer cette page ?", unmark: "Retirer le marque-page de cette page ?", deleteNote: "Supprimer cette note ?", deleteBookmark: "Supprimer ce marque-page ?" },
+  de: { mark: "Diese Seite markieren?", unmark: "Lesezeichen von dieser Seite entfernen?", deleteNote: "Diese Notiz löschen?", deleteBookmark: "Dieses Lesezeichen löschen?" },
+  it: { mark: "Segnare questa pagina?", unmark: "Rimuovere il segnalibro da questa pagina?", deleteNote: "Eliminare questa nota?", deleteBookmark: "Eliminare questo segnalibro?" },
+  ru: { mark: "Отметить эту страницу?", unmark: "Убрать закладку с этой страницы?", deleteNote: "Удалить эту заметку?", deleteBookmark: "Удалить эту закладку?" },
+  zh: { mark: "标记此页？", unmark: "取消此页的标记？", deleteNote: "删除这条笔记？", deleteBookmark: "删除这个书签？" },
+  ja: { mark: "このページをブックマークしますか？", unmark: "このページのブックマークを外しますか？", deleteNote: "このメモを削除しますか？", deleteBookmark: "このブックマークを削除しますか？" },
+  ko: { mark: "이 페이지를 북마크할까요?", unmark: "이 페이지의 북마크를 해제할까요?", deleteNote: "이 메모를 삭제할까요?", deleteBookmark: "이 북마크를 삭제할까요?" },
+  ar: { mark: "هل تريد وضع علامة على هذه الصفحة؟", unmark: "هل تريد إزالة العلامة من هذه الصفحة؟", deleteNote: "هل تريد حذف هذه الملاحظة؟", deleteBookmark: "هل تريد حذف هذه العلامة؟" },
+  hi: { mark: "इस पेज को बुकमार्क करें?", unmark: "इस पेज से बुकमार्क हटाएँ?", deleteNote: "इस नोट को हटाएँ?", deleteBookmark: "इस बुकमार्क को हटाएँ?" },
+};
 const FONT_SCALE_STEP = 0.1;
 const FONT_SCALE_KEY = "moka.fontScale";
 
@@ -516,8 +536,11 @@ export function Reader({
   const isBookmarked = bookmarks.some((b) => b.chapterIdx === chapterIdx);
 
   /** Marca/desmarca a página atual — salvando o rótulo + as primeiras ~50
-   *  palavras (pedido Miguel, 13/08: "pra eu saber qual é a página que marquei"). */
+   *  palavras (pedido Miguel, 13/08). SEMPRE pede confirmação antes (avisozinho
+   *  na língua do usuário). */
   const toggleBookmark = () => {
+    const m = CONFIRM_MSGS[lang] ?? CONFIRM_MSGS["en"] ?? CONFIRM_MSGS["pt-BR"];
+    if (!window.confirm(isBookmarked ? m.unmark : m.mark)) return;
     const preview = (currentPageText || "").trim().split(/\s+/).filter(Boolean).slice(0, 50).join(" ");
     onToggleBookmark?.(chapterIdx, { pageLabel, preview });
   };
@@ -1888,6 +1911,11 @@ export function Reader({
         >
           −
         </button>
+        {/* Indicador de marcador (pedido Miguel, 13/08): aparece 🔖 na "chave
+            de zoom" (direita) quando a página atual está marcada. */}
+        {isBookmarked && (
+          <div className="zoom-rail-bookmark" title={t("reader_bookmark")}>🔖</div>
+        )}
       </div>
 
       <div
@@ -2205,7 +2233,10 @@ export function Reader({
                           <time>{new Date(n.savedAt).toLocaleString(lang)}</time>
                           <button
                             className="note-delete"
-                            onClick={() => onRemoveNote?.(n.id)}
+                            onClick={() => {
+                              const m = CONFIRM_MSGS[lang] ?? CONFIRM_MSGS["en"] ?? CONFIRM_MSGS["pt-BR"];
+                              if (window.confirm(m.deleteNote)) onRemoveNote?.(n.id);
+                            }}
                             aria-label={t("remove")}
                           >
                             🗑
@@ -2235,27 +2266,47 @@ export function Reader({
                             ? t("reader_page_n", { n: bm.chapterIdx + 1 })
                             : ch?.title || t("reader_chapter_n", { n: bm.chapterIdx + 1 }));
                         return (
-                          <button
-                            key={`${bm.chapterIdx}-${bm.savedAt}`}
-                            className="bookmark-item"
-                            onClick={() => {
-                              setChapterIdx(bm.chapterIdx);
-                              setNotesOpen(false);
-                            }}
-                          >
-                            <span className="bookmark-label">🔖 {label}</span>
-                            {bm.preview && (
-                              <span className="bookmark-preview">{bm.preview}…</span>
-                            )}
-                            <span className="bookmark-date">
-                              {new Date(bm.savedAt).toLocaleDateString(lang, {
-                                day: "2-digit",
-                                month: "short",
-                                hour: "2-digit",
-                                minute: "2-digit",
-                              })}
-                            </span>
-                          </button>
+                          <div key={`${bm.chapterIdx}-${bm.savedAt}`} className="bookmark-item">
+                            {/* Área que NAVEGA pra página marcada */}
+                            <button
+                              type="button"
+                              className="bookmark-goto"
+                              onClick={() => {
+                                // Navega pra página marcada (pedido Miguel, 13/08):
+                                // reseta a página local, rola pro topo e fecha o painel.
+                                pendingPage.current = 0;
+                                setChapterIdx(bm.chapterIdx);
+                                setPageIdx(0);
+                                setNotesOpen(false);
+                                setTimeout(() => scrollRef.current?.scrollTo({ top: 0 }), 60);
+                              }}
+                            >
+                              <span className="bookmark-label">🔖 {label}</span>
+                              {bm.preview && (
+                                <span className="bookmark-preview">{bm.preview}…</span>
+                              )}
+                              <span className="bookmark-date">
+                                {new Date(bm.savedAt).toLocaleDateString(lang, {
+                                  day: "2-digit",
+                                  month: "short",
+                                  hour: "2-digit",
+                                  minute: "2-digit",
+                                })}
+                              </span>
+                            </button>
+                            {/* Lixeira pra apagar o marcador (com confirmação) */}
+                            <button
+                              type="button"
+                              className="bookmark-delete"
+                              aria-label={(CONFIRM_MSGS[lang] ?? CONFIRM_MSGS["en"]).deleteBookmark}
+                              onClick={() => {
+                                const m = CONFIRM_MSGS[lang] ?? CONFIRM_MSGS["en"] ?? CONFIRM_MSGS["pt-BR"];
+                                if (window.confirm(m.deleteBookmark)) onToggleBookmark?.(bm.chapterIdx);
+                              }}
+                            >
+                              🗑
+                            </button>
+                          </div>
                         );
                       })
                   )}
