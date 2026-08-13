@@ -33,9 +33,10 @@ interface ProxyBody {
 }
 
 export const runtime = "nodejs";
-// Streaming de IA pode demorar (modelos lentos, respostas longas). Sem isso,
-// o Vercel corta a função em 10s (plano Hobby) → "Failed to fetch" no cliente.
-export const maxDuration = 60;
+// Streaming de IA pode demorar MUITO (modelos com "thinking" como o DeepSeek V4
+// pensam antes de responder; e tradução de página inteira é texto longo).
+// 60s era pouco e estourava (reporte do Miguel, 13/08). Plano Pro → até 300s.
+export const maxDuration = 300;
 // Streaming precisa de buffer dinâmico (não queremos esperar o response inteiro).
 export const dynamic = "force-dynamic";
 

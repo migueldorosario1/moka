@@ -55,7 +55,9 @@ function isHostAllowed(hostname: string): boolean {
 }
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+// 60s era pouco p/ modelos com "thinking" (DeepSeek V4) + páginas grandes.
+// Plano Pro da Vercel → até 300s. (Reporte do Miguel, 13/08.)
+export const maxDuration = 300;
 
 export async function POST(req: Request) {
   let payload: ProxyBody;

@@ -57,8 +57,10 @@ export interface Session {
   /**
    * Marcadores (bookmarks) de página. Cada um guarda o chapterIdx e o
    * timestamp de criação, pra lista ordenada no painel de marcadores.
+   * `pageLabel`/`preview` (opcionais, 13/08) = rótulo da página + primeiras
+   * palavras, pra o leitor saber qual página marcou (pedido do Miguel).
    */
-  bookmarks?: Array<{ chapterIdx: number; savedAt: number }>;
+  bookmarks?: Array<{ chapterIdx: number; savedAt: number; pageLabel?: string; preview?: string }>;
 }
 
 /**

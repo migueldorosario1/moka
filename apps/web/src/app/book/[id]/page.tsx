@@ -219,13 +219,13 @@ export default function BookPage({ params }: { params: { id: string } }) {
             })
           }
           bookmarks={session.bookmarks ?? []}
-          onToggleBookmark={(chapIdx) => {
+          onToggleBookmark={(chapIdx, meta) => {
             const existing = session.bookmarks ?? [];
             const has = existing.some((b) => b.chapterIdx === chapIdx);
             updateSession({
               bookmarks: has
                 ? existing.filter((b) => b.chapterIdx !== chapIdx)
-                : [...existing, { chapterIdx: chapIdx, savedAt: Date.now() }],
+                : [...existing, { chapterIdx: chapIdx, savedAt: Date.now(), pageLabel: meta?.pageLabel, preview: meta?.preview }],
             });
           }}
           onGoToShelf={() => {

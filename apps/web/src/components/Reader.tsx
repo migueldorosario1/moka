@@ -17,7 +17,7 @@ import { PageActionModal } from "./PageActionModal";
 import { TranslateBookModal } from "./TranslateBookModal";
 import { translatePageStream, explainPageStream, translateStream, explainStream, translateForSpeech } from "@/lib/ai-client";
 import { blocksToText, paginateBlocks } from "@/lib/paginate";
-import { copyDiagnostics, installGlobalErrorCapture, setDiagContext, buildMailtoLink, buildReport, getLastError, getSuggestedCauses } from "@/lib/diagnostics";
+import { copyDiagnostics, installGlobalErrorCapture, setDiagContext, buildMailtoLink, buildReport, getLastError, getSuggestedCauses, captureError } from "@/lib/diagnostics";
 
 interface ReaderProps {
   book: ParsedBook;
@@ -54,10 +54,10 @@ interface ReaderProps {
   onRemoveNote?: (id: string) => void;
   /** Salva uma nota (auto-save de tradução/explicação em fullscreen). */
   onSaveNote?: (entry: { kind: "translate" | "explain" | "ask" | "summary"; source: string; result: string; chapterId?: string }) => void;
-  /** Marcadores salvos (chapterIdx + timestamp). */
-  bookmarks?: Array<{ chapterIdx: number; savedAt: number }>;
-  /** Adiciona/remove um marcador da página atual. */
-  onToggleBookmark?: (chapterIdx: number) => void;
+  /** Marcadores salvos (chapterIdx + timestamp + prévia do texto). */
+  bookmarks?: Array<{ chapterIdx: number; savedAt: number; pageLabel?: string; preview?: string }>;
+  /** Adiciona/remove um marcador da página atual (com prévia pra achar depois). */
+  onToggleBookmark?: (chapterIdx: number, meta?: { pageLabel?: string; preview?: string }) => void;
   /** Volta pra estante (home). */
   onGoToShelf?: () => void;
   /** Painel da IA visível? (pra botão de toggle). */
@@ -515,8 +515,12 @@ export function Reader({
   /** Esta página já está marcada? (lookup rápido no array de bookmarks). */
   const isBookmarked = bookmarks.some((b) => b.chapterIdx === chapterIdx);
 
-  /** Marca/desmarca a página atual. */
-  const toggleBookmark = () => onToggleBookmark?.(chapterIdx);
+  /** Marca/desmarca a página atual — salvando o rótulo + as primeiras ~50
+   *  palavras (pedido Miguel, 13/08: "pra eu saber qual é a página que marquei"). */
+  const toggleBookmark = () => {
+    const preview = (currentPageText || "").trim().split(/\s+/).filter(Boolean).slice(0, 50).join(" ");
+    onToggleBookmark?.(chapterIdx, { pageLabel, preview });
+  };
 
   /**
    * Marcador invisível: clica no canto superior direito da página do livro
@@ -1226,6 +1230,16 @@ export function Reader({
       });
     } else {
       setPageTranslation(`⚠️ ${result.error ?? "Erro."}`);
+      // Segunda camada de captura (garante pegar o erro mesmo se o toMessage
+      // não capturar — ex.: stream cortado por timeout). Com contexto completo.
+      captureError({
+        kind: action === "translate" ? "translate-page" : "explain-page",
+        message: result.error ?? "Erro.",
+        textLen: currentPageText?.length,
+        pageLabel,
+        bookTitle: book.title,
+        bookFormat: book.sourceFormat,
+      });
     }
   };
 
@@ -2216,9 +2230,10 @@ export function Reader({
                       .map((bm) => {
                         const ch = book.chapters[bm.chapterIdx];
                         const label =
-                          book.sourceFormat === "pdf"
+                          bm.pageLabel ||
+                          (book.sourceFormat === "pdf"
                             ? t("reader_page_n", { n: bm.chapterIdx + 1 })
-                            : ch?.title || t("reader_chapter_n", { n: bm.chapterIdx + 1 });
+                            : ch?.title || t("reader_chapter_n", { n: bm.chapterIdx + 1 }));
                         return (
                           <button
                             key={`${bm.chapterIdx}-${bm.savedAt}`}
@@ -2228,7 +2243,10 @@ export function Reader({
                               setNotesOpen(false);
                             }}
                           >
-                            <span className="bookmark-label">{label}</span>
+                            <span className="bookmark-label">🔖 {label}</span>
+                            {bm.preview && (
+                              <span className="bookmark-preview">{bm.preview}…</span>
+                            )}
                             <span className="bookmark-date">
                               {new Date(bm.savedAt).toLocaleDateString(lang, {
                                 day: "2-digit",
