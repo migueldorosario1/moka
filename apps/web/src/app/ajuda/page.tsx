@@ -41,7 +41,7 @@ const FAQ_PT: Faq[] = [
   { q: "Preciso instalar alguma coisa?", tags: ["instalar", "baixar", "download", "app"],
     a: "Não. O Moka funciona no navegador, no celular e no computador. Se quiser, dá pra instalar como aplicativo — é grátis." },
   { q: "Preciso criar conta?", tags: ["conta", "cadastro", "login", "google", "email", "senha", "registrar"],
-    a: "Não é obrigatório — mas vale a pena: entrando com Google ou e-mail, sua biblioteca (livros, anotações, traduções e progresso) fica guardada na nuvem e abre em qualquer aparelho." },
+    a: "Sim, é de graça — você só precisa entrar com Google ou e-mail pra usar o Moka. E vale a pena: sua biblioteca (livros, anotações, traduções e progresso) fica guardada na nuvem e abre em qualquer aparelho." },
   { q: "Quem faz o Moka?", tags: ["quem", "cafezinho", "empresa", "time"],
     a: "O Moka é feito pelo time de O Cafezinho, com carinho de jornalista e precisão de engenharia. É gratuito — quem quiser apoiar, tem a doação no rodapé (PayPal e Pix)." },
 ];
@@ -68,7 +68,7 @@ const FAQ_EN: Faq[] = [
   { q: "Do I need to install anything?", tags: ["install", "download", "app"],
     a: "No. Moka works in the browser, on your phone and computer. If you want, you can install it as an app — it's free." },
   { q: "Do I need to create an account?", tags: ["account", "signup", "login", "google", "email", "password", "register"],
-    a: "It's not mandatory — but worth it: signing in with Google or email, your library (books, notes, translations and progress) is saved in the cloud and opens on any device." },
+    a: "Yes, it's free — you just need to sign in with Google or email to use Moka. And it's worth it: your library (books, notes, translations and progress) is saved in the cloud and opens on any device." },
   { q: "Who makes Moka?", tags: ["who", "cafezinho", "company", "team"],
     a: "Moka is made by the O Cafezinho team, with a journalist's care and engineering precision. It's free — if you want to support it, there's a donation button in the footer (PayPal and Pix)." },
 ];
