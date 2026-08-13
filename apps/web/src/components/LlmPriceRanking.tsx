@@ -52,8 +52,12 @@ export function LlmPriceRanking() {
     : null;
 
   return (
-    <section className="lpr">
-      <h2 className="lpr-title">{t("rank_title")}</h2>
+    <section className="lpr" id="mural-das-ias">
+      {/* 🏆 "Mural das IAs" (pedido Miguel, 13/08): nome da seção de IAs. */}
+      <h2 className="lpr-mural">
+        {lang === "en" ? "🏆 AI Wall" : lang === "es" ? "🏆 Mural de IAs" : lang === "fr" ? "🏆 Mur des IAs" : "🏆 Mural das IAs"}
+      </h2>
+      <h3 className="lpr-title">{t("rank_title")}</h3>
       <p className="lpr-sub">{t("rank_sub")}</p>
       {atualizadoEm && (
         <p className="lpr-updated">↻ {t("rank_updated") || "Preços atualizados em"} {atualizadoEm}</p>
@@ -65,6 +69,7 @@ export function LlmPriceRanking() {
             <tr>
               <th>#</th>
               <th>{t("rank_col_model")}</th>
+              <th>⏱️ {lang === "en" ? "/page" : lang === "es" ? "/pág." : lang === "fr" ? "/page" : "/página"}</th>
               <th>{t("rank_col_io")}</th>
               <th>{t("rank_col_book")}</th>
               <th>{t("rank_col_trans")}</th>
@@ -80,6 +85,7 @@ export function LlmPriceRanking() {
                   <b>{m.modelo}</b>
                   {m.nota && <span className="lpr-nota"> · {m.nota}</span>}
                 </td>
+                <td className="lpr-num lpr-vel">{m.velSeg ? `≈${m.velSeg}s` : "—"}</td>
                 <td className="lpr-num">{usdLabel(m.inUsd)} / {usdLabel(m.outUsd)}</td>
                 <td className="lpr-num lpr-hl">{usdLabel(custoResumo(m))}</td>
                 <td className="lpr-num">{usdLabel(custoTraducao(m))}</td>

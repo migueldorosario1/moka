@@ -1977,6 +1977,24 @@ export function Reader({
                 <div className="page-ai-spinner" />
                 <strong>{t("reader_translating_page")}</strong>
                 <span>{t("reader_translating_page_sub")}</span>
+                {/* Aviso de paciência + link pro Mural das IAs (pedido Miguel, 13/08). */}
+                <a className="page-ai-tip" href="/ajuda#mural-das-ias" target="_blank" rel="noreferrer">
+                  {(lang === "en"
+                    ? "Have patience — some AIs are slower than others. See our"
+                    : lang === "es"
+                      ? "Ten paciencia — algunas IAs son más lentas. Mira nuestro"
+                      : lang === "fr"
+                        ? "Soyez patient — certaines IAs sont plus lentes. Voir notre"
+                        : "Tenha paciência — algumas IAs são mais lentas que outras. Veja em nosso")}{" "}
+                  <b>{lang === "en" || lang === "es" || lang === "fr" ? "AI Wall" : "Mural das IAs"}</b>{" "}
+                  {lang === "en"
+                    ? "for the fastest, best and most affordable ones."
+                    : lang === "es"
+                      ? "cuáles son las más rápidas, mejores y económicas."
+                      : lang === "fr"
+                        ? "les plus rapides, meilleures et économiques."
+                        : "quais são as mais rápidas, melhores e econômicas."}
+                </a>
               </div>
             ) : pageTranslation?.startsWith("⚠️") ? (
               <div className="page-ai-error">

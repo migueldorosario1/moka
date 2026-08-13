@@ -4287,6 +4287,9 @@ line-height: 1.5;
 
 .lpr { margin: 22px 0 8px; }
 .lpr-title { font-family: var(--font-brand); font-size: 20px; font-weight: 600; margin: 0 0 6px; text-align: center; }
+/* Título "🏆 Mural das IAs" acima do ranking (13/08). */
+.lpr-mural { font-family: var(--font-display, var(--font-brand)); font-size: 26px; font-weight: 700; margin: 0 0 2px; text-align: center; }
+.lpr-vel { font-weight: 600; color: var(--accent); white-space: nowrap; }
 .lpr-sub { color: #66605a; font-size: 13.5px; text-align: center; max-width: 540px; margin: 0 auto 14px; line-height: 1.5; }
 .lpr-updated { text-align: center; font-size: 12px; color: #0f7680; margin: 0 0 10px; }
 .lpr-scroll { overflow-x: auto; border: 1px solid #d9c8b8; border-radius: 12px; background: #fff; }
@@ -6763,6 +6766,23 @@ font-size: 13.5px;
 max-width: 340px;
 line-height: 1.5;
 }
+/* Aviso "tenha paciência" + link pro Mural das IAs (13/08). */
+.page-ai-tip {
+display: block;
+margin-top: 14px;
+max-width: 360px;
+padding: 10px 14px;
+font-size: 13px;
+line-height: 1.5;
+color: var(--text, #1a1714);
+background: var(--surface, #fff);
+border: 1px solid var(--border-soft, #e5e0d8);
+border-radius: 12px;
+text-decoration: none;
+transition: border-color .15s, background .15s;
+}
+.page-ai-tip:hover { border-color: var(--accent); background: var(--accent-soft); }
+.page-ai-tip b { color: var(--accent); }
 .page-ai-spinner {
 width: 44px;
 height: 44px;
