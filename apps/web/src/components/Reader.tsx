@@ -17,7 +17,7 @@ import { PageActionModal } from "./PageActionModal";
 import { TranslateBookModal } from "./TranslateBookModal";
 import { translatePageStream, explainPageStream, translateStream, explainStream, translateForSpeech } from "@/lib/ai-client";
 import { blocksToText, paginateBlocks } from "@/lib/paginate";
-import { copyDiagnostics, installGlobalErrorCapture, setDiagContext, buildMailtoLink, getSuggestedCauses } from "@/lib/diagnostics";
+import { copyDiagnostics, installGlobalErrorCapture, setDiagContext, buildMailtoLink, buildReport, getLastError, getSuggestedCauses } from "@/lib/diagnostics";
 
 interface ReaderProps {
   book: ParsedBook;
@@ -377,6 +377,41 @@ export function Reader({
     if (ok) {
       setDiagCopied(true);
       setTimeout(() => setDiagCopied(false), 2500);
+    }
+  };
+
+  // Envio automático do diagnóstico pro suporte (pedido Miguel, 13/08):
+  // o app manda o relatório pro info@ (via /api/report-error) + resposta
+  // automática pro e-mail do usuário. Cai pro mailto se a rota falhar.
+  const [diagSending, setDiagSending] = useState(false);
+  const [diagSent, setDiagSent] = useState(false);
+  const handleSendDiag = async () => {
+    if (diagSending || diagSent) return;
+    setDiagSending(true);
+    try {
+      const e = getLastError();
+      const res = await fetch("/api/report-error", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          report: buildReport(),
+          userEmail: auth?.user?.email ?? "",
+          userName: auth?.user?.user_metadata?.full_name ?? "",
+          lang: getTargetLang(),
+          kind: e?.kind ?? "erro",
+          bookTitle: e?.bookTitle ?? book.title,
+        }),
+      });
+      const data = (await res.json()) as { ok?: boolean };
+      if (res.ok && data.ok) {
+        setDiagSent(true);
+      } else {
+        window.location.href = buildMailtoLink(); // fallback: abre o e-mail
+      }
+    } catch {
+      window.location.href = buildMailtoLink(); // fallback: abre o e-mail
+    } finally {
+      setDiagSending(false);
     }
   };
 
@@ -1905,13 +1940,19 @@ export function Reader({
 
                 {/* Ações: ENVIAR (mailto, sem servidor) + COPIAR. */}
                 <div className="diag-actions">
-                  <a
-                    href={buildMailtoLink()}
+                  <button
+                    type="button"
+                    onClick={handleSendDiag}
+                    disabled={diagSending || diagSent}
                     className="diag-copy-btn diag-send-btn"
-                    title="Abre seu app de e-mail com o diagnóstico pronto pro suporte (info@mokareader.com) — é só confirmar o envio"
+                    title="Envia o diagnóstico pro suporte (info@mokareader.com) — você recebe uma confirmação por e-mail"
                   >
-                    📤 Enviar diagnóstico
-                  </a>
+                    {diagSent
+                      ? "✅ Enviado! Respondemos em até 24h"
+                      : diagSending
+                        ? "⏳ Enviando…"
+                        : "📤 Enviar diagnóstico"}
+                  </button>
                   <button
                     type="button"
                     onClick={handleCopyDiag}
