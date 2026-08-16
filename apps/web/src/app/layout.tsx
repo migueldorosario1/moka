@@ -30,6 +30,9 @@ const fontUI = Figtree({
 });
 
 export const metadata: Metadata = {
+  // Base p/ URLs de metadados (canonical, og) — o canônico do site é o www
+  // (o apex faz 301). Sem isto o Next não resolve URLs relativas de metadata.
+  metadataBase: new URL("https://www.mokareader.com"),
   title: "Moka — Leia qualquer coisa. Entenda tudo.",
   description:
     "Leitor inteligente de livros e documentos com IA integrada: traduza e explique qualquer trecho, em qualquer língua.",

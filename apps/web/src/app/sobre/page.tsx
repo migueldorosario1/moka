@@ -6,6 +6,7 @@ import { SiteFooter } from "@/components/SiteFooter";
 export const metadata: Metadata = {
   title: "Quem Somos — Moka",
   description: "Conheça o Moka e o Cafezinho Media Group.",
+  alternates: { canonical: "/sobre" },
 };
 
 /**

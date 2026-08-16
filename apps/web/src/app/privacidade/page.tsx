@@ -3,6 +3,7 @@ import { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Política de Privacidade — Moka",
   description: "Como o Moka trata seus dados.",
+  alternates: { canonical: "/privacidade" },
 };
 
 /**
