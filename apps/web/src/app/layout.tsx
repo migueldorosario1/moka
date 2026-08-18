@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Fraunces, Literata, Figtree } from "next/font/google";
 import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { I18nProvider } from "@/components/I18nProvider";
 
 /*
@@ -105,6 +106,7 @@ export default function RootLayout({
             } catch (e) {}
           `,
         }} />
+        <GoogleAnalytics />
       </head>
       <body>
         <I18nProvider>
