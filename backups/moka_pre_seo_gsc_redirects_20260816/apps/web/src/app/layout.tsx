@@ -1,0 +1,114 @@
+import type { Metadata, Viewport } from "next";
+import { Fraunces, Literata, Figtree } from "next/font/google";
+import "./globals.css";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { I18nProvider } from "@/components/I18nProvider";
+
+/*
+ * Tipografia do Moka — três vozes, um só clima:
+ *  - Fraunces  → display (marca, títulos). Serifada "soft", com o calor
+ *                de letreiro de cafeteria antiga. É a personalidade do app.
+ *  - Literata  → leitura (corpo dos livros, respostas da IA). Desenhada
+ *                especificamente pra leitura longa em tela.
+ *  - Figtree   → interface (botões, labels, menus). Sans humanista,
+ *                discreta — a IA e o chrome ficam invisíveis.
+ */
+const fontDisplay = Fraunces({
+  subsets: ["latin"],
+  variable: "--font-display",
+  display: "swap",
+});
+const fontReading = Literata({
+  subsets: ["latin"],
+  variable: "--font-reading",
+  display: "swap",
+});
+const fontUI = Figtree({
+  subsets: ["latin"],
+  variable: "--font-ui",
+  display: "swap",
+});
+
+export const metadata: Metadata = {
+  title: "Moka — Leia qualquer coisa. Entenda tudo.",
+  description:
+    "Leitor inteligente de livros e documentos com IA integrada: traduza e explique qualquer trecho, em qualquer língua.",
+  applicationName: "Moka",
+  manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "Moka",
+  },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180" }],
+  },
+  formatDetection: {
+    telephone: false,
+  },
+};
+
+// Viewport separado (Next 14 exige fora de metadata). maximum-scale pra
+// evitar zoom acidental ao tocar nos botões do leitor no iPad.
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+  themeColor: "#a35d2f",
+};
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html
+      lang="pt-BR"
+      className={`${fontDisplay.variable} ${fontReading.variable} ${fontUI.variable}`}
+    >
+      <head>
+        {/* CSS CRÍTICO — elimina o flash de layout (FOUC). Antes, as cores
+            inline aqui eram do tema antigo "café" (#faf8f5/#2b2015) e não
+            batiam com o tema "azul" real do globals.css, causando um flash
+            visível em TODAS as páginas (mais forte em dark mode). Estas
+            cores idênticas às de globals.css são aplicadas imediatamente,
+            antes do resto do CSS parsear, e respeitam light/dark via media
+            query — sem flash. */}
+        <style dangerouslySetInnerHTML={{
+          __html: `
+            html, body { background: #f0f4f9; color: #0f172a; }
+            @media (prefers-color-scheme: dark) {
+              html:not([data-theme]), body { background: #0b132b; color: #f1f5f9; }
+            }
+            html[data-theme="dark"], html[data-theme="dark"] body { background: #0a0a0c; color: #f5f5f7; }
+            html[data-theme="contrast"], html[data-theme="contrast"] body { background: #000; color: #fff; }
+            html[data-theme="sepia"], html[data-theme="sepia"] body { background: #f4ecd8; color: #3d2b1f; }
+          `,
+        }} />
+        {/* Aplica tema + escala de fonte salvos ANTES do paint (evita flash
+            de tema errado na primeira renderização). Acessibilidade 09/08. */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            try {
+              var t = localStorage.getItem('moka.theme');
+              if (t && t !== 'light') document.documentElement.setAttribute('data-theme', t);
+              var fs = localStorage.getItem('moka.uiFontScale');
+              if (fs) document.documentElement.style.setProperty('--ui-font-scale', fs);
+            } catch (e) {}
+          `,
+        }} />
+      </head>
+      <body>
+        <I18nProvider>
+          {children}
+        </I18nProvider>
+        <ServiceWorkerRegister />
+      </body>
+    </html>
+  );
+}

@@ -20,6 +20,8 @@ import { useI18n } from "@/components/I18nProvider";
 interface Faq { q: string; a: string; tags: string[] }
 
 const FAQ_PT: Faq[] = [
+  { q: "O Moka tem paywall ou cobrança?", tags: ["paywall", "cobrança", "pagar", "assinatura", "grátis", "gratuito", "cadastro", "conta", "login"],
+    a: "Não. O Moka Reader é 100% gratuito: sem paywall, sem assinatura e sem compra dentro do app. E sem cadastro obrigatório — você abre o site e usa tudo na hora, sem nem criar conta (a conta é opcional e serve só pra sincronizar sua biblioteca entre aparelhos). A única coisa que vem de fora é a chave de IA: você conecta a sua, do provedor que quiser, e paga o provedor diretamente pelo que usar — o Moka nunca cobra nada." },
   { q: "O que é o Moka?", tags: ["moka", "que", "é", "app", "aplicativo"],
     a: "O Moka é um leitor com inteligência artificial: ele resume vídeos do YouTube e livros (EPUB/PDF) em minutos, traduz, explica, identifica personagens e responde perguntas sobre o conteúdo — no seu idioma. E é GRATUITO." },
   { q: "O Moka é grátis mesmo?", tags: ["grátis", "gratuito", "preço", "custa", "valor", "quanto", "pontos", "ponto", "créditos", "saldo"],
@@ -41,12 +43,14 @@ const FAQ_PT: Faq[] = [
   { q: "Preciso instalar alguma coisa?", tags: ["instalar", "baixar", "download", "app"],
     a: "Não. O Moka funciona no navegador, no celular e no computador. Se quiser, dá pra instalar como aplicativo — é grátis." },
   { q: "Preciso criar conta?", tags: ["conta", "cadastro", "login", "google", "email", "senha", "registrar"],
-    a: "Sim, é de graça — você só precisa entrar com Google ou e-mail pra usar o Moka. E vale a pena: sua biblioteca (livros, anotações, traduções e progresso) fica guardada na nuvem e abre em qualquer aparelho." },
+    a: "Não. O Moka funciona sem cadastro: abra o site e use na hora, sem entrar com nada. A conta (Google ou e-mail) é opcional e gratuita — com ela, sua biblioteca (livros, anotações, traduções e progresso) fica guardada na nuvem e abre em qualquer aparelho." },
   { q: "Quem faz o Moka?", tags: ["quem", "cafezinho", "empresa", "time"],
     a: "O Moka é feito pelo time de O Cafezinho, com carinho de jornalista e precisão de engenharia. É gratuito — quem quiser apoiar, tem a doação no rodapé (PayPal e Pix)." },
 ];
 
 const FAQ_EN: Faq[] = [
+  { q: "Does Moka have a paywall or any charge?", tags: ["paywall", "charge", "payment", "subscription", "free", "account", "login", "signup"],
+    a: "No. Moka Reader is 100% free: no paywall, no subscription and no in-app purchase. And no mandatory sign-up — you open the site and use everything right away, without creating an account (an account is optional and only syncs your library across devices). The only thing that comes from outside is the AI key: you connect your own, from whichever provider you choose, and pay the provider directly for what you use — Moka never charges anything." },
   { q: "What is Moka?", tags: ["moka", "what", "is", "app"],
     a: "Moka is a reader with artificial intelligence: it summarizes YouTube videos and books (EPUB/PDF) in minutes, translates, explains, identifies characters and answers questions about the content — in your language. And it's FREE." },
   { q: "Is Moka really free?", tags: ["free", "price", "cost", "how much", "credits", "points"],
@@ -68,7 +72,7 @@ const FAQ_EN: Faq[] = [
   { q: "Do I need to install anything?", tags: ["install", "download", "app"],
     a: "No. Moka works in the browser, on your phone and computer. If you want, you can install it as an app — it's free." },
   { q: "Do I need to create an account?", tags: ["account", "signup", "login", "google", "email", "password", "register"],
-    a: "Yes, it's free — you just need to sign in with Google or email to use Moka. And it's worth it: your library (books, notes, translations and progress) is saved in the cloud and opens on any device." },
+    a: "No. Moka works without any account: open the site and use it right away, without signing in. An account (Google or email) is optional and free — with it, your library (books, notes, translations and progress) is saved in the cloud and opens on any device." },
   { q: "Who makes Moka?", tags: ["who", "cafezinho", "company", "team"],
     a: "Moka is made by the O Cafezinho team, with a journalist's care and engineering precision. It's free — if you want to support it, there's a donation button in the footer (PayPal and Pix)." },
 ];

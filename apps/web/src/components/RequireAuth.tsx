@@ -6,7 +6,12 @@ import { AuthModal } from "./AuthModal";
 import { getUILang } from "@/lib/i18n";
 
 /**
- * RequireAuth — exige LOGIN pra usar o app (decisão do Miguel, 13/08/2026):
+ * ⚠️ OBSOLETO — NÃO USAR (decisão do Miguel, 19/08/2026, pós-rejeição do Google
+ * Play por 'paywall'): o app funciona SEM cadastro — login é opcional (sync
+ * nuvem). O wrapper foi removido de /estante e /book/[id]. O componente fica
+ * aqui só como referência/rollback — não reimportar sem ordem do Miguel.
+ *
+ * (antiga decisão 13/08/2026: exigir login pra usar o app):
  *   "a gente só pode permitir que usuários logados utilizem o aplicativo.
  *    até para a gente ter os dados necessários para melhorar ele."
  *   "bota um aviso: o Moka é gratuito, mas você precisa estar logado p/ usar."
