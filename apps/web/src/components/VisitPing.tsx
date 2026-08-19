@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 
 /**
- * Ping de VISITA do Painel de Sócios — 1x por dia por aparelho.
+ * Ping de VISITA (métricas do site) — 1x por dia por aparelho.
  *
  * Fica na home do app: cada visitante (logado ou não) conta UMA visita
  * por dia. O hash do aparelho é aleatório e anônimo (guardado no

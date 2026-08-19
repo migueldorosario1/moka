@@ -91,9 +91,6 @@ export default function SobrePage() {
         </p>
 
         <p className="info-footer">
-          {/* 🤝 Painel de Sócios — fora da 1ª fase pública (volta na fase 2).
-              Código da rota /socios preservado internamente.
-          <a href="/socios">🤝 Painel de Sócios →</a>{"  ·  "} */}
           <a href="/privacidade">Política de Privacidade →</a>
         </p>
       </article>

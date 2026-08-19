@@ -7,7 +7,7 @@ import type { MetadataRoute } from "next";
  * de marketing/entrada, todas na URL canônica https://www.mokareader.com
  * (o apex mokareader.com faz 301 para o www — variante http/apex NÃO entra
  * aqui). De fora de propósito: /premium (redirect 308 para /ajuda),
- * /socios (fora da navegação pública na fase 1) e as áreas logadas
+ * áreas logadas (a rota /socios foi removida na fase 1 — volta na fase 2)
  * (/estante, /biblioteca, /book, /configuracoes — bloqueadas no robots).
  */
 export default function sitemap(): MetadataRoute.Sitemap {
