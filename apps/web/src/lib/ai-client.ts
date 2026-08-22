@@ -2,15 +2,10 @@
  * Cliente de IA de alto nível (roda no navegador).
  *
  * Lê a config do usuário (localStorage), instancia o provider com o transport
- * proxy (fura CORS), e expõe as ações da UI: traduzir, explicar, perguntar.
+ * proxy (fura CORS), e expõe as três ações da UI: traduzir, explicar, perguntar.
  *
  * Esta é a lógica de prompt que antes morava nas API Routes — agora no cliente,
  * já que o servidor não detém mais a chave.
- *
- * TELEMETRIA (pedido do Miguel, 2026-08-22): TODA tarefa que usa a chave do
- * usuário passa por aqui e é registrada no ledger local (./telemetry) com
- * tokens consumidos + custo estimado. A telemetria é sempre passiva: NUNCA
- * trava o app — se algo falhar nela, a ação de IA segue normalmente.
  */
 
 import {
@@ -20,18 +15,10 @@ import {
   AIProviderError,
   ProxyStreamError,
   type AIConfig,
-  type CompleteOptions,
-  type UsageInfo,
 } from "@igot/ai-providers";
 import { getConfigSync, getEntryForText, getTargetLang } from "./config";
 import { captureError } from "./diagnostics";
 import { t } from "./messages";
-import {
-  recordUsage,
-  getPrefs,
-  estimateTokens,
-  estimateTaskInputTokens,
-} from "./telemetry";
 
 /** Contexto da obra relevante para as ações. */
 export interface BookContext {
@@ -45,8 +32,6 @@ export interface AIActionResult {
   ok: boolean;
   text?: string;
   error?: string;
-  /** Aviso não-fatal (ex.: tarefa interrompida pela trava de tokens). */
-  warning?: string;
 }
 
 /** Callback chamado a cada pedaço de texto que chega (pra streaming). */
@@ -75,103 +60,6 @@ function resolveProvider() {
   }
   const transport = createProxyTransport("/api/proxy");
   return { provider: getProvider(config as AIConfig, transport), config };
-}
-
-// ─── Telemetria: integração (registro + trava, sem nunca travar) ─────────
-
-/** Dados da chamada, usados no registro de consumo. */
-interface CallMeta {
-  /** Chave da tarefa no ledger (ex.: "translate", "translate-page"). */
-  task: string;
-  /** Texto enviado como turno do usuário (para estimativa de tokens). */
-  promptText: string;
-  systemPrompt?: string;
-  contextText?: string;
-}
-
-/** O que identificou a chamada (entry do cofre + nome do provedor). */
-interface CallIdentity {
-  providerId: string;
-  providerName: string;
-  model: string;
-}
-
-function identityOf(
-  provider: { name: string },
-  config: { providerId: string; model?: string },
-): CallIdentity {
-  return {
-    providerId: config.providerId,
-    providerName: provider.name,
-    model: config.model ?? "",
-  };
-}
-
-/**
- * Se a trava de consumo está ligada E a entrada estimada já estoura o
- * limite, devolve o aviso (a chamada NÃO é feita). Caso contrário, null.
- * Nunca lança.
- */
-function capBlockedMessage(meta: CallMeta): string | null {
-  try {
-    const prefs = getPrefs();
-    if (prefs.tokenCap <= 0) return null;
-    const est = estimateTaskInputTokens(
-      meta.promptText,
-      meta.systemPrompt,
-      meta.contextText,
-    );
-    if (est > prefs.tokenCap) {
-      return t(getTargetLang(), "errTokenCap", {
-        est,
-        cap: prefs.tokenCap,
-      });
-    }
-  } catch {
-    /* telemetria nunca quebra o app */
-  }
-  return null;
-}
-
-/** Entrada estimada em tokens (prompt + sistema + contexto). */
-function inputEstimate(meta: CallMeta): number {
-  try {
-    return estimateTaskInputTokens(
-      meta.promptText,
-      meta.systemPrompt,
-      meta.contextText,
-    );
-  } catch {
-    return 0;
-  }
-}
-
-/** Registra consumo de uma chamada CONCLUÍDA (com ou sem erro). */
-function recordCall(args: {
-  meta: CallMeta;
-  identity?: CallIdentity;
-  usage?: UsageInfo;
-  completionText?: string;
-  status?: "ok" | "error";
-  note?: string;
-}): void {
-  // Fire-and-forget: o fluxo do usuário não espera o banco.
-  if (!args.identity) return; // sem chave configurada → nada foi gasto
-  void recordUsage({
-    task: args.meta.task,
-    providerId: args.identity.providerId,
-    providerName: args.identity.providerName,
-    model: args.identity.model,
-    usage: args.usage,
-    promptText: [args.meta.systemPrompt, args.meta.contextText, args.meta.promptText]
-      .filter(Boolean)
-      .join("\n"),
-    completionText: args.completionText,
-    status: args.status ?? "ok",
-    note: args.note,
-  }).catch(() => {
-    /* nunca quebra */
-  });
 }
 
 /**
@@ -255,29 +143,16 @@ export async function translate(
     `Traduza o trecho fornecido para ${targetLang}. ` +
     `Respeite o tom, o estilo e o contexto da obra. ` +
     `Devolva APENAS a tradução, sem comentários, sem aspas, sem introdução.`;
-  const contextText = buildContext(ctx);
-  const meta: CallMeta = { task: "translate", promptText: text, systemPrompt, contextText };
 
-  const capMsg = capBlockedMessage(meta);
-  if (capMsg) return { ok: false, error: capMsg };
-
-  let identity: CallIdentity | undefined;
   try {
-    const { provider, config } = resolveProvider();
-    identity = identityOf(provider, config);
-    let usage: UsageInfo | undefined;
+    const { provider } = resolveProvider();
     const result = await provider.complete(text, {
       systemPrompt,
-      context: contextText,
+      context: buildContext(ctx),
       temperature: 0.3,
-      onUsage: (u) => {
-        usage = u;
-      },
     });
-    recordCall({ meta, identity, usage, completionText: result.text });
     return { ok: true, text: result.text };
   } catch (err) {
-    recordCall({ meta, identity, status: "error" });
     return { ok: false, error: toMessage(err) };
   }
 }
@@ -299,89 +174,32 @@ export async function translateStream(
     `Traduza o trecho fornecido para ${targetLang}. ` +
     `Respeite o tom, o estilo e o contexto da obra. ` +
     `Devolva APENAS a tradução, sem comentários, sem aspas, sem introdução.`;
-  const contextText = buildContext(ctx);
-  const meta: CallMeta = { task: "translate", promptText: text, systemPrompt, contextText };
 
-  const capMsg = capBlockedMessage(meta);
-  if (capMsg) return { ok: false, error: capMsg };
-
-  let identity: CallIdentity | undefined;
   try {
-    const { provider, config } = resolveProvider();
-    identity = identityOf(provider, config);
-    let usage: UsageInfo | undefined;
-    const captureUsage = (u: UsageInfo) => {
-      usage = u;
-    };
+    const { provider } = resolveProvider();
     if (!provider.stream) {
       // Sem suporte a stream — faz normal e devolve de uma vez.
       const result = await provider.complete(text, {
         systemPrompt,
-        context: contextText,
+        context: buildContext(ctx),
         temperature: 0.3,
-        onUsage: captureUsage,
       });
       onChunk(result.text, result.text);
-      recordCall({ meta, identity, usage, completionText: result.text });
       return { ok: true, text: result.text };
     }
-    const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
-      text,
+    let full = "";
+    for await (const chunk of provider.stream(text, {
       systemPrompt,
-      contextText,
+      context: buildContext(ctx),
       temperature: 0.3,
-      meta,
-      onChunk,
-      onUsage: captureUsage,
-    });
-    recordCall({ meta, identity, usage, completionText: full });
-    return {
-      ok: true,
-      text: full,
-      warning: capCut ? t(getTargetLang(), "errCapCut", { cap: getPrefs().tokenCap }) : undefined,
-    };
+    })) {
+      full += chunk;
+      onChunk(full, chunk);
+    }
+    return { ok: true, text: full };
   } catch (err) {
-    recordCall({ meta, identity, status: "error" });
     return { ok: false, error: toMessage(err) };
   }
-}
-
-/**
- * Núcleo do streaming com trava de consumo. Consome o stream do provider
- * acumulando o texto; se a trava de tokens está ligada e o consumo
- * estimado (entrada + saída até aqui) passa do limite, INTERROMPE o stream
- * e devolve o que já foi gerado — sem travar o app (pedido do Miguel).
- */
-async function runStreamWithCap(args: {
-  streamFn: (prompt: string, opts?: CompleteOptions) => AsyncIterable<string>;
-  text: string;
-  systemPrompt: string;
-  contextText?: string;
-  temperature: number;
-  meta: CallMeta;
-  onChunk: StreamCallback;
-  onUsage: (u: UsageInfo) => void;
-}): Promise<{ full: string; capCut: boolean }> {
-  const cap = getPrefs().tokenCap;
-  const estIn = inputEstimate(args.meta);
-  let full = "";
-  let capCut = false;
-  for await (const chunk of args.streamFn(args.text, {
-    systemPrompt: args.systemPrompt,
-    context: args.contextText,
-    temperature: args.temperature,
-    onUsage: args.onUsage,
-  })) {
-    full += chunk;
-    args.onChunk(full, chunk);
-    // Trava em tempo real: estoura o cap → corta o stream, preserva o texto.
-    if (cap > 0 && estIn + estimateTokens(full) > cap) {
-      capCut = true;
-      break;
-    }
-  }
-  return { full, capCut };
 }
 
 /**
@@ -410,29 +228,16 @@ export async function translatePage(
     `Separe cada parágrafo por UMA linha em branco. ` +
     `Respeite o tom, o estilo e o contexto da obra. ` +
     `Devolva APENAS a tradução, sem comentários, sem aspas, sem introdução.`;
-  const contextText = buildContext(ctx);
-  const meta: CallMeta = { task: "translate-page", promptText: text, systemPrompt, contextText };
 
-  const capMsg = capBlockedMessage(meta);
-  if (capMsg) return { ok: false, error: capMsg };
-
-  let identity: CallIdentity | undefined;
   try {
-    const { provider, config } = resolveProvider();
-    identity = identityOf(provider, config);
-    let usage: UsageInfo | undefined;
+    const { provider } = resolveProvider();
     const result = await provider.complete(text, {
       systemPrompt,
-      context: contextText,
+      context: buildContext(ctx),
       temperature: 0.3,
-      onUsage: (u) => {
-        usage = u;
-      },
     });
-    recordCall({ meta, identity, usage, completionText: result.text });
     return { ok: true, text: result.text };
   } catch (err) {
-    recordCall({ meta, identity, status: "error" });
     return { ok: false, error: toMessage(err) };
   }
 }
@@ -460,49 +265,29 @@ export async function translatePageStream(
     `Separe cada parágrafo por UMA linha em branco. ` +
     `Respeite o tom, o estilo e o contexto da obra. ` +
     `Devolva APENAS a tradução, sem comentários, sem aspas, sem introdução.`;
-  const contextText = buildContext(ctx);
-  const meta: CallMeta = { task: "translate-page", promptText: text, systemPrompt, contextText };
 
-  const capMsg = capBlockedMessage(meta);
-  if (capMsg) return { ok: false, error: capMsg };
-
-  let identity: CallIdentity | undefined;
   try {
-    const { provider, config } = resolveProvider();
-    identity = identityOf(provider, config);
-    let usage: UsageInfo | undefined;
-    const captureUsage = (u: UsageInfo) => {
-      usage = u;
-    };
+    const { provider } = resolveProvider();
     if (!provider.stream) {
       const result = await provider.complete(text, {
         systemPrompt,
-        context: contextText,
+        context: buildContext(ctx),
         temperature: 0.3,
-        onUsage: captureUsage,
       });
       onChunk(result.text, result.text);
-      recordCall({ meta, identity, usage, completionText: result.text });
       return { ok: true, text: result.text };
     }
-    const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
-      text,
+    let full = "";
+    for await (const chunk of provider.stream(text, {
       systemPrompt,
-      contextText,
+      context: buildContext(ctx),
       temperature: 0.3,
-      meta,
-      onChunk,
-      onUsage: captureUsage,
-    });
-    recordCall({ meta, identity, usage, completionText: full });
-    return {
-      ok: true,
-      text: full,
-      warning: capCut ? t(getTargetLang(), "errCapCut", { cap: getPrefs().tokenCap }) : undefined,
-    };
+    })) {
+      full += chunk;
+      onChunk(full, chunk);
+    }
+    return { ok: true, text: full };
   } catch (err) {
-    recordCall({ meta, identity, status: "error" });
     return { ok: false, error: toMessage(err, "translate-page", text.length) };
   }
 }
@@ -534,49 +319,29 @@ export async function explainPageStream(
     `Use quebras de linha para separar seções. ` +
     `NÃO use asteriscos, negrito, itálico ou markdown — só texto puro. ` +
     `Não invente — se não souber algo, diga.`;
-  const contextText = buildContext(ctx);
-  const meta: CallMeta = { task: "explain-page", promptText: text, systemPrompt, contextText };
 
-  const capMsg = capBlockedMessage(meta);
-  if (capMsg) return { ok: false, error: capMsg };
-
-  let identity: CallIdentity | undefined;
   try {
-    const { provider, config } = resolveProvider();
-    identity = identityOf(provider, config);
-    let usage: UsageInfo | undefined;
-    const captureUsage = (u: UsageInfo) => {
-      usage = u;
-    };
+    const { provider } = resolveProvider();
     if (!provider.stream) {
       const result = await provider.complete(text, {
         systemPrompt,
-        context: contextText,
+        context: buildContext(ctx),
         temperature: 0.4,
-        onUsage: captureUsage,
       });
       onChunk(result.text, result.text);
-      recordCall({ meta, identity, usage, completionText: result.text });
       return { ok: true, text: result.text };
     }
-    const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
-      text,
+    let full = "";
+    for await (const chunk of provider.stream(text, {
       systemPrompt,
-      contextText,
+      context: buildContext(ctx),
       temperature: 0.4,
-      meta,
-      onChunk,
-      onUsage: captureUsage,
-    });
-    recordCall({ meta, identity, usage, completionText: full });
-    return {
-      ok: true,
-      text: full,
-      warning: capCut ? t(getTargetLang(), "errCapCut", { cap: getPrefs().tokenCap }) : undefined,
-    };
+    })) {
+      full += chunk;
+      onChunk(full, chunk);
+    }
+    return { ok: true, text: full };
   } catch (err) {
-    recordCall({ meta, identity, status: "error" });
     return { ok: false, error: toMessage(err, "explain-page", text.length) };
   }
 }
@@ -595,30 +360,19 @@ export async function explain(
     `referências culturais, e como ele se encaixa no contexto da obra. ` +
     `Seja conciso (2 a 4 parágrafos curtos). ` +
     `Não invente — se não souber algo, diga.`;
-  const contextText = buildContext(ctx);
-  const promptText = `Explique este trecho:\n\n"${text}"`;
-  const meta: CallMeta = { task: "explain", promptText, systemPrompt, contextText };
 
-  const capMsg = capBlockedMessage(meta);
-  if (capMsg) return { ok: false, error: capMsg };
-
-  let identity: CallIdentity | undefined;
   try {
-    const { provider, config } = resolveProvider();
-    identity = identityOf(provider, config);
-    let usage: UsageInfo | undefined;
-    const result = await provider.complete(promptText, {
-      systemPrompt,
-      context: contextText,
-      temperature: 0.4,
-      onUsage: (u) => {
-        usage = u;
+    const { provider } = resolveProvider();
+    const result = await provider.complete(
+      `Explique este trecho:\n\n"${text}"`,
+      {
+        systemPrompt,
+        context: buildContext(ctx),
+        temperature: 0.4,
       },
-    });
-    recordCall({ meta, identity, usage, completionText: result.text });
+    );
     return { ok: true, text: result.text };
   } catch (err) {
-    recordCall({ meta, identity, status: "error" });
     return { ok: false, error: toMessage(err) };
   }
 }
@@ -638,50 +392,29 @@ export async function explainStream(
     `referências culturais, e como ele se encaixa no contexto da obra. ` +
     `Seja conciso (2 a 4 parágrafos curtos). ` +
     `Não invente — se não souber algo, diga.`;
-  const contextText = buildContext(ctx);
-  const promptText = `Explique este trecho:\n\n"${text}"`;
-  const meta: CallMeta = { task: "explain", promptText, systemPrompt, contextText };
 
-  const capMsg = capBlockedMessage(meta);
-  if (capMsg) return { ok: false, error: capMsg };
-
-  let identity: CallIdentity | undefined;
   try {
-    const { provider, config } = resolveProvider();
-    identity = identityOf(provider, config);
-    let usage: UsageInfo | undefined;
-    const captureUsage = (u: UsageInfo) => {
-      usage = u;
-    };
+    const { provider } = resolveProvider();
     if (!provider.stream) {
-      const result = await provider.complete(promptText, {
+      const result = await provider.complete(`Explique este trecho:\n\n"${text}"`, {
         systemPrompt,
-        context: contextText,
+        context: buildContext(ctx),
         temperature: 0.4,
-        onUsage: captureUsage,
       });
       onChunk(result.text, result.text);
-      recordCall({ meta, identity, usage, completionText: result.text });
       return { ok: true, text: result.text };
     }
-    const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
-      text: promptText,
+    let full = "";
+    for await (const chunk of provider.stream(`Explique este trecho:\n\n"${text}"`, {
       systemPrompt,
-      contextText,
+      context: buildContext(ctx),
       temperature: 0.4,
-      meta,
-      onChunk,
-      onUsage: captureUsage,
-    });
-    recordCall({ meta, identity, usage, completionText: full });
-    return {
-      ok: true,
-      text: full,
-      warning: capCut ? t(getTargetLang(), "errCapCut", { cap: getPrefs().tokenCap }) : undefined,
-    };
+    })) {
+      full += chunk;
+      onChunk(full, chunk);
+    }
+    return { ok: true, text: full };
   } catch (err) {
-    recordCall({ meta, identity, status: "error" });
     return { ok: false, error: toMessage(err) };
   }
 }
@@ -705,29 +438,16 @@ export async function translateForSpeech(
     `A tradução será LIDA EM VOZ ALTA: prefira frases fluídas e naturais ` +
     `ao ouvido, mantendo o sentido e o tom da obra. ` +
     `Devolva APENAS a tradução, sem comentários, sem aspas, sem introdução.`;
-  const contextText = buildContext(ctx);
-  const meta: CallMeta = { task: "translate-speech", promptText: text, systemPrompt, contextText };
 
-  const capMsg = capBlockedMessage(meta);
-  if (capMsg) return { ok: false, error: capMsg };
-
-  let identity: CallIdentity | undefined;
   try {
-    const { provider, config } = resolveProvider();
-    identity = identityOf(provider, config);
-    let usage: UsageInfo | undefined;
+    const { provider } = resolveProvider();
     const result = await provider.complete(text, {
       systemPrompt,
-      context: contextText,
+      context: buildContext(ctx),
       temperature: 0.3,
-      onUsage: (u) => {
-        usage = u;
-      },
     });
-    recordCall({ meta, identity, usage, completionText: result.text });
     return { ok: true, text: result.text };
   } catch (err) {
-    recordCall({ meta, identity, status: "error" });
     return { ok: false, error: toMessage(err) };
   }
 }
@@ -744,29 +464,16 @@ export async function ask(
     `Responda em ${targetLang}, de forma útil e honesta. ` +
     `Se não souber algo por falta de contexto do texto, diga — não invente. ` +
     `(Em breve: respostas fundamentadas no texto da obra.)`;
-  const contextText = buildContext(ctx);
-  const meta: CallMeta = { task: "ask", promptText: question, systemPrompt, contextText };
 
-  const capMsg = capBlockedMessage(meta);
-  if (capMsg) return { ok: false, error: capMsg };
-
-  let identity: CallIdentity | undefined;
   try {
-    const { provider, config } = resolveProvider();
-    identity = identityOf(provider, config);
-    let usage: UsageInfo | undefined;
+    const { provider } = resolveProvider();
     const result = await provider.complete(question, {
       systemPrompt,
-      context: contextText,
+      context: buildContext(ctx),
       temperature: 0.4,
-      onUsage: (u) => {
-        usage = u;
-      },
     });
-    recordCall({ meta, identity, usage, completionText: result.text });
     return { ok: true, text: result.text };
   } catch (err) {
-    recordCall({ meta, identity, status: "error" });
     return { ok: false, error: toMessage(err) };
   }
 }
@@ -790,49 +497,29 @@ export async function askStream(
     `saber mais sobre um capítulo ou passagem. ` +
     `Se não souber algo por falta de contexto do texto, diga — não invente. ` +
     `Use texto puro, sem markdown.`;
-  const contextText = buildContext(ctx);
-  const meta: CallMeta = { task: "ask", promptText: question, systemPrompt, contextText };
 
-  const capMsg = capBlockedMessage(meta);
-  if (capMsg) return { ok: false, error: capMsg };
-
-  let identity: CallIdentity | undefined;
   try {
-    const { provider, config } = resolveProvider();
-    identity = identityOf(provider, config);
-    let usage: UsageInfo | undefined;
-    const captureUsage = (u: UsageInfo) => {
-      usage = u;
-    };
+    const { provider } = resolveProvider();
     if (!provider.stream) {
       const result = await provider.complete(question, {
         systemPrompt,
-        context: contextText,
+        context: buildContext(ctx),
         temperature: 0.4,
-        onUsage: captureUsage,
       });
       onChunk(result.text, result.text);
-      recordCall({ meta, identity, usage, completionText: result.text });
       return { ok: true, text: result.text };
     }
-    const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
-      text: question,
+    let full = "";
+    for await (const chunk of provider.stream(question, {
       systemPrompt,
-      contextText,
+      context: buildContext(ctx),
       temperature: 0.4,
-      meta,
-      onChunk,
-      onUsage: captureUsage,
-    });
-    recordCall({ meta, identity, usage, completionText: full });
-    return {
-      ok: true,
-      text: full,
-      warning: capCut ? t(getTargetLang(), "errCapCut", { cap: getPrefs().tokenCap }) : undefined,
-    };
+    })) {
+      full += chunk;
+      onChunk(full, chunk);
+    }
+    return { ok: true, text: full };
   } catch (err) {
-    recordCall({ meta, identity, status: "error" });
     return { ok: false, error: toMessage(err) };
   }
 }
@@ -871,54 +558,29 @@ export async function summarizeStream(
         `argumento central, personagens/ideias principais e tom geral. ` +
         `Se a amostra for claramente parcial, diga isso numa frase final honesta. ` +
         `Texto puro, sem markdown. Não invente fatos que não estejam na amostra.`;
-  const contextText = buildContext(ctx);
-  const meta: CallMeta = {
-    task: scope === "page" ? "summarize-page" : "summarize-book",
-    promptText: text,
-    systemPrompt,
-    contextText,
-  };
 
-  const capMsg = capBlockedMessage(meta);
-  if (capMsg) return { ok: false, error: capMsg };
-
-  let identity: CallIdentity | undefined;
   try {
-    const { provider, config } = resolveProvider();
-    identity = identityOf(provider, config);
-    let usage: UsageInfo | undefined;
-    const captureUsage = (u: UsageInfo) => {
-      usage = u;
-    };
+    const { provider } = resolveProvider();
     if (!provider.stream) {
       const result = await provider.complete(text, {
         systemPrompt,
-        context: contextText,
+        context: buildContext(ctx),
         temperature: 0.4,
-        onUsage: captureUsage,
       });
       onChunk(result.text, result.text);
-      recordCall({ meta, identity, usage, completionText: result.text });
       return { ok: true, text: result.text };
     }
-    const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
-      text,
+    let full = "";
+    for await (const chunk of provider.stream(text, {
       systemPrompt,
-      contextText,
+      context: buildContext(ctx),
       temperature: 0.4,
-      meta,
-      onChunk,
-      onUsage: captureUsage,
-    });
-    recordCall({ meta, identity, usage, completionText: full });
-    return {
-      ok: true,
-      text: full,
-      warning: capCut ? t(getTargetLang(), "errCapCut", { cap: getPrefs().tokenCap }) : undefined,
-    };
+    })) {
+      full += chunk;
+      onChunk(full, chunk);
+    }
+    return { ok: true, text: full };
   } catch (err) {
-    recordCall({ meta, identity, status: "error" });
     return { ok: false, error: toMessage(err) };
   }
 }
@@ -926,34 +588,24 @@ export async function summarizeStream(
 /**
  * Teste de conexão: faz uma chamada mínima ao provider escolhido.
  * Usado pela tela de Configurações pra validar chave + provedor.
- * Também é registrado na telemetria (consome tokens, ainda que poucos).
  */
 export async function testConnection(
   config: AIConfig,
 ): Promise<{ ok: boolean; message: string }> {
-  const meta: CallMeta = { task: "test", promptText: "Diga apenas: OK" };
-  let identity: CallIdentity | undefined;
   try {
     const transport = createProxyTransport("/api/proxy");
     const provider = getProvider(config, transport);
-    identity = identityOf(provider, config);
-    let usage: UsageInfo | undefined;
     const result = await provider.complete("Diga apenas: OK", {
       temperature: 0,
       // 300 tokens: modelos de raciocínio (Grok 4, gpt-5.5, o-series) consomem
       // muitos reasoning_tokens antes de responder — 100 não sobrava pro "OK".
       maxTokens: 300,
-      onUsage: (u) => {
-        usage = u;
-      },
     });
-    recordCall({ meta, identity, usage, completionText: result.text });
     return {
       ok: true,
       message: `Conexão bem-sucedida. Resposta: "${result.text.slice(0, 40)}"`,
     };
   } catch (err) {
-    recordCall({ meta, identity, status: "error" });
     return { ok: false, message: toMessage(err) };
   }
 }
@@ -1018,50 +670,5 @@ export async function listModels(
     return { ok: true, models };
   } catch (err) {
     return { ok: false, error: toMessage(err) };
-  }
-}
-
-/** Resultado da consulta de saldo/crédito do provedor. */
-export interface BalanceResult {
-  ok: boolean;
-  /** Valor do saldo em USD — quando o provedor expõe via API. */
-  balanceUsd?: number;
-  /** O provedor NÃO expõe saldo via API (a maioria). */
-  unsupported?: boolean;
-  /** Link do painel de consumo do provedor (fallback universal). */
-  usageUrl?: string;
-  error?: string;
-}
-
-/**
- * Consulta quanto crédito resta na API do usuário (pedido do Miguel,
- * 2026-08-22) — "caso o LLM permita". Pouquíssimos provedores expõem saldo
- * via API; nos demais, devolvemos o link do painel oficial (usageUrl).
- * Nunca lança: qualquer falha vira resultado com `ok: false`.
- */
-export async function checkBalance(config: AIConfig): Promise<BalanceResult> {
-  const preset = getPreset(config.providerId);
-  const usageUrl = preset?.usageUrl;
-  try {
-    // DeepSeek: GET {baseUrl}/dashboard/balance → { data: { balance } } (USD).
-    if (config.providerId === "deepseek") {
-      const baseUrl = (config.baseUrl ?? preset?.baseUrl ?? "").replace(/\/$/, "");
-      const transport = createProxyTransport("/api/proxy");
-      const { status, body } = await transport.request(`${baseUrl}/dashboard/balance`, {
-        method: "GET",
-        headers: { Authorization: `Bearer ${config.apiKey}` },
-        body: "",
-      });
-      if (status >= 400) return { ok: false, error: `HTTP ${status}`, usageUrl };
-      const data = body as { data?: { balance?: number } };
-      const balance = data?.data?.balance;
-      if (typeof balance === "number") return { ok: true, balanceUsd: balance, usageUrl };
-      return { ok: false, unsupported: true, usageUrl };
-    }
-
-    // Demais provedores: sem endpoint público de saldo → painel do provedor.
-    return { ok: false, unsupported: true, usageUrl };
-  } catch (err) {
-    return { ok: false, error: toMessage(err, "balance"), usageUrl };
   }
 }

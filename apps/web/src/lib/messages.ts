@@ -19,9 +19,7 @@ export type MessageKey =
   | "errTimeout"
   | "errModelNotFound"
   | "errNoConfig"
-  | "errNoText"
-  | "errTokenCap"
-  | "errCapCut";
+  | "errNoText";
 
 type Messages = Record<MessageKey, string>;
 
@@ -39,10 +37,6 @@ const STRINGS: Record<string, Messages> = {
     errNoConfig: "IA não configurada. Abra Configurações (⚙️) e escolha um provedor.",
     errNoText: "Página sem texto para traduzir.",
     errModelNotFound: "Modelo não encontrado. Verifique o nome do modelo nas Configurações (⚙️) — pode estar incorreto ou desatualizado.",
-    errTokenCap:
-      "Trava de consumo ativada: esta tarefa usaria cerca de {est} tokens, acima do seu limite de {cap} por tarefa. Nada foi enviado à IA. Ajuste a trava nas Configurações (⚙️) se quiser liberar.",
-    errCapCut:
-      "A tarefa passou da sua trava de {cap} tokens e foi interrompida para economizar seu crédito. O texto gerado até aqui foi preservado. Ajuste a trava nas Configurações (⚙️) se quiser respostas completas.",
   },
   en: {
     errAuth:
@@ -57,10 +51,6 @@ const STRINGS: Record<string, Messages> = {
     errNoConfig: "AI not configured. Open Settings (⚙️) and choose a provider.",
     errNoText: "Page has no text to translate.",
     errModelNotFound: "Modelo não encontrado. Verifique o nome do modelo nas Configurações (⚙️) — pode estar incorreto ou desatualizado.",
-    errTokenCap:
-      "Token cap enabled: this task would use about {est} tokens, above your per-task limit of {cap}. Nothing was sent to the AI. Adjust the cap in Settings (⚙️) to allow it.",
-    errCapCut:
-      "The task went over your {cap}-token cap and was stopped to save your credit. The text generated so far was kept. Adjust the cap in Settings (⚙️) if you want full answers.",
   },
   es: {
     errAuth:
@@ -75,10 +65,6 @@ const STRINGS: Record<string, Messages> = {
     errNoConfig: "IA no configurada. Abre Configuración (⚙️) y elige un proveedor.",
     errNoText: "La página no tiene texto para traducir.",
     errModelNotFound: "Modelo não encontrado. Verifique o nome do modelo nas Configurações (⚙️) — pode estar incorreto ou desatualizado.",
-    errTokenCap:
-      "Límite de tokens activado: esta tarea usaría unos {est} tokens, por encima de tu límite de {cap} por tarea. No se envió nada a la IA. Ajusta el límite en Configuración (⚙️) para permitirlo.",
-    errCapCut:
-      "La tarea superó tu límite de {cap} tokens y se detuvo para ahorrar tu crédito. El texto generado hasta aquí se conservó. Ajusta el límite en Configuración (⚙️) si quieres respuestas completas.",
   },
   fr: {
     errAuth:
@@ -93,10 +79,6 @@ const STRINGS: Record<string, Messages> = {
     errNoConfig: "IA non configurée. Ouvrez les Paramètres (⚙️) et choisissez un fournisseur.",
     errNoText: "La page n'a pas de texte à traduire.",
     errModelNotFound: "Modelo não encontrado. Verifique o nome do modelo nas Configurações (⚙️) — pode estar incorreto ou desatualizado.",
-    errTokenCap:
-      "Limite de tokens activé : cette tâche utiliserait environ {est} tokens, au-dessus de votre limite de {cap} par tâche. Rien n'a été envoyé à l'IA. Réglez la limite dans les Paramètres (⚙️) pour l'autoriser.",
-    errCapCut:
-      "La tâche a dépassé votre limite de {cap} tokens et a été interrompue pour économiser votre crédit. Le texte généré jusqu'ici est conservé. Réglez la limite dans les Paramètres (⚙️) pour des réponses complètes.",
   },
   zh: {
     errAuth: "API 密钥无效或权限不足。打开设置 (⚙️) 并检查您的密钥。",
@@ -109,10 +91,6 @@ const STRINGS: Record<string, Messages> = {
     errNoConfig: "AI 未配置。打开设置 (⚙️) 并选择一个提供商。",
     errNoText: "页面没有可翻译的文本。",
     errModelNotFound: "Modelo não encontrado. Verifique o nome do modelo nas Configurações (⚙️) — pode estar incorreto ou desatualizado.",
-    errTokenCap:
-      "已启用 token 上限：此任务约需 {est} 个 token，超过您设定的单任务上限 {cap}。尚未向 AI 发送任何内容。请在设置 (⚙️) 中调整上限以放行。",
-    errCapCut:
-      "该任务超过了您设定的 {cap} 个 token 上限，为节省额度已停止。已生成的文本已保留。如需完整回答，请在设置 (⚙️) 中调整上限。",
   },
   ru: {
     errAuth:
@@ -127,10 +105,6 @@ const STRINGS: Record<string, Messages> = {
     errNoConfig: "ИА не настроена. Откройте Настройки (⚙️) и выберите провайдера.",
     errNoText: "На странице нет текста для перевода.",
     errModelNotFound: "Modelo não encontrado. Verifique o nome do modelo nas Configurações (⚙️) — pode estar incorreto ou desatualizado.",
-    errTokenCap:
-      "Включён лимит токенов: эта задача потребует около {est} токенов — больше вашего лимита {cap} на задачу. В ИИ ничего не отправлено. Измените лимит в Настройках (⚙️), чтобы разрешить.",
-    errCapCut:
-      "Задача превысила ваш лимит в {cap} токенов и была остановлена, чтобы сэкономить кредит. Уже созданный текст сохранён. Измените лимит в Настройках (⚙️) для полных ответов.",
   },
   de: {
     errAuth:
@@ -145,10 +119,6 @@ const STRINGS: Record<string, Messages> = {
     errNoConfig: "KI nicht konfiguriert. Öffnen Sie die Einstellungen (⚙️) und wählen Sie einen Anbieter.",
     errNoText: "Seite hat keinen Text zum Übersetzen.",
     errModelNotFound: "Modelo não encontrado. Verifique o nome do modelo nas Configurações (⚙️) — pode estar incorreto ou desatualizado.",
-    errTokenCap:
-      "Token-Limit aktiv: Diese Aufgabe würde etwa {est} Tokens verbrauchen, mehr als Ihr Limit von {cap} pro Aufgabe. Es wurde nichts an die KI gesendet. Passen Sie das Limit in den Einstellungen (⚙️) an.",
-    errCapCut:
-      "Die Aufgabe hat Ihr Limit von {cap} Tokens überschritten und wurde gestoppt, um Ihr Guthaben zu schonen. Der bisher erzeugte Text wurde behalten. Passen Sie das Limit in den Einstellungen (⚙️) an.",
   },
   ja: {
     errAuth: "APIキーが無効か権限がありません。設定 (⚙️) を開いてキーを確認してください。",
@@ -162,10 +132,6 @@ const STRINGS: Record<string, Messages> = {
     errNoConfig: "AIが設定されていません。設定 (⚙️) を開いてプロバイダーを選択してください。",
     errNoText: "ページに翻訳するテキストがありません。",
     errModelNotFound: "Modelo não encontrado. Verifique o nome do modelo nas Configurações (⚙️) — pode estar incorreto ou desatualizado.",
-    errTokenCap:
-      "トークン上限が有効です：このタスクは約 {est} トークンを使用し、タスクあたりの上限 {cap} を超えます。AI には何も送信されませんでした。許可するには設定 (⚙️) で上限を調整してください。",
-    errCapCut:
-      "タスクが {cap} トークンの上限を超えたため、クレジットを節約するために停止しました。ここまで生成されたテキストは保持されています。完全な回答が必要な場合は設定 (⚙️) で上限を調整してください。",
   },
 };
 

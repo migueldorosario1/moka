@@ -145,21 +145,16 @@ export class GeminiProvider implements AIProvider {
         .join("")
         .trim() ?? "";
 
-    const usage = data.usageMetadata
-      ? {
-          promptTokens: data.usageMetadata.promptTokenCount,
-          completionTokens: data.usageMetadata.candidatesTokenCount,
-          totalTokens: data.usageMetadata.totalTokenCount,
-        }
-      : undefined;
-    if (usage && opts.onUsage) {
-      try {
-        opts.onUsage(usage);
-      } catch {
-        /* telemetria nunca quebra o fluxo */
-      }
-    }
-    return { text, usage };
+    return {
+      text,
+      usage: data.usageMetadata
+        ? {
+            promptTokens: data.usageMetadata.promptTokenCount,
+            completionTokens: data.usageMetadata.candidatesTokenCount,
+            totalTokens: data.usageMetadata.totalTokenCount,
+          }
+        : undefined,
+    };
   }
 
   /**
@@ -207,8 +202,6 @@ export class GeminiProvider implements AIProvider {
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
-    // O Gemini informa o consumo acumulado nos chunks (o último traz o total).
-    let lastUsage: GeminiResponse["usageMetadata"] | null = null;
 
     try {
       while (true) {
@@ -225,7 +218,6 @@ export class GeminiProvider implements AIProvider {
             if (parsed.error) {
               throw new AIProviderError(parsed.error.message, this.id);
             }
-            if (parsed.usageMetadata) lastUsage = parsed.usageMetadata;
             const chunk = parsed.candidates
               ?.flatMap((c) => c.content?.parts ?? [])
               .map((p) => p.text ?? "")
@@ -237,17 +229,6 @@ export class GeminiProvider implements AIProvider {
         }
       }
     } finally {
-      if (lastUsage && opts.onUsage) {
-        try {
-          opts.onUsage({
-            promptTokens: lastUsage.promptTokenCount,
-            completionTokens: lastUsage.candidatesTokenCount,
-            totalTokens: lastUsage.totalTokenCount,
-          });
-        } catch {
-          /* telemetria nunca quebra o fluxo */
-        }
-      }
       reader.releaseLock();
     }
   }

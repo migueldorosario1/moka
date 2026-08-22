@@ -128,22 +128,18 @@ export class AnthropicProvider implements AIProvider {
         .join("")
         .trim() ?? "";
 
-    const usage = data.usage
-      ? {
-          promptTokens: data.usage.input_tokens,
-          completionTokens: data.usage.output_tokens,
-          totalTokens:
-            (data.usage.input_tokens ?? 0) + (data.usage.output_tokens ?? 0),
-        }
-      : undefined;
-    if (usage && opts.onUsage) {
-      try {
-        opts.onUsage(usage);
-      } catch {
-        /* telemetria nunca quebra o fluxo */
-      }
-    }
-    return { text, usage };
+    return {
+      text,
+      usage: data.usage
+        ? {
+            promptTokens: data.usage.input_tokens,
+            completionTokens: data.usage.output_tokens,
+            totalTokens:
+              (data.usage.input_tokens ?? 0) +
+              (data.usage.output_tokens ?? 0),
+          }
+        : undefined,
+    };
   }
 
   /**
@@ -187,10 +183,6 @@ export class AnthropicProvider implements AIProvider {
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
-    // Consumo: input_tokens chega no message_start; output_tokens vai sendo
-    // atualizado nos message_delta. No fim, entrega o total à telemetria.
-    let inputTokens = 0;
-    let outputTokens = 0;
 
     try {
       while (true) {
@@ -206,19 +198,10 @@ export class AnthropicProvider implements AIProvider {
             const parsed = JSON.parse(trimmed.slice(5).trim()) as {
               type?: string;
               delta?: { text?: string; type?: string };
-              message?: { usage?: { input_tokens?: number; output_tokens?: number } };
-              usage?: { input_tokens?: number; output_tokens?: number };
               error?: { message?: string };
             };
             if (parsed.error) {
               throw new AIProviderError(parsed.error.message ?? "erro", this.id);
-            }
-            if (parsed.type === "message_start" && parsed.message?.usage) {
-              inputTokens = parsed.message.usage.input_tokens ?? 0;
-              outputTokens = parsed.message.usage.output_tokens ?? 0;
-            }
-            if (parsed.type === "message_delta" && parsed.usage) {
-              outputTokens = parsed.usage.output_tokens ?? outputTokens;
             }
             if (parsed.type === "content_block_delta" && parsed.delta?.text) {
               yield parsed.delta.text;
@@ -229,18 +212,6 @@ export class AnthropicProvider implements AIProvider {
         }
       }
     } finally {
-      // Entrega o consumo capturado à telemetria (mesmo se o stream cortou).
-      if (opts.onUsage && (inputTokens > 0 || outputTokens > 0)) {
-        try {
-          opts.onUsage({
-            promptTokens: inputTokens,
-            completionTokens: outputTokens,
-            totalTokens: inputTokens + outputTokens,
-          });
-        } catch {
-          /* telemetria nunca quebra o fluxo */
-        }
-      }
       reader.releaseLock();
     }
   }
