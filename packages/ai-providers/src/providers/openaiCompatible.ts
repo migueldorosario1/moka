@@ -228,31 +228,19 @@ export class OpenAICompatibleProvider implements AIProvider {
       },
     };
 
-    // Pede o consumo de tokens no ÚLTIMO chunk (padrão OpenAI). Assim a
-    // telemetria registra o gasto real mesmo no streaming. Se o provedor
-    // REJEITAR o campo (400), tenta de novo sem ele — o streaming não pode
-    // quebrar por causa da telemetria.
-    let res: Response;
-    try {
-      res = await this.transport.stream(`${this.baseUrl}/chat/completions`, {
-        ...streamInit,
-        body: JSON.stringify({
-          ...baseBody,
-          stream_options: { include_usage: true },
-        }),
-      });
-    } catch (err) {
-      const is400 =
-        typeof err === "object" &&
-        err !== null &&
-        "statusCode" in err &&
-        (err as { statusCode?: number }).statusCode === 400;
-      if (!is400) throw err;
-      res = await this.transport.stream(`${this.baseUrl}/chat/completions`, {
+    // Confiabilidade primeiro (incidente 22/08: `stream_options` derrubou a
+    // tradução em provedor que rejeita o campo): o pedido vai SEM
+    // stream_options, exatamente como o formato pré-telemetria que ficou
+    // provado em produção. Se o provedor ainda assim informar o consumo no
+    // chunk final, o parser SSE mais abaixo captura — senão a telemetria
+    // usa estimativa marcada como tal.
+    const res: Response = await this.transport.stream(
+      `${this.baseUrl}/chat/completions`,
+      {
         ...streamInit,
         body: JSON.stringify(baseBody),
-      });
-    }
+      },
+    );
 
     if (!res.body) throw new AIProviderError("Stream sem body.", this.id);
 
