@@ -1,29 +1,38 @@
+"use client";
+
 /*
  * Google Analytics 4 — medição de audiência do Moka Reader.
  *
  * O ID de medição é público por design (vai embutido em toda página).
- * Tag única global carregada de forma assíncrona no <head> do root layout:
- * o snippet oficial do GA4 em <script> puro, no mesmo padrão dos demais
- * scripts inline do layout (theme/UI scale) — sem dependência de lib.
- * Enhanced Measurement (pageviews, scroll, cliques, busca) fica ativo na
- * própria propriedade GA4, nada extra aqui.
+ * Guard de domínio: o GA4 só é injetado nos hosts canônicos
+ * (mokareader.com / www.mokareader.com), para que espelhos, previews e
+ * ambientes locais NÃO poluam a propriedade de produção (G-43CSQVKW6N).
+ * Injeção via useEffect (client-only) — em hosts não permitidos o
+ * componente não renderiza nada e nenhum request sai para o GTM.
  */
+import { useEffect } from "react";
+
 export const GA_MEASUREMENT_ID = "G-43CSQVKW6N";
 
+const GA_HOSTS_CANONICOS = ["mokareader.com", "www.mokareader.com"];
+
 export function GoogleAnalytics() {
-  return (
-    <>
-      <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', '${GA_MEASUREMENT_ID}');
-          `,
-        }}
-      />
-    </>
-  );
+  useEffect(() => {
+    if (!GA_HOSTS_CANONICOS.includes(window.location.hostname)) return;
+
+    const script = document.createElement("script");
+    script.async = true;
+    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+    document.head.appendChild(script);
+
+    const w = window as unknown as { dataLayer: unknown[]; gtag: (...args: unknown[]) => void };
+    w.dataLayer = w.dataLayer || [];
+    w.gtag = function gtag(...args: unknown[]) {
+      w.dataLayer.push(args);
+    };
+    w.gtag("js", new Date());
+    w.gtag("config", GA_MEASUREMENT_ID);
+  }, []);
+
+  return null;
 }
