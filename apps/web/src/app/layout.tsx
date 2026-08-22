@@ -4,6 +4,7 @@ import "./globals.css";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { I18nProvider } from "@/components/I18nProvider";
+import { UsageToast } from "@/components/UsageToast";
 
 /*
  * Tipografia do Moka — três vozes, um só clima:
@@ -111,6 +112,8 @@ export default function RootLayout({
       <body>
         <I18nProvider>
           {children}
+          {/* Pop-up global de consumo de tokens (escuta evento "moka:usage"). */}
+          <UsageToast />
         </I18nProvider>
         <ServiceWorkerRegister />
       </body>

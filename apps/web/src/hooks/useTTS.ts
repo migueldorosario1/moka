@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
+import { recordUsage, estimateTtsCostUsd } from "@/lib/telemetry";
 
 /**
  * Divide um texto longo em frases menores pra leitura mais fluida.
@@ -182,6 +183,9 @@ export function useTTS() {
         apiKey: string;
         model?: string;
         voice?: string;
+        /** Identidade pra telemetria de gastos (a voz usa a chave do usuário). */
+        providerId?: string;
+        providerName?: string;
       },
     ): Promise<{ ok: boolean; status?: number }> => {
       if (!text.trim()) return { ok: false };
@@ -208,13 +212,16 @@ export function useTTS() {
         const controller = new AbortController();
         abortRef.current = controller;
 
+        const sentText = text.slice(0, 4000);
+        const ttsModel = ttsConfig.model || "tts-1";
+
         const response = await fetch("/api/tts", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            text: text.slice(0, 4000),
+            text: sentText,
             voice: ttsConfig.voice || "nova",
-            model: ttsConfig.model || "tts-1",
+            model: ttsModel,
             baseUrl: ttsConfig.baseUrl,
             apiKey: ttsConfig.apiKey,
           }),
@@ -223,7 +230,32 @@ export function useTTS() {
 
         if (!response.ok) {
           httpStatus = response.status;
+          // Telemetria: registra a tentativa falha (ex.: sem crédito).
+          if (ttsConfig.providerId) {
+            void recordUsage({
+              task: "tts",
+              providerId: ttsConfig.providerId,
+              providerName: ttsConfig.providerName || ttsConfig.providerId,
+              model: ttsModel,
+              promptText: sentText,
+              costUsdOverride: 0, // falhou — nada foi cobrado
+              status: "error",
+            }).catch(() => {});
+          }
           throw new Error(`TTS falhou: ${response.status}`);
+        }
+
+        // Telemetria: TTS é cobrado por CARACTERE (não por token) —
+        // registramos os dois: tokens estimados + custo real aproximado.
+        if (ttsConfig.providerId) {
+          void recordUsage({
+            task: "tts",
+            providerId: ttsConfig.providerId,
+            providerName: ttsConfig.providerName || ttsConfig.providerId,
+            model: ttsModel,
+            promptText: sentText,
+            costUsdOverride: estimateTtsCostUsd(sentText, ttsModel),
+          }).catch(() => {});
         }
 
         const blob = await response.blob();

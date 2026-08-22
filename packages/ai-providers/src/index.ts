@@ -12,6 +12,7 @@ export type {
   AIProvider,
   CompleteOptions,
   CompleteResult,
+  UsageInfo,
   AIConfig,
   AdapterKind,
   ProviderPreset,

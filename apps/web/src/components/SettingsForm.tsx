@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { PRESETS, type AIConfig } from "@igot/ai-providers";
 import {
-  setConfig, setActiveEntry, removeEntry, updateEntryLabel,
+  setConfig, setActiveEntry, removeEntry, updateEntryLabel, updateEntryModel,
   clearConfig, getTargetLang, setTargetLang,
   getAudioLang, setAudioLang,
   listAllEntriesSync, getConfigById, loadConfigCache, getConfigSync, getEntryForVoice,
@@ -13,9 +13,20 @@ import {
   setUseForText, setUseForVoice, setUseForVideo,
   TTS_VOICES_OPENAI, TTS_VOICES_GROK,
 } from "@/lib/config";
-import { testConnection, listModels } from "@/lib/ai-client";
+import { testConnection, listModels, checkBalance, type BalanceResult } from "@/lib/ai-client";
 import { copyDiagnostics, hasRecentError } from "@/lib/diagnostics";
 import { PIX_KEY, PIX_HOLDER } from "@/lib/donate";
+import {
+  recordUsage,
+  estimateTtsCostUsd,
+  getPrefs,
+  setPrefs,
+  CURRENCIES,
+  getCurrency,
+  setCurrency,
+  type TelemetryPrefs,
+} from "@/lib/telemetry";
+import { tt } from "@/lib/telemetry-strings";
 import { useI18n } from "./I18nProvider";
 
 interface SettingsFormProps {
@@ -126,6 +137,23 @@ const TTS_TEST_PHRASES: Record<string, string> = {
   const [entries, setEntries] = useState(listAllEntriesSync());
   // Estado de teste por entry: entryId → 'testing' | 'ok' | 'fail'.
   const [entryTest, setEntryTest] = useState<Record<string, "testing" | "ok" | "fail">>({});
+
+  // ── 🧩 Troca rápida de modelo por entry (pedido do Miguel, 22/08):
+  //    o ícone 🧩 no card abre um campo inline pra trocar o modelo sem
+  //    re-digitar a chave. ──
+  const [modelEditor, setModelEditor] = useState<{ entryId: string; draft: string } | null>(null);
+  const [modelEditorList, setModelEditorList] = useState<string[] | null>(null);
+  const [modelEditorLoading, setModelEditorLoading] = useState(false);
+  // ── 💰 Consulta de saldo por entry (quando o provedor permite). ──
+  const [balanceState, setBalanceState] = useState<
+    Record<string, { checking: boolean; result: BalanceResult | null }>
+  >({});
+  // ── 💸 Preferências de telemetria (pop-up de consumo + trava de tokens). ──
+  const [telePrefs, setTelePrefsState] = useState<TelemetryPrefs>(() =>
+    typeof window === "undefined"
+      ? { popupMode: "above", popupThreshold: 500, tokenCap: 0 }
+      : getPrefs(),
+  );
 
   // Sincroniza a lista de entries quando a config inicial muda (ex.: ao abrir
   // a página /configuracoes, o pai recarrega o cache fresco e passa novo
@@ -245,6 +273,56 @@ const TTS_TEST_PHRASES: Record<string, string> = {
       setTestAllReport([...report]); // atualiza incremental (a pessoa vê cada uma testar)
     }
     setTestingAll(false);
+  };
+
+  /** 🧩 Abre (ou fecha) o campo inline de trocar o modelo de uma entry. */
+  const handleOpenModelEditor = (entryId: string) => {
+    if (modelEditor?.entryId === entryId) {
+      setModelEditor(null);
+      setModelEditorList(null);
+      return;
+    }
+    const entry = entries.find((e) => e.id === entryId);
+    setModelEditor({ entryId, draft: entry?.model ?? "" });
+    setModelEditorList(null);
+  };
+
+  /** Salva o modelo novo da entry (usando a chave já guardada no cofre). */
+  const handleSaveModelEditor = async () => {
+    if (!modelEditor) return;
+    await updateEntryModel(modelEditor.entryId, modelEditor.draft);
+    await loadConfigCache();
+    setEntries(listAllEntriesSync());
+    setModelEditor(null);
+    setModelEditorList(null);
+    onSaved();
+  };
+
+  /** Lista os modelos disponíveis da entry em edição (🔍). */
+  const handleListEntryModels = async () => {
+    if (!modelEditor) return;
+    const config = getConfigById(modelEditor.entryId);
+    if (!config) return;
+    setModelEditorLoading(true);
+    const result = await listModels(config);
+    setModelEditorLoading(false);
+    setModelEditorList(result.ok && result.models ? result.models : []);
+  };
+
+  /** 💰 Consulta o saldo/crédito da API de uma entry. Nunca lança. */
+  const handleCheckBalance = async (entryId: string) => {
+    const config = getConfigById(entryId);
+    if (!config) return;
+    setBalanceState((prev) => ({ ...prev, [entryId]: { checking: true, result: null } }));
+    const result = await checkBalance(config);
+    setBalanceState((prev) => ({ ...prev, [entryId]: { checking: false, result } }));
+  };
+
+  /** Atualiza e persiste as preferências de telemetria (pop-up + trava). */
+  const updateTelePrefs = (patch: Partial<TelemetryPrefs>) => {
+    const next = { ...telePrefs, ...patch };
+    setTelePrefsState(next);
+    setPrefs(next);
   };
 
   const handleSave = async (e: React.FormEvent) => {
@@ -386,10 +464,73 @@ const TTS_TEST_PHRASES: Record<string, string> = {
                       {e.active && <span className="active-dot">●</span>} {displayName}
                     </span>
                     <span className="saved-provider-key">{e.maskedKey}</span>
-                    {/* Modelo SEMPRE visível — é o que diferencia múltiplas entries */}
-                    <span className="saved-provider-model">
+                    {/* Modelo SEMPRE visível — é o que diferencia múltiplas entries.
+                        Clicável (ícone 🧩): abre campo pra trocar o modelo sem
+                        re-digitar a chave (pedido do Miguel, 22/08). */}
+                    <button
+                      type="button"
+                      className="saved-provider-model model-edit-btn"
+                      onClick={() => handleOpenModelEditor(e.id)}
+                      title={tt(uiLang, "set_model_btn")}
+                    >
                       🧩 {e.model || PRESETS.find((pr) => pr.id === e.providerId)?.defaultModel || t("set_default_model")}
-                    </span>
+                    </button>
+
+                    {/* Editor inline de modelo — aberto pelo ícone 🧩. */}
+                    {modelEditor?.entryId === e.id && (
+                      <div className="model-inline-editor" onClick={(ev) => ev.stopPropagation()}>
+                        <div className="model-row">
+                          <input
+                            type="text"
+                            value={modelEditor.draft}
+                            onChange={(ev) =>
+                              setModelEditor({ entryId: e.id, draft: ev.target.value })
+                            }
+                            placeholder={PRESETS.find((pr) => pr.id === e.providerId)?.defaultModel}
+                            spellCheck={false}
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            className="ghost"
+                            onClick={handleListEntryModels}
+                            disabled={modelEditorLoading}
+                            title={t("set_search_models")}
+                          >
+                            {modelEditorLoading ? "⏳" : "🔍"}
+                          </button>
+                        </div>
+                        {modelEditorList && modelEditorList.length > 0 && (
+                          <div className="models-scroll model-inline-list">
+                            {modelEditorList.map((m) => (
+                              <button
+                                key={m}
+                                type="button"
+                                className={`model-item ${modelEditor.draft === m ? "selected" : ""}`}
+                                onClick={() => setModelEditor({ entryId: e.id, draft: m })}
+                              >
+                                {modelEditor.draft === m && "✓ "}{m}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {modelEditorList && modelEditorList.length === 0 && (
+                          <p className="hint">{t("set_no_models")}</p>
+                        )}
+                        <div className="model-inline-actions">
+                          <button type="button" className="mini-btn use-btn" onClick={handleSaveModelEditor}>
+                            💾 {t("save")}
+                          </button>
+                          <button
+                            type="button"
+                            className="mini-btn"
+                            onClick={() => { setModelEditor(null); setModelEditorList(null); }}
+                          >
+                            {t("cancel")}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                     {/* 3 checkboxes por função (mix de IAs — pedido do Miguel). */}
                     <div className="use-for-row">
                       {/* ☑️ Texto — qualquer IA pode */}
@@ -445,6 +586,17 @@ const TTS_TEST_PHRASES: Record<string, string> = {
                     >
                       {entryTest[e.id] === "testing" ? "⏳" : entryTest[e.id] === "ok" ? "✅" : entryTest[e.id] === "fail" ? "❌" : "🔌"}
                     </button>
+                    {/* 💰 Saldo/crédito da API — quando o provedor expõe
+                        (pedido do Miguel, 22/08). */}
+                    <button
+                      type="button"
+                      className="mini-btn balance-btn"
+                      onClick={() => handleCheckBalance(e.id)}
+                      title={tt(uiLang, "set_balance_btn")}
+                      disabled={balanceState[e.id]?.checking}
+                    >
+                      {balanceState[e.id]?.checking ? "⏳" : "💰"}
+                    </button>
                     <button
                       type="button"
                       className="mini-btn edit-btn"
@@ -462,6 +614,33 @@ const TTS_TEST_PHRASES: Record<string, string> = {
                       🗑
                     </button>
                   </div>
+
+                  {/* Resultado da consulta de saldo 💰. */}
+                  {balanceState[e.id]?.result && (
+                    <div className="balance-result">
+                      {balanceState[e.id].result!.ok ? (
+                        <span className="balance-ok">
+                          💵 {tt(uiLang, "set_balance_btn").replace(/^💰\s*/, "")}:{" "}
+                          <strong>${balanceState[e.id].result!.balanceUsd?.toFixed(2)} USD</strong>
+                        </span>
+                      ) : balanceState[e.id].result!.error ? (
+                        <span className="balance-err">⚠️ {balanceState[e.id].result!.error}</span>
+                      ) : (
+                        <span className="balance-unsupported">
+                          {tt(uiLang, "set_balance_unsupported")}{" "}
+                          {balanceState[e.id].result!.usageUrl && (
+                            <a
+                              href={balanceState[e.id].result!.usageUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                            >
+                              {tt(uiLang, "set_balance_open_panel")} →
+                            </a>
+                          )}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
               );
             })}
@@ -816,6 +995,83 @@ const TTS_TEST_PHRASES: Record<string, string> = {
 
       </details>
 
+      {/* ═══ 💸 AVISOS E TRAVA DE CONSUMO (telemetria — pedido do Miguel,
+          22/08): liga/desliga o pop-up de gastos, define limiar de tokens e
+          trava por tarefa. Tudo local (localStorage), nada sai do aparelho. ═══ */}
+      <div className="tele-prefs">
+        <span className="tele-prefs-title">{tt(uiLang, "set_usage_title")}</span>
+
+        {/* Pop-up: sempre / acima de X tokens / nunca */}
+        <div className="tele-prefs-row">
+          <span>{tt(uiLang, "set_usage_popup")}:</span>
+        </div>
+        <div className="tele-prefs-row" style={{ flexDirection: "column", alignItems: "flex-start", gap: 4 }}>
+          <label className="tts-checkbox-row">
+            <input
+              type="radio"
+              name="tele-popup-mode"
+              checked={telePrefs.popupMode === "always"}
+              onChange={() => updateTelePrefs({ popupMode: "always" })}
+            />
+            {tt(uiLang, "set_usage_always")}
+          </label>
+          <label className="tts-checkbox-row">
+            <input
+              type="radio"
+              name="tele-popup-mode"
+              checked={telePrefs.popupMode === "above"}
+              onChange={() => updateTelePrefs({ popupMode: "above" })}
+            />
+            {tt(uiLang, "set_usage_above")}{" "}
+            <input
+              type="number"
+              min={0}
+              value={telePrefs.popupThreshold}
+              onChange={(ev) =>
+                updateTelePrefs({ popupThreshold: Math.max(0, Number(ev.target.value) || 0) })
+              }
+              onFocus={() => {
+                if (telePrefs.popupMode !== "above") updateTelePrefs({ popupMode: "above" });
+              }}
+            />{" "}
+            {tt(uiLang, "set_usage_threshold")}
+          </label>
+          <label className="tts-checkbox-row">
+            <input
+              type="radio"
+              name="tele-popup-mode"
+              checked={telePrefs.popupMode === "off"}
+              onChange={() => updateTelePrefs({ popupMode: "off" })}
+            />
+            {tt(uiLang, "set_usage_off")}
+          </label>
+        </div>
+
+        {/* Trava de tokens por tarefa (0 = sem trava). O app NUNCA trava se
+            passar do cap — corta a tarefa com aviso (ver ai-client.ts). */}
+        <div className="tele-prefs-row" style={{ marginTop: 4 }}>
+          <label htmlFor="tele-token-cap" style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            {tt(uiLang, "set_usage_cap")}:
+            <input
+              id="tele-token-cap"
+              type="number"
+              min={0}
+              step={100}
+              value={telePrefs.tokenCap}
+              onChange={(ev) =>
+                updateTelePrefs({ tokenCap: Math.max(0, Number(ev.target.value) || 0) })
+              }
+            />
+          </label>
+        </div>
+        <p className="tele-prefs-hint">{tt(uiLang, "set_usage_cap_hint")}</p>
+
+        {/* Atalho pra página de telemetria (histórico completo de gastos). */}
+        <div className="tele-prefs-row">
+          <a href="/telemetria" className="tele-btn">📊 {tt(uiLang, "usage_view")} →</a>
+        </div>
+      </div>
+
       {/* 🆓 Moka gratuito + 🗝 3 jeitos — MOVIDOS PRA BAIXO (pedido Miguel 10/08:
           'bota lá pra baixo, começa com sua chave de IA direto'). */}
       <div className="v3-simple">
@@ -965,12 +1221,13 @@ const TTS_TEST_PHRASES: Record<string, string> = {
                     if (!voiceConfig) { alert("Cadastre OpenAI, Grok ou Groq e marque ☑️ Voz neural."); return; }
                     const PRESET_BASE: Record<string, string> = { openai: "https://api.openai.com/v1", grok: "https://api.x.ai/v1", groq: "https://api.groq.com/openai/v1" };
                     const ttsBaseUrl = voiceConfig.baseUrl || PRESET_BASE[voiceConfig.providerId] || PRESET_BASE.openai;
+                    // Frase de teste SEM gênero, no idioma do áudio falado.
+                    const testPhrase = TTS_TEST_PHRASES[audioLang] || TTS_TEST_PHRASES["en"] || "Hello, this is a voice test. The Moka reader can read any text aloud.";
                     const res = await fetch("/api/tts", {
                       method: "POST",
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
-                    // Frase de teste SEM gênero, no idioma do áudio falado.
-                    text: TTS_TEST_PHRASES[audioLang] || TTS_TEST_PHRASES["en"] || "Hello, this is a voice test. The Moka reader can read any text aloud.",
+                    text: testPhrase,
                     voice: ttsVoice,
                     model: "tts-1",
                     baseUrl: ttsBaseUrl,
@@ -978,6 +1235,16 @@ const TTS_TEST_PHRASES: Record<string, string> = {
                   }),
                     });
                     if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                    // Telemetria: a amostra de voz também consome crédito do usuário.
+                    void recordUsage({
+                      task: "tts",
+                      providerId: voiceConfig.providerId,
+                      providerName: PRESETS.find((p) => p.id === voiceConfig.providerId)?.name || voiceConfig.providerId,
+                      model: "tts-1",
+                      promptText: testPhrase,
+                      costUsdOverride: estimateTtsCostUsd(testPhrase, "tts-1"),
+                      note: "amostra de voz",
+                    }).catch(() => {});
                     const blob = await res.blob();
                     const url = URL.createObjectURL(blob);
                     new Audio(url).play();

@@ -5,6 +5,13 @@
  * lógica de negócio a um provedor específico — o usuário escolhe qual usar.
  */
 
+/** Consumo de tokens informado pelo provedor (quando informado). */
+export interface UsageInfo {
+  promptTokens?: number;
+  completionTokens?: number;
+  totalTokens?: number;
+}
+
 /** Opções enviadas a uma chamada de completion. */
 export interface CompleteOptions {
   /** Instrução de sistema (papel/identidade da IA). */
@@ -17,17 +24,20 @@ export interface CompleteOptions {
   maxTokens?: number;
   /** Modelo específico do provedor (sobrepõe o padrão). */
   model?: string;
+  /**
+   * Chamado quando o consumo de tokens fica conhecido. Em `complete` o
+   * resultado já traz o usage; em `stream` é a ÚNICA via de receber o
+   * consumo (o provedor informa no fim do stream, quando informa).
+   * Usado pela telemetria de gastos. Nunca lança — erros são ignorados.
+   */
+  onUsage?: (usage: UsageInfo) => void;
 }
 
 /** Resultado enriquecido de uma chamada de completion. */
 export interface CompleteResult {
   text: string;
   /** Quantos tokens o prompt consumiu (quando o provedor informar). */
-  usage?: {
-    promptTokens?: number;
-    completionTokens?: number;
-    totalTokens?: number;
-  };
+  usage?: UsageInfo;
 }
 
 /** Interface que todo provedor de LLM deve implementar. */

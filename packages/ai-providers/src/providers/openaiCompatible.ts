@@ -166,16 +166,21 @@ export class OpenAICompatibleProvider implements AIProvider {
     }
 
     const text = data.choices?.[0]?.message?.content?.trim() ?? "";
-    return {
-      text,
-      usage: data.usage
-        ? {
-            promptTokens: data.usage.prompt_tokens,
-            completionTokens: data.usage.completion_tokens,
-            totalTokens: data.usage.total_tokens,
-          }
-        : undefined,
-    };
+    const usage = data.usage
+      ? {
+          promptTokens: data.usage.prompt_tokens,
+          completionTokens: data.usage.completion_tokens,
+          totalTokens: data.usage.total_tokens,
+        }
+      : undefined;
+    if (usage && opts.onUsage) {
+      try {
+        opts.onUsage(usage);
+      } catch {
+        /* telemetria nunca quebra o fluxo */
+      }
+    }
+    return { text, usage };
   }
 
   /**
@@ -200,31 +205,54 @@ export class OpenAICompatibleProvider implements AIProvider {
     const messages = this.buildMessages(prompt, opts);
     const newOpenAi = isNewOpenAiModel(model);
 
-    const res = await this.transport.stream(
-      `${this.baseUrl}/chat/completions`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${this.apiKey}`,
-        },
-        body: JSON.stringify({
-          model,
-          messages,
-          // Modelos de raciocínio e a família GPT-5 não aceitam temperature.
-          ...(!isReasoningModel(model) && !newOpenAi && {
-            temperature: opts.temperature ?? 0.3,
-          }),
-          // GPT-5/o-series exigem max_completion_tokens (max_tokens → 400).
-          ...(opts.maxTokens
-            ? newOpenAi
-              ? { max_completion_tokens: opts.maxTokens }
-              : { max_tokens: opts.maxTokens }
-            : {}),
-          stream: true, // habilita SSE
-        }),
+    const baseBody = {
+      model,
+      messages,
+      // Modelos de raciocínio e a família GPT-5 não aceitam temperature.
+      ...(!isReasoningModel(model) && !newOpenAi && {
+        temperature: opts.temperature ?? 0.3,
+      }),
+      // GPT-5/o-series exigem max_completion_tokens (max_tokens → 400).
+      ...(opts.maxTokens
+        ? newOpenAi
+          ? { max_completion_tokens: opts.maxTokens }
+          : { max_tokens: opts.maxTokens }
+        : {}),
+      stream: true, // habilita SSE
+    };
+    const streamInit = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${this.apiKey}`,
       },
-    );
+    };
+
+    // Pede o consumo de tokens no ÚLTIMO chunk (padrão OpenAI). Assim a
+    // telemetria registra o gasto real mesmo no streaming. Se o provedor
+    // REJEITAR o campo (400), tenta de novo sem ele — o streaming não pode
+    // quebrar por causa da telemetria.
+    let res: Response;
+    try {
+      res = await this.transport.stream(`${this.baseUrl}/chat/completions`, {
+        ...streamInit,
+        body: JSON.stringify({
+          ...baseBody,
+          stream_options: { include_usage: true },
+        }),
+      });
+    } catch (err) {
+      const is400 =
+        typeof err === "object" &&
+        err !== null &&
+        "statusCode" in err &&
+        (err as { statusCode?: number }).statusCode === 400;
+      if (!is400) throw err;
+      res = await this.transport.stream(`${this.baseUrl}/chat/completions`, {
+        ...streamInit,
+        body: JSON.stringify(baseBody),
+      });
+    }
 
     if (!res.body) throw new AIProviderError("Stream sem body.", this.id);
 
@@ -232,6 +260,12 @@ export class OpenAICompatibleProvider implements AIProvider {
     const reader = res.body.getReader();
     const decoder = new TextDecoder();
     let buffer = "";
+    // Guarda o usage quando o provedor informa (chunk final).
+    let streamUsage: {
+      prompt_tokens?: number;
+      completion_tokens?: number;
+      total_tokens?: number;
+    } | null = null;
 
     try {
       while (true) {
@@ -247,10 +281,18 @@ export class OpenAICompatibleProvider implements AIProvider {
           const trimmed = line.trim();
           if (!trimmed || !trimmed.startsWith("data:")) continue;
           const data = trimmed.slice(5).trim();
-          if (data === "[DONE]") return;
+          if (data === "[DONE]") {
+            emitStreamUsage();
+            return;
+          }
           try {
             const parsed = JSON.parse(data) as {
               choices?: Array<{ delta?: { content?: string } }>;
+              usage?: {
+                prompt_tokens?: number;
+                completion_tokens?: number;
+                total_tokens?: number;
+              };
               error?: { message?: string };
             };
             if (parsed.error) {
@@ -259,6 +301,8 @@ export class OpenAICompatibleProvider implements AIProvider {
                 this.id,
               );
             }
+            // O usage chega no chunk final (antes do [DONE]).
+            if (parsed.usage) streamUsage = parsed.usage;
             const chunk = parsed.choices?.[0]?.delta?.content;
             if (chunk) yield chunk;
           } catch (err) {
@@ -267,8 +311,26 @@ export class OpenAICompatibleProvider implements AIProvider {
           }
         }
       }
+      // Stream terminou sem [DONE] — emite o usage mesmo assim.
+      emitStreamUsage();
     } finally {
       reader.releaseLock();
+    }
+
+    /** Entrega o consumo capturado à telemetria (uma única vez). */
+    function emitStreamUsage() {
+      if (streamUsage && opts.onUsage) {
+        try {
+          opts.onUsage({
+            promptTokens: streamUsage.prompt_tokens,
+            completionTokens: streamUsage.completion_tokens,
+            totalTokens: streamUsage.total_tokens,
+          });
+        } catch {
+          /* telemetria nunca quebra o fluxo */
+        }
+        streamUsage = null;
+      }
     }
   }
 
