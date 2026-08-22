@@ -13,7 +13,7 @@ import {
   setUseForText, setUseForVoice, setUseForVideo,
   TTS_VOICES_OPENAI, TTS_VOICES_GROK,
 } from "@/lib/config";
-import { testConnection, listModels } from "@/lib/ai-client";
+import { testConnection, listModels, checkBalance, type BalanceResult } from "@/lib/ai-client";
 import { copyDiagnostics, hasRecentError } from "@/lib/diagnostics";
 import { PIX_KEY, PIX_HOLDER } from "@/lib/donate";
 import {
@@ -144,6 +144,10 @@ const TTS_TEST_PHRASES: Record<string, string> = {
   const [modelEditor, setModelEditor] = useState<{ entryId: string; draft: string } | null>(null);
   const [modelEditorList, setModelEditorList] = useState<string[] | null>(null);
   const [modelEditorLoading, setModelEditorLoading] = useState(false);
+  // ── 💰 Consulta de saldo por entry (quando o provedor permite). ──
+  const [balanceState, setBalanceState] = useState<
+    Record<string, { checking: boolean; result: BalanceResult | null }>
+  >({});
   // ── 💸 Preferências de telemetria (pop-up de consumo + trava de tokens). ──
   const [telePrefs, setTelePrefsState] = useState<TelemetryPrefs>(() =>
     typeof window === "undefined"
@@ -271,9 +275,7 @@ const TTS_TEST_PHRASES: Record<string, string> = {
     setTestingAll(false);
   };
 
-  /** 🧩 Abre (ou fecha) o campo inline de trocar o modelo de uma entry.
-   *  Ao abrir, já busca a lista de modelos do provedor automaticamente
-   *  (mais amigável — pedido do Miguel, 22/08). */
+  /** 🧩 Abre (ou fecha) o campo inline de trocar o modelo de uma entry. */
   const handleOpenModelEditor = (entryId: string) => {
     if (modelEditor?.entryId === entryId) {
       setModelEditor(null);
@@ -283,19 +285,12 @@ const TTS_TEST_PHRASES: Record<string, string> = {
     const entry = entries.find((e) => e.id === entryId);
     setModelEditor({ entryId, draft: entry?.model ?? "" });
     setModelEditorList(null);
-    const config = getConfigById(entryId);
-    if (!config) return;
-    setModelEditorLoading(true);
-    listModels(config).then((result) => {
-      setModelEditorLoading(false);
-      // Só mostra se o editor ainda está aberto nesta entry.
-      setModelEditorList(result.ok && result.models ? result.models : []);
-    });
   };
 
   /** Salva o modelo novo da entry (usando a chave já guardada no cofre). */
-  const persistModel = async (entryId: string, model: string) => {
-    await updateEntryModel(entryId, model);
+  const handleSaveModelEditor = async () => {
+    if (!modelEditor) return;
+    await updateEntryModel(modelEditor.entryId, modelEditor.draft);
     await loadConfigCache();
     setEntries(listAllEntriesSync());
     setModelEditor(null);
@@ -303,17 +298,7 @@ const TTS_TEST_PHRASES: Record<string, string> = {
     onSaved();
   };
 
-  const handleSaveModelEditor = async () => {
-    if (!modelEditor) return;
-    await persistModel(modelEditor.entryId, modelEditor.draft);
-  };
-
-  /** Clicou num modelo da lista → troca na hora (1 clique, fecha o editor). */
-  const handlePickModel = async (entryId: string, model: string) => {
-    await persistModel(entryId, model);
-  };
-
-  /** Re-busca os modelos disponíveis da entry em edição (🔍). */
+  /** Lista os modelos disponíveis da entry em edição (🔍). */
   const handleListEntryModels = async () => {
     if (!modelEditor) return;
     const config = getConfigById(modelEditor.entryId);
@@ -322,6 +307,15 @@ const TTS_TEST_PHRASES: Record<string, string> = {
     const result = await listModels(config);
     setModelEditorLoading(false);
     setModelEditorList(result.ok && result.models ? result.models : []);
+  };
+
+  /** 💰 Consulta o saldo/crédito da API de uma entry. Nunca lança. */
+  const handleCheckBalance = async (entryId: string) => {
+    const config = getConfigById(entryId);
+    if (!config) return;
+    setBalanceState((prev) => ({ ...prev, [entryId]: { checking: true, result: null } }));
+    const result = await checkBalance(config);
+    setBalanceState((prev) => ({ ...prev, [entryId]: { checking: false, result } }));
   };
 
   /** Atualiza e persiste as preferências de telemetria (pop-up + trava). */
@@ -471,18 +465,72 @@ const TTS_TEST_PHRASES: Record<string, string> = {
                     </span>
                     <span className="saved-provider-key">{e.maskedKey}</span>
                     {/* Modelo SEMPRE visível — é o que diferencia múltiplas entries.
-                        Botão 🧩 (pedido do Miguel, 22/08): abre o seletor de
-                        modelo sem re-digitar a chave. */}
+                        Clicável (ícone 🧩): abre campo pra trocar o modelo sem
+                        re-digitar a chave (pedido do Miguel, 22/08). */}
                     <button
                       type="button"
-                      className="model-edit-btn"
+                      className="saved-provider-model model-edit-btn"
                       onClick={() => handleOpenModelEditor(e.id)}
                       title={tt(uiLang, "set_model_btn")}
                     >
                       🧩 {e.model || PRESETS.find((pr) => pr.id === e.providerId)?.defaultModel || t("set_default_model")}
-                      <span className="model-edit-arrow">{modelEditor?.entryId === e.id ? "▴" : "▾"}</span>
                     </button>
 
+                    {/* Editor inline de modelo — aberto pelo ícone 🧩. */}
+                    {modelEditor?.entryId === e.id && (
+                      <div className="model-inline-editor" onClick={(ev) => ev.stopPropagation()}>
+                        <div className="model-row">
+                          <input
+                            type="text"
+                            value={modelEditor.draft}
+                            onChange={(ev) =>
+                              setModelEditor({ entryId: e.id, draft: ev.target.value })
+                            }
+                            placeholder={PRESETS.find((pr) => pr.id === e.providerId)?.defaultModel}
+                            spellCheck={false}
+                            autoFocus
+                          />
+                          <button
+                            type="button"
+                            className="ghost"
+                            onClick={handleListEntryModels}
+                            disabled={modelEditorLoading}
+                            title={t("set_search_models")}
+                          >
+                            {modelEditorLoading ? "⏳" : "🔍"}
+                          </button>
+                        </div>
+                        {modelEditorList && modelEditorList.length > 0 && (
+                          <div className="models-scroll model-inline-list">
+                            {modelEditorList.map((m) => (
+                              <button
+                                key={m}
+                                type="button"
+                                className={`model-item ${modelEditor.draft === m ? "selected" : ""}`}
+                                onClick={() => setModelEditor({ entryId: e.id, draft: m })}
+                              >
+                                {modelEditor.draft === m && "✓ "}{m}
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {modelEditorList && modelEditorList.length === 0 && (
+                          <p className="hint">{t("set_no_models")}</p>
+                        )}
+                        <div className="model-inline-actions">
+                          <button type="button" className="mini-btn use-btn" onClick={handleSaveModelEditor}>
+                            💾 {t("save")}
+                          </button>
+                          <button
+                            type="button"
+                            className="mini-btn"
+                            onClick={() => { setModelEditor(null); setModelEditorList(null); }}
+                          >
+                            {t("cancel")}
+                          </button>
+                        </div>
+                      </div>
+                    )}
                     {/* 3 checkboxes por função (mix de IAs — pedido do Miguel). */}
                     <div className="use-for-row">
                       {/* ☑️ Texto — qualquer IA pode */}
@@ -538,6 +586,17 @@ const TTS_TEST_PHRASES: Record<string, string> = {
                     >
                       {entryTest[e.id] === "testing" ? "⏳" : entryTest[e.id] === "ok" ? "✅" : entryTest[e.id] === "fail" ? "❌" : "🔌"}
                     </button>
+                    {/* 💰 Saldo/crédito da API — quando o provedor expõe
+                        (pedido do Miguel, 22/08). */}
+                    <button
+                      type="button"
+                      className="mini-btn balance-btn"
+                      onClick={() => handleCheckBalance(e.id)}
+                      title={tt(uiLang, "set_balance_btn")}
+                      disabled={balanceState[e.id]?.checking}
+                    >
+                      {balanceState[e.id]?.checking ? "⏳" : "💰"}
+                    </button>
                     <button
                       type="button"
                       className="mini-btn edit-btn"
@@ -556,66 +615,30 @@ const TTS_TEST_PHRASES: Record<string, string> = {
                     </button>
                   </div>
 
-                  {/* Seletor de modelo 🧩 — linha inteira abaixo do card
-                      (fora da coluna flex, pra nunca entrar espremido). */}
-                  {modelEditor?.entryId === e.id && (
-                    <div className="model-inline-editor" onClick={(ev) => ev.stopPropagation()}>
-                      <p className="model-inline-title">
-                        🧩 {tt(uiLang, "set_model_btn")} — {displayName}
-                      </p>
-                      {modelEditorLoading && (
-                        <p className="hint">⏳ {t("set_search_models")}</p>
-                      )}
-                      {modelEditorList && modelEditorList.length > 0 && (
-                        <div className="models-scroll model-inline-list">
-                          {modelEditorList.map((m) => (
-                            <button
-                              key={m}
-                              type="button"
-                              className={`model-item ${(e.model || "") === m ? "selected" : ""}`}
-                              onClick={() => handlePickModel(e.id, m)}
+                  {/* Resultado da consulta de saldo 💰. */}
+                  {balanceState[e.id]?.result && (
+                    <div className="balance-result">
+                      {balanceState[e.id].result!.ok ? (
+                        <span className="balance-ok">
+                          💵 {tt(uiLang, "set_balance_btn").replace(/^💰\s*/, "")}:{" "}
+                          <strong>${balanceState[e.id].result!.balanceUsd?.toFixed(2)} USD</strong>
+                        </span>
+                      ) : balanceState[e.id].result!.error ? (
+                        <span className="balance-err">⚠️ {balanceState[e.id].result!.error}</span>
+                      ) : (
+                        <span className="balance-unsupported">
+                          {tt(uiLang, "set_balance_unsupported")}{" "}
+                          {balanceState[e.id].result!.usageUrl && (
+                            <a
+                              href={balanceState[e.id].result!.usageUrl}
+                              target="_blank"
+                              rel="noreferrer"
                             >
-                              {(e.model || "") === m && "✓ "}{m}
-                            </button>
-                          ))}
-                        </div>
+                              {tt(uiLang, "set_balance_open_panel")} →
+                            </a>
+                          )}
+                        </span>
                       )}
-                      {modelEditorList && modelEditorList.length === 0 && !modelEditorLoading && (
-                        <p className="hint">{t("set_no_models")}</p>
-                      )}
-                      <div className="model-row">
-                        <input
-                          type="text"
-                          value={modelEditor.draft}
-                          onChange={(ev) =>
-                            setModelEditor({ entryId: e.id, draft: ev.target.value })
-                          }
-                          onKeyDown={(ev) => { if (ev.key === "Enter") { ev.preventDefault(); handleSaveModelEditor(); } }}
-                          placeholder={PRESETS.find((pr) => pr.id === e.providerId)?.defaultModel}
-                          spellCheck={false}
-                        />
-                        <button
-                          type="button"
-                          className="ghost"
-                          onClick={handleListEntryModels}
-                          disabled={modelEditorLoading}
-                          title={t("set_search_models")}
-                        >
-                          {modelEditorLoading ? "⏳" : "🔍"}
-                        </button>
-                      </div>
-                      <div className="model-inline-actions">
-                        <button type="button" className="mini-btn use-btn" onClick={handleSaveModelEditor}>
-                          💾 {t("save")}
-                        </button>
-                        <button
-                          type="button"
-                          className="mini-btn"
-                          onClick={() => { setModelEditor(null); setModelEditorList(null); }}
-                        >
-                          {t("cancel")}
-                        </button>
-                      </div>
                     </div>
                   )}
                 </div>
@@ -1043,18 +1066,11 @@ const TTS_TEST_PHRASES: Record<string, string> = {
         </div>
         <p className="tele-prefs-hint">{tt(uiLang, "set_usage_cap_hint")}</p>
 
+        {/* Atalho pra página de telemetria (histórico completo de gastos). */}
+        <div className="tele-prefs-row">
+          <a href="/telemetria" className="tele-btn">📊 {tt(uiLang, "usage_view")} →</a>
+        </div>
       </div>
-
-      {/* Banner DESTACADO pra página "Suas IAs" (pedido do Miguel, 22/08:
-          "tem que ter um link mais visível nas configurações"). */}
-      <a href="/telemetria" className="tele-banner">
-        <span className="tele-banner-icon">📊</span>
-        <span className="tele-banner-text">
-          <b>{tt(uiLang, "tele_nav")}</b>
-          <small>{tt(uiLang, "tele_banner_sub")}</small>
-        </span>
-        <span className="tele-banner-arrow">→</span>
-      </a>
 
       {/* 🆓 Moka gratuito + 🗝 3 jeitos — MOVIDOS PRA BAIXO (pedido Miguel 10/08:
           'bota lá pra baixo, começa com sua chave de IA direto'). */}

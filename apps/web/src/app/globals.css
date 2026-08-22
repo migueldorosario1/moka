@@ -7825,52 +7825,31 @@ font-size: 14px;
   color: var(--text-muted);
 }
 
-/* Botão 🧩 (trocar modelo da entry) — pílula própria, NUNCA herda o
-   itálico miúdo do card (reforma do Miguel, 22/08: "mais amigável"). */
+/* Ícone 🧩 clicável (trocar modelo da entry) */
 .model-edit-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  border: 1px solid var(--border);
-  background: var(--surface-alt);
-  padding: 5px 10px;
-  border-radius: var(--radius-pill);
+  border: none;
+  background: transparent;
+  padding: 2px 4px;
+  border-radius: var(--radius-sm);
   cursor: pointer;
-  font-size: var(--text-xs);
-  font-weight: 600;
-  color: var(--text);
+  font: inherit;
+  color: inherit;
   text-align: left;
-  max-width: 100%;
-  transition: var(--transition);
 }
 .model-edit-btn:hover {
-  border-color: var(--accent);
   background: var(--accent-soft);
   color: var(--accent);
 }
-.model-edit-arrow {
-  color: var(--text-muted);
-  font-size: 10px;
-}
-/* Editor inline de modelo — com flex-wrap no card, cai numa linha
-   INTEIRA abaixo do nome/chave (antes entrava espremido e quebrado). */
-.saved-provider-card { flex-wrap: wrap; }
+/* Editor inline de modelo (abre dentro do card da entry) */
 .model-inline-editor {
-  flex: 1 1 100%;
-  width: 100%;
-  margin-top: 10px;
-  padding: 12px;
-  border: 1px solid var(--accent);
-  border-radius: var(--radius);
+  margin-top: 8px;
+  padding: 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
   background: var(--surface-alt);
   display: flex;
   flex-direction: column;
   gap: 8px;
-}
-.model-inline-title {
-  margin: 0;
-  font-size: var(--text-sm);
-  font-weight: 700;
 }
 .model-inline-editor input[type="text"] {
   flex: 1;
@@ -7882,7 +7861,7 @@ font-size: 14px;
   font-size: var(--text-sm);
 }
 .model-inline-list {
-  max-height: 200px;
+  max-height: 160px;
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
   background: var(--surface);
@@ -7891,105 +7870,23 @@ font-size: 14px;
   display: flex;
   gap: 6px;
 }
-
-/* Banner DESTACADO "Suas IAs e telemetria" nas configurações
-   (pedido do Miguel, 22/08: "um link mais visível"). */
-.tele-banner {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 16px;
-  padding: 14px 16px;
-  border: 2px solid var(--accent);
-  border-radius: var(--radius);
-  background: var(--accent-soft);
-  text-decoration: none;
-  color: var(--text);
-  transition: var(--transition);
-}
-.tele-banner:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.10);
-}
-.tele-banner-icon { font-size: 26px; line-height: 1; }
-.tele-banner-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  flex: 1;
-  min-width: 0;
-}
-.tele-banner-text b { font-size: var(--text-base); }
-.tele-banner-text small {
-  color: var(--text-muted);
+/* Botão 💰 (saldo) */
+.balance-btn { font-size: 14px; }
+.balance-result {
+  width: 100%;
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-alt);
   font-size: var(--text-xs);
+  line-height: 1.5;
 }
-.tele-banner-arrow {
-  font-size: 18px;
-  font-weight: 700;
+.balance-result .balance-ok { color: var(--text); }
+.balance-result .balance-err { color: #b91c1c; }
+.balance-result .balance-unsupported { color: var(--text-muted); }
+.balance-result a {
   color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
 }
-
-/* Ícone 📊 de telemetria na topbar — destaque leve do lado do ⚙️. */
-.igot-topbar .gear.tele-gear {
-  background: var(--accent-soft);
-  border: 1px solid var(--accent);
-}
-
-/* Página /telemetria ("Suas IAs") — cards das IAs registradas. */
-.tele-ai-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.tele-ai-card {
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  background: var(--surface);
-  padding: 12px 14px;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.tele-ai-card.active {
-  border-color: var(--accent);
-  background: var(--accent-soft);
-}
-.tele-ai-head {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.tele-ai-name {
-  font-weight: 700;
-  font-size: var(--text-base);
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.tele-ai-key {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-  font-family: ui-monospace, "SF Mono", Consolas, monospace;
-}
-.tele-ai-model-row {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.tele-ai-spend {
-  font-size: var(--text-xs);
-  color: var(--text-muted);
-}
-.tele-ai-spend strong { color: var(--text); }
-.tele-empty-ais {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 6px 0;
-  color: var(--text-muted);
-}
-.tele-empty-ais p { margin: 0; }
+.balance-result a:hover { text-decoration: underline; }

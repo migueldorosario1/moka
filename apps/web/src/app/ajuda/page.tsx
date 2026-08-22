@@ -9,7 +9,6 @@ import { LangSwitcher } from "@/components/LangSwitcher";
 import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
 import { LlmPriceRanking } from "@/components/LlmPriceRanking";
-import { TelemetryIconButton } from "@/components/TelemetryIconButton";
 import { useI18n } from "@/components/I18nProvider";
 
 /**
@@ -140,8 +139,6 @@ export default function Ajuda() {
           >
             ⚙️
           </button>
-          {/* 📊 Suas IAs e telemetria (pedido do Miguel, 22/08). */}
-          <TelemetryIconButton />
           <AuthGate />
           <LangSwitcher />
         </div>

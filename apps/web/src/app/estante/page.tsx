@@ -11,7 +11,6 @@ import { SiteFooter } from "@/components/SiteFooter";
 import { useI18n } from "@/components/I18nProvider";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
 import { BackButton } from "@/components/BackButton";
-import { TelemetryIconButton } from "@/components/TelemetryIconButton";
 import { VisitPing } from "@/components/VisitPing";
 import { hasConfig, loadConfigCache } from "@/lib/config";
 import { useAuth } from "@/lib/auth";
@@ -222,8 +221,6 @@ export default function HomePage() {
           >
             ⚙️
           </button>
-          {/* 📊 Suas IAs e telemetria (pedido do Miguel, 22/08). */}
-          <TelemetryIconButton />
         </div>
       </div>
 

@@ -2,21 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { PRESETS } from "@igot/ai-providers";
-import { CafezinhoLogo } from "@/components/CafezinhoLogo";
-import { LangSwitcher } from "@/components/LangSwitcher";
-import { AuthGate } from "@/components/AuthGate";
-import { SiteFooter } from "@/components/SiteFooter";
-import { LlmPriceRanking } from "@/components/LlmPriceRanking";
-import {
-  listAllEntriesSync,
-  loadConfigCache,
-  invalidateConfigCache,
-  getConfigById,
-  updateEntryModel,
-} from "@/lib/config";
-import { listModels } from "@/lib/ai-client";
 import {
   listRecords,
   clearRecords,
@@ -36,9 +22,6 @@ import { useI18n } from "@/components/I18nProvider";
 const SHOW_LOCAL_KEY = "moka.telemetry.showLocal";
 
 const USD: Currency = { code: "USD", symbol: "$", name: "US Dollar", rate: 1 };
-
-/** Resumo de uma entry cadastrada (o que a lista do cofre devolve). */
-type EntryLite = ReturnType<typeof listAllEntriesSync>[number];
 
 /** Formata epoch ms como data curta no idioma da interface. */
 function fmtDate(ts: number, lang: string): string {
@@ -87,146 +70,14 @@ function csvField(v: string | number | boolean): string {
 }
 
 /**
- * Seletor de modelo 🧩 de uma IA cadastrada (reforma do Miguel, 22/08:
- * "uma página das suas IAs pra trocar o modelo"). Ao abrir, busca a lista
- * de modelos do provedor automaticamente; clicar num modelo troca NA HORA.
- */
-function AiModelPicker({
-  entry,
-  lang,
-  onChanged,
-}: {
-  entry: EntryLite;
-  lang: string;
-  onChanged: () => void;
-}) {
-  const [open, setOpen] = useState(false);
-  const [list, setList] = useState<string[] | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [draft, setDraft] = useState("");
-
-  const preset = PRESETS.find((p) => p.id === entry.providerId);
-  const current = entry.model || preset?.defaultModel || "";
-
-  const toggle = () => {
-    const next = !open;
-    setOpen(next);
-    if (!next) return;
-    setDraft(entry.model ?? "");
-    setList(null);
-    const config = getConfigById(entry.id);
-    if (!config) return;
-    setLoading(true);
-    listModels(config).then((r) => {
-      setLoading(false);
-      setList(r.ok && r.models ? r.models : []);
-    });
-  };
-
-  const persist = async (model: string) => {
-    await updateEntryModel(entry.id, model);
-    await loadConfigCache();
-    onChanged();
-    setOpen(false);
-  };
-
-  return (
-    <div className="tele-ai-model-row">
-      <button type="button" className="model-edit-btn" onClick={toggle} title={tt(lang, "set_model_btn")}>
-        🧩 {current}
-        <span className="model-edit-arrow">{open ? "▴" : "▾"}</span>
-      </button>
-      {open && (
-        <div className="model-inline-editor">
-          {loading && <p className="hint">⏳ {t2(lang, "search")}</p>}
-          {list && list.length > 0 && (
-            <div className="models-scroll model-inline-list">
-              {list.map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  className={`model-item ${current === m ? "selected" : ""}`}
-                  onClick={() => persist(m)}
-                >
-                  {current === m && "✓ "}{m}
-                </button>
-              ))}
-            </div>
-          )}
-          {list && list.length === 0 && !loading && (
-            <p className="hint">{t2(lang, "no_models")}</p>
-          )}
-          <div className="model-row">
-            <input
-              type="text"
-              value={draft}
-              onChange={(ev) => setDraft(ev.target.value)}
-              onKeyDown={(ev) => { if (ev.key === "Enter") { ev.preventDefault(); void persist(draft); } }}
-              placeholder={preset?.defaultModel}
-              spellCheck={false}
-            />
-            <button
-              type="button"
-              className="ghost"
-              onClick={() => {
-                const config = getConfigById(entry.id);
-                if (!config) return;
-                setLoading(true);
-                listModels(config).then((r) => {
-                  setLoading(false);
-                  setList(r.ok && r.models ? r.models : []);
-                });
-              }}
-              disabled={loading}
-              title={t2(lang, "search")}
-            >
-              {loading ? "⏳" : "🔍"}
-            </button>
-          </div>
-          <div className="model-inline-actions">
-            <button type="button" className="mini-btn use-btn" onClick={() => persist(draft)}>
-              💾 {t2(lang, "save")}
-            </button>
-            <button type="button" className="mini-btn" onClick={() => setOpen(false)}>
-              {t2(lang, "cancel")}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-/** Chaves do ui-strings usadas pelo seletor (evita importar o dicionário inteiro). */
-function t2(lang: string, key: "search" | "no_models" | "save" | "cancel"): string {
-  const TABLE: Record<string, Record<string, string>> = {
-    "pt-BR": { search: "Buscar modelos", no_models: "Nenhum modelo encontrado — digite o nome.", save: "Salvar", cancel: "Cancelar" },
-    en: { search: "Search models", no_models: "No models found — type the name.", save: "Save", cancel: "Cancel" },
-    es: { search: "Buscar modelos", no_models: "No se encontraron modelos — escribe el nombre.", save: "Guardar", cancel: "Cancelar" },
-    fr: { search: "Chercher les modèles", no_models: "Aucun modèle trouvé — saisissez le nom.", save: "Enregistrer", cancel: "Annuler" },
-    de: { search: "Modelle suchen", no_models: "Keine Modelle gefunden — Namen eingeben.", save: "Speichern", cancel: "Abbrechen" },
-    it: { search: "Cerca modelli", no_models: "Nessun modello trovato — digita il nome.", save: "Salva", cancel: "Annulla" },
-    ru: { search: "Поиск моделей", no_models: "Модели не найдены — введите имя.", save: "Сохранить", cancel: "Отмена" },
-    zh: { search: "搜索模型", no_models: "未找到模型——请输入名称。", save: "保存", cancel: "取消" },
-    ja: { search: "モデルを検索", no_models: "モデルが見つかりません——名前を入力。", save: "保存", cancel: "キャンセル" },
-    ko: { search: "모델 검색", no_models: "모델을 찾지 못했습니다 — 이름을 입력하세요.", save: "저장", cancel: "취소" },
-    ar: { search: "البحث عن النماذج", no_models: "لا نماذج — اكتب الاسم.", save: "حفظ", cancel: "إلغاء" },
-    hi: { search: "मॉडल खोजें", no_models: "कोई मॉडल नहीं — नाम लिखें।", save: "सहेजें", cancel: "रद्द करें" },
-  };
-  return (TABLE[lang] ?? TABLE.en)[key];
-}
-
-/**
- * /telemetria — a página "SUAS IAs" (reforma do Miguel, 22/08): controle
- * das IAs registradas (trocar modelo de cada uma) + telemetria de gastos
- * (banco LOCAL IndexedDB: custo por IA/tarefa/modelo em dólar e na moeda
- * do país) + tabela de preços das IAs. Tudo no dispositivo do usuário.
+ * /telemetria — página de controle de gastos de IA (pedido do Miguel,
+ * 2026-08-22). Reúne num banco LOCAL (IndexedDB) todas as despesas com cada
+ * IA/tarefa/modelo, com custo em dólar E na moeda do país (marcador),
+ * calculadora de custo, exportação CSV e limpar histórico. Nada sai do
+ * dispositivo.
  */
 export default function TelemetriaPage() {
   const { lang } = useI18n();
-  const router = useRouter();
-
-  const [entries, setEntries] = useState<EntryLite[]>([]);
   const [records, setRecords] = useState<TelemetryRecord[] | null>(null);
   const [currency, setCurrencyState] = useState<Currency>(USD);
   const [showLocal, setShowLocal] = useState(true);
@@ -243,13 +94,7 @@ export default function TelemetriaPage() {
     void listRecords().then(setRecords);
   }, []);
 
-  const reloadEntries = useCallback(() => {
-    setEntries(listAllEntriesSync());
-  }, []);
-
   useEffect(() => {
-    invalidateConfigCache();
-    loadConfigCache().then(() => setEntries(listAllEntriesSync()));
     load();
     setCurrencyState(getCurrency());
     try {
@@ -262,28 +107,14 @@ export default function TelemetriaPage() {
     if (!records) return null;
     let tokens = 0;
     let costUsd = 0;
+    let errors = 0;
     for (const r of records) {
       tokens += r.totalTokens;
       costUsd += r.costUsd;
+      if (r.status === "error") errors += 1;
     }
-    return { calls: records.length, tokens, costUsd };
+    return { calls: records.length, tokens, costUsd, errors };
   }, [records]);
-
-  /** Gasto atribuído a uma entry: mesmo provedor E modelo compatível. */
-  const spendFor = useCallback(
-    (e: EntryLite) => {
-      let costUsd = 0;
-      let calls = 0;
-      for (const r of records ?? []) {
-        if (r.providerId !== e.providerId) continue;
-        if (e.model && r.model && r.model !== e.model) continue;
-        costUsd += r.costUsd;
-        calls += 1;
-      }
-      return { costUsd, calls };
-    },
-    [records],
-  );
 
   const byProvider = useMemo(
     () => aggregate(records ?? [], (r) => ({ key: r.providerId, label: r.providerName || r.providerId })),
@@ -371,287 +202,207 @@ export default function TelemetriaPage() {
   };
 
   return (
-    <main className="cfg-page">
-      {/* TopBar padrão (como /configuracoes) — logo + idioma + fechar,
-          pra pessoa poder mudar a língua daqui também (Miguel, 22/08). */}
-      <div className="igot-topbar">
-        <div className="igot-topbar-left">
-          <Link href="/estante" className="brand" title="Voltar à estante">
-            <CafezinhoLogo size={26} opacity={0.85} /> <span>Moka</span>
-          </Link>
-          <span className="cfg-topbar-label">📊 {tt(lang, "tele_nav")}</span>
-        </div>
-        <div className="igot-topbar-actions">
-          <AuthGate />
-          <LangSwitcher />
-          <button
-            className="cfg-close-btn"
-            onClick={() => router.back()}
-            aria-label="✕"
-            title="✕"
-          >
-            ✕
-          </button>
-        </div>
+    <main className="tele-page">
+      <Link href="/configuracoes" className="info-back">← {tt(lang, "usage_view")}</Link>
+      <div className="tele-header">
+        <h1 className="tele-title">📊 {tt(lang, "tele_page_title")}</h1>
+        <button
+          type="button"
+          className={`tele-calc-toggle ${calcOpen ? "active" : ""}`}
+          onClick={() => setCalcOpen((o) => !o)}
+        >
+          🧮 Calculadora
+        </button>
+      </div>
+      <p className="tele-sub">{tt(lang, "tele_intro")}</p>
+
+      {/* Moeda + marcador "mostrar também na moeda do país" */}
+      <div className="tele-currency-row">
+        <label htmlFor="tele-currency">💱 {tt(lang, "tele_currency")}:</label>
+        <select
+          id="tele-currency"
+          value={currency.code}
+          onChange={(e) => changeCurrency(e.target.value)}
+        >
+          {CURRENCIES.map((c) => (
+            <option key={c.code} value={c.code}>
+              {c.code} — {c.name}
+            </option>
+          ))}
+        </select>
+        <label className="tts-checkbox-row" title={tt(lang, "tele_approx")}>
+          <input type="checkbox" checked={showLocal} onChange={toggleShowLocal} />
+          💲 + {currency.code}
+        </label>
       </div>
 
-      <div className="cfg-container">
-        <header className="cfg-header">
-          <h1 className="cfg-title">🤖 {tt(lang, "tele_page_title")}</h1>
-          <p className="cfg-intro">{tt(lang, "tele_intro")}</p>
-        </header>
-
-        {/* ═══ 1. SUAS IAs REGISTRADAS — trocar modelo + gasto de cada uma ═══ */}
-        <section className="cfg-section">
-          <h2 className="cfg-section-title">🤖 {tt(lang, "tele_your_ais")}</h2>
-          {entries.length === 0 ? (
-            <div className="tele-empty-ais">
-              <p>{tt(lang, "tele_no_ais")}</p>
-              <Link href="/configuracoes" className="tele-btn">
-                {tt(lang, "tele_add_key")}
-              </Link>
-            </div>
-          ) : (
-            <div className="tele-ai-list">
-              {entries.map((e) => {
-                const preset = PRESETS.find((p) => p.id === e.providerId);
-                const name = e.label || preset?.name || e.providerId;
-                const spend = spendFor(e);
-                return (
-                  <div key={e.id} className={`tele-ai-card ${e.active ? "active" : ""}`}>
-                    <div className="tele-ai-head">
-                      <span className="tele-ai-name">
-                        {e.active && <span className="active-dot">●</span>} {name}
-                      </span>
-                      <span className="tele-ai-key">{e.maskedKey}</span>
-                    </div>
-                    <AiModelPicker entry={e} lang={lang} onChanged={reloadEntries} />
-                    <div className="tele-ai-spend" title={tt(lang, "tele_approx")}>
-                      💸 {tt(lang, "tele_ai_spent")}: <strong>{money(spend.costUsd)}</strong>
-                      {" · "}
-                      {spend.calls} {tt(lang, "tele_calls")}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </section>
-
-        {/* ═══ 2. GASTOS POR USO (telemetria completa) ═══ */}
-        <section className="cfg-section">
-          <h2 className="cfg-section-title">{tt(lang, "tele_spend_title")}</h2>
-
-          {/* Moeda + marcador "mostrar também na moeda do país" */}
-          <div className="tele-currency-row">
-            <label htmlFor="tele-currency">💱 {tt(lang, "tele_currency")}:</label>
-            <select
-              id="tele-currency"
-              value={currency.code}
-              onChange={(e) => changeCurrency(e.target.value)}
-            >
-              {CURRENCIES.map((c) => (
-                <option key={c.code} value={c.code}>
-                  {c.code} — {c.name}
-                </option>
+      {/* Calculadora de custo */}
+      {calcOpen && (
+        <div className="tele-calc-box">
+          <label>
+            {tt(lang, "tele_provider")}:
+            <select value={calcProvider} onChange={(e) => { setCalcProvider(e.target.value); setCalcResult(null); }}>
+              {PRESETS.map((p) => (
+                <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
-            <label className="tts-checkbox-row" title={tt(lang, "tele_approx")}>
-              <input type="checkbox" checked={showLocal} onChange={toggleShowLocal} />
-              💲 + {currency.code}
-            </label>
-            <button
-              type="button"
-              className={`tele-calc-toggle ${calcOpen ? "active" : ""}`}
-              onClick={() => setCalcOpen((o) => !o)}
-            >
-              🧮 Calculadora
-            </button>
-          </div>
-
-          {/* Calculadora de custo */}
-          {calcOpen && (
-            <div className="tele-calc-box">
-              <label>
-                {tt(lang, "tele_provider")}:
-                <select value={calcProvider} onChange={(e) => { setCalcProvider(e.target.value); setCalcResult(null); }}>
-                  {PRESETS.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                {tt(lang, "tele_model")}:
-                <input
-                  type="text"
-                  value={calcModel}
-                  onChange={(e) => { setCalcModel(e.target.value); setCalcResult(null); }}
-                  placeholder={PRESETS.find((p) => p.id === calcProvider)?.defaultModel ?? ""}
-                  spellCheck={false}
-                />
-              </label>
-              <label>
-                {tt(lang, "usage_in")} (tokens):
-                <input type="number" min={0} value={calcIn} onChange={(e) => { setCalcIn(Number(e.target.value) || 0); setCalcResult(null); }} />
-              </label>
-              <label>
-                {tt(lang, "usage_out")} (tokens):
-                <input type="number" min={0} value={calcOut} onChange={(e) => { setCalcOut(Number(e.target.value) || 0); setCalcResult(null); }} />
-              </label>
-              <button type="button" className="tele-btn" onClick={handleCalc}>
-                🧮 {tt(lang, "tele_cost")}
-              </button>
-              {calcResult !== null && (
-                <div className="tele-calc-result">
-                  ≈ {money(calcResult)}{" "}
-                  <em className="usage-toast-est">({tt(lang, "usage_estimated")})</em>
-                </div>
-              )}
+          </label>
+          <label>
+            {tt(lang, "tele_model")}:
+            <input
+              type="text"
+              value={calcModel}
+              onChange={(e) => { setCalcModel(e.target.value); setCalcResult(null); }}
+              placeholder={PRESETS.find((p) => p.id === calcProvider)?.defaultModel ?? ""}
+              spellCheck={false}
+            />
+          </label>
+          <label>
+            {tt(lang, "usage_in")} (tokens):
+            <input type="number" min={0} value={calcIn} onChange={(e) => { setCalcIn(Number(e.target.value) || 0); setCalcResult(null); }} />
+          </label>
+          <label>
+            {tt(lang, "usage_out")} (tokens):
+            <input type="number" min={0} value={calcOut} onChange={(e) => { setCalcOut(Number(e.target.value) || 0); setCalcResult(null); }} />
+          </label>
+          <button type="button" className="tele-btn" onClick={handleCalc}>
+            🧮 {tt(lang, "tele_cost")}
+          </button>
+          {calcResult !== null && (
+            <div className="tele-calc-result">
+              ≈ {money(calcResult)}{" "}
+              <em className="usage-toast-est">({tt(lang, "usage_estimated")})</em>
             </div>
           )}
-
-          {records === null ? (
-            <p className="tele-empty">⏳ …</p>
-          ) : !totals || totals.calls === 0 ? (
-            <p className="tele-empty">{tt(lang, "tele_empty")}</p>
-          ) : (
-            <>
-              {/* Totais */}
-              <div className="tele-totals">
-                <div className="tele-total-card">
-                  <span className="num">{money(totals.costUsd)}</span>
-                  <span className="lbl">{tt(lang, "tele_total")}</span>
-                </div>
-                <div className="tele-total-card">
-                  <span className="num">{totals.tokens.toLocaleString()}</span>
-                  <span className="lbl">{tt(lang, "tele_tokens")}</span>
-                </div>
-                <div className="tele-total-card">
-                  <span className="num">{totals.calls.toLocaleString()}</span>
-                  <span className="lbl">{tt(lang, "tele_calls")}</span>
-                </div>
-              </div>
-
-              {/* Por provedor */}
-              <h3 className="tele-group-title">{tt(lang, "tele_by_provider")}</h3>
-              <table className="tele-table">
-                <thead>
-                  <tr>
-                    <th>{tt(lang, "tele_provider")}</th>
-                    <th className="num">{tt(lang, "tele_calls")}</th>
-                    <th className="num">{tt(lang, "tele_tokens")}</th>
-                    <th className="num">{tt(lang, "tele_cost")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {byProvider.map((row) => (
-                    <tr key={row.key}>
-                      <td>{row.label}</td>
-                      <td className="num">{row.calls}</td>
-                      <td className="num">{row.tokens.toLocaleString()}</td>
-                      <td className="num">{money(row.costUsd)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {/* Por tarefa */}
-              <h3 className="tele-group-title">{tt(lang, "tele_by_task")}</h3>
-              <table className="tele-table">
-                <thead>
-                  <tr>
-                    <th>{tt(lang, "tele_task")}</th>
-                    <th className="num">{tt(lang, "tele_calls")}</th>
-                    <th className="num">{tt(lang, "tele_tokens")}</th>
-                    <th className="num">{tt(lang, "tele_cost")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {byTask.map((row) => (
-                    <tr key={row.key}>
-                      <td>{row.label}</td>
-                      <td className="num">{row.calls}</td>
-                      <td className="num">{row.tokens.toLocaleString()}</td>
-                      <td className="num">{money(row.costUsd)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {/* Por modelo */}
-              <h3 className="tele-group-title">{tt(lang, "tele_by_model")}</h3>
-              <table className="tele-table">
-                <thead>
-                  <tr>
-                    <th>{tt(lang, "tele_model")}</th>
-                    <th className="num">{tt(lang, "tele_calls")}</th>
-                    <th className="num">{tt(lang, "tele_tokens")}</th>
-                    <th className="num">{tt(lang, "tele_cost")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {byModel.map((row) => (
-                    <tr key={row.key}>
-                      <td>{row.label}</td>
-                      <td className="num">{row.calls}</td>
-                      <td className="num">{row.tokens.toLocaleString()}</td>
-                      <td className="num">{money(row.costUsd)}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {/* Histórico (últimos 100) */}
-              <h3 className="tele-group-title">{tt(lang, "tele_history")}</h3>
-              <div className="tele-records">
-                {records.slice(0, 100).map((r) => (
-                  <div key={r.id} className="tele-record">
-                    <div>
-                      <div>
-                        {taskLabel(lang, r.task)}
-                        {r.status === "error" ? ` · ⚠️ ${tt(lang, "tele_err")}` : ""}
-                      </div>
-                      <div className="tele-record-meta">
-                        {fmtDate(r.ts, lang)} · {r.providerName || r.providerId}
-                        {r.model ? ` (${r.model})` : ""} ·{" "}
-                        {r.promptTokens.toLocaleString()} ↓ / {r.completionTokens.toLocaleString()} ↑
-                        {r.usageEstimated ? ` · ${tt(lang, "usage_estimated")}` : ""}
-                      </div>
-                    </div>
-                    <span className={`tele-record-cost ${r.status === "error" ? "err" : ""}`}>
-                      {money(r.costUsd)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-
-              {/* Ações */}
-              <div className="tele-actions">
-                <button type="button" className="tele-btn" onClick={handleExportCsv}>
-                  ⬇️ {tt(lang, "tele_export_csv")}
-                </button>
-                <button type="button" className="tele-btn danger" onClick={handleClear}>
-                  🗑 {tt(lang, "tele_clear")}
-                </button>
-              </div>
-            </>
-          )}
-        </section>
-
-        {/* ═══ 3. PREÇOS DAS IAs (a página com os preços — Miguel, 22/08) ═══ */}
-        <section className="cfg-section">
-          <LlmPriceRanking />
-        </section>
-
-        {/* Atalho pras configurações completas (idiomas, vídeo, avisos). */}
-        <div className="tele-actions">
-          <Link href="/configuracoes" className="tele-btn">
-            {tt(lang, "tele_open_settings")} →
-          </Link>
         </div>
-      </div>
+      )}
 
-      <SiteFooter />
+      {records === null ? (
+        <p className="tele-empty">⏳ …</p>
+      ) : !totals || totals.calls === 0 ? (
+        <p className="tele-empty">{tt(lang, "tele_empty")}</p>
+      ) : (
+        <>
+          {/* Totais */}
+          <div className="tele-totals">
+            <div className="tele-total-card">
+              <span className="num">{money(totals.costUsd)}</span>
+              <span className="lbl">{tt(lang, "tele_total")}</span>
+            </div>
+            <div className="tele-total-card">
+              <span className="num">{totals.tokens.toLocaleString()}</span>
+              <span className="lbl">{tt(lang, "tele_tokens")}</span>
+            </div>
+            <div className="tele-total-card">
+              <span className="num">{totals.calls.toLocaleString()}</span>
+              <span className="lbl">{tt(lang, "tele_calls")}</span>
+            </div>
+          </div>
+
+          {/* Por provedor */}
+          <h2 className="tele-group-title">{tt(lang, "tele_by_provider")}</h2>
+          <table className="tele-table">
+            <thead>
+              <tr>
+                <th>{tt(lang, "tele_provider")}</th>
+                <th className="num">{tt(lang, "tele_calls")}</th>
+                <th className="num">{tt(lang, "tele_tokens")}</th>
+                <th className="num">{tt(lang, "tele_cost")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {byProvider.map((row) => (
+                <tr key={row.key}>
+                  <td>{row.label}</td>
+                  <td className="num">{row.calls}</td>
+                  <td className="num">{row.tokens.toLocaleString()}</td>
+                  <td className="num">{money(row.costUsd)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Por tarefa */}
+          <h2 className="tele-group-title">{tt(lang, "tele_by_task")}</h2>
+          <table className="tele-table">
+            <thead>
+              <tr>
+                <th>{tt(lang, "tele_task")}</th>
+                <th className="num">{tt(lang, "tele_calls")}</th>
+                <th className="num">{tt(lang, "tele_tokens")}</th>
+                <th className="num">{tt(lang, "tele_cost")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {byTask.map((row) => (
+                <tr key={row.key}>
+                  <td>{row.label}</td>
+                  <td className="num">{row.calls}</td>
+                  <td className="num">{row.tokens.toLocaleString()}</td>
+                  <td className="num">{money(row.costUsd)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Por modelo */}
+          <h2 className="tele-group-title">{tt(lang, "tele_by_model")}</h2>
+          <table className="tele-table">
+            <thead>
+              <tr>
+                <th>{tt(lang, "tele_model")}</th>
+                <th className="num">{tt(lang, "tele_calls")}</th>
+                <th className="num">{tt(lang, "tele_tokens")}</th>
+                <th className="num">{tt(lang, "tele_cost")}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {byModel.map((row) => (
+                <tr key={row.key}>
+                  <td>{row.label}</td>
+                  <td className="num">{row.calls}</td>
+                  <td className="num">{row.tokens.toLocaleString()}</td>
+                  <td className="num">{money(row.costUsd)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Histórico (últimos 100) */}
+          <h2 className="tele-group-title">{tt(lang, "tele_history")}</h2>
+          <div className="tele-records">
+            {records.slice(0, 100).map((r) => (
+              <div key={r.id} className="tele-record">
+                <div>
+                  <div>
+                    {taskLabel(lang, r.task)}
+                    {r.status === "error" ? ` · ⚠️ ${tt(lang, "tele_err")}` : ""}
+                  </div>
+                  <div className="tele-record-meta">
+                    {fmtDate(r.ts, lang)} · {r.providerName || r.providerId}
+                    {r.model ? ` (${r.model})` : ""} ·{" "}
+                    {r.promptTokens.toLocaleString()} ↓ / {r.completionTokens.toLocaleString()} ↑
+                    {r.usageEstimated ? ` · ${tt(lang, "usage_estimated")}` : ""}
+                  </div>
+                </div>
+                <span className={`tele-record-cost ${r.status === "error" ? "err" : ""}`}>
+                  {money(r.costUsd)}
+                </span>
+              </div>
+            ))}
+          </div>
+
+          {/* Ações */}
+          <div className="tele-actions">
+            <button type="button" className="tele-btn" onClick={handleExportCsv}>
+              ⬇️ {tt(lang, "tele_export_csv")}
+            </button>
+            <button type="button" className="tele-btn danger" onClick={handleClear}>
+              🗑 {tt(lang, "tele_clear")}
+            </button>
+          </div>
+        </>
+      )}
     </main>
   );
 }
