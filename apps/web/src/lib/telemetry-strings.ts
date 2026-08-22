@@ -9,9 +9,17 @@
  */
 
 export type TeleStringKey =
-  // ── Página /telemetria ──
+  // ── Página /telemetria ("Suas IAs" — reforma do Miguel, 22/08) ──
+  | "tele_nav"
   | "tele_page_title"
   | "tele_intro"
+  | "tele_your_ais"
+  | "tele_no_ais"
+  | "tele_add_key"
+  | "tele_spend_title"
+  | "tele_ai_spent"
+  | "tele_open_settings"
+  | "tele_banner_sub"
   | "tele_total"
   | "tele_by_task"
   | "tele_by_provider"
@@ -78,9 +86,19 @@ type TeleStrings = Record<TeleStringKey, string>;
 
 const STRINGS: Record<string, TeleStrings> = {
   "pt-BR": {
-    tele_page_title: "📊 Telemetria de gastos",
+    tele_nav: "Suas IAs e telemetria",
+    tele_page_title: "Suas IAs",
     tele_intro:
-      "Tudo o que as SUAS chaves de IA consumiram, registrado só no seu dispositivo. Custos estimados pela tabela de preços.",
+      "A página de controle das suas IAs: veja as chaves registradas, troque o modelo de cada uma e acompanhe quanto cada tarefa gastou. Tudo registrado só no seu dispositivo.",
+    tele_your_ais: "Suas IAs registradas",
+    tele_no_ais:
+      "Você ainda não registrou nenhuma chave de IA. Adicione a primeira para começar.",
+    tele_add_key: "➕ Adicionar chave de IA",
+    tele_spend_title: "📊 Gastos por uso",
+    tele_ai_spent: "Gasto desta IA",
+    tele_open_settings: "⚙️ Abrir configurações completas",
+    tele_banner_sub:
+      "Veja suas IAs, troque o modelo e acompanhe cada gasto",
     tele_total: "Total gasto",
     tele_by_task: "Por tarefa",
     tele_by_provider: "Por IA (provedor)",
@@ -147,9 +165,17 @@ const STRINGS: Record<string, TeleStrings> = {
     task_video_ask: "Vídeo: pergunta",
   },
   en: {
-    tele_page_title: "📊 Spending telemetry",
+    tele_nav: "Your AIs & telemetry",
+    tele_page_title: "Your AIs",
     tele_intro:
-      "Everything YOUR AI keys consumed, recorded only on your device. Costs estimated from the price table.",
+      "Your AI control page: see your registered keys, switch each one's model and track how much each task spent. Everything recorded only on your device.",
+    tele_your_ais: "Your registered AIs",
+    tele_no_ais: "You haven't registered any AI key yet. Add the first one to start.",
+    tele_add_key: "➕ Add AI key",
+    tele_spend_title: "📊 Usage spending",
+    tele_ai_spent: "Spent by this AI",
+    tele_open_settings: "⚙️ Open full settings",
+    tele_banner_sub: "See your AIs, switch models and track every cost",
     tele_total: "Total spent",
     tele_by_task: "By task",
     tele_by_provider: "By AI (provider)",
@@ -216,9 +242,17 @@ const STRINGS: Record<string, TeleStrings> = {
     task_video_ask: "Video: question",
   },
   es: {
-    tele_page_title: "📊 Telemetría de gastos",
+    tele_nav: "Tus IAs y telemetría",
+    tele_page_title: "Tus IAs",
     tele_intro:
-      "Todo lo que TUS claves de IA consumieron, registrado solo en tu dispositivo. Costos estimados según la tabla de precios.",
+      "La página de control de tus IAs: ve tus claves registradas, cambia el modelo de cada una y mira cuánto gastó cada tarea. Todo registrado solo en tu dispositivo.",
+    tele_your_ais: "Tus IAs registradas",
+    tele_no_ais: "Aún no registraste ninguna clave de IA. Agrega la primera para empezar.",
+    tele_add_key: "➕ Agregar clave de IA",
+    tele_spend_title: "📊 Gastos por uso",
+    tele_ai_spent: "Gasto de esta IA",
+    tele_open_settings: "⚙️ Abrir configuraciones completas",
+    tele_banner_sub: "Mira tus IAs, cambia el modelo y sigue cada gasto",
     tele_total: "Total gastado",
     tele_by_task: "Por tarea",
     tele_by_provider: "Por IA (proveedor)",
@@ -285,9 +319,17 @@ const STRINGS: Record<string, TeleStrings> = {
     task_video_ask: "Video: pregunta",
   },
   fr: {
-    tele_page_title: "📊 Télémétrie des dépenses",
+    tele_nav: "Vos IA et télémétrie",
+    tele_page_title: "Vos IA",
     tele_intro:
-      "Tout ce que VOS clés d'IA ont consommé, enregistré uniquement sur votre appareil. Coûts estimés d'après la table des prix.",
+      "La page de contrôle de vos IA : voyez vos clés enregistrées, changez le modèle de chacune et suivez ce que chaque tâche a consommé. Tout reste sur votre appareil.",
+    tele_your_ais: "Vos IA enregistrées",
+    tele_no_ais: "Vous n'avez encore enregistré aucune clé d'IA. Ajoutez la première pour commencer.",
+    tele_add_key: "➕ Ajouter une clé d'IA",
+    tele_spend_title: "📊 Dépenses par usage",
+    tele_ai_spent: "Dépensé par cette IA",
+    tele_open_settings: "⚙️ Ouvrir tous les réglages",
+    tele_banner_sub: "Voyez vos IA, changez de modèle et suivez chaque dépense",
     tele_total: "Total dépensé",
     tele_by_task: "Par tâche",
     tele_by_provider: "Par IA (fournisseur)",
@@ -354,9 +396,17 @@ const STRINGS: Record<string, TeleStrings> = {
     task_video_ask: "Vidéo : question",
   },
   de: {
-    tele_page_title: "📊 Ausgaben-Telemetrie",
+    tele_nav: "Ihre KIs & Telemetrie",
+    tele_page_title: "Ihre KIs",
     tele_intro:
-      "Alles, was IHRE KI-Schlüssel verbraucht haben, nur auf Ihrem Gerät gespeichert. Kosten laut Preistabelle geschätzt.",
+      "Ihre KI-Kontrollseite: registrierte Schlüssel ansehen, Modell wechseln und verfolgen, was jede Aufgabe verbraucht hat. Alles nur auf Ihrem Gerät.",
+    tele_your_ais: "Registrierte KIs",
+    tele_no_ais: "Sie haben noch keinen KI-Schlüssel registriert. Fügen Sie den ersten hinzu, um zu starten.",
+    tele_add_key: "➕ KI-Schlüssel hinzufügen",
+    tele_spend_title: "📊 Ausgaben nach Nutzung",
+    tele_ai_spent: "Verbrauch dieser KI",
+    tele_open_settings: "⚙️ Alle Einstellungen öffnen",
+    tele_banner_sub: "KIs ansehen, Modell wechseln, jeden Verbrauch verfolgen",
     tele_total: "Gesamtausgaben",
     tele_by_task: "Nach Aufgabe",
     tele_by_provider: "Nach KI (Anbieter)",
@@ -423,9 +473,17 @@ const STRINGS: Record<string, TeleStrings> = {
     task_video_ask: "Video: Frage",
   },
   it: {
-    tele_page_title: "📊 Telemetria delle spese",
+    tele_nav: "Le tue AI e telemetria",
+    tele_page_title: "Le tue AI",
     tele_intro:
-      "Tutto ciò che le TUE chiavi AI hanno consumato, registrato solo sul tuo dispositivo. Costi stimati dalla tabella prezzi.",
+      "La pagina di controllo delle tue AI: vedi le chiavi registrate, cambia il modello di ciascuna e controlla quanto ha speso ogni attività. Tutto solo sul tuo dispositivo.",
+    tele_your_ais: "Le tue AI registrate",
+    tele_no_ais: "Non hai ancora registrato nessuna chiave AI. Aggiungi la prima per iniziare.",
+    tele_add_key: "➕ Aggiungi chiave AI",
+    tele_spend_title: "📊 Spese per uso",
+    tele_ai_spent: "Speso da questa AI",
+    tele_open_settings: "⚙️ Apri impostazioni complete",
+    tele_banner_sub: "Vedi le tue AI, cambia modello e segui ogni spesa",
     tele_total: "Totale speso",
     tele_by_task: "Per attività",
     tele_by_provider: "Per AI (provider)",
@@ -492,9 +550,17 @@ const STRINGS: Record<string, TeleStrings> = {
     task_video_ask: "Video: domanda",
   },
   ru: {
-    tele_page_title: "📊 Телеметрия расходов",
+    tele_nav: "Ваши ИИ и телеметрия",
+    tele_page_title: "Ваши ИИ",
     tele_intro:
-      "Всё, что потребили ВАШИ ключи ИИ, записывается только на вашем устройстве. Оценки по таблице цен.",
+      "Страница управления вашими ИИ: смотрите зарегистрированные ключи, меняйте модель и следите, сколько потратила каждая задача. Всё только на вашем устройстве.",
+    tele_your_ais: "Зарегистрированные ИИ",
+    tele_no_ais: "Вы ещё не зарегистрировали ни одного ключа ИИ. Добавьте первый, чтобы начать.",
+    tele_add_key: "➕ Добавить ключ ИИ",
+    tele_spend_title: "📊 Расходы по использованию",
+    tele_ai_spent: "Потрачено этим ИИ",
+    tele_open_settings: "⚙️ Открыть все настройки",
+    tele_banner_sub: "Смотрите ИИ, меняйте модели, следите за расходами",
     tele_total: "Всего потрачено",
     tele_by_task: "По задаче",
     tele_by_provider: "По ИИ (провайдеру)",
@@ -561,9 +627,17 @@ const STRINGS: Record<string, TeleStrings> = {
     task_video_ask: "Видео: вопрос",
   },
   zh: {
-    tele_page_title: "📊 消费遥测",
+    tele_nav: "您的 AI 与遥测",
+    tele_page_title: "您的 AI",
     tele_intro:
-      "您的 AI 密钥消耗的一切，仅记录在您的设备上。成本按价格表估算。",
+      "您的 AI 控制页：查看已注册的密钥、更换每个密钥的模型，并跟踪每项任务的花费。所有记录仅保存在您的设备上。",
+    tele_your_ais: "已注册的 AI",
+    tele_no_ais: "您还没有注册任何 AI 密钥。添加第一个即可开始。",
+    tele_add_key: "➕ 添加 AI 密钥",
+    tele_spend_title: "📊 使用支出",
+    tele_ai_spent: "该 AI 的花费",
+    tele_open_settings: "⚙️ 打开完整设置",
+    tele_banner_sub: "查看 AI、更换模型、跟踪每笔花费",
     tele_total: "总支出",
     tele_by_task: "按任务",
     tele_by_provider: "按 AI（提供商）",
@@ -624,9 +698,17 @@ const STRINGS: Record<string, TeleStrings> = {
     task_video_ask: "视频：提问",
   },
   ja: {
-    tele_page_title: "📊 使用量テレメトリ",
+    tele_nav: "AIとテレメトリ",
+    tele_page_title: "あなたのAI",
     tele_intro:
-      "あなたのAIキーが消費したすべてを、端末内だけに記録します。コストは価格表からの推定です。",
+      "AIコントロールページ：登録済みのキーを確認し、モデルを切り替え、各タスクの消費を追跡します。記録はすべて端末内にのみ保存されます。",
+    tele_your_ais: "登録済みのAI",
+    tele_no_ais: "まだAIキーが登録されていません。最初のキーを追加して始めましょう。",
+    tele_add_key: "➕ AIキーを追加",
+    tele_spend_title: "📊 使用量の内訳",
+    tele_ai_spent: "このAIの消費",
+    tele_open_settings: "⚙️ 全設定を開く",
+    tele_banner_sub: "AIを確認し、モデルを変更し、消費を追跡",
     tele_total: "合計支出",
     tele_by_task: "タスク別",
     tele_by_provider: "AI（プロバイダー）別",
@@ -687,9 +769,17 @@ const STRINGS: Record<string, TeleStrings> = {
     task_video_ask: "動画：質問",
   },
   ko: {
-    tele_page_title: "📊 사용량 텔레메트리",
+    tele_nav: "AI 및 텔레메트리",
+    tele_page_title: "귀하의 AI",
     tele_intro:
-      "귀하의 AI 키가 소비한 모든 것을 기기에만 기록합니다. 비용은 가격표 기준 추정치입니다.",
+      "AI 관리 페이지: 등록된 키를 보고, 각 키의 모델을 바꾸고, 각 작업이 얼마나 썼는지 추적하세요. 모든 기록은 기기에만 저장됩니다.",
+    tele_your_ais: "등록된 AI",
+    tele_no_ais: "아직 등록된 AI 키가 없습니다. 첫 키를 추가하여 시작하세요.",
+    tele_add_key: "➕ AI 키 추가",
+    tele_spend_title: "📊 사용 지출",
+    tele_ai_spent: "이 AI의 지출",
+    tele_open_settings: "⚙️ 전체 설정 열기",
+    tele_banner_sub: "AI를 보고, 모델을 바꾸고, 지출을 추적하세요",
     tele_total: "총 지출",
     tele_by_task: "작업별",
     tele_by_provider: "AI(제공자)별",
@@ -750,9 +840,17 @@ const STRINGS: Record<string, TeleStrings> = {
     task_video_ask: "영상: 질문",
   },
   ar: {
-    tele_page_title: "📊 قياسات الإنفاق",
+    tele_nav: "ذكاءاتك والقياسات",
+    tele_page_title: "ذكاءاتك",
     tele_intro:
-      "كل ما استهلكته مفاتيح الذكاء الاصطناعي الخاصة بك، يُسجَّل على جهازك فقط. التكاليف تقديرية وفق جدول الأسعار.",
+      "صفحة التحكم في ذكاءاتك: اعرض المفاتيح المسجلة، وبدّل نموذج كل منها، وتابع كم أنفقت كل مهمة. كل شيء يُسجَّل على جهازك فقط.",
+    tele_your_ais: "الذكاءات المسجلة",
+    tele_no_ais: "لم تسجّل أي مفتاح ذكاء اصطناعي بعد. أضف الأول للبدء.",
+    tele_add_key: "➕ إضافة مفتاح ذكاء اصطناعي",
+    tele_spend_title: "📊 الإنفاق حسب الاستخدام",
+    tele_ai_spent: "إنفاق هذا الذكاء",
+    tele_open_settings: "⚙️ فتح كل الإعدادات",
+    tele_banner_sub: "اعرض ذكاءاتك وبدّل النماذج وتابع الإنفاق",
     tele_total: "إجمالي الإنفاق",
     tele_by_task: "حسب المهمة",
     tele_by_provider: "حسب الذكاء الاصطناعي (المزوّد)",
@@ -813,9 +911,17 @@ const STRINGS: Record<string, TeleStrings> = {
     task_video_ask: "فيديو: سؤال",
   },
   hi: {
-    tele_page_title: "📊 ख़र्च टेलीमेट्री",
+    tele_nav: "आपकी AI और टेलीमेट्री",
+    tele_page_title: "आपकी AI",
     tele_intro:
-      "आपकी AI कुंजियों ने जो भी ख़र्च किया, वह सिर्फ़ आपके डिवाइस पर दर्ज होता है। क़ीमतें मूल्य सूची से अनुमानित हैं।",
+      "आपकी AI नियंत्रण पृष्ठ: पंजीकृत कुंजियाँ देखें, हर एक का मॉडल बदलें और जानें कि हर कार्य पर कितना ख़र्च हुआ। सब कुछ सिर्फ़ आपके डिवाइस पर दर्ज होता है।",
+    tele_your_ais: "पंजीकृत AI",
+    tele_no_ais: "अभी कोई AI कुंजी पंजीकृत नहीं है। शुरू करने के लिए पहली जोड़ें।",
+    tele_add_key: "➕ AI कुंजी जोड़ें",
+    tele_spend_title: "📊 उपयोग अनुसार ख़र्च",
+    tele_ai_spent: "इस AI का ख़र्च",
+    tele_open_settings: "⚙️ पूरी सेटिंग्स खोलें",
+    tele_banner_sub: "अपनी AI देखें, मॉडल बदलें, हर ख़र्च देखें",
     tele_total: "कुल ख़र्च",
     tele_by_task: "कार्य अनुसार",
     tele_by_provider: "AI (प्रदाता) अनुसार",

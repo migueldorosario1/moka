@@ -7,6 +7,7 @@ import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { SettingsModal } from "@/components/SettingsModal";
 import { SectionSwitcher } from "@/components/SectionSwitcher";
 import { LangSwitcher } from "@/components/LangSwitcher";
+import { TelemetryIconButton } from "@/components/TelemetryIconButton";
 import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
 import { useAuth } from "@/lib/auth";
@@ -361,6 +362,8 @@ export default function HomePage() {
           >
             ⚙️
           </button>
+          {/* 📊 Suas IAs e telemetria (pedido do Miguel, 22/08). */}
+          <TelemetryIconButton />
         </div>
       </div>
 
