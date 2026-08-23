@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useI18n } from "./I18nProvider";
 
 /**
  * Renderiza UMA página real de PDF, fiel ao original (layout, tipografia,
@@ -111,6 +112,7 @@ export function PdfPageCanvas({
   onCanvasReady,
   onNumPages,
 }: PdfPageCanvasProps) {
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const textLayerRef = useRef<HTMLDivElement>(null);
@@ -434,8 +436,10 @@ export function PdfPageCanvas({
           <div className="pdf-translation-overlay">
             <div className="pdf-translation-page pdf-translation-waiting">
               <div className="page-ai-spinner" />
-              <strong>🌐 Traduzindo a página inteira…</strong>
-              <span>A IA está trabalhando — pode levar até 1 minuto. O texto aparece aqui.</span>
+              {/* i18n nos 12 idiomas (pedido Miguel, 22/08) — antes estava
+                  hardcoded em português no caminho do PDF. */}
+              <strong>{t("reader_translating_page")}</strong>
+              <span>{t("reader_translating_page_sub")}</span>
             </div>
           </div>
         )}
