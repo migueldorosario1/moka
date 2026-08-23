@@ -549,9 +549,11 @@ export default function HomePage() {
         <CafezinhoLogo size={16} opacity={0.5} />
         <span>
           Moka Video — um produto Cafezinho, irmão do{" "}
-          <a href="https://www.mokareader.com" target="_blank" rel="noreferrer">
+          {/* Link RELATIVO (não absoluto pro mokareader.com): o espelho tem
+              que se conter em si mesmo em todas as páginas (Miguel, 22/08). */}
+          <Link href="/">
             Moka Reader
-          </a>
+          </Link>
         </span>
         <span className="footer-sep">·</span>
         <Link href="/sobre">{t("nav_about")}</Link>

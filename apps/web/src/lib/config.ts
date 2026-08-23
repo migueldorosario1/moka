@@ -277,8 +277,21 @@ export async function setConfig(
   };
 
   if (existingIdx >= 0) {
+    // Editando uma entrada existente: PRESERVA as marcas de função
+    // (useForText/Voice/Video) — antes o objeto novo as zerava e a key
+    // "perdia" o lugar no mix de IAs ao ser editada.
+    const prev = cachedEntries[existingIdx];
+    entry.useForText = prev.useForText;
+    entry.useForVideo = prev.useForVideo;
+    entry.useForVoice = prev.useForVoice;
     cachedEntries[existingIdx] = entry;
   } else {
+    // Entrada NOVA: a caixa 📖 Tradução/Explicação já vem MARCADA como
+    // default (pedido do Miguel, 22/08). A marca de texto é single-select
+    // (getEntryForText pega a primeira) — então só marca se ainda não
+    // existe outra entry de texto, pra nova key não "roubar" o lugar.
+    const alreadyHasText = cachedEntries.some((e) => e.useForText);
+    if (!alreadyHasText) entry.useForText = true;
     cachedEntries.push(entry);
   }
   if (!cachedActiveId) cachedActiveId = id;
