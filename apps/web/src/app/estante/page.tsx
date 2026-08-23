@@ -154,6 +154,14 @@ export default function HomePage() {
           );
           if (existingByTitle) {
             existingByTitle.pdfSource = result.book.sourceFormat === "pdf" ? new Uint8Array(data) : null;
+            // Re-enviou o arquivo: recalcula a capa com a detecção V4 (examina
+            // as 10 primeiras páginas e elege a melhor — pedido do Miguel,
+            // 23/08; caso-escola: Roman Political Institutions, capa na p.9).
+            // Best-effort: falha silencosa mantém a capa antiga.
+            if (result.book.sourceFormat === "pdf") {
+              existingByTitle.coverImage =
+                (await renderPdfCover(data)) ?? existingByTitle.coverImage;
+            }
             await saveToLibrary(existingByTitle, auth.userId);
             router.push(`/book/${existingByTitle.id}`);
             return;
