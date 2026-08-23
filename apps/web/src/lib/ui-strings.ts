@@ -196,6 +196,7 @@ export type UIStringKey =
   | "reader_sel_from_start"
   | "reader_sel_copy"
   | "reader_no_text"
+  | "reader_scan_no_text"
   | "reader_translate_page"
   | "reader_translating"
   | "reader_translating_page"
@@ -737,6 +738,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_patience_pre: "Tenha paciência — algumas IAs são mais lentas que outras. Veja em nosso",
     reader_patience_wall: "Mural das IAs",
     reader_patience_post: "quais são as mais rápidas, melhores e econômicas.",
+    reader_scan_no_text: "Não há texto nesta página para a IA traduzir. Pode ser um livro escaneado (só imagens) ou a página ainda está carregando. Aguarde um instante e tente de novo.",
     reader_view_original: "📖 Ver original",
     reader_view_translation: "🌐 Ver tradução",
     reader_explain_page: "🧠 Explicar a página inteira",
@@ -1206,6 +1208,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_patience_pre: "Have patience — some AIs are slower than others. See our",
     reader_patience_wall: "AI Wall",
     reader_patience_post: "for the fastest, best and most affordable ones.",
+    reader_scan_no_text: "There is no text on this page for the AI to translate. It may be a scanned book (images only) or the page is still loading. Wait a moment and try again.",
     reader_view_original: "📖 View original",
     reader_view_translation: "🌐 View translation",
     reader_explain_page: "🧠 Explain whole page",
@@ -1671,6 +1674,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_patience_pre: "Ten paciencia — algunas IAs son más lentas. Mira nuestro",
     reader_patience_wall: "Muro de las IAs",
     reader_patience_post: "para ver cuáles son las más rápidas, mejores y económicas.",
+    reader_scan_no_text: "No hay texto en esta página para que la IA traduzca. Puede ser un libro escaneado (solo imágenes) o que la página aún esté cargando. Espera un momento e inténtalo de nuevo.",
     reader_view_original: "📖 Ver original",
     reader_view_translation: "🌐 Ver traducción",
     reader_explain_page: "🧠 Explicar la página entera",
@@ -2136,6 +2140,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_patience_pre: "Soyez patient — certaines IAs sont plus lentes. Voir notre",
     reader_patience_wall: "Mur des IAs",
     reader_patience_post: "pour découvrir les plus rapides, meilleures et économiques.",
+    reader_scan_no_text: "Il n'y a pas de texte à traduire sur cette page. Il peut s'agir d'un livre numérisé (images uniquement) ou la page est encore en cours de chargement. Attendez un instant et réessayez.",
     reader_view_original: "📖 Voir l'original",
     reader_view_translation: "🌐 Voir la traduction",
     reader_explain_page: "🧠 Expliquer la page entière",
@@ -2601,6 +2606,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_patience_pre: "Hab etwas Geduld — manche KIs sind langsamer als andere. Auf unserer",
     reader_patience_wall: "KI-Wand",
     reader_patience_post: "findest du die schnellsten, besten und günstigsten.",
+    reader_scan_no_text: "Auf dieser Seite gibt es keinen Text zum Übersetzen. Es kann ein eingescanntes Buch (nur Bilder) sein oder die Seite lädt noch. Warte einen Moment und versuche es erneut.",
     reader_view_original: "📖 Original anzeigen",
     reader_view_translation: "🌐 Übersetzung anzeigen",
     reader_explain_page: "🧠 Ganze Seite erklären",
@@ -3066,6 +3072,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_patience_pre: "Abbi pazienza — alcune IA sono più lente di altre. Guarda il nostro",
     reader_patience_wall: "Muro delle IA",
     reader_patience_post: "per scoprire le più veloci, migliori ed economiche.",
+    reader_scan_no_text: "Non c'è testo in questa pagina da tradurre. Potrebbe essere un libro scansionato (solo immagini) o la pagina si sta ancora caricando. Attendi un momento e riprova.",
     reader_view_original: "📖 Vedi originale",
     reader_view_translation: "🌐 Vedi traduzione",
     reader_explain_page: "🧠 Spiega l'intera pagina",
@@ -3531,6 +3538,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_patience_pre: "Наберитесь терпения — некоторые ИИ работают медленнее. Загляните на нашу",
     reader_patience_wall: "Стену ИИ",
     reader_patience_post: "— там собраны самые быстрые, лучшие и доступные.",
+    reader_scan_no_text: "На этой странице нет текста для перевода. Возможно, это отсканированная книга (только изображения) или страница ещё загружается. Подождите немного и попробуйте снова.",
     reader_view_original: "📖 Показать оригинал",
     reader_view_translation: "🌐 Показать перевод",
     reader_explain_page: "🧠 Объяснить всю страницу",
@@ -3996,6 +4004,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_patience_pre: "请耐心等待——有些 AI 比较慢。来看看我们的",
     reader_patience_wall: "AI 墙",
     reader_patience_post: "，了解最快、最好、最实惠的选择。",
+    reader_scan_no_text: "此页面没有可供 AI 翻译的文本。可能是扫描版图书（纯图片），或页面仍在加载。请稍候再试。",
     reader_view_original: "📖 查看原文",
     reader_view_translation: "🌐 查看译文",
     reader_explain_page: "🧠 解释整页",
@@ -4461,6 +4470,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_patience_pre: "しばらくお待ちください——AIによって速度が違います。私たちの",
     reader_patience_wall: "AIウォール",
     reader_patience_post: "で、最速・最高・最もお得なAIをご覧ください。",
+    reader_scan_no_text: "このページにはAIが翻訳できるテキストがありません。スキャンされた本（画像のみ）か、ページがまだ読み込み中の可能性があります。しばらく待ってもう一度お試しください。",
     reader_view_original: "📖 原文を見る",
     reader_view_translation: "🌐 翻訳を見る",
     reader_explain_page: "🧠 ページ全体を解説",
@@ -4926,6 +4936,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_patience_pre: "조금만 기다려 주세요 — 일부 AI는 더 느립니다. 저희",
     reader_patience_wall: "AI 월",
     reader_patience_post: "에서 가장 빠르고 좋고 저렴한 AI를 확인하세요.",
+    reader_scan_no_text: "이 페이지에는 AI가 번역할 텍스트가 없습니다. 스캔본(이미지만 있는 책)이거나 페이지가 아직 로드 중일 수 있습니다. 잠시 후 다시 시도하세요.",
     reader_view_original: "📖 원문 보기",
     reader_view_translation: "🌐 번역 보기",
     reader_explain_page: "🧠 전체 페이지 설명",
@@ -5391,6 +5402,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_patience_pre: "تحلَّ بالصبر — بعض أدوات الذكاء الاصطناعي أبطأ من غيرها. اطّلع على",
     reader_patience_wall: "جدار الذكاء الاصطناعي",
     reader_patience_post: "للتعرف على أسرعها وأفضلها وأكثرها توفيرًا.",
+    reader_scan_no_text: "لا يوجد نص في هذه الصفحة لترجمته. قد يكون الكتاب ممسوحًا ضوئيًا (صور فقط) أو أن الصفحة لا تزال قيد التحميل. انتظر قليلًا وحاول مرة أخرى.",
     reader_view_original: "📖 عرض الأصل",
     reader_view_translation: "🌐 عرض الترجمة",
     reader_explain_page: "🧠 شرح الصفحة كاملة",
@@ -5856,6 +5868,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_patience_pre: "थोड़ा धैर्य रखें — कुछ AI दूसरों से धीमी हैं। हमारी",
     reader_patience_wall: "AI दीवार",
     reader_patience_post: "पर सबसे तेज़, सबसे अच्छी और सबसे किफ़ायती देखें।",
+    reader_scan_no_text: "इस पृष्ठ पर AI के अनुवाद के लिए कोई टेक्स्ट नहीं है। यह स्कैन की गई पुस्तक (केवल चित्र) हो सकती है या पृष्ठ अभी लोड हो रहा है। थोड़ी देर प्रतीक्षा करें और फिर प्रयास करें।",
     reader_view_original: "📖 मूल देखें",
     reader_view_translation: "🌐 अनुवाद देखें",
     reader_explain_page: "🧠 पूरे पृष्ठ की व्याख्या करें",

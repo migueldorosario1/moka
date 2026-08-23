@@ -1814,11 +1814,19 @@ export function Reader({
                 setShowTranslation(false);
                 return;
               }
+              // Sem texto na página (scan/imagem ou PDF ainda carregando):
+              // AVISA em vez de ficar mudo — pedido do Miguel, 23/08 ("clico
+              // e não diz nada"). Antes o botão ficava disabled e o clique
+              // não fazia NADA (nem a caixa de confirmação aparecia).
+              if (!currentPageText) {
+                alert(t("reader_scan_no_text"));
+                return;
+              }
               if (confirm(t("reader_confirm_translate_page"))) {
                 handleTranslatePage();
               }
             }}
-            disabled={translatingPage || !currentPageText}
+            disabled={translatingPage}
             className={`icon-btn ${overlayMode === "translate" && showTranslation ? "active" : ""}`}
             title={translateBtnLabel}
             aria-label={translateBtnLabel}
