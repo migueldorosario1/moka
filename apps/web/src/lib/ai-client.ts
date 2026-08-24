@@ -31,6 +31,7 @@ import {
   getPrefs,
   estimateTokens,
   estimateTaskInputTokens,
+  computeCostUsd,
 } from "./telemetry";
 
 /** Contexto da obra relevante para as ações. */
@@ -47,6 +48,8 @@ export interface AIActionResult {
   error?: string;
   /** Aviso não-fatal (ex.: tarefa interrompida pela trava de tokens). */
   warning?: string;
+  /** Custo real em US$ da chamada, quando dá pra calcular (telemetria). */
+  costUsd?: number;
 }
 
 /** Callback chamado a cada pedaço de texto que chega (pra streaming). */
@@ -362,6 +365,7 @@ async function runStreamWithCap(args: {
   meta: CallMeta;
   onChunk: StreamCallback;
   onUsage: (u: UsageInfo) => void;
+  images?: string[];
 }): Promise<{ full: string; capCut: boolean }> {
   const cap = getPrefs().tokenCap;
   const estIn = inputEstimate(args.meta);
@@ -372,6 +376,7 @@ async function runStreamWithCap(args: {
     context: args.contextText,
     temperature: args.temperature,
     onUsage: args.onUsage,
+    images: args.images,
   })) {
     full += chunk;
     args.onChunk(full, chunk);
@@ -504,6 +509,131 @@ export async function translatePageStream(
   } catch (err) {
     recordCall({ meta, identity, status: "error" });
     return { ok: false, error: toMessage(err, "translate-page", text.length) };
+  }
+}
+
+/**
+ * Traduz a página INTEIRA a partir de uma IMAGEM (PDF escaneado sem camada
+ * de texto — pedido do Miguel, 23/08: "traduzir até PDF de imagem").
+ *
+ * A imagem (data URL do canvas da página) vai anexada na mensagem para um
+ * modelo com VISÃO. Transparência de custo (exigência do Miguel):
+ * `estimateImagePageCostUsd()` dá o custo ESTIMADO antes de chamar;
+ * o retorno traz `costUsd` REAL para exibir depois; tudo cai no ledger
+ * da telemetria como tarefa "translate-page-image".
+ */
+
+/** Tokens aproximados de UMA imagem de página (jpeg ~1500px) — modelos
+ *  visão cobram ~800-1600 tokens por página; usamos 1300 p/ estimativa. */
+const IMAGE_TOKENS_EST = 1300;
+/** Saída esperada de uma página traduzida (~1800 tokens). */
+const IMAGE_OUTPUT_TOKENS_EST = 1800;
+
+/** Custo ESTIMADO em US$ de uma tradução de página-imagem com a chave ativa.
+ *  Retorna 0 quando o modelo não tem preço na tabela (aviso "desconhecido"). */
+export async function estimateImagePageCostUsd(): Promise<number> {
+  try {
+    const { provider, config } = resolveProvider();
+    const identity = identityOf(provider, config);
+    return await computeCostUsd(
+      identity.providerId,
+      identity.model,
+      IMAGE_TOKENS_EST + 400, // imagem + prompts
+      IMAGE_OUTPUT_TOKENS_EST,
+    );
+  } catch {
+    return 0;
+  }
+}
+
+export async function translatePageImageStream(
+  imageDataUrl: string,
+  ctx: BookContext,
+  onChunk: StreamCallback,
+): Promise<AIActionResult> {
+  const targetLang = getTargetLang();
+  const systemPrompt =
+    `Você é um tradutor literário e técnico de excelência e também lê ` +
+    `páginas digitalizadas de livros (OCR de alta qualidade). ` +
+    `A imagem anexa é uma página de livro. Leia TODO o texto visível nela ` +
+    `e traduza-o integralmente para ${targetLang}. ` +
+    `Reagrupe o conteúdo em PARÁGRAFOS coerentes e naturais: uma mudança ` +
+    `de ideia = novo parágrafo, separados por UMA linha em branco. ` +
+    `Mantenha títulos em linhas próprias. Ignore marcas da digitalização. ` +
+    `Trecho ilegível: marque [ilegível] no lugar. ` +
+    `Devolva APENAS a tradução, sem comentários, sem aspas, sem introdução.`;
+  const prompt =
+    `Traduza o conteúdo completo da página digitalizada na imagem` +
+    (ctx.bookTitle
+      ? ` (livro: "${ctx.bookTitle}"${ctx.bookAuthor ? `, de ${ctx.bookAuthor}` : ""})`
+      : "") +
+    `.`;
+  const contextText = buildContext(ctx);
+  const meta: CallMeta = {
+    task: "translate-page-image",
+    promptText: prompt,
+    systemPrompt,
+    contextText,
+  };
+
+  const capMsg = capBlockedMessage(meta);
+  if (capMsg) return { ok: false, error: capMsg };
+
+  let identity: CallIdentity | undefined;
+  try {
+    const { provider, config } = resolveProvider();
+    identity = identityOf(provider, config);
+    const images = [imageDataUrl];
+    let usage: UsageInfo | undefined;
+    const captureUsage = (u: UsageInfo) => {
+      usage = u;
+    };
+    // Custo real: usage do provedor quando informado; senão estimativa.
+    const realCost = async (): Promise<number> => {
+      if (!identity) return 0;
+      const u =
+        usage ?? {
+          promptTokens:
+            IMAGE_TOKENS_EST +
+            estimateTokens([systemPrompt, prompt, contextText].join("\n")),
+          completionTokens: IMAGE_OUTPUT_TOKENS_EST,
+        };
+      return computeCostUsd(identity.providerId, identity.model, u.promptTokens ?? 0, u.completionTokens ?? 0);
+    };
+
+    if (!provider.stream) {
+      const result = await provider.complete(prompt, {
+        systemPrompt,
+        context: contextText,
+        temperature: 0.3,
+        images,
+        onUsage: captureUsage,
+      });
+      onChunk(result.text, result.text);
+      recordCall({ meta, identity, usage, completionText: result.text, note: "página-imagem (IA de visão)" });
+      return { ok: true, text: result.text, costUsd: await realCost() };
+    }
+    const { full, capCut } = await runStreamWithCap({
+      streamFn: provider.stream,
+      text: prompt,
+      systemPrompt,
+      contextText,
+      temperature: 0.3,
+      meta,
+      onChunk,
+      onUsage: captureUsage,
+      images,
+    });
+    recordCall({ meta, identity, usage, completionText: full, note: "página-imagem (IA de visão)" });
+    return {
+      ok: true,
+      text: full,
+      costUsd: await realCost(),
+      warning: capCut ? t(getTargetLang(), "errCapCut", { cap: getPrefs().tokenCap }) : undefined,
+    };
+  } catch (err) {
+    recordCall({ meta, identity, status: "error" });
+    return { ok: false, error: toMessage(err, "translate-page-image", imageDataUrl.length) };
   }
 }
 

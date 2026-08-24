@@ -18,6 +18,13 @@ export interface CompleteOptions {
   systemPrompt?: string;
   /** Contexto relevante (ex.: trechos da obra recuperados via RAG). */
   context?: string;
+  /**
+   * Imagens anexadas à mensagem (data URLs) para modelos com VISÃO
+   * (pedido do Miguel, 23/08: traduzir página de PDF que é imagem/scan).
+   * Provedores que não aceitam conteúdo multimodal devem rejeitar com
+   * erro claro — o chamador traduz isso em mensagem amigável.
+   */
+  images?: string[];
   /** Criatividade: 0 = determinístico, 1 = criativo. */
   temperature?: number;
   /** Máximo de tokens na resposta. */

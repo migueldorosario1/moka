@@ -15,7 +15,7 @@ import { SettingsModal } from "./SettingsModal";
 import { AskModal } from "./AskModal";
 import { PageActionModal } from "./PageActionModal";
 import { TranslateBookModal } from "./TranslateBookModal";
-import { translatePageStream, explainPageStream, translateStream, explainStream, translateForSpeech } from "@/lib/ai-client";
+import { translatePageStream, explainPageStream, translateStream, explainStream, translateForSpeech, translatePageImageStream, estimateImagePageCostUsd } from "@/lib/ai-client";
 import { blocksToText, paginateBlocks } from "@/lib/paginate";
 import { copyDiagnostics, installGlobalErrorCapture, setDiagContext, buildMailtoLink, buildReport, getLastError, getSuggestedCauses, captureError } from "@/lib/diagnostics";
 
@@ -1227,9 +1227,31 @@ export function Reader({
     window.localStorage.setItem(FONT_SCALE_KEY, String(next));
   };
 
+  /** Captura a página PDF renderizada como imagem JPEG (data URL) para a
+   *  IA de VISÃO — páginas de scan não têm texto selecionável (Miguel, 23/08:
+   *  "traduzir até PDF de imagem"). Downscale p/ ~1500px: chega nítido pro
+   *  modelo e economiza tokens. */
+  const capturePageImage = (): string | null => {
+    const c = pdfCanvasRef.current;
+    if (!c || !c.width || !c.height) return null;
+    const MAX_W = 1500;
+    const scale = Math.min(1, MAX_W / c.width);
+    const out = document.createElement("canvas");
+    out.width = Math.max(1, Math.round(c.width * scale));
+    out.height = Math.max(1, Math.round(c.height * scale));
+    const octx = out.getContext("2d");
+    if (!octx) return null;
+    octx.fillStyle = "#ffffff";
+    octx.fillRect(0, 0, out.width, out.height);
+    octx.drawImage(c, 0, 0, out.width, out.height);
+    return out.toDataURL("image/jpeg", 0.85);
+  };
+
   // Traduz OU explica a página inteira. Estados SEPARADOS — um botão não
   // ativa o outro. overlayMode rastreia qual ação está sendo mostrada.
-  const handlePageAction = async (action: "translate" | "explain") => {
+  const handlePageAction = async (
+    action: "translate" | "explain" | "translate-image",
+  ) => {
     // Se já estamos mostrando ESTA ação, toggle (esconde).
     if (overlayMode === action && showTranslation) {
       setShowTranslation(false);
@@ -1247,10 +1269,21 @@ export function Reader({
       setShowTranslation(true);
       return;
     }
-    if (!currentPageText || translatingPage) return;
+    if ((!currentPageText && action !== "translate-image") || translatingPage)
+      return;
+
+    // Página-IMAGEM (Miguel, 23/08): captura o canvas no momento da ação.
+    let pageImage: string | null = null;
+    if (action === "translate-image") {
+      pageImage = capturePageImage();
+      if (!pageImage) {
+        setPageTranslation(`⚠️ ${t("reader_scan_no_text")}`);
+        return;
+      }
+    }
 
     setTranslatingPage(true);
-    setOverlayMode(action);
+    setOverlayMode(action === "explain" ? "explain" : "translate");
     setPageTranslation("");
     setShowTranslation(true);
 
@@ -1262,23 +1295,36 @@ export function Reader({
     const onChunk = (full: string) => setPageTranslation(full);
 
     const result =
-      action === "translate"
-        ? await translatePageStream(currentPageText, ctx, onChunk)
-        : await explainPageStream(currentPageText, ctx, onChunk);
+      action === "translate-image" && pageImage
+        ? await translatePageImageStream(pageImage, ctx, onChunk)
+        : action === "translate"
+          ? await translatePageStream(currentPageText, ctx, onChunk)
+          : await explainPageStream(currentPageText, ctx, onChunk);
 
     setTranslatingPage(false);
     if (result.ok && result.text) {
-      setPageTranslation(result.text);
-      if (action === "translate") {
+      // Página-IMAGEM (Miguel, 23/08): além da tradução, anexa a nota do
+      // custo REAL da chamada de visão — transparência exigida por ele
+      // ("depois de fazer, diz quanto custou"). A nota é visual: o
+      // auto-save em notas e o histórico salvam só a tradução limpa.
+      const costNote =
+        action === "translate-image" && result.costUsd !== undefined
+          ? `\n\n—\n💰 ${t("reader_vision_spent", { cost: result.costUsd > 0 && result.costUsd < 0.01 ? `US$ ${result.costUsd.toFixed(4)}` : `US$ ${result.costUsd.toFixed(2)}` })}`
+          : "";
+      setPageTranslation(result.text + costNote);
+      if (action === "translate" || action === "translate-image") {
         onPageTranslation?.(pageKey, result.text);
       }
       // AUTO-SAVE: toda tradução/explicação de página inteira vai pra notas.
       // O source traz o trecho original da página (truncado pra não ficar enorme).
-      const sourcePreview = currentPageText.length > 500
-        ? `${currentPageText.slice(0, 500)}…`
-        : currentPageText;
+      const sourcePreview =
+        action === "translate-image"
+          ? `[página de imagem — traduzida por IA de visão] ${pageLabel}`
+          : currentPageText.length > 500
+            ? `${currentPageText.slice(0, 500)}…`
+            : currentPageText;
       onSaveNote?.({
-        kind: action,
+        kind: action === "translate-image" ? "translate" : action,
         source: sourcePreview,
         result: result.text,
         chapterId: chapter?.id,
@@ -1819,6 +1865,24 @@ export function Reader({
               // e não diz nada"). Antes o botão ficava disabled e o clique
               // não fazia NADA (nem a caixa de confirmação aparecia).
               if (!currentPageText) {
+                // Página de IMAGEM (PDF escaneado, sem texto): oferece a
+                // tradução por IA de VISÃO — avisando que é imagem, que
+                // custa um pouco mais e QUANTO deve custar (estimativa),
+                // antes de qualquer chamada (pedido do Miguel, 23/08).
+                if (capturePageImage()) {
+                  (async () => {
+                    const est = await estimateImagePageCostUsd();
+                    const costTxt = est > 0
+                      ? est < 0.01
+                        ? `US$ ${est.toFixed(4)}`
+                        : `US$ ${est.toFixed(2)}`
+                      : t("reader_vision_cost_unknown");
+                    if (confirm(t("reader_vision_confirm", { cost: costTxt }))) {
+                      handlePageAction("translate-image");
+                    }
+                  })();
+                  return;
+                }
                 alert(t("reader_scan_no_text"));
                 return;
               }

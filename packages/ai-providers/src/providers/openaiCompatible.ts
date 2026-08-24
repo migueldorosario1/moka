@@ -73,7 +73,13 @@ export interface OpenAICompatibleConfig {
 
 interface ChatMessage {
   role: "system" | "user" | "assistant";
-  content: string;
+  /** Texto puro OU conteúdo multimodal (texto + imagens p/ modelos com visão). */
+  content:
+    | string
+    | Array<
+        | { type: "text"; text: string }
+        | { type: "image_url"; image_url: { url: string } }
+      >;
 }
 
 interface ChatResponse {
@@ -328,10 +334,23 @@ export class OpenAICompatibleProvider implements AIProvider {
     if (opts.systemPrompt) {
       messages.push({ role: "system", content: opts.systemPrompt });
     }
-    const userContent = opts.context
+    const textPart = opts.context
       ? `${prompt}\n\n---\n[CONTEXTO DE REFERÊNCIA]\n${opts.context}`
       : prompt;
-    messages.push({ role: "user", content: userContent });
+    // Multimodal (Miguel, 23/08): com imagens anexadas, o content do user
+    // vira um array [texto, image_url...] — formato OpenAI-compatible usado
+    // por GPT-4o/Gemini/Qwen-VL/GLM-4V etc. para modelos com visão.
+    if (opts.images?.length) {
+      const parts: Extract<ChatMessage["content"], Array<unknown>> = [
+        { type: "text", text: textPart },
+      ];
+      for (const url of opts.images) {
+        parts.push({ type: "image_url", image_url: { url } });
+      }
+      messages.push({ role: "user", content: parts });
+    } else {
+      messages.push({ role: "user", content: textPart });
+    }
     return messages;
   }
 }

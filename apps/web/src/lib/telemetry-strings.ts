@@ -66,6 +66,7 @@ export type TeleStringKey =
   // ── Rótulos de tarefa (ledger) ──
   | "task_translate"
   | "task_translate_page"
+  | "task_translate_page_image"
   | "task_translate_speech"
   | "task_explain"
   | "task_explain_page"
@@ -148,6 +149,7 @@ const STRINGS: Record<string, TeleStrings> = {
     set_model_btn: "Trocar modelo",
     task_translate: "Tradução (trecho)",
     task_translate_page: "Tradução de página",
+    task_translate_page_image: "Tradução de página (imagem)",
     task_translate_speech: "Tradução para fala",
     task_explain: "Explicação (trecho)",
     task_explain_page: "Explicação de página",
@@ -225,6 +227,7 @@ const STRINGS: Record<string, TeleStrings> = {
     set_model_btn: "Change model",
     task_translate: "Translation (snippet)",
     task_translate_page: "Page translation",
+    task_translate_page_image: "Page translation (image)",
     task_translate_speech: "Translation for speech",
     task_explain: "Explanation (snippet)",
     task_explain_page: "Page explanation",
@@ -302,6 +305,7 @@ const STRINGS: Record<string, TeleStrings> = {
     set_model_btn: "Cambiar modelo",
     task_translate: "Traducción (fragmento)",
     task_translate_page: "Traducción de página",
+    task_translate_page_image: "Traducción de página (imagen)",
     task_translate_speech: "Traducción para voz",
     task_explain: "Explicación (fragmento)",
     task_explain_page: "Explicación de página",
@@ -379,6 +383,7 @@ const STRINGS: Record<string, TeleStrings> = {
     set_model_btn: "Changer de modèle",
     task_translate: "Traduction (extrait)",
     task_translate_page: "Traduction de page",
+    task_translate_page_image: "Traduction de page (image)",
     task_translate_speech: "Traduction pour la voix",
     task_explain: "Explication (extrait)",
     task_explain_page: "Explication de page",
@@ -456,6 +461,7 @@ const STRINGS: Record<string, TeleStrings> = {
     set_model_btn: "Modell wechseln",
     task_translate: "Übersetzung (Ausschnitt)",
     task_translate_page: "Seitenübersetzung",
+    task_translate_page_image: "Seitenübersetzung (Bild)",
     task_translate_speech: "Übersetzung für Sprache",
     task_explain: "Erklärung (Ausschnitt)",
     task_explain_page: "Seitenerklärung",
@@ -533,6 +539,7 @@ const STRINGS: Record<string, TeleStrings> = {
     set_model_btn: "Cambia modello",
     task_translate: "Traduzione (brano)",
     task_translate_page: "Traduzione pagina",
+    task_translate_page_image: "Traduzione pagina (immagine)",
     task_translate_speech: "Traduzione per la voce",
     task_explain: "Spiegazione (brano)",
     task_explain_page: "Spiegazione pagina",
@@ -610,6 +617,7 @@ const STRINGS: Record<string, TeleStrings> = {
     set_model_btn: "Сменить модель",
     task_translate: "Перевод (фрагмент)",
     task_translate_page: "Перевод страницы",
+    task_translate_page_image: "Перевод страницы (изображение)",
     task_translate_speech: "Перевод для озвучки",
     task_explain: "Объяснение (фрагмент)",
     task_explain_page: "Объяснение страницы",
@@ -681,6 +689,7 @@ const STRINGS: Record<string, TeleStrings> = {
     set_model_btn: "更换模型",
     task_translate: "翻译（片段）",
     task_translate_page: "整页翻译",
+    task_translate_page_image: "整页翻译（图像）",
     task_translate_speech: "朗读用翻译",
     task_explain: "解释（片段）",
     task_explain_page: "整页解释",
@@ -752,6 +761,7 @@ const STRINGS: Record<string, TeleStrings> = {
     set_model_btn: "モデルを変更",
     task_translate: "翻訳（抜粋）",
     task_translate_page: "ページ翻訳",
+    task_translate_page_image: "ページ翻訳（画像）",
     task_translate_speech: "読み上げ用翻訳",
     task_explain: "解説（抜粋）",
     task_explain_page: "ページ解説",
@@ -823,6 +833,7 @@ const STRINGS: Record<string, TeleStrings> = {
     set_model_btn: "모델 변경",
     task_translate: "번역(발췌)",
     task_translate_page: "페이지 번역",
+    task_translate_page_image: "페이지 번역(이미지)",
     task_translate_speech: "음성용 번역",
     task_explain: "설명(발췌)",
     task_explain_page: "페이지 설명",
@@ -894,6 +905,7 @@ const STRINGS: Record<string, TeleStrings> = {
     set_model_btn: "تغيير النموذج",
     task_translate: "ترجمة (مقطع)",
     task_translate_page: "ترجمة صفحة",
+    task_translate_page_image: "ترجمة صفحة (صورة)",
     task_translate_speech: "ترجمة للقراءة الصوتية",
     task_explain: "شرح (مقطع)",
     task_explain_page: "شرح صفحة",
@@ -965,6 +977,7 @@ const STRINGS: Record<string, TeleStrings> = {
     set_model_btn: "मॉडल बदलें",
     task_translate: "अनुवाद (अंश)",
     task_translate_page: "पृष्ठ अनुवाद",
+    task_translate_page_image: "पृष्ठ अनुवाद (चित्र)",
     task_translate_speech: "बोलने के लिए अनुवाद",
     task_explain: "व्याख्या (अंश)",
     task_explain_page: "पृष्ठ व्याख्या",
@@ -993,6 +1006,7 @@ export function tt(lang: string, key: TeleStringKey): string {
 const TASK_KEY_MAP: Record<string, TeleStringKey> = {
   translate: "task_translate",
   "translate-page": "task_translate_page",
+  "translate-page-image": "task_translate_page_image",
   "translate-speech": "task_translate_speech",
   explain: "task_explain",
   "explain-page": "task_explain_page",
