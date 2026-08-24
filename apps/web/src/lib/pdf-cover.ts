@@ -30,6 +30,43 @@ const PROBE_WIDTH = 150;
 /** Largura (px) da capa final. */
 const COVER_WIDTH = 360;
 
+/**
+ * Detecta PDF 100% IMAGEM (scan sem camada de texto): amostra as 10
+ * primeiras páginas — se NENHUMA tem item de texto, é imagem pura
+ * (caso-escola: Roman Political Institutions, 0 itens nas 436 págs).
+ * Usado no UPLOAD pra avisar que traduzir exige IA com visão
+ * (pedido do Miguel, 24/08). Best-effort: erro → false (nunca
+ * bloqueia upload à toa).
+ */
+export async function isImagePdf(data: ArrayBuffer): Promise<boolean> {
+  try {
+    const pdfjs = await import("pdfjs-dist");
+    if (typeof window !== "undefined") {
+      pdfjs.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.mjs";
+    }
+    const owned = data.slice(0);
+    const doc = await pdfjs.getDocument({ data: new Uint8Array(owned) }).promise;
+    const n = Math.min(PROBE_PAGES, doc.numPages);
+    let anyText = false;
+    for (let i = 1; i <= n && !anyText; i++) {
+      const page = await doc.getPage(i);
+      const tc = await page.getTextContent();
+      if (
+        (tc.items as Array<{ str?: string }>).some((it) =>
+          (it.str ?? "").trim(),
+        )
+      ) {
+        anyText = true;
+      }
+      page.cleanup();
+    }
+    await doc.destroy();
+    return !anyText;
+  } catch {
+    return false;
+  }
+}
+
 interface PageMetrics {
   page: number;
   itens: number; // itens de texto com conteúdo

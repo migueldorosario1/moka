@@ -200,6 +200,7 @@ export type UIStringKey =
   | "reader_vision_confirm"
   | "reader_vision_spent"
   | "reader_vision_cost_unknown"
+  | "shelf_image_pdf_confirm"
   | "reader_translate_page"
   | "reader_translating"
   | "reader_translating_page"
@@ -745,6 +746,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_vision_confirm: "Esta página é uma IMAGEM (sem texto selecionável). Posso traduzi-la com IA de visão — custa um pouco mais que texto: estimativa de {cost} por página. Continuar?",
     reader_vision_spent: "Custo real desta tradução por visão: {cost} — anotado na sua página de telemetria.",
     reader_vision_cost_unknown: "valor estimado indisponível (modelo sem preço na tabela)",
+    shelf_image_pdf_confirm: "Este PDF é formado por IMAGENS (páginas escaneadas, sem texto selecionável). Você pode ler e folhear normalmente, mas traduzir ou explicar páginas vai exigir uma IA que ENXERGA imagens (GPT-4o, Gemini, Qwen-VL, GLM-4V…) — e custa um pouco mais por página. Adicionar o livro mesmo assim?",
     reader_view_original: "📖 Ver original",
     reader_view_translation: "🌐 Ver tradução",
     reader_explain_page: "🧠 Explicar a página inteira",
@@ -1218,6 +1220,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_vision_confirm: "This page is an IMAGE (no selectable text). I can translate it with vision AI — it costs a bit more than text: estimated {cost} per page. Continue?",
     reader_vision_spent: "Actual cost of this vision translation: {cost} — logged on your telemetry page.",
     reader_vision_cost_unknown: "estimate unavailable (model not in the price table)",
+    shelf_image_pdf_confirm: "This PDF is made of IMAGES (scanned pages, no selectable text). You can read and browse it normally, but translating or explaining pages will require an AI that can SEE images (GPT-4o, Gemini, Qwen-VL, GLM-4V…) — and it costs a bit more per page. Add the book anyway?",
     reader_view_original: "📖 View original",
     reader_view_translation: "🌐 View translation",
     reader_explain_page: "🧠 Explain whole page",
@@ -1687,6 +1690,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_vision_confirm: "Esta página es una IMAGEN (sin texto seleccionable). Puedo traducirla con IA de visión — cuesta un poco más que texto: estimación de {cost} por página. ¿Continuar?",
     reader_vision_spent: "Costo real de esta traducción por visión: {cost} — anotado en tu página de telemetría.",
     reader_vision_cost_unknown: "estimación no disponible (modelo sin precio en la tabla)",
+    shelf_image_pdf_confirm: "Este PDF está formado por IMÁGENES (páginas escaneadas, sin texto seleccionable). Puedes leerlo y hojearlo con normalidad, pero traducir o explicar páginas exigirá una IA que VEA imágenes (GPT-4o, Gemini, Qwen-VL, GLM-4V…) — y cuesta un poco más por página. ¿Añadir el libro de todos modos?",
     reader_view_original: "📖 Ver original",
     reader_view_translation: "🌐 Ver traducción",
     reader_explain_page: "🧠 Explicar la página entera",
@@ -2156,6 +2160,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_vision_confirm: "Cette page est une IMAGE (sans texte sélectionnable). Je peux la traduire avec une IA de vision — cela coûte un peu plus cher que le texte : estimation de {cost} par page. Continuer ?",
     reader_vision_spent: "Coût réel de cette traduction par vision : {cost} — consigné sur votre page de télémétrie.",
     reader_vision_cost_unknown: "estimation indisponible (modèle absent de la grille tarifaire)",
+    shelf_image_pdf_confirm: "Ce PDF est composé d'IMAGES (pages numérisées, sans texte sélectionnable). Vous pouvez le lire et le feuilleter normalement, mais traduire ou expliquer des pages exigera une IA capable de VOIR les images (GPT-4o, Gemini, Qwen-VL, GLM-4V…) — et cela coûte un peu plus par page. Ajouter le livre quand même ?",
     reader_view_original: "📖 Voir l'original",
     reader_view_translation: "🌐 Voir la traduction",
     reader_explain_page: "🧠 Expliquer la page entière",
@@ -2625,6 +2630,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_vision_confirm: "Diese Seite ist ein BILD (kein auswählbarer Text). Ich kann sie mit einer KI mit Bilderkennung übersetzen — das kostet etwas mehr als Text: schätzungsweise {cost} pro Seite. Fortfahren?",
     reader_vision_spent: "Tatsächliche Kosten dieser Bildübersetzung: {cost} — in deiner Telemetrie-Seite vermerkt.",
     reader_vision_cost_unknown: "Schätzung nicht verfügbar (Modell nicht in der Preistabelle)",
+    shelf_image_pdf_confirm: "Dieses PDF besteht aus BILDERN (eingescannte Seiten, kein auswählbarer Text). Du kannst es normal lesen und durchblättern, aber zum Übersetzen oder Erklären von Seiten brauchst du eine KI, die Bilder SEHEN kann (GPT-4o, Gemini, Qwen-VL, GLM-4V…) — und das kostet etwas mehr pro Seite. Buch trotzdem hinzufügen?",
     reader_view_original: "📖 Original anzeigen",
     reader_view_translation: "🌐 Übersetzung anzeigen",
     reader_explain_page: "🧠 Ganze Seite erklären",
@@ -3094,6 +3100,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_vision_confirm: "Questa pagina è un'IMMAGINE (senza testo selezionabile). Posso tradurla con IA a visione — costa un po' più del testo: stima di {cost} a pagina. Continuare?",
     reader_vision_spent: "Costo reale di questa traduzione a visione: {cost} — annotato nella tua pagina di telemetria.",
     reader_vision_cost_unknown: "stima non disponibile (modello senza prezzo in tabella)",
+    shelf_image_pdf_confirm: "Questo PDF è composto da IMMAGINI (pagine scansionate, senza testo selezionabile). Puoi leggerlo e sfogliarlo normalmente, ma tradurre o spiegare pagine richiederà un'IA che sappia VEDERE le immagini (GPT-4o, Gemini, Qwen-VL, GLM-4V…) — e costa un po' di più a pagina. Aggiungere comunque il libro?",
     reader_view_original: "📖 Vedi originale",
     reader_view_translation: "🌐 Vedi traduzione",
     reader_explain_page: "🧠 Spiega l'intera pagina",
@@ -3563,6 +3570,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_vision_confirm: "Эта страница — ИЗОБРАЖЕНИЕ (без выделяемого текста). Могу перевести её с помощью ИИ со зрением — это стоит немного дороже текста: ориентировочно {cost} за страницу. Продолжить?",
     reader_vision_spent: "Фактическая стоимость этого перевода со зрением: {cost} — записано на вашей странице телеметрии.",
     reader_vision_cost_unknown: "оценка недоступна (модели нет в таблице цен)",
+    shelf_image_pdf_confirm: "Этот PDF состоит из ИЗОБРАЖЕНИЙ (отсканированные страницы, без выделяемого текста). Читать и листать его можно как обычно, но для перевода или объяснения страниц нужен ИИ, способный ВИДЕТЬ изображения (GPT-4o, Gemini, Qwen-VL, GLM-4V…) — и это стоит немного дороже за страницу. Всё равно добавить книгу?",
     reader_view_original: "📖 Показать оригинал",
     reader_view_translation: "🌐 Показать перевод",
     reader_explain_page: "🧠 Объяснить всю страницу",
@@ -4032,6 +4040,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_vision_confirm: "此页面是一张图片（无可选文本）。我可以用视觉 AI 翻译——比文本稍贵：估计每页 {cost}。继续吗？",
     reader_vision_spent: "此次视觉翻译实际花费：{cost} — 已记录在您的遥测页面。",
     reader_vision_cost_unknown: "无法估计（价格表中无此模型）",
+    shelf_image_pdf_confirm: "此 PDF 由图像组成（扫描页，无可选文本）。您可以正常阅读和翻页，但翻译或解说页面需要能“看”图像的 AI（GPT-4o、Gemini、Qwen-VL、GLM-4V 等）——且每页费用略高。仍要添加这本书吗？",
     reader_view_original: "📖 查看原文",
     reader_view_translation: "🌐 查看译文",
     reader_explain_page: "🧠 解释整页",
@@ -4501,6 +4510,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_vision_confirm: "このページは画像です（選択可能なテキストなし）。ビジョンAIで翻訳できます——テキストより少し高く、1ページあたり推定 {cost} です。続けますか？",
     reader_vision_spent: "このビジョン翻訳の実際の費用：{cost} — テレメトリーページに記録しました。",
     reader_vision_cost_unknown: "推定不可（価格表にないモデル）",
+    shelf_image_pdf_confirm: "このPDFは画像で構成されています（スキャンページ、選択可能なテキストなし）。閲覧やページめくりは普通にできますが、ページの翻訳や解説には画像を「見られる」AI（GPT-4o、Gemini、Qwen-VL、GLM-4Vなど）が必要で、1ページあたりの費用がやや高くなります。それでもこの本を追加しますか？",
     reader_view_original: "📖 原文を見る",
     reader_view_translation: "🌐 翻訳を見る",
     reader_explain_page: "🧠 ページ全体を解説",
@@ -4970,6 +4980,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_vision_confirm: "이 페이지는 이미지입니다(선택 가능한 텍스트 없음). 비전 AI로 번역할 수 있습니다 — 텍스트보다 약간 비용이 들며 페이지당 약 {cost}로 추정됩니다. 계속할까요?",
     reader_vision_spent: "이 비전 번역의 실제 비용: {cost} — 원격 측정 페이지에 기록되었습니다.",
     reader_vision_cost_unknown: "추정 불가(가격표에 없는 모델)",
+    shelf_image_pdf_confirm: "이 PDF는 이미지로 되어 있습니다(스캔 페이지, 선택 가능한 텍스트 없음). 읽고 넘기는 것은 정상적으로 가능하지만, 페이지 번역이나 설명에는 이미지를 '볼 수 있는' AI(GPT-4o, Gemini, Qwen-VL, GLM-4V 등)가 필요하며 페이지당 비용이 조금 더 듭니다. 그래도 이 책을 추가할까요?",
     reader_view_original: "📖 원문 보기",
     reader_view_translation: "🌐 번역 보기",
     reader_explain_page: "🧠 전체 페이지 설명",
@@ -5439,6 +5450,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_vision_confirm: "هذه الصفحة صورة (بدون نص قابل للتحديد). يمكنني ترجمتها بذكاء اصطناعي بصري — تكلفتها أعلى قليلاً من النص: تقديرًا {cost} لكل صفحة. هل تريد المتابعة؟",
     reader_vision_spent: "التكلفة الفعلية لهذه الترجمة البصرية: {cost} — مسجلة في صفحة القياس عن بُعد.",
     reader_vision_cost_unknown: "التقدير غير متاح (النموذج غير موجود في جدول الأسعار)",
+    shelf_image_pdf_confirm: "يتكون هذا الملف من صور (صفحات ممسوحة ضوئيًا، بدون نص قابل للتحديد). يمكنك قراءته وتصفحه كالمعتاد، لكن ترجمة الصفحات أو شرحها يتطلب ذكاءً اصطناعيًا قادرًا على «رؤية» الصور (GPT-4o، Gemini، Qwen-VL، GLM-4V…) — بتكلفة أعلى قليلاً لكل صفحة. هل تريد إضافة الكتاب على أي حال؟",
     reader_view_original: "📖 عرض الأصل",
     reader_view_translation: "🌐 عرض الترجمة",
     reader_explain_page: "🧠 شرح الصفحة كاملة",
@@ -5908,6 +5920,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_vision_confirm: "यह पृष्ठ एक छवि है (कोई चयन योग्य टेक्स्ट नहीं)। मैं इसे विज़न AI से अनुवाद कर सकता हूँ — इसकी लागत टेक्स्ट से थोड़ी अधिक है: प्रति पृष्ठ अनुमानित {cost}। जारी रखें?",
     reader_vision_spent: "इस विज़न अनुवाद की वास्तविक लागत: {cost} — आपके टेलीमेट्री पृष्ठ पर दर्ज है।",
     reader_vision_cost_unknown: "अनुमान अनुपलब्ध (मॉडल मूल्य तालिका में नहीं)",
+    shelf_image_pdf_confirm: "यह PDF छवियों से बना है (स्कैन किए गए पृष्ठ, कोई चयन योग्य टेक्स्ट नहीं)। आप इसे सामान्य रूप से पढ़ और पलट सकते हैं, लेकिन पृष्ठों के अनुवाद या व्याख्या के लिए ऐसी AI चाहिए जो छवियां 'देख' सके (GPT-4o, Gemini, Qwen-VL, GLM-4V…) — और प्रति पृष्ठ लागत थोड़ी अधिक है। फिर भी यह पुस्तक जोड़ें?",
     reader_view_original: "📖 मूल देखें",
     reader_view_translation: "🌐 अनुवाद देखें",
     reader_explain_page: "🧠 पूरे पृष्ठ की व्याख्या करें",
