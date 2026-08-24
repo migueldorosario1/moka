@@ -401,6 +401,7 @@ async function runStreamWithCap(args: {
 export async function translatePage(
   text: string,
   ctx: BookContext,
+  note?: string,
 ): Promise<AIActionResult> {
   if (!text.trim()) return { ok: false, error: "Página sem texto para traduzir." };
   const targetLang = getTargetLang();
@@ -434,10 +435,10 @@ export async function translatePage(
         usage = u;
       },
     });
-    recordCall({ meta, identity, usage, completionText: result.text });
+    recordCall({ meta, identity, usage, completionText: result.text, note });
     return { ok: true, text: result.text };
   } catch (err) {
-    recordCall({ meta, identity, status: "error" });
+    recordCall({ meta, identity, status: "error", note });
     return { ok: false, error: toMessage(err) };
   }
 }
