@@ -126,7 +126,8 @@ function getNeuralTtsConfig(config: {
   apiKey: string;
   baseUrl?: string;
   model?: string;
-}): { baseUrl: string; apiKey: string; model: string; voice: string } | null {
+  label?: string;
+}): { baseUrl: string; apiKey: string; model: string; voice: string; providerId: string; providerName: string } | null {
   if (!NEURAL_TTS_PROVIDERS.has(config.providerId)) return null;
   if (!(config.apiKey || "").trim()) return null;
   // baseUrl/model custom do usuário, senão defaults do preset.
@@ -140,7 +141,15 @@ function getNeuralTtsConfig(config: {
   // (TTS usa modelo específico). OpenAI = tts-1; demais = fallback tts-1.
   const model = "tts-1";
   const voice = getTtsVoice(); // voz escolhida pelo usuário nas Configurações
-  return { baseUrl, apiKey: config.apiKey, model, voice };
+  return {
+    baseUrl,
+    apiKey: config.apiKey,
+    model,
+    voice,
+    // Identidade pra telemetria de gastos (a voz neural usa a chave do usuário).
+    providerId: config.providerId,
+    providerName: config.label || config.providerId,
+  };
 }
 
 export function Reader({

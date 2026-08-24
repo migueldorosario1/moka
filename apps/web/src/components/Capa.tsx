@@ -7,6 +7,7 @@ import { ZeMocaAvatar } from "@/components/ZeMocaAvatar";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { SiteFooter } from "@/components/SiteFooter";
 import { AuthGate } from "@/components/AuthGate";
+import { TelemetryIconButton } from "@/components/TelemetryIconButton";
 import { useI18n } from "@/components/I18nProvider";
 
 /**
@@ -59,6 +60,8 @@ export function Capa() {
           >
             ⚙️
           </button>
+          {/* 📊 Suas IAs e telemetria — visível na primeira página (Miguel, 22/08). */}
+          <TelemetryIconButton />
           <AuthGate />
           <LangSwitcher />
         </div>

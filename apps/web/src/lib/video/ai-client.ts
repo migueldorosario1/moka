@@ -18,6 +18,14 @@ import type { TranscriptSegment } from "./db";
 import { getConfig, getTargetLang } from "@/lib/config";
 import { getProvider } from "@igot/ai-providers";
 import { createProxyTransport } from "@igot/ai-providers";
+import type { UsageInfo } from "@igot/ai-providers";
+import { t } from "@/lib/messages";
+import {
+  recordUsage,
+  getPrefs,
+  estimateTokens,
+  estimateTaskInputTokens,
+} from "@/lib/telemetry";
 
 const SYSTEM_BASE =
   "Você é o Moka Video, analista de vídeos do Cafezinho Media Group. " +
@@ -72,7 +80,9 @@ function videoHeader(meta: VideoMeta): string {
 
 /** Provedor de IA: SEMPRE a chave do usuário (BYOK).
  *  FASE GRATUITA (pivô 2026-08-04): sem IA da casa/pontos — sem chave, o
- *  erro guia a pessoa a configurar a própria. */
+ *  erro guia a pessoa a configurar a própria.
+ *  Retorna também a CONFIG (providerId/model) pra telemetria identificar
+ *  quem consumiu. */
 async function provider() {
   const config = await getConfig();
   if (!config) {
@@ -81,7 +91,70 @@ async function provider() {
       "(ela fica só no seu dispositivo). Em /ajuda tem o passo a passo de 1 minuto.",
     );
   }
-  return getProvider(config, createProxyTransport());
+  const p = getProvider(config, createProxyTransport());
+  return { p, config, providerName: p.name };
+}
+
+/** Identidade de quem consumiu (pra telemetria). */
+interface VideoIdentity {
+  providerId: string;
+  providerName: string;
+  model: string;
+}
+
+/**
+ * Grava o consumo de uma análise de vídeo no ledger local (telemetria).
+ * Fire-and-forget e à prova de falha — nunca quebra a análise.
+ */
+function recordVideo(args: {
+  task: string;
+  identity: VideoIdentity;
+  usage?: UsageInfo;
+  promptText: string;
+  contextText?: string;
+  completionText?: string;
+  status?: "ok" | "error";
+  note?: string;
+  silent?: boolean;
+}): void {
+  void recordUsage({
+    task: args.task,
+    providerId: args.identity.providerId,
+    providerName: args.identity.providerName,
+    model: args.identity.model,
+    usage: args.usage,
+    promptText: [systemPrompt(), args.contextText, args.promptText]
+      .filter(Boolean)
+      .join("\n"),
+    completionText: args.completionText,
+    status: args.status ?? "ok",
+    note: args.note,
+    silent: args.silent,
+  }).catch(() => {
+    /* telemetria nunca quebra o app */
+  });
+}
+
+/**
+ * Se a trava de consumo está ligada E a entrada estimada já estoura o
+ * limite, devolve o aviso (a chamada NÃO é feita). Caso contrário, null.
+ * Nunca lança.
+ */
+function capBlockedMessage(
+  prompt: string,
+  context?: string,
+): string | null {
+  try {
+    const prefs = getPrefs();
+    if (prefs.tokenCap <= 0) return null;
+    const est = estimateTaskInputTokens(prompt, systemPrompt(), context);
+    if (est > prefs.tokenCap) {
+      return t(getTargetLang(), "errTokenCap", { est, cap: prefs.tokenCap });
+    }
+  } catch {
+    /* telemetria nunca quebra o app */
+  }
+  return null;
 }
 
 /** Divide o texto em pedaços cortando em fim de frase. */
@@ -99,35 +172,85 @@ function chunkText(text: string, size: number): string[] {
   return chunks;
 }
 
-/** Roda um prompt com streaming, chamando onChunk com o texto acumulado. */
+/** Roda um prompt com streaming, chamando onChunk com o texto acumulado.
+ *  Registra o consumo na telemetria e respeita a trava de tokens (sem
+ *  nunca travar o app). `task` identifica a análise no ledger. */
 async function runStream(
+  task: string,
   prompt: string,
   opts: { context?: string; maxTokens?: number; temperature?: number },
   onChunk: (accumulated: string) => void,
 ): Promise<string> {
-  const p = await provider();
+  const { p, config, providerName } = await provider();
+  const identity: VideoIdentity = {
+    providerId: config.providerId,
+    providerName,
+    model: config.model ?? "",
+  };
+
+  // Trava de consumo: se a entrada já estoura o limite, avisa e NÃO gasta.
+  const capMsg = capBlockedMessage(prompt, opts.context);
+  if (capMsg) throw new Error(capMsg);
+
+  let usage: UsageInfo | undefined;
+  const captureUsage = (u: UsageInfo) => {
+    usage = u;
+  };
+  const cap = getPrefs().tokenCap;
+  const estIn = estimateTaskInputTokens(prompt, systemPrompt(), opts.context);
+
   let acc = "";
-  if (p.stream) {
-    for await (const chunk of p.stream(prompt, {
-      systemPrompt: systemPrompt(),
-      context: opts.context,
-      maxTokens: opts.maxTokens,
-      temperature: opts.temperature,
-    })) {
-      acc += chunk;
+  let capCut = false;
+  try {
+    if (p.stream) {
+      for await (const chunk of p.stream(prompt, {
+        systemPrompt: systemPrompt(),
+        context: opts.context,
+        maxTokens: opts.maxTokens,
+        temperature: opts.temperature,
+        onUsage: captureUsage,
+      })) {
+        acc += chunk;
+        onChunk(acc);
+        // Trava em tempo real: estoura o cap → corta o stream, preserva o texto.
+        if (cap > 0 && estIn + estimateTokens(acc) > cap) {
+          capCut = true;
+          break;
+        }
+      }
+    } else {
+      const r = await p.complete(prompt, {
+        systemPrompt: systemPrompt(),
+        context: opts.context,
+        maxTokens: opts.maxTokens,
+        temperature: opts.temperature,
+        onUsage: captureUsage,
+      });
+      acc = r.text;
       onChunk(acc);
     }
-  } else {
-    const r = await p.complete(prompt, {
-      systemPrompt: systemPrompt(),
-      context: opts.context,
-      maxTokens: opts.maxTokens,
-      temperature: opts.temperature,
+    recordVideo({
+      task,
+      identity,
+      usage,
+      promptText: prompt,
+      contextText: opts.context,
+      completionText: acc,
+      note: capCut ? "cap-cut" : undefined,
     });
-    acc = r.text;
-    onChunk(acc);
+    return acc;
+  } catch (err) {
+    // Registra a falha (ex.: sem crédito) e repassa o erro pra UI tratar.
+    recordVideo({
+      task,
+      identity,
+      usage,
+      promptText: prompt,
+      contextText: opts.context,
+      status: "error",
+    });
+    throw err;
   }
-  return acc;
 }
 
 // ─── ⚡ Explicação rápida ────────────────────────────────────────────────
@@ -152,6 +275,7 @@ export async function quickExplain(
 ): Promise<string> {
   const transcript = fullOrSampledTranscript(segments);
   return runStream(
+    "video-explain",
     `${videoHeader(meta)}\n\n` +
       "Explique em 5 a 8 linhas O QUE FOI este vídeo: quem fala, sobre o quê, " +
       "qual a tese principal e qual a conclusão. Direto ao ponto, como quem " +
@@ -192,6 +316,7 @@ export async function summarize(
   // Vídeo curto/transcrição pequena: uma chamada só com transcrição inteira.
   if (transcript.length <= MAPREDUCE_THRESHOLD) {
     return runStream(
+      "video-summarize",
       finalPrompt(""),
       { context: transcript, maxTokens: Math.min(4000, targetWords * 2 + 600) },
       onChunk,
@@ -199,29 +324,68 @@ export async function summarize(
   }
 
   // Map-reduce: resume cada pedaço (sem stream), depois funde (com stream).
-  const p = await provider();
+  const { p, config, providerName } = await provider();
+  const identity: VideoIdentity = {
+    providerId: config.providerId,
+    providerName,
+    model: config.model ?? "",
+  };
+
+  // Trava de consumo: a tarefa inteira lê a transcrição completa — se ela já
+  // estoura o limite, avisa e NÃO gasta (sem travar o app).
+  const capMsg = capBlockedMessage(finalPrompt(""), transcript);
+  if (capMsg) throw new Error(capMsg);
+
   const chunks = chunkText(transcript, CHUNK_SIZE);
   const partials: string[] = [];
   for (let i = 0; i < chunks.length; i++) {
     onChunk(
       `_Lendo parte ${i + 1} de ${chunks.length} do vídeo…_`,
     );
-    const r = await p.complete(
+    const chunkPrompt =
       `${videoHeader(meta)}\n\n` +
-        `Esta é a parte ${i + 1} de ${chunks.length} da transcrição. ` +
-        "Extraia os pontos essenciais desta parte em até 10 bullets concisos " +
-        "(fatos, teses, nomes, números). Sem introdução, só os bullets.",
-      {
+      `Esta é a parte ${i + 1} de ${chunks.length} da transcrição. ` +
+      "Extraia os pontos essenciais desta parte em até 10 bullets concisos " +
+      "(fatos, teses, nomes, números). Sem introdução, só os bullets.";
+    try {
+      let chunkUsage: UsageInfo | undefined;
+      const r = await p.complete(chunkPrompt, {
         systemPrompt: systemPrompt(),
         context: chunks[i],
         maxTokens: 900,
-      },
-    );
-    partials.push(r.text);
+        onUsage: (u) => {
+          chunkUsage = u;
+        },
+      });
+      partials.push(r.text);
+      // Chamada interna do map-reduce: registra SEM pop-up (só a final avisa).
+      recordVideo({
+        task: "video-summarize",
+        identity,
+        usage: chunkUsage,
+        promptText: chunkPrompt,
+        contextText: chunks[i],
+        completionText: r.text,
+        note: `map-reduce ${i + 1}/${chunks.length}`,
+        silent: true,
+      });
+    } catch (err) {
+      recordVideo({
+        task: "video-summarize",
+        identity,
+        promptText: chunkPrompt,
+        contextText: chunks[i],
+        status: "error",
+        note: `map-reduce ${i + 1}/${chunks.length}`,
+        silent: true,
+      });
+      throw err;
+    }
   }
 
   onChunk("");
   return runStream(
+    "video-summarize",
     finalPrompt("") +
       "\n\nO material abaixo são apontamentos de TODAS as partes do vídeo, em ordem.",
     {
@@ -241,6 +405,7 @@ export async function characters(
 ): Promise<string> {
   const transcript = fullOrSampledTranscript(segments);
   return runStream(
+    "video-characters",
     `${videoHeader(meta)}\n\n` +
       "Identifique os PERSONAGENS do vídeo — quem fala e quem é citado com " +
       "relevância. Para cada um:\n" +
@@ -267,6 +432,7 @@ export async function politicalContext(
 ): Promise<string> {
   const transcript = fullOrSampledTranscript(segments);
   return runStream(
+    "video-political",
     `${videoHeader(meta)}\n\n` +
       "Situe este vídeo no CONTEXTO POLÍTICO:\n" +
       "1. **Do que se trata** — o fato/tema político central\n" +
@@ -289,6 +455,7 @@ export async function critique(
 ): Promise<string> {
   const transcript = fullOrSampledTranscript(segments);
   return runStream(
+    "video-critique",
     `${videoHeader(meta)}\n\n` +
       "Faça uma CRÍTICA honesta e equilibrada deste vídeo:\n" +
       "1. **Tese** — o que o autor quer que você acredite\n" +
@@ -311,7 +478,12 @@ export async function correctTranscript(
 ): Promise<string> {
   const transcript = fullOrSampledTranscript(segments);
 
-  const p = await provider();
+  const { p, config, providerName } = await provider();
+  const identity: VideoIdentity = {
+    providerId: config.providerId,
+    providerName,
+    model: config.model ?? "",
+  };
   // Usa COMPLETE (sem streaming) com texto DENTRO do prompt —
   // evita o bug de loop/repetição que acontecia com context+stream.
   const prompt =
@@ -327,13 +499,38 @@ export async function correctTranscript(
     "Devolva APENAS o texto corrigido.\n\n" +
     `TRANSCRIÇÃO:\n${transcript}`;
 
-  const result = await p.complete(prompt, {
-    systemPrompt: systemPrompt(),
-    maxTokens: 8000,
-    temperature: 0.3,
-  });
-  onChunk(result.text);
-  return result.text;
+  // Trava de consumo: transcrição grande pode estourar o cap já na entrada.
+  const capMsg = capBlockedMessage(prompt);
+  if (capMsg) throw new Error(capMsg);
+
+  try {
+    let usage: UsageInfo | undefined;
+    const result = await p.complete(prompt, {
+      systemPrompt: systemPrompt(),
+      maxTokens: 8000,
+      temperature: 0.3,
+      onUsage: (u) => {
+        usage = u;
+      },
+    });
+    onChunk(result.text);
+    recordVideo({
+      task: "video-correct",
+      identity,
+      usage,
+      promptText: prompt,
+      completionText: result.text,
+    });
+    return result.text;
+  } catch (err) {
+    recordVideo({
+      task: "video-correct",
+      identity,
+      promptText: prompt,
+      status: "error",
+    });
+    throw err;
+  }
 }
 
 // ─── ❓ Perguntar sobre o vídeo (Q&A com busca no contexto) ─────────────
@@ -426,6 +623,7 @@ export async function askQuestion(
 ): Promise<string> {
   const context = retrieveContext(segments, question);
   return runStream(
+    "video-ask",
     `${videoHeader(meta)}\n\n` +
       `PERGUNTA DO USUÁRIO: "${question}"\n\n` +
       "Responda com base APENAS na transcrição (trechos abaixo, com tempos " +

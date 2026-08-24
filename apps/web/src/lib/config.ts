@@ -330,6 +330,18 @@ export async function updateEntryLabel(entryId: string, label: string): Promise<
   }
 }
 
+/** Atualiza apenas o MODELO de uma entrada (ícone 🧩 nas configurações —
+ *  troca o modelo sem re-digitar a chave). Vazio = volta ao padrão do provedor. */
+export async function updateEntryModel(entryId: string, model: string): Promise<void> {
+  await ensureCache();
+  if (!cachedEntries) return;
+  const entry = cachedEntries.find((e) => e.id === entryId);
+  if (entry) {
+    entry.model = model.trim() || undefined;
+    await persist();
+  }
+}
+
 /** Remove TODAS as entradas (limpa o cofre). */
 export function clearConfig(): void {
   if (typeof window === "undefined") return;
