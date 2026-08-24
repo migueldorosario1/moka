@@ -52,11 +52,33 @@ export function TranslateBookModal({ book, userId, onClose }: TranslateBookModal
   const [error, setError] = useState<string | null>(null);
   const [secs, setSecs] = useState(0);
   const cancelledRef = useRef(false);
+  const [pausedByHide, setPausedByHide] = useState(false);
 
   // Portal: escapa de ancestral com containing block do Reader (mesma cura
   // do AuthModal/SettingsModal/AskModal — BUG "menu cortado/quebra livro").
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // PAUSA AUTOMÁTICA EM SEGUNDO PLANO (ordem do Miguel 24/08 — "o Moka não
+  // pode gastar só porque está aberto"): aba oculta = tradução pausada no
+  // fim da página em andamento (job salvo, Continuar retoma depois). Nada
+  // de rodar às cenas gastando token com o usuário fora da aba.
+  useEffect(() => {
+    if (phase !== "running") return;
+    const onVis = () => {
+      if (document.hidden) {
+        cancelledRef.current = true;
+        setPausedByHide(true);
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [phase]);
+
+  // Fechar a janela durante a execução = PAUSAR (antes a tradução seguia
+  // escondida mesmo com o modal fechado — raiz do gasto invisível de 24/08).
+  // O job fica salvo; reabrir e Continuar retoma da página exata.
+  useEffect(() => () => { cancelledRef.current = true; }, []);
 
   // Cronômetro (roda enquanto traduz/integra).
   useEffect(() => {
@@ -83,6 +105,7 @@ export function TranslateBookModal({ book, userId, onClose }: TranslateBookModal
 
   const start = async (resume: boolean) => {
     cancelledRef.current = false;
+    setPausedByHide(false);
     setError(null);
     setPhase("running");
     try {
@@ -223,7 +246,9 @@ export function TranslateBookModal({ book, userId, onClose }: TranslateBookModal
           {/* ── CANCELADO ── */}
           {phase === "cancelled" && (
             <>
-              <p className="tb-info">⏸ {t("tb_cancelled")}</p>
+              <p className="tb-info">
+                {pausedByHide ? `🌙 ${t("tb_paused_hidden")}` : `⏸ ${t("tb_cancelled")}`}
+              </p>
               <button className="tb-btn tb-btn-primary" onClick={() => start(true)}>
                 ▶ {t("tb_continue")}
               </button>

@@ -476,6 +476,7 @@ export type UIStringKey =
   | "tb_starting"
   | "tb_running"
   | "tb_cancelled"
+  | "tb_paused_hidden"
   | "tb_continue"
   | "tb_done"
   | "tb_merge"
@@ -948,6 +949,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_starting: "Preparando…",
     tb_running: "Traduzindo… Volume {v}/{vt} · página {p}/{pt}",
     tb_cancelled: "Tradução pausada. Os volumes prontos já estão salvos na estante — você pode continuar depois.",
+    tb_paused_hidden: "Tradução pausada automaticamente — a aba ficou em segundo plano (nada gasta às cenas). Continue quando quiser.",
     tb_continue: "Continuar",
     tb_done: "Livro traduzido! {n} volume(s) salvos na estante e baixados em EPUB.",
     tb_merge: "Integrar volumes num livro único",
@@ -1410,6 +1412,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_starting: "Preparing…",
     tb_running: "Translating… Volume {v}/{vt} · page {p}/{pt}",
     tb_cancelled: "Translation paused. Finished volumes are already saved on your shelf — you can resume anytime.",
+    tb_paused_hidden: "Translation paused automatically — the tab went to the background (nothing burns tokens unseen). Resume anytime.",
     tb_continue: "Resume",
     tb_done: "Book translated! {n} volume(s) saved to your shelf and downloaded as EPUB.",
     tb_merge: "Merge volumes into a single book",
@@ -1872,6 +1875,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_starting: "Preparando…",
     tb_running: "Traduciendo… Volumen {v}/{vt} · página {p}/{pt}",
     tb_cancelled: "Traducción en pausa. Los volúmenes listos ya están guardados en tu estante — puedes continuar después.",
+    tb_paused_hidden: "Traducción pausada automáticamente: la pestaña pasó a segundo plano (nada gasta a escondidas). Continúa cuando quieras.",
     tb_continue: "Continuar",
     tb_done: "¡Libro traducido! {n} volumen(es) guardados en tu estante y descargados en EPUB.",
     tb_merge: "Integrar volúmenes en un libro único",
@@ -2334,6 +2338,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_starting: "Préparation…",
     tb_running: "Traduction… Volume {v}/{vt} · page {p}/{pt}",
     tb_cancelled: "Traduction en pause. Les volumes terminés sont déjà enregistrés dans votre bibliothèque — vous pouvez reprendre plus tard.",
+    tb_paused_hidden: "Traduction mise en pause automatiquement — l'onglet est passé en arrière-plan (rien ne consomme en cachette). Reprenez quand vous voulez.",
     tb_continue: "Reprendre",
     tb_done: "Livre traduit ! {n} volume(s) enregistrés dans votre bibliothèque et téléchargés en EPUB.",
     tb_merge: "Fusionner les volumes en un livre unique",
@@ -2796,6 +2801,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_starting: "Vorbereitung…",
     tb_running: "Übersetze… Band {v}/{vt} · Seite {p}/{pt}",
     tb_cancelled: "Übersetzung pausiert. Fertige Bände sind bereits in deinem Regal gespeichert — du kannst später fortsetzen.",
+    tb_paused_hidden: "Übersetzung automatisch pausiert — der Tab ist in den Hintergrund gegangen (nichts verbraucht unbeobachtet Tokens). Jederzeit fortsetzbar.",
     tb_continue: "Fortsetzen",
     tb_done: "Buch übersetzt! {n} Band/Bände in deinem Regal gespeichert und als EPUB heruntergeladen.",
     tb_merge: "Bände zu einem einzigen Buch zusammenführen",
@@ -3258,6 +3264,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_starting: "Preparazione…",
     tb_running: "Traduzione… Volume {v}/{vt} · pagina {p}/{pt}",
     tb_cancelled: "Traduzione in pausa. I volumi pronti sono già salvati sullo scaffale — puoi riprendere quando vuoi.",
+    tb_paused_hidden: "Traduzione messa in pausa automaticamente: la scheda è andata in secondo piano (nulla consuma di nascosto). Riprendi quando vuoi.",
     tb_continue: "Riprendi",
     tb_done: "Libro tradotto! {n} volume/i salvati sullo scaffale e scaricati in EPUB.",
     tb_merge: "Unisci i volumi in un libro unico",
@@ -3720,6 +3727,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_starting: "Подготовка…",
     tb_running: "Перевод… Том {v}/{vt} · страница {p}/{pt}",
     tb_cancelled: "Перевод приостановлен. Готовые тома уже сохранены на полке — можно продолжить позже.",
+    tb_paused_hidden: "Перевод автоматически приостановлен — вкладка ушла в фон (ничего не расходуется незаметно). Продолжайте когда угодно.",
     tb_continue: "Продолжить",
     tb_done: "Книга переведена! Томов сохранено на полку и скачано в EPUB: {n}.",
     tb_merge: "Объединить тома в одну книгу",
@@ -4182,6 +4190,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_starting: "正在准备…",
     tb_running: "翻译中…第 {v}/{vt} 卷 · 第 {p}/{pt} 页",
     tb_cancelled: "翻译已暂停。已完成的卷已保存到书架——您可以随时继续。",
+    tb_paused_hidden: "标签页进入后台，翻译已自动暂停（不会在你看不见时消耗额度）。随时可以继续。",
     tb_continue: "继续",
     tb_done: "翻译完成！{n} 卷已保存到书架并下载为 EPUB。",
     tb_merge: "将所有卷合并为一本书",
@@ -4644,6 +4653,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_starting: "準備中…",
     tb_running: "翻訳中…第 {v}/{vt} 巻 · {p}/{pt} ページ",
     tb_cancelled: "翻訳を一時停止しました。完成した巻は本棚に保存済みです——後で続きができます。",
+    tb_paused_hidden: "タブがバックグラウンドに移動したため、翻訳を自動的に一時停止しました（見えないところで課金はされません）。いつでも再開できます。",
     tb_continue: "続ける",
     tb_done: "翻訳完了！{n} 巻を本棚に保存し、EPUBでダウンロードしました。",
     tb_merge: "全巻を1冊に統合",
@@ -5106,6 +5116,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_starting: "준비 중…",
     tb_running: "번역 중… {v}/{vt}권 · {p}/{pt}페이지",
     tb_cancelled: "번역이 일시 중지되었습니다. 완료된 권은 이미 서가에 저장되어 있습니다 — 나중에 계속할 수 있습니다.",
+    tb_paused_hidden: "탭이 백그라운드로 이동해 번역이 자동 일시정지되었습니다(보이지 않는 곳에서 결제되지 않습니다). 언제든 이어서 계속할 수 있어요.",
     tb_continue: "계속",
     tb_done: "번역 완료! {n}권이 서가에 저장되고 EPUB으로 다운로드되었습니다.",
     tb_merge: "모든 권을 한 권으로 통합",
@@ -5568,6 +5579,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_starting: "جارٍ التحضير…",
     tb_running: "جارٍ الترجمة… المجلد {v}/{vt} · الصفحة {p}/{pt}",
     tb_cancelled: "تم إيقاف الترجمة مؤقتاً. المجلدات الجاهزة محفوظة في مكتبتك — يمكنك المتابعة لاحقاً.",
+    tb_paused_hidden: "أُوقِفت الترجمة تلقائيًا لأن التبويب انتقل إلى الخلفية (لا شيء يُستهلك خفاءً). يمكنك المتابعة في أي وقت.",
     tb_continue: "متابعة",
     tb_done: "اكتملت الترجمة! تم حفظ {n} مجلد(ات) في مكتبتك وتنزيلها بصيغة EPUB.",
     tb_merge: "دمج المجلدات في كتاب واحد",
@@ -6030,6 +6042,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_starting: "तैयारी…",
     tb_running: "अनुवाद जारी… खंड {v}/{vt} · पृष्ठ {p}/{pt}",
     tb_cancelled: "अनुवाद रुक गया। तैयार खंड आपकी अलमारी में सहेजे गए हैं — आप बाद में जारी रख सकते हैं।",
+    tb_paused_hidden: "टैब बैकग्राउंड में चला गया इसलिए अनुवाद अपने आप रुक गया (छिपकर कुछ भी खर्च नहीं होता)। आप कभी भी जारी रख सकते हैं।",
     tb_continue: "जारी रखें",
     tb_done: "अनुवाद पूरा! {n} खंड अलमारी में सहेजे गए और EPUB में डाउनलोड हुए।",
     tb_merge: "सभी खंडों को एक किताब में मिलाएँ",
