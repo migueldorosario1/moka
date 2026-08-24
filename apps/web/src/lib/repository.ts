@@ -48,7 +48,14 @@ export function sessionToCloud(session: Session, cloudId?: string): CloudBook {
     file_name: session.fileName,
     file_size: session.fileSize,
     source_format: session.book.sourceFormat,
-    book: session.book,
+    // Capa EMBUTIDA no jsonb book: a coluna cover_image NÃO existe no banco
+    // (provado via PostgREST: 42703 "column books.cover_image does not exist")
+    // — gravar nela quebraria o upsert. O ParsedBook já tem coverImage, então
+    // a capa (extraída do EPUB ou renderizada do PDF) viaja dentro do book.
+    book: {
+      ...session.book,
+      coverImage: session.coverImage ?? session.book.coverImage,
+    },
     chapter_idx: session.chapterIdx,
     zoom: session.zoom,
     translations: session.translations ?? {},
@@ -206,6 +213,11 @@ export async function listLibrary(userId: string | null): Promise<Session[]> {
       matchedLocalIds.add(local.id);
     }
 
+    // Capa da nuvem (embutida no jsonb book; coluna própria não existe).
+    const cloudCover =
+      (row.cover_image as string | undefined) ??
+      (row.book as ParsedBook | undefined)?.coverImage;
+
     // Se tem cópia local VÁLIDA (com chapters), usa ela como base.
     if (local && local.book?.chapters?.length > 0) {
       // Compara datas pra decidir progresso.
@@ -228,6 +240,8 @@ export async function listLibrary(userId: string | null): Promise<Session[]> {
         translations: (row.translations as Record<string, string>) ?? local.translations ?? {},
         notes: (row.notes as SavedNote[]) ?? local.notes ?? [],
         bookmarks: (row.bookmarks as Array<{ chapterIdx: number; savedAt: number }>) ?? local.bookmarks ?? [],
+        // Local manda na capa (render do PDF é só local); nuvem completa se faltar.
+        coverImage: local.coverImage ?? cloudCover,
       };
     }
 
@@ -244,7 +258,8 @@ export async function listLibrary(userId: string | null): Promise<Session[]> {
       translations: (row.translations as Record<string, string>) ?? {},
       notes: (row.notes as SavedNote[]) ?? [],
       bookmarks: (row.bookmarks as Array<{ chapterIdx: number; savedAt: number }>) ?? [],
-      coverImage: row.cover_image as string | undefined,
+      coverImage: (row.cover_image as string | undefined) ??
+        (row.book as ParsedBook | undefined)?.coverImage,
     };
   });
 
@@ -280,7 +295,14 @@ export async function saveToLibrary(session: Session, userId?: string | null): P
     file_name: session.fileName,
     file_size: session.fileSize,
     source_format: session.book.sourceFormat,
-    book: session.book,
+    // Capa EMBUTIDA no jsonb book: a coluna cover_image NÃO existe no banco
+    // (provado via PostgREST: 42703 "column books.cover_image does not exist")
+    // — gravar nela quebraria o upsert. O ParsedBook já tem coverImage, então
+    // a capa (extraída do EPUB ou renderizada do PDF) viaja dentro do book.
+    book: {
+      ...session.book,
+      coverImage: session.coverImage ?? session.book.coverImage,
+    },
     chapter_idx: session.chapterIdx,
     zoom: session.zoom,
     translations: session.translations ?? {},

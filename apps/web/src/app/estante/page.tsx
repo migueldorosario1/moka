@@ -20,7 +20,7 @@ import {
   type Session,
 } from "@/lib/db";
 import { parseBook } from "@igot/parser";
-import { renderPdfCover } from "@/lib/pdf-cover";
+import { renderPdfCover, isImagePdf } from "@/lib/pdf-cover";
 import { generateDynamicBookCover } from "@/lib/cover-generator";
 
 /**
@@ -151,8 +151,24 @@ export default function HomePage() {
           ) ?? books.find(
             (b) => b.book.title === result.book?.title,
           );
+          // PDF 100% IMAGEM (scan sem texto — pedido do Miguel, 24/08):
+          // avisa ANTES de adicionar que ler é normal, mas traduzir/explicar
+          // páginas exige IA com VISÃO e custa um pouco mais por página.
+          // Confirm com explicação nos 12 idiomas; cancelar = não adiciona.
+          if (result.book.sourceFormat === "pdf" && (await isImagePdf(data))) {
+            if (!confirm(t("shelf_image_pdf_confirm"))) return;
+          }
+
           if (existingByTitle) {
             existingByTitle.pdfSource = result.book.sourceFormat === "pdf" ? new Uint8Array(data) : null;
+            // Re-enviou o arquivo: recalcula a capa com a detecção V4 (examina
+            // as 10 primeiras páginas e elege a melhor — pedido do Miguel,
+            // 23/08; caso-escola: Roman Political Institutions, capa na p.9).
+            // Best-effort: falha silencosa mantém a capa antiga.
+            if (result.book.sourceFormat === "pdf") {
+              existingByTitle.coverImage =
+                (await renderPdfCover(data)) ?? existingByTitle.coverImage;
+            }
             await saveToLibrary(existingByTitle, auth.userId);
             router.push(`/book/${existingByTitle.id}`);
             return;

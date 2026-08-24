@@ -350,7 +350,11 @@ export async function runTranslationJob(opts: {
       const pageText = blocksToText(pages[start + i].blocks, "\n\n").trim();
       // Página vazia (só imagem, por ex.) — não gasta token, segue vazia.
       const translatedText = pageText
-        ? await translatePage(pageText, ctx).then((r) => {
+        ? await translatePage(
+            pageText,
+            ctx,
+            `livro: vol ${v + 1}/${volumesTotal} · pág ${start + i + 1}/${totalPages}`,
+          ).then((r) => {
             if (!r.ok || !r.text) {
               throw new Error(r.error ?? "Erro na tradução.");
             }

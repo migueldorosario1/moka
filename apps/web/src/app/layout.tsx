@@ -109,6 +109,33 @@ export default function RootLayout({
         <GoogleAnalytics />
       </head>
       <body>
+        {/* 🧪 Identificador do ESPELHO — aparece em TODAS as páginas só quando
+            NEXT_PUBLIC_SITE_URL aponta pro espelho (moka-espelho). No canônico
+            a env aponta pra mokareader.com e o badge nunca renderiza. Pedido
+            do Miguel 22/08 ("o espelho tem que ser total"): ninguém nunca mais
+            confunde em qual dos dois sites está. */}
+        {(process.env.NEXT_PUBLIC_SITE_URL ?? "").includes("espelho") && (
+          <div
+            aria-hidden
+            style={{
+              position: "fixed",
+              bottom: 10,
+              left: 10,
+              zIndex: 100000,
+              background: "#7c3aed",
+              color: "#fff",
+              fontSize: 11,
+              fontWeight: 700,
+              padding: "3px 9px",
+              borderRadius: 999,
+              opacity: 0.85,
+              pointerEvents: "none",
+              letterSpacing: 0.4,
+            }}
+          >
+            🧪 ESPELHO
+          </div>
+        )}
         <I18nProvider>
           {children}
         </I18nProvider>
