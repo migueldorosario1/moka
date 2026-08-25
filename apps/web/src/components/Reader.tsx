@@ -453,6 +453,8 @@ export function Reader({
   /** Janelas "Pergunte qualquer coisa" e "Resumo". */
   const [askOpen, setAskOpen] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [bookmarksOpen, setBookmarksOpen] = useState(false);
   // Hub 📊 (Suas IAs + Mural) — 1 ícone, 2 submenus (Miguel, 25/08).
   const [statsHubOpen, setStatsHubOpen] = useState(false);
   // LLM/modelo em uso (recado de espera — Miguel, 25/08: 'tem que dizer
@@ -522,7 +524,6 @@ export function Reader({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [menuVisible, setMenuVisible] = useState(true);
-  const [bookmarksOpen, setBookmarksOpen] = useState(false);
 
   /** Entra/sai do modo tela cheia (só a página do livro visível). */
   const toggleFullscreen = () => {
@@ -559,7 +560,10 @@ export function Reader({
   // do BUG-20260801-MOKA-MENU-SUPERIOR-SOME: qualquer interação reexibe o menu.
   useEffect(() => {
     if (!isFullscreen) setMenuVisible(true);
-  }, [book, settingsOpen, isFullscreen, showTtsModal, transBookOpen, askOpen, summaryOpen]);
+    // Deps ampliadas (Miguel, 25/08): o menu sumiu ao FECHAR Anotações —
+    // painel que não estava na lista. Todos os modais/painéis do leitor
+    // agora reexibem o menu ao fechar.
+  }, [book, settingsOpen, isFullscreen, showTtsModal, transBookOpen, askOpen, summaryOpen, notesOpen, bookmarksOpen, statsHubOpen]);
 
   // Cura da RECAÍDA (Miguel, 24/08: "voltei à página do livro e o menu
   // desapareceu — só metade do botão de zoom"): navegar pra outra página
@@ -877,7 +881,6 @@ export function Reader({
     return canvas;
   };
 
-  const [notesOpen, setNotesOpen] = useState(false);
   // Aba ativa no modal unificado: "notes" | "bookmarks" | "audio"
   const [notesTab, setNotesTab] = useState<"notes" | "bookmarks" | "audio">("notes");
 
@@ -2064,11 +2067,20 @@ export function Reader({
         >
           {isFullscreen ? "🗗" : "⛶"}
         </button>
+        {/* 👁 DESTRAVADOR UNIVERSAL (ideia do Miguel, 25/08 — após o menu
+            sumir de novo ao fechar Anotações): fora de fullscreen, clicar
+            SEMPRE TRAZ o menu de volta (destrava qualquer estado preso);
+            em fullscreen, alterna mostrar/esconder como antes. */}
         <button
-          onClick={() => isFullscreen && setMenuVisible((v) => !v)}
+          onClick={() => {
+            if (!isFullscreen) {
+              setIsFullscreen(false);
+              setMenuVisible(true);
+            } else {
+              setMenuVisible((v) => !v);
+            }
+          }}
           className="zoom-rail-btn"
-          disabled={!isFullscreen}
-          style={{ opacity: isFullscreen ? 1 : 0.35, cursor: isFullscreen ? "pointer" : "not-allowed" }}
           title={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
           aria-label={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
         >
