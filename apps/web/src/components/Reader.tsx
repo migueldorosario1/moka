@@ -541,6 +541,20 @@ export function Reader({
     if (!isFullscreen) setMenuVisible(true);
   }, [book, settingsOpen, isFullscreen, showTtsModal, transBookOpen, askOpen, summaryOpen]);
 
+  // Cura da RECAÍDA (Miguel, 24/08: "voltei à página do livro e o menu
+  // desapareceu — só metade do botão de zoom"): navegar pra outra página
+  // AINDA EM TELA CHEIA congela o estado; o VOLTAR do navegador restaura
+  // isFullscreen=true órfão (o fullscreen real já caiu com a navegação) e
+  // nenhuma cura acima reexibe o menu (elas acreditam no estado interno).
+  // Aqui conferimos a VERDADE do DOM: sem fullscreenElement, não há tela
+  // cheia — corrija o estado e traga o menu de volta.
+  useEffect(() => {
+    if (isFullscreen && typeof document !== "undefined" && !document.fullscreenElement) {
+      setIsFullscreen(false);
+      setMenuVisible(true);
+    }
+  }, [isFullscreen, book]);
+
   /** Esta página já está marcada? Compara capítulo E página local
    *  (pedido Miguel, 13/08: "o 🔖 tem que aparecer só na página marcada"). */
   const isBookmarked = bookmarks.some((b) => b.chapterIdx === chapterIdx && (b.pageIdx ?? 0) === pageIdx);
