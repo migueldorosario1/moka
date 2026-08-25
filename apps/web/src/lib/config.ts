@@ -327,6 +327,13 @@ export async function setActiveEntry(entryId: string): Promise<void> {
   await ensureCache();
   if (cachedEntries && cachedEntries.some((e) => e.id === entryId)) {
     cachedActiveId = entryId;
+    // Ao USAR uma LLM (Miguel, 25/08), a caixinha 📖 Tradução/Explicação
+    // ACENDE nela automaticamente — e apaga nas outras (a marca de texto é
+    // single-select). Antes: trocar a IA "em uso" deixava a marca na LLM
+    // antiga, e a nova ficava com a caixinha apagada.
+    cachedEntries.forEach((e) => {
+      e.useForText = e.id === entryId;
+    });
     await persist();
   }
 }
