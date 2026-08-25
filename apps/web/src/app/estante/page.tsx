@@ -138,7 +138,12 @@ export default function HomePage() {
   // Ingestão comum: arquivo local OU Google Drive — mesma pipeline
   // (dedup → parse → aviso PDF-imagem → capa → estante). Miguel, 24/08.
   const ingestBook = useCallback(
-    async (data: ArrayBuffer, fileName: string, fileSize: number) => {
+    async (
+      data: ArrayBuffer,
+      fileName: string,
+      fileSize: number,
+      origin?: "gdrive",
+    ) => {
       setAddingBook(true);
       setUploadError(null);
       try {
@@ -205,6 +210,9 @@ export default function HomePage() {
             id: bookId,
             fileName,
             fileSize,
+            // Crachá de origem (Miguel, 25/08): livro do Drive diferencia do
+            // baixado no dispositivo — badge 📂 no card da estante.
+            sourceOrigin: origin,
             book: result.book,
             coverImage,
             pdfSource: result.book.sourceFormat === "pdf" ? new Uint8Array(data) : null,
@@ -274,7 +282,7 @@ export default function HomePage() {
           setDriveFetching(picked.name);
           const bytes = await fetchPickedFile(picked);
           setDriveFetching(null);
-          await ingestBook(bytes, picked.name, bytes.byteLength);
+          await ingestBook(bytes, picked.name, bytes.byteLength, "gdrive");
         } catch (err) {
           const msg = err instanceof Error ? err.message : String(err);
           if (msg === "CANCEL") {
@@ -327,7 +335,7 @@ export default function HomePage() {
         }
         const bytes = await fetchDriveFile(token, b.id);
         setDriveOpen(false);
-        await ingestBook(bytes, b.name, bytes.byteLength);
+        await ingestBook(bytes, b.name, bytes.byteLength, "gdrive");
       } catch (err) {
         classifyDriveError(err);
       } finally {
@@ -555,6 +563,11 @@ export default function HomePage() {
                         : t("shelf_chapter_n", { n: book.chapterIdx + 1 })}
                     </p>
                     {/* Marca do formato (pedido do Miguel, 29/07) */}
+                    {book.sourceOrigin === "gdrive" && (
+                      <span className="book-origin-badge" title="Google Drive">
+                        📂 Drive
+                      </span>
+                    )}
                     <span className={`book-format-badge fmt-${book.book.sourceFormat}`}>
                       {book.book.sourceFormat.toUpperCase()}
                     </span>

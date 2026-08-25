@@ -8175,3 +8175,18 @@ font-size: 14px;
   line-height: 1.5;
   margin: 4px 0 8px;
 }
+
+/* 📂 Crachá de origem: livro vindo do Google Drive diferencia do
+   baixado no dispositivo (Miguel, 25/08). */
+.book-origin-badge {
+  display: inline-block;
+  margin-right: 6px;
+  padding: 2px 8px;
+  font-size: 10.5px;
+  font-weight: 700;
+  border-radius: 999px;
+  color: #1a73e8;
+  background: #e8f0fe;
+  border: 1px solid #c6dafc;
+  vertical-align: middle;
+}
