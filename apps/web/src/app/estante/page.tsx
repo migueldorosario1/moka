@@ -235,14 +235,31 @@ export default function HomePage() {
   const [driveBusy, setDriveBusy] = useState(false);
   const [driveQuery, setDriveQuery] = useState("");
   const [driveNeedAuth, setDriveNeedAuth] = useState(false);
+  const [driveNeedScope, setDriveNeedScope] = useState<string | null>(null);
   const [driveError, setDriveError] = useState<string | null>(null);
   const [driveFetching, setDriveFetching] = useState<string | null>(null);
+
+  /** Classifica o erro do Drive: 401 = re-login; 403 = falta escopo
+   *  (reconectar NÃO resolve — era o loop "reconectando e caindo" 24/08). */
+  const classifyDriveError = (err: unknown) => {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg === "NEED_AUTH") {
+      setDriveNeedAuth(true);
+      setDriveNeedScope(null);
+    } else if (msg.startsWith("NEED_SCOPE")) {
+      setDriveNeedAuth(false);
+      setDriveNeedScope(msg.replace("NEED_SCOPE: ", ""));
+    } else {
+      setDriveError(msg);
+    }
+  };
 
   const openDrive = useCallback(async (query = "") => {
     setDriveOpen(true);
     setDriveBusy(true);
     setDriveError(null);
     setDriveNeedAuth(false);
+    setDriveNeedScope(null);
     setDriveBooks(null);
     try {
       const token = await getDriveToken();
@@ -252,14 +269,11 @@ export default function HomePage() {
       }
       setDriveBooks(await listDriveBooks(token, query));
     } catch (err) {
-      if (err instanceof Error && err.message === "NEED_AUTH") {
-        setDriveNeedAuth(true);
-      } else {
-        setDriveError(err instanceof Error ? err.message : String(err));
-      }
+      classifyDriveError(err);
     } finally {
       setDriveBusy(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const pickDriveBook = useCallback(
@@ -276,11 +290,7 @@ export default function HomePage() {
         setDriveOpen(false);
         await ingestBook(bytes, b.name, bytes.byteLength);
       } catch (err) {
-        if (err instanceof Error && err.message === "NEED_AUTH") {
-          setDriveNeedAuth(true);
-        } else {
-          setDriveError(err instanceof Error ? err.message : String(err));
-        }
+        classifyDriveError(err);
       } finally {
         setDriveFetching(null);
       }
@@ -389,6 +399,18 @@ export default function HomePage() {
                     <button className="add-book-btn" onClick={() => void reconnectGoogle()}>
                       {t("shelf_gdrive_reconnect")}
                     </button>
+                  </div>
+                ) : driveNeedScope ? (
+                  <div className="gdrive-auth">
+                    <p>🔒 <b>{t("shelf_gdrive_scope_hint")}</b></p>
+                    <p>
+                      <code>https://www.googleapis.com/auth/drive.readonly</code>
+                    </p>
+                    {driveNeedScope && (
+                      <p className="gdrive-hint">
+                        🔎 {t("shelf_gdrive_detail")}: {driveNeedScope}
+                      </p>
+                    )}
                   </div>
                 ) : (
                   <>

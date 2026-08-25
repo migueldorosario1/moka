@@ -46,7 +46,10 @@ export async function reconnectGoogle(): Promise<void> {
   });
 }
 
-/** Lista PDFs/EPUBs do Drive (mais recentes primeiro). 401/403 = sem escopo. */
+/** Lista PDFs/EPUBs do Drive (mais recentes primeiro).
+ *  NEED_AUTH = token ausente/expirado (re-login resolve);
+ *  NEED_SCOPE = o Google recusou por FALTA DE PERMISÃO drive.readonly
+ *  (reconectar NÃO resolve — instrução de escopo; loop do 24/08). */
 export async function listDriveBooks(
   token: string,
   query = "",
@@ -62,8 +65,12 @@ export async function listDriveBooks(
   const res = await fetch(url, {
     headers: { Authorization: `Bearer ${token}` },
   });
-  if (res.status === 401 || res.status === 403) throw new Error("NEED_AUTH");
-  if (!res.ok) throw new Error(`Drive ${res.status}`);
+  if (res.status === 401) throw new Error("NEED_AUTH");
+  if (res.status === 403) {
+    const body = await res.text();
+    throw new Error(`NEED_SCOPE: ${body.slice(0, 120)}`);
+  }
+  if (!res.ok) throw new Error(`Drive ${res.status}: ${(await res.text()).slice(0, 120)}`);
   const j = (await res.json()) as { files?: DriveBook[] };
   return j.files ?? [];
 }
@@ -77,7 +84,11 @@ export async function fetchDriveFile(
     `https://www.googleapis.com/drive/v3/files/${id}?alt=media`,
     { headers: { Authorization: `Bearer ${token}` } },
   );
-  if (res.status === 401 || res.status === 403) throw new Error("NEED_AUTH");
+  if (res.status === 401) throw new Error("NEED_AUTH");
+  if (res.status === 403) {
+    const body = await res.text();
+    throw new Error(`NEED_SCOPE: ${body.slice(0, 120)}`);
+  }
   if (!res.ok) throw new Error(`Drive ${res.status}`);
   return res.arrayBuffer();
 }
