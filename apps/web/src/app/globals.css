@@ -8190,3 +8190,35 @@ font-size: 14px;
   border: 1px solid #c6dafc;
   vertical-align: middle;
 }
+
+/* ── 3 linhas de gasto: desde o início / 7 dias / 30 dias (Miguel, 25/08) ── */
+.tele-period-totals {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 12px;
+}
+.tele-period-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 14px;
+  background: var(--accent-soft, #f5ece1);
+  border: 1px solid var(--border-soft, #e5e0d8);
+  border-radius: 10px;
+}
+.tele-period-row .lbl {
+  font-size: 13.5px;
+  color: var(--text-muted, #6b5d4d);
+}
+.tele-period-row .num {
+  font-size: 16px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.mural-calc {
+  background: var(--surface, #fff);
+  border: 1px solid var(--border-soft, #e5e0d8);
+  border-radius: 14px;
+  padding: 14px;
+}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LlmPriceRanking } from "@/components/LlmPriceRanking";
+import { CostCalculator } from "@/components/CostCalculator";
 import { SiteFooter } from "@/components/SiteFooter";
 
 /**
@@ -9,9 +10,10 @@ import { SiteFooter } from "@/components/SiteFooter";
  * com mural das IAs").
  *
  * Separação de conceitos: /telemetria ("Suas IAs") é o SEU bolso (gastos,
- * tokens, gráficos); o Mural é pra ESCOLHER IA (ranking de preço/qualidade).
- * Acessos: ícone 🏆 na primeira página, botão nas Suas IAs e nas
- * configurações, e o recado de paciência do leitor.
+ * tokens, gráficos); o Mural é pra ESCOLHER IA (ranking de preço/qualidade
+ * + 🧮 calculadora — que migrou pra cá em 25/08: "gostei da ideia, mas
+ * bota em outro lugar"). Acessos: ícone 🏆 na primeira página, hub 📊 no
+ * leitor, botão nas Suas IAs e nas configurações.
  */
 export default function MuralDasIasPage() {
   return (
@@ -27,6 +29,9 @@ export default function MuralDasIasPage() {
       </div>
       <div className="cfg-container" style={{ maxWidth: 860 }}>
         <LlmPriceRanking />
+        <div style={{ marginTop: 18 }}>
+          <CostCalculator />
+        </div>
       </div>
       <SiteFooter />
     </main>
