@@ -8066,3 +8066,19 @@ font-size: 14px;
   color: var(--text-muted, #6b5d4d);
   margin: 8px 0;
 }
+
+/* Botão "⚙️ Abrir configurações" no erro de chave (pedido do Miguel, 24/08):
+   primeiro caminho = onde se resolve. Destaque maior que as causas. */
+.diag-settings-btn {
+  display: block;
+  margin: 10px auto 4px;
+  padding: 10px 18px;
+  font-weight: 700;
+  background: var(--accent, #8a5a2b);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.diag-settings-btn:hover { filter: brightness(1.08); }

@@ -17,7 +17,7 @@ import { PageActionModal } from "./PageActionModal";
 import { TranslateBookModal } from "./TranslateBookModal";
 import { translatePageStream, explainPageStream, translateStream, explainStream, translateForSpeech, translatePageImageStream, estimateImagePageCostUsd } from "@/lib/ai-client";
 import { blocksToText, paginateBlocks } from "@/lib/paginate";
-import { copyDiagnostics, installGlobalErrorCapture, setDiagContext, buildMailtoLink, buildReport, getLastError, getSuggestedCauses, captureError } from "@/lib/diagnostics";
+import { copyDiagnostics, installGlobalErrorCapture, setDiagContext, buildMailtoLink, buildReport, getLastError, getSuggestedCauses, captureError, isKeyOrConfigError } from "@/lib/diagnostics";
 
 interface ReaderProps {
   book: ParsedBook;
@@ -2077,6 +2077,25 @@ export function Reader({
                   resolver o quanto antes.
                 </div>
                 <div className="diag-err-text">{pageTranslation}</div>
+
+                {/* Atalho PRINCIPAL (pedido do Miguel, 24/08): quando o erro
+                    é de CHAVE, o primeiro caminho é o lugar que RESOLVE —
+                    as CONFIGURAÇÕES, onde a chave se coloca. Ajuda fica
+                    como causa secundária, não como primeira parada. */}
+                {isKeyOrConfigError() &&
+                  (onOpenSettings ? (
+                    <button
+                      type="button"
+                      className="diag-copy-btn diag-settings-btn"
+                      onClick={() => onOpenSettings()}
+                    >
+                      ⚙️ Abrir configurações e corrigir minha chave
+                    </button>
+                  ) : (
+                    <a className="diag-copy-btn diag-settings-btn" href="/configuracoes">
+                      ⚙️ Abrir configurações e corrigir minha chave
+                    </a>
+                  ))}
 
                 {/* Causas auto-corrigíveis (autocura): o usuário tenta resolver
                     sozinho ANTES de chamar o suporte. */}
