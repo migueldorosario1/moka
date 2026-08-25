@@ -17,7 +17,7 @@ import { PageActionModal } from "./PageActionModal";
 import { TranslateBookModal } from "./TranslateBookModal";
 import { translatePageStream, explainPageStream, translateStream, explainStream, translateForSpeech, translatePageImageStream, estimateImagePageCostUsd } from "@/lib/ai-client";
 import { blocksToText, paginateBlocks } from "@/lib/paginate";
-import { copyDiagnostics, installGlobalErrorCapture, setDiagContext, buildMailtoLink, buildReport, getLastError, getSuggestedCauses, captureError, isKeyOrConfigError } from "@/lib/diagnostics";
+import { copyDiagnostics, installGlobalErrorCapture, setDiagContext, buildMailtoLink, buildReport, getLastError, getSuggestedCauses, captureError } from "@/lib/diagnostics";
 
 interface ReaderProps {
   book: ParsedBook;
@@ -2092,24 +2092,24 @@ export function Reader({
                 </div>
                 <div className="diag-err-text">{pageTranslation}</div>
 
-                {/* Atalho PRINCIPAL (pedido do Miguel, 24/08): quando o erro
-                    é de CHAVE, o primeiro caminho é o lugar que RESOLVE —
-                    as CONFIGURAÇÕES, onde a chave se coloca. Ajuda fica
-                    como causa secundária, não como primeira parada. */}
-                {isKeyOrConfigError() &&
-                  (onOpenSettings ? (
-                    <button
-                      type="button"
-                      className="diag-copy-btn diag-settings-btn"
-                      onClick={() => onOpenSettings()}
-                    >
-                      ⚙️ Abrir configurações e corrigir minha chave
-                    </button>
-                  ) : (
-                    <a className="diag-copy-btn diag-settings-btn" href="/configuracoes">
-                      ⚙️ Abrir configurações e corrigir minha chave
-                    </a>
-                  ))}
+                {/* Atalho PRINCIPAL (Miguel, 24/08 — ampliado 25/08): TODO
+                    erro de IA oferece as CONFIGURAÇÕES primeiro — é lá que
+                    se troca chave, modelo ou provedor (resolve chave, modelo
+                    errado, crédito e rate na maioria dos casos). Ajuda e
+                    causas específicas ficam embaixo, como detalhe. */}
+                {onOpenSettings ? (
+                  <button
+                    type="button"
+                    className="diag-copy-btn diag-settings-btn"
+                    onClick={() => onOpenSettings()}
+                  >
+                    ⚙️ Abrir configurações e trocar de IA
+                  </button>
+                ) : (
+                  <a className="diag-copy-btn diag-settings-btn" href="/configuracoes">
+                    ⚙️ Abrir configurações e trocar de IA
+                  </a>
+                )}
 
                 {/* Causas auto-corrigíveis (autocura): o usuário tenta resolver
                     sozinho ANTES de chamar o suporte. */}

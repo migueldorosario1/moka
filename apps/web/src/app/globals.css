@@ -8122,3 +8122,10 @@ font-size: 14px;
   border: 1px solid var(--border-soft, #e5e0d8);
   border-radius: 12px;
 }
+
+/* Nav do leitor quebra linha em telas estreitas (Miguel, 25/08: ícone do
+   🌍 ficava ATRÁS da bandeira do idioma — nav transbordava sem wrap). */
+.reader-nav {
+  flex-wrap: wrap;
+  row-gap: 4px;
+}
