@@ -8129,3 +8129,49 @@ font-size: 14px;
   border: 1px solid var(--border-soft, #e5e0d8);
   border-radius: 12px;
 }
+
+/* ── 📊 Hub de dados no leitor: 1 ícone, 2 submenus (Miguel, 25/08) ── */
+.stats-hub { position: relative; }
+.stats-hub-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+}
+.stats-hub-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  background: var(--surface, #fff);
+  border: 1px solid var(--border-soft, #e5e0d8);
+  border-radius: 12px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.16);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  z-index: 61;
+  min-width: 200px;
+}
+.stats-hub-menu a {
+  padding: 9px 12px;
+  border-radius: 9px;
+  font-size: 14px;
+  color: var(--text, #1a1714);
+  white-space: nowrap;
+  text-decoration: none;
+}
+.stats-hub-menu a:hover {
+  background: var(--accent-soft, #f5ece1);
+}
+
+/* 🧮 Estimativa prévia do livro inteiro (Miguel, 25/08): tokens + US$ +
+   moeda do usuário + tempo — o travão antes de começar. */
+.tb-est-box {
+  background: var(--accent-soft, #f5ece1);
+  border: 1px solid var(--accent, #8a5a2b);
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 4px 0 8px;
+}

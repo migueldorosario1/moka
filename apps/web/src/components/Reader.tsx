@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import Link from "next/link";
 import type { Block, ParsedBook } from "@igot/parser";
 import type { SelectionAction } from "@/lib/types";
+import { tt } from "@/lib/telemetry-strings";
+import { getCurrency, convertFromUsd, fmtMoney } from "@/lib/telemetry";
 import { PdfPageCanvas } from "./PdfPageCanvas";
 import { CafezinhoLogo } from "./CafezinhoLogo";
 import { AuthGate } from "./AuthGate";
@@ -451,6 +454,8 @@ export function Reader({
   /** Janelas "Pergunte qualquer coisa" e "Resumo". */
   const [askOpen, setAskOpen] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
+  // Hub 📊 (Suas IAs + Mural) — 1 ícone, 2 submenus (Miguel, 25/08).
+  const [statsHubOpen, setStatsHubOpen] = useState(false);
   const [transBookOpen, setTransBookOpen] = useState(false);
   /** Escala da fonte de leitura (A−/A+) — persistida no localStorage. */
   const [fontScale, setFontScale] = useState(() => {
@@ -1321,9 +1326,27 @@ export function Reader({
       // custo REAL da chamada de visão — transparência exigida por ele
       // ("depois de fazer, diz quanto custou"). A nota é visual: o
       // auto-save em notas e o histórico salvam só a tradução limpa.
+      // Nota 💰 (Miguel, 25/08 — agora em TODA tradução de página, texto ou
+      // imagem): US$ + moeda do usuário + tokens. Nota é visual; o auto-save
+      // e o histórico gravam o texto limpo.
       const costNote =
-        action === "translate-image" && result.costUsd !== undefined
-          ? `\n\n—\n💰 ${t("reader_vision_spent", { cost: result.costUsd > 0 && result.costUsd < 0.01 ? `US$ ${result.costUsd.toFixed(4)}` : `US$ ${result.costUsd.toFixed(2)}` })}`
+        (action === "translate" || action === "translate-image") &&
+        result.costUsd !== undefined
+          ? (() => {
+              const cur = getCurrency();
+              const local =
+                cur.code === "USD"
+                  ? ""
+                  : ` (≈ ${fmtMoney(convertFromUsd(result.costUsd ?? 0, cur), cur)})`;
+              const tok = result.usage?.totalTokens
+                ? ` · ${result.usage.totalTokens.toLocaleString()} tokens`
+                : "";
+              const usd =
+                result.costUsd > 0 && result.costUsd < 0.01
+                  ? result.costUsd.toFixed(4)
+                  : result.costUsd.toFixed(2);
+              return `\n\n—\n💰 US$ ${usd}${local}${tok}`;
+            })()
           : "";
       setPageTranslation(result.text + costNote);
       if (action === "translate" || action === "translate-image") {
@@ -1951,6 +1974,33 @@ export function Reader({
             >
               ❓
             </a>
+            {/* 📊 Hub de dados (Miguel, 25/08): 1 ícone com 2 submenus —
+                Suas IAs (telemetria) e Mural das IAs. Com ⛶/👁 mudados pra
+                chave de zoom, o menu volta a caber numa linha. */}
+            <div className="stats-hub">
+              <button
+                type="button"
+                className="icon-btn"
+                onClick={() => setStatsHubOpen((v) => !v)}
+                title={tt(lang, "tele_nav")}
+                aria-label={tt(lang, "tele_nav")}
+              >
+                📊
+              </button>
+              {statsHubOpen && (
+                <>
+                  <div className="stats-hub-backdrop" onClick={() => setStatsHubOpen(false)} />
+                  <div className="stats-hub-menu">
+                    <Link href="/telemetria" onClick={() => setStatsHubOpen(false)}>
+                      📊 {tt(lang, "tele_nav")}
+                    </Link>
+                    <Link href="/mural-das-ias" onClick={() => setStatsHubOpen(false)}>
+                      {tt(lang, "tele_mural_btn")}
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
             {/* ⚙️ Configurações */}
             {onOpenSettings && (
               <button
@@ -1967,34 +2017,10 @@ export function Reader({
             )}
             {/* 👤 Login (AuthGate: Google OU e-mail — modal com as duas portas) */}
             {auth && <AuthGate />}
-            {/* 🗐 Tela cheia */}
-            <button
-              onClick={toggleFullscreen}
-              className="icon-btn"
-              title={isFullscreen ? t("reader_exit_fullscreen") : t("reader_fullscreen")}
-              aria-label={isFullscreen ? t("reader_exit_fullscreen") : t("reader_fullscreen")}
-            >
-              {isFullscreen ? "🗗" : "⛶"}
-            </button>
-            {/* 👁 Ocultar menu (leitura imersiva) — o ícone precisa dizer o
-                que faz: antes era ☕ (a marca!), e o usuário tocava sem querer
-                achando que era "menu do Moka" → o menu sumia do nada (bug
-                crônico reportado pelo Miguel, 2026-08-01). O ☕ ficou só no
-                botão flutuante que TRAZ o menu de volta.
-                CURA DEFINITIVA (09/08): o botão só funciona em FULLSCREEN
-                (modo imersivo explícito). Fora de fullscreen, o menu NUNCA
-                some — acaba o "menu travou/sumiu sem querer" reportado pelo
-                Miguel ao mexer no campo de fala/configurações. */}
-            <button
-              onClick={() => isFullscreen && setMenuVisible((v) => !v)}
-              className="icon-btn menu-toggle-btn"
-              disabled={!isFullscreen}
-              style={{ opacity: isFullscreen ? 1 : 0.35, cursor: isFullscreen ? "pointer" : "not-allowed" }}
-              title={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
-              aria-label={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
-            >
-              {menuVisible ? "👁" : "🙈"}
-            </button>
+            {/* ⛶ tela cheia e 👁 esconder menu FORAM PRA CHAVE DE ZOOM
+                (pedido do Miguel, 25/08: "menu quebrou pra 2 linhas porque
+                tem item demais — deixa maximizar e o olho junto da chave
+                de +− do zoom"). Header volta a caber numa linha. */}
           </div>
         </div>
 
@@ -2028,6 +2054,29 @@ export function Reader({
           className="zoom-rail-btn"
         >
           −
+        </button>
+        {/* ⛶ Tela cheia + 👁 esconder menu vieram DO HEADER pra cá (Miguel,
+            25/08: "deixar o ícone de maximizar e o olho de esconder o menu
+            logo abaixo/da chave de +− do zoom" — o menu de cima tinha itens
+            demais e quebrava em 2 linhas). Mantida a cura 09/08: 👁 só age
+            em fullscreen (modo imersivo explícito). */}
+        <button
+          onClick={toggleFullscreen}
+          className="zoom-rail-btn"
+          title={isFullscreen ? t("reader_exit_fullscreen") : t("reader_fullscreen")}
+          aria-label={isFullscreen ? t("reader_exit_fullscreen") : t("reader_fullscreen")}
+        >
+          {isFullscreen ? "🗗" : "⛶"}
+        </button>
+        <button
+          onClick={() => isFullscreen && setMenuVisible((v) => !v)}
+          className="zoom-rail-btn"
+          disabled={!isFullscreen}
+          style={{ opacity: isFullscreen ? 1 : 0.35, cursor: isFullscreen ? "pointer" : "not-allowed" }}
+          title={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
+          aria-label={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
+        >
+          {menuVisible ? "👁" : "🙈"}
         </button>
         {/* Indicador de marcador (pedido Miguel, 13/08): aparece 🔖 na "chave
             de zoom" (direita) quando a página atual está marcada. */}

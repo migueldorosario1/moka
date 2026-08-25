@@ -13,6 +13,8 @@ import {
   type JobProgress,
   type TranslationPlan,
 } from "@/lib/book-translate";
+import { getEntryForText } from "@/lib/config";
+import { computeCostUsd, getCurrency, convertFromUsd, fmtMoney } from "@/lib/telemetry";
 
 interface TranslateBookModalProps {
   book: ParsedBook;
@@ -46,6 +48,7 @@ type Phase =
 export function TranslateBookModal({ book, userId, onClose }: TranslateBookModalProps) {
   const { t } = useI18n();
   const [phase, setPhase] = useState<Phase>("confirm");
+
   const [plan] = useState<TranslationPlan>(() => planTranslation(book));
   const [savedJob] = useState(() => loadTransJob(book));
   const [progress, setProgress] = useState<JobProgress | null>(null);
@@ -53,6 +56,41 @@ export function TranslateBookModal({ book, userId, onClose }: TranslateBookModal
   const [secs, setSecs] = useState(0);
   const cancelledRef = useRef(false);
   const [pausedByHide, setPausedByHide] = useState(false);
+
+  // 🧮 ESTIMATIVA prévia (Miguel, 25/08: "trava de segurança maior pra
+  // traduzir o livro inteiro — antes, exigência de estimativa de custo em
+  // tokens, reais e tempo"). ANTES de qualquer chamada: tokens pelo tamanho
+  // do texto (≈ chars/4 ida + volta), custo pela tabela de preços da chave
+  // ativa, tempo por volume (~75s médio, modelos com thinking demoram).
+  const [est, setEst] = useState<{ tokens: number; usd: number; secs: number } | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void (async () => {
+      try {
+        const chars = (book.chapters ?? []).reduce(
+          (s, c) =>
+            s +
+            ((c as { blocks?: Array<{ text?: string }> }).blocks ?? []).reduce(
+              (a, b) => a + (b?.text?.length ?? 0),
+              0,
+            ),
+          0,
+        );
+        const tokensIn = Math.ceil(chars / 4);
+        const tokens = tokensIn * 2; // entrada + tradução de saída
+        const entry = getEntryForText();
+        const usd = entry
+          ? await computeCostUsd(entry.providerId, entry.model ?? "", tokensIn, tokensIn)
+          : 0;
+        if (alive) setEst({ tokens, usd, secs: plan.volumesTotal * 75 });
+      } catch {
+        /* estimativa é best-effort — nunca bloqueia */
+      }
+    })();
+    return () => {
+      alive = false;
+    };
+  }, [book, plan.volumesTotal]);
 
   // Portal: escapa de ancestral com containing block do Reader (mesma cura
   // do AuthModal/SettingsModal/AskModal — BUG "menu cortado/quebra livro").
@@ -185,6 +223,22 @@ export function TranslateBookModal({ book, userId, onClose }: TranslateBookModal
               </div>
               <p className="tb-info">{t("tb_auto_download")}</p>
               <p className="tb-warning">⚠️ {t("tb_token_warning")}</p>
+              {est && (
+                <div className="tb-est-box">
+                  <strong>🧮</strong> ≈ {est.tokens.toLocaleString()} tokens · ≈ US${" "}
+                  {est.usd >= 0.01 ? est.usd.toFixed(2) : est.usd.toFixed(4)}
+                  {(() => {
+                    const cur = getCurrency();
+                    return cur.code === "USD"
+                      ? ""
+                      : ` (≈ ${fmtMoney(convertFromUsd(est.usd, cur), cur)})`;
+                  })()}{" "}
+                  · ≈{" "}
+                  {est.secs >= 3600
+                    ? `${Math.floor(est.secs / 3600)}h ${Math.round((est.secs % 3600) / 60)}min`
+                    : `${Math.max(1, Math.round(est.secs / 60))} min`}
+                </div>
+              )}
 
               {savedJob && savedJob.completedVolumes < plan.volumesTotal && (
                 <div className="tb-resume-box">
