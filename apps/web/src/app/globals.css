@@ -7995,3 +7995,74 @@ font-size: 14px;
   color: var(--text-muted);
 }
 .tele-empty-ais p { margin: 0; }
+
+/* ── 📂 Modal "Do Google Drive" (pedido do Miguel, 24/08) ── */
+.gdrive-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(20, 15, 10, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+.gdrive-modal {
+  background: var(--surface, #fff);
+  border-radius: 16px;
+  max-width: 520px;
+  width: 100%;
+  max-height: 80vh;
+  overflow: auto;
+  padding: 18px 18px 14px;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.25);
+}
+.gdrive-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+.gdrive-head h3 { margin: 0; font-size: 16px; }
+.gdrive-auth p {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text-muted, #6b5d4d);
+  margin: 4px 0 10px;
+}
+.gdrive-search { display: flex; gap: 6px; margin-bottom: 10px; }
+.gdrive-search input {
+  flex: 1;
+  padding: 8px 10px;
+  border: 1px solid var(--border-soft, #e5e0d8);
+  border-radius: 10px;
+  font-size: 14px;
+  background: var(--surface, #fff);
+  color: var(--text, #1a1714);
+}
+.gdrive-list { display: flex; flex-direction: column; gap: 6px; }
+.gdrive-item {
+  text-align: left;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border: 1px solid var(--border-soft, #e5e0d8);
+  border-radius: 12px;
+  background: transparent;
+  cursor: pointer;
+}
+.gdrive-item:hover { border-color: var(--accent); background: var(--accent-soft); }
+.gdrive-name {
+  font-size: 14px;
+  color: var(--text, #1a1714);
+  font-weight: 600;
+  word-break: break-word;
+}
+.gdrive-meta { font-size: 12px; color: var(--text-muted, #6b5d4d); }
+.gdrive-hint {
+  font-size: 13.5px;
+  color: var(--text-muted, #6b5d4d);
+  margin: 8px 0;
+}
