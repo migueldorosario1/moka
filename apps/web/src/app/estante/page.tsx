@@ -22,18 +22,6 @@ import {
 } from "@/lib/db";
 import { parseBook } from "@igot/parser";
 import { renderPdfCover, isImagePdf } from "@/lib/pdf-cover";
-import {
-  getDriveToken,
-  listDriveBooks,
-  fetchDriveFile,
-  reconnectGoogle,
-  type DriveBook,
-} from "@/lib/gdrive";
-import {
-  hasPickerConfig,
-  pickFromDrive,
-  fetchPickedFile,
-} from "@/lib/gdrive-picker";
 import { generateDynamicBookCover } from "@/lib/cover-generator";
 
 /**
@@ -242,109 +230,6 @@ export default function HomePage() {
     [ingestBook],
   );
 
-  // ── 📂 Google Drive: subir livro sem baixar pro PC (Miguel, 24/08) ──
-  const [driveOpen, setDriveOpen] = useState(false);
-  const [driveBooks, setDriveBooks] = useState<DriveBook[] | null>(null);
-  const [driveBusy, setDriveBusy] = useState(false);
-  const [driveQuery, setDriveQuery] = useState("");
-  const [driveNeedAuth, setDriveNeedAuth] = useState(false);
-  const [driveNeedScope, setDriveNeedScope] = useState<string | null>(null);
-  const [driveError, setDriveError] = useState<string | null>(null);
-  const [driveFetching, setDriveFetching] = useState<string | null>(null);
-
-  /** Classifica o erro do Drive: 401 = re-login; 403 = falta escopo
-   *  (reconectar NÃO resolve — era o loop "reconectando e caindo" 24/08). */
-  const classifyDriveError = (err: unknown) => {
-    const msg = err instanceof Error ? err.message : String(err);
-    if (msg === "NEED_AUTH") {
-      setDriveNeedAuth(true);
-      setDriveNeedScope(null);
-    } else if (msg.startsWith("NEED_SCOPE")) {
-      setDriveNeedAuth(false);
-      setDriveNeedScope(msg.replace("NEED_SCOPE: ", ""));
-    } else {
-      setDriveError(msg);
-    }
-  };
-
-  const openDrive = useCallback(
-    async (query = "") => {
-      // VIA OFICIAL (Picker + drive.file — Miguel 24/08): janelinha do
-      // Google, o app só vê o livro ESCOLHIDO. Sem Client ID configurado,
-      // cai no fluxo legado (lista via sessão Supabase).
-      if (hasPickerConfig()) {
-        setDriveFetching("Google Drive");
-        setDriveError(null);
-        setDriveNeedAuth(false);
-        setDriveNeedScope(null);
-        try {
-          const picked = await pickFromDrive();
-          setDriveFetching(picked.name);
-          const bytes = await fetchPickedFile(picked);
-          setDriveFetching(null);
-          await ingestBook(bytes, picked.name, bytes.byteLength, "gdrive");
-        } catch (err) {
-          const msg = err instanceof Error ? err.message : String(err);
-          if (msg === "CANCEL") {
-            /* desistiu na janelinha — silêncio educado */
-          } else if (msg.startsWith("NEED_SCOPE")) {
-            setDriveOpen(true);
-            setDriveNeedAuth(false);
-            setDriveNeedScope(msg.replace("NEED_SCOPE: ", ""));
-          } else {
-            setDriveOpen(true);
-            setDriveError(msg);
-          }
-        } finally {
-          setDriveFetching(null);
-        }
-        return;
-      }
-      setDriveOpen(true);
-      setDriveBusy(true);
-      setDriveError(null);
-      setDriveNeedAuth(false);
-      setDriveNeedScope(null);
-      setDriveBooks(null);
-      try {
-        const token = await getDriveToken();
-        if (!token) {
-          setDriveNeedAuth(true);
-          return;
-        }
-        setDriveBooks(await listDriveBooks(token, query));
-      } catch (err) {
-        classifyDriveError(err);
-      } finally {
-        setDriveBusy(false);
-      }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
-    },
-    [ingestBook],
-  );
-
-  const pickDriveBook = useCallback(
-    async (b: DriveBook) => {
-      setDriveFetching(b.name);
-      setDriveError(null);
-      try {
-        const token = await getDriveToken();
-        if (!token) {
-          setDriveNeedAuth(true);
-          return;
-        }
-        const bytes = await fetchDriveFile(token, b.id);
-        setDriveOpen(false);
-        await ingestBook(bytes, b.name, bytes.byteLength, "gdrive");
-      } catch (err) {
-        classifyDriveError(err);
-      } finally {
-        setDriveFetching(null);
-      }
-    },
-    [ingestBook],
-  );
-
   return (
     <main className="estante-page">
       <VisitPing />
@@ -405,18 +290,6 @@ export default function HomePage() {
               <button className="add-book-btn" onClick={() => document.getElementById("file-input")?.click()}>
                 {t("shelf_add_book")}
               </button>
-              {/* 📂 Direto do Google Drive (Miguel, 24/08): escolhe no Drive,
-                  sobe pra estante sem baixar nada pro computador.
-                  BETA PRIVADO do dono: só aparece com NEXT_PUBLIC_GDRIVE=1
-                  (decisão do Miguel 24/08 — o Google trava apps não
-                  verificados fora da lista de testadores, e "nenhuma
-                  experiência negativa ao usuário" é regra; público NÃO
-                  vê este botão até haver verificação/Picker no futuro). */}
-              {process.env.NEXT_PUBLIC_GDRIVE === "1" && (
-                <button className="add-book-btn" onClick={() => void openDrive()}>
-                  📂 {t("shelf_gdrive_btn")}
-                </button>
-              )}
             </div>
             <input
               id="file-input"
@@ -429,95 +302,6 @@ export default function HomePage() {
               }}
             />
           </div>
-
-          {/* Modal 📂 Do Google Drive — lista PDFs/EPUBs e sobe sem baixar. */}
-          {driveOpen && (
-            <div
-              className="gdrive-overlay"
-              onClick={() => !driveFetching && setDriveOpen(false)}
-            >
-              <div className="gdrive-modal" onClick={(e) => e.stopPropagation()}>
-                <div className="gdrive-head">
-                  <h3>📂 {t("shelf_gdrive_btn")}</h3>
-                  <button
-                    className="ghost"
-                    onClick={() => setDriveOpen(false)}
-                    aria-label="Fechar"
-                  >
-                    ✕
-                  </button>
-                </div>
-                {driveNeedAuth ? (
-                  <div className="gdrive-auth">
-                    <p>{t("shelf_gdrive_need_auth")}</p>
-                    <button className="add-book-btn" onClick={() => void reconnectGoogle()}>
-                      {t("shelf_gdrive_reconnect")}
-                    </button>
-                  </div>
-                ) : driveNeedScope ? (
-                  <div className="gdrive-auth">
-                    <p>🔒 <b>{t("shelf_gdrive_scope_hint")}</b></p>
-                    <button className="add-book-btn" onClick={() => void reconnectGoogle()}>
-                      {t("shelf_gdrive_reconnect")}
-                    </button>
-                    {driveNeedScope && (
-                      <p className="gdrive-hint">
-                        🔎 {t("shelf_gdrive_detail")}: {driveNeedScope}
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <>
-                    <form
-                      className="gdrive-search"
-                      onSubmit={(e) => {
-                        e.preventDefault();
-                        void openDrive(driveQuery);
-                      }}
-                    >
-                      <input
-                        type="search"
-                        value={driveQuery}
-                        onChange={(e) => setDriveQuery(e.target.value)}
-                        placeholder={t("shelf_gdrive_search")}
-                      />
-                      <button type="submit" className="ghost">🔍</button>
-                    </form>
-                    {driveBusy && <p className="gdrive-hint">⏳ {t("shelf_gdrive_loading")}</p>}
-                    {driveError && (
-                      <p className="gdrive-hint">⚠️ {t("shelf_gdrive_error")} ({driveError})</p>
-                    )}
-                    {driveBooks !== null && driveBooks.length === 0 && !driveBusy && (
-                      <p className="gdrive-hint">{t("shelf_gdrive_empty")}</p>
-                    )}
-                    <div className="gdrive-list">
-                      {driveBooks?.map((b) => (
-                        <button
-                          key={b.id}
-                          className="gdrive-item"
-                          onClick={() => void pickDriveBook(b)}
-                          disabled={!!driveFetching}
-                        >
-                          <span className="gdrive-name">{b.name}</span>
-                          <span className="gdrive-meta">
-                            {b.size ? `${(Number(b.size) / 1024 / 1024).toFixed(1)} MB · ` : ""}
-                            {b.modifiedTime
-                              ? new Date(b.modifiedTime).toLocaleDateString()
-                              : ""}
-                          </span>
-                        </button>
-                      ))}
-                    </div>
-                    {driveFetching && (
-                      <p className="gdrive-hint">
-                        ⏳ {t("shelf_gdrive_fetching", { name: driveFetching })}
-                      </p>
-                    )}
-                  </>
-                )}
-              </div>
-            </div>
-          )}
 
           {/* Oferta da Biblioteca Livre (pedido do Miguel, 29/07) */}
           <a className="shelf-bib-link" href="/biblioteca">
