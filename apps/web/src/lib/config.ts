@@ -118,6 +118,17 @@ async function ensureCache(): Promise<void> {
         }
         cachedEntries = entries;
         cachedActiveId = parsed.activeId;
+        // Autorreparação do default 📖 (Miguel, 25/08: "caixa de
+        // tradução/explicação ligada por default"): chaves cadastradas
+        // ANTES do fix de 22/08 continuavam com a caixinha desmarcada.
+        // Se NINGUÉM tem a marca de texto, marca a ATIVA (ou a 1ª) —
+        // uma única vez e sem tocar em escolhas já feitas.
+        if (entries.length > 0 && !entries.some((e) => e.useForText)) {
+          const alvo =
+            entries.find((e) => e.id === cachedActiveId) ?? entries[0];
+          alvo.useForText = true;
+          await persist().catch(() => {});
+        }
         return;
       }
       // versão 1 (mapa por providerId) — migra
@@ -147,6 +158,18 @@ async function ensureCache(): Promise<void> {
         cachedActiveId = v1.activeProviderId
           ? entries.find((e) => e.providerId === v1.activeProviderId)?.id ?? firstId
           : firstId;
+        // Mesmo default 📖 da v2 (Miguel, 25/08): migrada sem nenhuma marca
+        // → a ativa (ou 1ª) nasce marcada para tradução/explicação.
+        if (
+          cachedEntries &&
+          cachedEntries.length > 0 &&
+          !cachedEntries.some((e) => e.useForText)
+        ) {
+          const alvo =
+            cachedEntries.find((e) => e.id === cachedActiveId) ??
+            cachedEntries[0];
+          alvo.useForText = true;
+        }
         await persist();
         return;
       }
