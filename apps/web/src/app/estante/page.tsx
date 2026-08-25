@@ -359,10 +359,17 @@ export default function HomePage() {
                 {t("shelf_add_book")}
               </button>
               {/* 📂 Direto do Google Drive (Miguel, 24/08): escolhe no Drive,
-                  sobe pra estante sem baixar nada pro computador. */}
-              <button className="add-book-btn" onClick={() => void openDrive()}>
-                📂 {t("shelf_gdrive_btn")}
-              </button>
+                  sobe pra estante sem baixar nada pro computador.
+                  BETA PRIVADO do dono: só aparece com NEXT_PUBLIC_GDRIVE=1
+                  (decisão do Miguel 24/08 — o Google trava apps não
+                  verificados fora da lista de testadores, e "nenhuma
+                  experiência negativa ao usuário" é regra; público NÃO
+                  vê este botão até haver verificação/Picker no futuro). */}
+              {process.env.NEXT_PUBLIC_GDRIVE === "1" && (
+                <button className="add-book-btn" onClick={() => void openDrive()}>
+                  📂 {t("shelf_gdrive_btn")}
+                </button>
+              )}
             </div>
             <input
               id="file-input"
