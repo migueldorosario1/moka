@@ -29,6 +29,11 @@ import {
   reconnectGoogle,
   type DriveBook,
 } from "@/lib/gdrive";
+import {
+  hasPickerConfig,
+  pickFromDrive,
+  fetchPickedFile,
+} from "@/lib/gdrive-picker";
 import { generateDynamicBookCover } from "@/lib/cover-generator";
 
 /**
@@ -254,27 +259,61 @@ export default function HomePage() {
     }
   };
 
-  const openDrive = useCallback(async (query = "") => {
-    setDriveOpen(true);
-    setDriveBusy(true);
-    setDriveError(null);
-    setDriveNeedAuth(false);
-    setDriveNeedScope(null);
-    setDriveBooks(null);
-    try {
-      const token = await getDriveToken();
-      if (!token) {
-        setDriveNeedAuth(true);
+  const openDrive = useCallback(
+    async (query = "") => {
+      // VIA OFICIAL (Picker + drive.file — Miguel 24/08): janelinha do
+      // Google, o app só vê o livro ESCOLHIDO. Sem Client ID configurado,
+      // cai no fluxo legado (lista via sessão Supabase).
+      if (hasPickerConfig()) {
+        setDriveFetching("Google Drive");
+        setDriveError(null);
+        setDriveNeedAuth(false);
+        setDriveNeedScope(null);
+        try {
+          const picked = await pickFromDrive();
+          setDriveFetching(picked.name);
+          const bytes = await fetchPickedFile(picked);
+          setDriveFetching(null);
+          await ingestBook(bytes, picked.name, bytes.byteLength);
+        } catch (err) {
+          const msg = err instanceof Error ? err.message : String(err);
+          if (msg === "CANCEL") {
+            /* desistiu na janelinha — silêncio educado */
+          } else if (msg.startsWith("NEED_SCOPE")) {
+            setDriveOpen(true);
+            setDriveNeedAuth(false);
+            setDriveNeedScope(msg.replace("NEED_SCOPE: ", ""));
+          } else {
+            setDriveOpen(true);
+            setDriveError(msg);
+          }
+        } finally {
+          setDriveFetching(null);
+        }
         return;
       }
-      setDriveBooks(await listDriveBooks(token, query));
-    } catch (err) {
-      classifyDriveError(err);
-    } finally {
-      setDriveBusy(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+      setDriveOpen(true);
+      setDriveBusy(true);
+      setDriveError(null);
+      setDriveNeedAuth(false);
+      setDriveNeedScope(null);
+      setDriveBooks(null);
+      try {
+        const token = await getDriveToken();
+        if (!token) {
+          setDriveNeedAuth(true);
+          return;
+        }
+        setDriveBooks(await listDriveBooks(token, query));
+      } catch (err) {
+        classifyDriveError(err);
+      } finally {
+        setDriveBusy(false);
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    },
+    [ingestBook],
+  );
 
   const pickDriveBook = useCallback(
     async (b: DriveBook) => {
