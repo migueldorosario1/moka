@@ -8,6 +8,7 @@ import { LangSwitcher } from "@/components/LangSwitcher";
 import { SiteFooter } from "@/components/SiteFooter";
 import { AuthGate } from "@/components/AuthGate";
 import { TelemetryIconButton } from "@/components/TelemetryIconButton";
+import { MuralIconButton } from "@/components/MuralIconButton";
 import { useI18n } from "@/components/I18nProvider";
 
 /**
@@ -62,6 +63,8 @@ export function Capa() {
           </button>
           {/* 📊 Suas IAs e telemetria — visível na primeira página (Miguel, 22/08). */}
           <TelemetryIconButton />
+          {/* 🏆 Mural das IAs — página própria (Miguel, 24/08). */}
+          <MuralIconButton />
           <AuthGate />
           <LangSwitcher />
         </div>

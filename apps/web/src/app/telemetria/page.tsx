@@ -8,7 +8,7 @@ import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
-import { LlmPriceRanking } from "@/components/LlmPriceRanking";
+import { TeleCharts } from "@/components/TeleCharts";
 import {
   listAllEntriesSync,
   loadConfigCache,
@@ -638,9 +638,20 @@ export default function TelemetriaPage() {
           )}
         </section>
 
-        {/* ═══ 3. PREÇOS DAS IAs (a página com os preços — Miguel, 22/08) ═══ */}
+        {/* 📈 Gráficos de gastos (Miguel, 24/08): DOIS gráficos por dia —
+            custo e tokens — com legenda clicável por LLM (todas ou só
+            algumas). Cobre todas as tarefas e idiomas cadastrados. */}
         <section className="cfg-section">
-          <LlmPriceRanking />
+          <h2 className="cfg-section-title">{tt(lang, "tele_charts_title")}</h2>
+          <TeleCharts records={records ?? []} />
+        </section>
+
+        {/* ═══ MURAL DAS IAs — página própria (Miguel, 24/08): telemetria é
+            o SEU bolso; mural é pra ESCOLHER IA. Sem misturar. ═══ */}
+        <section className="cfg-section">
+          <Link href="/mural-das-ias" className="tele-btn">
+            {tt(lang, "tele_mural_btn")} →
+          </Link>
         </section>
 
         {/* Atalho pras configurações completas (idiomas, vídeo, avisos). */}

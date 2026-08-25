@@ -8,7 +8,7 @@ import { ZeMocaAvatar } from "@/components/ZeMocaAvatar";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
-import { LlmPriceRanking } from "@/components/LlmPriceRanking";
+// (Mural das IAs mudou pra página própria /mural-das-ias — Miguel, 24/08.)
 import { TelemetryIconButton } from "@/components/TelemetryIconButton";
 import { useI18n } from "@/components/I18nProvider";
 
@@ -199,8 +199,17 @@ export default function Ajuda() {
           <p style={{ lineHeight: 1.6, marginTop: 8 }}>{t("byok_video_note")}</p>
         </section>
 
-        {/* 🏆 Ranking de preços das IAs (pedido do Miguel, 05/08) */}
-        <LlmPriceRanking />
+        {/* 🏆 Mural das IAs — página PRÓPRIA agora (pedido do Miguel, 24/08:
+            não misturar com telemetria nem viver como âncora da ajuda). */}
+        <section className="help-robo" style={{ marginBottom: 18 }}>
+          <h2>🏆 Mural das IAs</h2>
+          <p style={{ lineHeight: 1.6 }}>
+            O ranking de preço e qualidade das IAs agora tem casa própria:{" "}
+            <Link href="/mural-das-ias">
+              <b>abrir o Mural das IAs →</b>
+            </Link>
+          </p>
+        </section>
 
         {/* Robô de dúvidas */}
         <section className="help-robo" id="robô">

@@ -2062,7 +2062,7 @@ export function Reader({
                     Traduzido nos 12 idiomas via i18n (pedido Miguel, 22/08:
                     "se tiver em inglês, vai aparecer em inglês?") — antes só
                     pt/en/es/fr tinham texto próprio; o resto caía em português. */}
-                <a className="page-ai-tip" href="/ajuda#mural-das-ias" target="_blank" rel="noreferrer">
+                <a className="page-ai-tip" href="/mural-das-ias" target="_blank" rel="noreferrer">
                   {t("reader_patience_pre")}{" "}
                   <b>{t("reader_patience_wall")}</b>{" "}
                   {t("reader_patience_post")}

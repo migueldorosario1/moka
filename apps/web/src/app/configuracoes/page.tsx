@@ -87,6 +87,10 @@ export default function ConfiguracoesPage() {
         <header className="cfg-header">
           <h1 className="cfg-title">⚙️ {t("cfg_page_title")}</h1>
           <p className="cfg-intro">{t("cfg_intro")}</p>
+          {/* 🏆 Mural das IAs — página própria (pedido do Miguel, 24/08). */}
+          <Link href="/mural-das-ias" className="tele-btn" style={{ display: "inline-block", marginTop: 10 }}>
+            🏆 {t("mural_link")} →
+          </Link>
         </header>
 
         {/* ♿ Acessibilidade — tema (claro/escuro/contraste/sépia) + tamanho

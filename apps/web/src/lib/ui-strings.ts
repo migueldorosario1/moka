@@ -211,6 +211,7 @@ export type UIStringKey =
   | "shelf_gdrive_error"
   | "shelf_gdrive_scope_hint"
   | "shelf_gdrive_detail"
+  | "mural_link"
   | "reader_translate_page"
   | "reader_translating"
   | "reader_translating_page"
@@ -768,6 +769,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_gdrive_error: "O Google recusou o acesso ao Drive. Tente reconectar; se persistir, falta liberar o escopo do Drive no Supabase.",
     shelf_gdrive_scope_hint: "Falta a permissão do Drive no seu login. Clique em “Reconectar com o Google” e ACEITE a permissão “ver seus arquivos do Drive” que o Google vai mostrar. Depois volte e clique no 📂 de novo.",
     shelf_gdrive_detail: "Resposta do Google",
+    mural_link: "Mural das IAs",
     reader_view_original: "📖 Ver original",
     reader_view_translation: "🌐 Ver tradução",
     reader_explain_page: "🧠 Explicar a página inteira",
@@ -1253,6 +1255,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_gdrive_error: "Google refused Drive access. Try reconnecting; if it persists, the Drive scope is missing in Supabase.",
     shelf_gdrive_scope_hint: "Your login is missing the Drive permission. Click “Reconnect with Google” and ACCEPT the “see your Drive files” permission Google will show. Then come back and click 📂 again.",
     shelf_gdrive_detail: "Google's response",
+    mural_link: "AI Wall",
     reader_view_original: "📖 View original",
     reader_view_translation: "🌐 View translation",
     reader_explain_page: "🧠 Explain whole page",
@@ -1734,6 +1737,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_gdrive_error: "Google rechazó el acceso a Drive. Prueba a reconectar; si persiste, falta habilitar el permiso de Drive en Supabase.",
     shelf_gdrive_scope_hint: "A tu login le falta el permiso de Drive. Haz clic en «Reconectar con Google» y ACEPTA el permiso «ver tus archivos de Drive» que mostrará Google. Luego vuelve y pulsa 📂 otra vez.",
     shelf_gdrive_detail: "Respuesta de Google",
+    mural_link: "Mural de IAs",
     reader_view_original: "📖 Ver original",
     reader_view_translation: "🌐 Ver traducción",
     reader_explain_page: "🧠 Explicar la página entera",
@@ -2215,6 +2219,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_gdrive_error: "Google a refusé l'accès au Drive. Essayez de vous reconnecter ; si cela persiste, il manque le scope Drive dans Supabase.",
     shelf_gdrive_scope_hint: "Il manque l'autorisation Drive à votre connexion. Cliquez sur « Reconnecter avec Google » et ACCEPTEZ l'autorisation « voir vos fichiers Drive » proposée par Google. Revenez ensuite cliquer sur 📂.",
     shelf_gdrive_detail: "Réponse de Google",
+    mural_link: "Mur des IAs",
     reader_view_original: "📖 Voir l'original",
     reader_view_translation: "🌐 Voir la traduction",
     reader_explain_page: "🧠 Expliquer la page entière",
@@ -2696,6 +2701,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_gdrive_error: "Google hat den Drive-Zugriff abgelehnt. Versuche, dich neu zu verbinden; falls es bleibt, fehlt der Drive-Scope in Supabase.",
     shelf_gdrive_scope_hint: "Deinem Login fehlt die Drive-Berechtigung. Klicke auf „Mit Google neu verbinden“ und AKZEPTIERE die Berechtigung „Drive-Dateien sehen“, die Google anzeigt. Klicke danach 📂 erneut.",
     shelf_gdrive_detail: "Antwort von Google",
+    mural_link: "KI-Wand",
     reader_view_original: "📖 Original anzeigen",
     reader_view_translation: "🌐 Übersetzung anzeigen",
     reader_explain_page: "🧠 Ganze Seite erklären",
@@ -3177,6 +3183,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_gdrive_error: "Google ha rifiutato l'accesso al Drive. Prova a riconnetterti; se persiste, manca l'ambito Drive in Supabase.",
     shelf_gdrive_scope_hint: "Al tuo login manca il permesso Drive. Clicca su “Riconnetti con Google” e ACCETTA il permesso “vedere i tuoi file Drive” che Google mostrerà. Poi torna e clicca di nuovo su 📂.",
     shelf_gdrive_detail: "Risposta di Google",
+    mural_link: "Muro delle IA",
     reader_view_original: "📖 Vedi originale",
     reader_view_translation: "🌐 Vedi traduzione",
     reader_explain_page: "🧠 Spiega l'intera pagina",
@@ -3658,6 +3665,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_gdrive_error: "Google отказал в доступе к Drive. Попробуйте переподключиться; если не поможет — в Supabase не добавлена область доступа Drive.",
     shelf_gdrive_scope_hint: "Вашему входу не хватает разрешения Drive. Нажмите «Переподключиться к Google» и ПРИМИТЕ разрешение «видеть ваши файлы на Drive», которое покажет Google. Затем вернитесь и нажмите 📂 снова.",
     shelf_gdrive_detail: "Ответ Google",
+    mural_link: "Стена ИИ",
     reader_view_original: "📖 Показать оригинал",
     reader_view_translation: "🌐 Показать перевод",
     reader_explain_page: "🧠 Объяснить всю страницу",
@@ -4139,6 +4147,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_gdrive_error: "Google 拒绝了 Drive 访问。请尝试重新连接；若仍不行，是 Supabase 中缺少 Drive 权限范围。",
     shelf_gdrive_scope_hint: "您的登录缺少 Drive 权限。点击“重新连接 Google”，并接受 Google 弹出的“查看您的云端硬盘文件”权限。然后回来再点一次 📂。",
     shelf_gdrive_detail: "Google 的回复",
+    mural_link: "AI 墙",
     reader_view_original: "📖 查看原文",
     reader_view_translation: "🌐 查看译文",
     reader_explain_page: "🧠 解释整页",
@@ -4620,6 +4629,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_gdrive_error: "GoogleがDriveへのアクセスを拒否しました。再接続を試してください。改善しない場合はSupabaseでDriveスコープが未設定です。",
     shelf_gdrive_scope_hint: "ログインにDriveの許可がありません。「Googleに再接続」をクリックし、Googleが表示する「ドライブのファイルの閲覧」許可を承認してください。その後、もう一度📂をクリックしてください。",
     shelf_gdrive_detail: "Googleの応答",
+    mural_link: "AIウォール",
     reader_view_original: "📖 原文を見る",
     reader_view_translation: "🌐 翻訳を見る",
     reader_explain_page: "🧠 ページ全体を解説",
@@ -5101,6 +5111,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_gdrive_error: "Google가 Drive 접근을 거부했습니다. 다시 연결해 보세요. 지속되면 Supabase에 Drive 스코프가 없는 것입니다.",
     shelf_gdrive_scope_hint: "로그인에 Drive 권한이 없습니다. 'Google에 다시 연결'을 클릭하고 Google가 표시하는 'Drive 파일 보기' 권한을 수락하세요. 그런 다음 돌아와 📂를 다시 클릭하세요.",
     shelf_gdrive_detail: "Google 응답",
+    mural_link: "AI 월",
     reader_view_original: "📖 원문 보기",
     reader_view_translation: "🌐 번역 보기",
     reader_explain_page: "🧠 전체 페이지 설명",
@@ -5582,6 +5593,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_gdrive_error: "رفض Google الوصول إلى Drive. حاول إعادة الاتصال؛ إذا استمر، فالسبب نقص نطاق Drive في Supabase.",
     shelf_gdrive_scope_hint: "ينقص تسجيل الدخول إذن Drive. اضغط «إعادة الاتصال بـ Google» واقبل إذن «الاطلاع على ملفات Drive» الذي سيعرضه Google. ثم عد واضغط 📂 مرة أخرى.",
     shelf_gdrive_detail: "رد Google",
+    mural_link: "جدار الذكاء الاصطناعي",
     reader_view_original: "📖 عرض الأصل",
     reader_view_translation: "🌐 عرض الترجمة",
     reader_explain_page: "🧠 شرح الصفحة كاملة",
@@ -6063,6 +6075,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_gdrive_error: "Google ने Drive एक्सेस से इनकार किया। फिर से जुड़ने की कोशिश करें; फिर भी हो तो Supabase में Drive स्कोप जोड़ना बाकी है।",
     shelf_gdrive_scope_hint: "आपके लॉगिन में Drive की अनुमति नहीं है। “Google से फिर से जुड़ें” पर क्लिक करें और Google जो “अपनी Drive फ़ाइलें देखें” अनुमति दिखाए उसे स्वीकार करें। फिर लौटकर 📂 फिर से दबाएँ।",
     shelf_gdrive_detail: "Google का उत्तर",
+    mural_link: "AI दीवार",
     reader_view_original: "📖 मूल देखें",
     reader_view_translation: "🌐 अनुवाद देखें",
     reader_explain_page: "🧠 पूरे पृष्ठ की व्याख्या करें",
