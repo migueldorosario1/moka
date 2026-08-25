@@ -403,9 +403,9 @@ export default function HomePage() {
                 ) : driveNeedScope ? (
                   <div className="gdrive-auth">
                     <p>🔒 <b>{t("shelf_gdrive_scope_hint")}</b></p>
-                    <p>
-                      <code>https://www.googleapis.com/auth/drive.readonly</code>
-                    </p>
+                    <button className="add-book-btn" onClick={() => void reconnectGoogle()}>
+                      {t("shelf_gdrive_reconnect")}
+                    </button>
                     {driveNeedScope && (
                       <p className="gdrive-hint">
                         🔎 {t("shelf_gdrive_detail")}: {driveNeedScope}

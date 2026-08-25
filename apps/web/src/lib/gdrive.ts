@@ -35,13 +35,19 @@ export async function getDriveToken(): Promise<string | null> {
   return s?.provider_token ?? s?.provider_access_token ?? null;
 }
 
-/** Re-login Google (mesmo fluxo do botão Entrar) — renova o token com escopo. */
+/** Re-login Google pedindo a PERMISSÃO DO DRIVE no próprio fluxo OAuth
+ *  (supabase-js aceita `scopes` nas options — não precisa configurar nada
+ *  no Dashboard). O Google mostra o consentimento "ver seus arquivos do
+ *  Drive"; aceitando, o token da sessão passa a valer pro Drive.
+ *  access_type=offline tenta trazer refresh do provider (menos re-login). */
 export async function reconnectGoogle(): Promise<void> {
   const supabase = createClient();
   await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
       redirectTo: `${window.location.origin}/api/auth/callback`,
+      scopes: "https://www.googleapis.com/auth/drive.readonly",
+      queryParams: { access_type: "offline" },
     },
   });
 }
