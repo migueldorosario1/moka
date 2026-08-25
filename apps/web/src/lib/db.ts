@@ -54,8 +54,6 @@ export interface Session {
   notes?: SavedNote[];
   /** Capa do livro (data URL) pra mostrar na estante. */
   coverImage?: string;
-  /** "gdrive" = subiu do Google Drive (crachá na estante; Miguel, 25/08). */
-  sourceOrigin?: string;
   /**
    * Marcadores (bookmarks) de página. Cada um guarda o chapterIdx e o
    * timestamp de criação, pra lista ordenada no painel de marcadores.

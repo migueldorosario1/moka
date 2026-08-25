@@ -51,10 +51,6 @@ export interface ParsedBook {
   metadata: Record<string, string>;
   /** Capa do livro (data URL) — extraída do EPUB ou render do PDF (V3). */
   coverImage?: string;
-  /** Origem do arquivo (uso interno do Moka): "gdrive" quando subiu do
-   *  Google Drive — diferencia na estante do baixado no dispositivo
-   *  (Miguel, 25/08). Viaja dentro do jsonb book na nuvem. */
-  sourceOrigin?: string;
 }
 
 /** Resultado da tentativa de parse. */

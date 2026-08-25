@@ -125,7 +125,7 @@ export function TeleCharts({ records }: { records: TelemetryRecord[] }) {
   };
 
   if (models.length === 0) {
-    return <p className="gdrive-hint">{tt(lang, "tele_charts_empty")}</p>;
+    return <p className="tele-hint">{tt(lang, "tele_charts_empty")}</p>;
   }
 
   return (

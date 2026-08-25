@@ -55,8 +55,6 @@ export function sessionToCloud(session: Session, cloudId?: string): CloudBook {
     book: {
       ...session.book,
       coverImage: session.coverImage ?? session.book.coverImage,
-      // Crachá de origem (Miguel, 25/08): "gdrive" diferencia na estante.
-      sourceOrigin: session.sourceOrigin ?? session.book.sourceOrigin,
     },
     chapter_idx: session.chapterIdx,
     zoom: session.zoom,
@@ -219,7 +217,6 @@ export async function listLibrary(userId: string | null): Promise<Session[]> {
     const cloudCover =
       (row.cover_image as string | undefined) ??
       (row.book as ParsedBook | undefined)?.coverImage;
-    const cloudSourceOrigin = (row.book as ParsedBook | undefined)?.sourceOrigin;
 
     // Se tem cópia local VÁLIDA (com chapters), usa ela como base.
     if (local && local.book?.chapters?.length > 0) {
@@ -245,7 +242,6 @@ export async function listLibrary(userId: string | null): Promise<Session[]> {
         bookmarks: (row.bookmarks as Array<{ chapterIdx: number; savedAt: number }>) ?? local.bookmarks ?? [],
         // Local manda na capa (render do PDF é só local); nuvem completa se faltar.
         coverImage: local.coverImage ?? cloudCover,
-        sourceOrigin: local.sourceOrigin ?? cloudSourceOrigin,
       };
     }
 
@@ -264,7 +260,6 @@ export async function listLibrary(userId: string | null): Promise<Session[]> {
       bookmarks: (row.bookmarks as Array<{ chapterIdx: number; savedAt: number }>) ?? [],
       coverImage: (row.cover_image as string | undefined) ??
         (row.book as ParsedBook | undefined)?.coverImage,
-      sourceOrigin: (row.book as ParsedBook | undefined)?.sourceOrigin,
     };
   });
 
@@ -307,8 +302,6 @@ export async function saveToLibrary(session: Session, userId?: string | null): P
     book: {
       ...session.book,
       coverImage: session.coverImage ?? session.book.coverImage,
-      // Crachá de origem (Miguel, 25/08): "gdrive" diferencia na estante.
-      sourceOrigin: session.sourceOrigin ?? session.book.sourceOrigin,
     },
     chapter_idx: session.chapterIdx,
     zoom: session.zoom,

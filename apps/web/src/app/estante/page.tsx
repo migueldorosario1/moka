@@ -123,15 +123,10 @@ export default function HomePage() {
 
   // Abre um arquivo: se JÁ EXISTE na estante (mesmo título ou tamanho),
   // abre o livro existente (com progresso salvo). Senão, cria novo.
-  // Ingestão comum: arquivo local OU Google Drive — mesma pipeline
-  // (dedup → parse → aviso PDF-imagem → capa → estante). Miguel, 24/08.
+  // Ingestão de livro: mesma pipeline pra todo arquivo local
+  // (dedup → parse → aviso PDF-imagem → capa → estante).
   const ingestBook = useCallback(
-    async (
-      data: ArrayBuffer,
-      fileName: string,
-      fileSize: number,
-      origin?: "gdrive",
-    ) => {
+    async (data: ArrayBuffer, fileName: string, fileSize: number) => {
       setAddingBook(true);
       setUploadError(null);
       try {
@@ -198,9 +193,6 @@ export default function HomePage() {
             id: bookId,
             fileName,
             fileSize,
-            // Crachá de origem (Miguel, 25/08): livro do Drive diferencia do
-            // baixado no dispositivo — badge 📂 no card da estante.
-            sourceOrigin: origin,
             book: result.book,
             coverImage,
             pdfSource: result.book.sourceFormat === "pdf" ? new Uint8Array(data) : null,
@@ -347,11 +339,6 @@ export default function HomePage() {
                         : t("shelf_chapter_n", { n: book.chapterIdx + 1 })}
                     </p>
                     {/* Marca do formato (pedido do Miguel, 29/07) */}
-                    {book.sourceOrigin === "gdrive" && (
-                      <span className="book-origin-badge" title="Google Drive">
-                        📂 Drive
-                      </span>
-                    )}
                     <span className={`book-format-badge fmt-${book.book.sourceFormat}`}>
                       {book.book.sourceFormat.toUpperCase()}
                     </span>
