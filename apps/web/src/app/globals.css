@@ -6112,6 +6112,13 @@ display: none;
 flex: 0 0 auto;
 scroll-snap-align: start;
 }
+/* Quebra de linha quando aperta (Miguel, 25/08: ícone do 🌍 ficava
+   "atrás da bandeira" — a fileira escondia ícones no scroll horizontal
+   com máscara de fade; em 2 linhas tudo fica visível e clicável). */
+.reader-row-scroll {
+flex-wrap: wrap;
+row-gap: 4px;
+}
 /* Em telas pequenas (celular): 2 linhas harmônicas */
 @media (max-width: 600px) {
 .reader-header {
@@ -8121,11 +8128,4 @@ font-size: 14px;
   background: var(--surface, #fff);
   border: 1px solid var(--border-soft, #e5e0d8);
   border-radius: 12px;
-}
-
-/* Nav do leitor quebra linha em telas estreitas (Miguel, 25/08: ícone do
-   🌍 ficava ATRÁS da bandeira do idioma — nav transbordava sem wrap). */
-.reader-nav {
-  flex-wrap: wrap;
-  row-gap: 4px;
 }

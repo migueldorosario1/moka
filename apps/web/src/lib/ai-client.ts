@@ -329,7 +329,7 @@ export async function translateStream(
       return { ok: true, text: result.text };
     }
     const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
+      streamFn: provider.stream.bind(provider),
       text,
       systemPrompt,
       contextText,
@@ -492,7 +492,7 @@ export async function translatePageStream(
       return { ok: true, text: result.text };
     }
     const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
+      streamFn: provider.stream.bind(provider),
       text,
       systemPrompt,
       contextText,
@@ -615,7 +615,7 @@ export async function translatePageImageStream(
       return { ok: true, text: result.text, costUsd: await realCost() };
     }
     const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
+      streamFn: provider.stream.bind(provider),
       text: prompt,
       systemPrompt,
       contextText,
@@ -691,7 +691,7 @@ export async function explainPageStream(
       return { ok: true, text: result.text };
     }
     const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
+      streamFn: provider.stream.bind(provider),
       text,
       systemPrompt,
       contextText,
@@ -796,7 +796,7 @@ export async function explainStream(
       return { ok: true, text: result.text };
     }
     const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
+      streamFn: provider.stream.bind(provider),
       text: promptText,
       systemPrompt,
       contextText,
@@ -947,7 +947,7 @@ export async function askStream(
       return { ok: true, text: result.text };
     }
     const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
+      streamFn: provider.stream.bind(provider),
       text: question,
       systemPrompt,
       contextText,
@@ -1033,7 +1033,7 @@ export async function summarizeStream(
       return { ok: true, text: result.text };
     }
     const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
+      streamFn: provider.stream.bind(provider),
       text,
       systemPrompt,
       contextText,
