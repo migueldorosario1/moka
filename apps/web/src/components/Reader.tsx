@@ -5,7 +5,6 @@ import Link from "next/link";
 import type { Block, ParsedBook } from "@igot/parser";
 import type { SelectionAction } from "@/lib/types";
 import { tt } from "@/lib/telemetry-strings";
-import { getCurrency, convertFromUsd, fmtMoney } from "@/lib/telemetry";
 import { PdfPageCanvas } from "./PdfPageCanvas";
 import { CafezinhoLogo } from "./CafezinhoLogo";
 import { AuthGate } from "./AuthGate";
@@ -456,6 +455,22 @@ export function Reader({
   const [summaryOpen, setSummaryOpen] = useState(false);
   // Hub 📊 (Suas IAs + Mural) — 1 ícone, 2 submenus (Miguel, 25/08).
   const [statsHubOpen, setStatsHubOpen] = useState(false);
+  // LLM/modelo em uso (recado de espera — Miguel, 25/08: 'tem que dizer
+  // você está usando a LLM X, modelo Y') + progresso estimado em %.
+  const [textEntry, setTextEntry] = useState<{ providerName?: string; providerId: string; model?: string } | null>(null);
+  const [pageProgress, setPageProgress] = useState(0);
+  useEffect(() => {
+    let alive = true;
+    void import("@/lib/config")
+      .then((mod) => mod.getEntryForText())
+      .then((e) => {
+        if (alive && e) setTextEntry(e);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
   const [transBookOpen, setTransBookOpen] = useState(false);
   /** Escala da fonte de leitura (A−/A+) — persistida no localStorage. */
   const [fontScale, setFontScale] = useState(() => {
@@ -1302,6 +1317,7 @@ export function Reader({
     }
 
     setTranslatingPage(true);
+    setPageProgress(0);
     setOverlayMode(action === "explain" ? "explain" : "translate");
     setPageTranslation("");
     setShowTranslation(true);
@@ -1311,7 +1327,11 @@ export function Reader({
       bookAuthor: book.author,
       bookLanguage: book.language,
     };
-    const onChunk = (full: string) => setPageTranslation(full);
+    const alvoLen = Math.max(200, (action === "translate-image" ? 2500 : currentPageText.length) * 1.05 + 80);
+    const onChunk = (full: string) => {
+      setPageTranslation(full);
+      setPageProgress(Math.min(95, Math.round((full.length / alvoLen) * 100)));
+    };
 
     const result =
       action === "translate-image" && pageImage
@@ -1322,33 +1342,9 @@ export function Reader({
 
     setTranslatingPage(false);
     if (result.ok && result.text) {
-      // Página-IMAGEM (Miguel, 23/08): além da tradução, anexa a nota do
-      // custo REAL da chamada de visão — transparência exigida por ele
-      // ("depois de fazer, diz quanto custou"). A nota é visual: o
-      // auto-save em notas e o histórico salvam só a tradução limpa.
-      // Nota 💰 (Miguel, 25/08 — agora em TODA tradução de página, texto ou
-      // imagem): US$ + moeda do usuário + tokens. Nota é visual; o auto-save
-      // e o histórico gravam o texto limpo.
-      const costNote =
-        (action === "translate" || action === "translate-image") &&
-        result.costUsd !== undefined
-          ? (() => {
-              const cur = getCurrency();
-              const local =
-                cur.code === "USD"
-                  ? ""
-                  : ` (≈ ${fmtMoney(convertFromUsd(result.costUsd ?? 0, cur), cur)})`;
-              const tok = result.usage?.totalTokens
-                ? ` · ${result.usage.totalTokens.toLocaleString()} tokens`
-                : "";
-              const usd =
-                result.costUsd > 0 && result.costUsd < 0.01
-                  ? result.costUsd.toFixed(4)
-                  : result.costUsd.toFixed(2);
-              return `\n\n—\n💰 US$ ${usd}${local}${tok}`;
-            })()
-          : "";
-      setPageTranslation(result.text + costNote);
+      // Custo NÃO cola mais na página (Miguel, 25/08): só no pop-up.
+      setPageProgress(100);
+      setPageTranslation(result.text);
       if (action === "translate" || action === "translate-image") {
         onPageTranslation?.(pageKey, result.text);
       }
@@ -2105,6 +2101,12 @@ export function Reader({
             onPageText={setCurrentPageText}
             onCanvasReady={(c) => (pdfCanvasRef.current = c)}
             onNumPages={setPdfNumPages}
+            modelHint={
+              textEntry
+                ? `🤖 ${textEntry.providerName || textEntry.providerId}${textEntry.model ? ` · ${textEntry.model}` : ""}`
+                : undefined
+            }
+            progress={translatingPage ? pageProgress : undefined}
           />
         ) : showTranslation && overlayMode === "translate" ? (
           /* Tradução da página inteira em EPUB: troca o conteúdo da área da
@@ -2121,6 +2123,23 @@ export function Reader({
                 <div className="page-ai-spinner" />
                 <strong>{t("reader_translating_page")}</strong>
                 <span>{t("reader_translating_page_sub")}</span>
+                {/* LLM em uso + progresso estimado (Miguel, 25/08). */}
+                {textEntry && (
+                  <span className="page-ai-model">
+                    🤖 {textEntry.providerName || textEntry.providerId}
+                    {textEntry.model ? ` · ${textEntry.model}` : ""}
+                  </span>
+                )}
+                <div
+                  className="page-ai-progress"
+                  role="progressbar"
+                  aria-valuenow={pageProgress}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                >
+                  <div className="page-ai-progress-fill" style={{ width: `${pageProgress}%` }} />
+                  <span className="page-ai-progress-label">{pageProgress}%</span>
+                </div>
                 {/* Aviso de paciência + link pro Mural das IAs (pedido Miguel, 13/08).
                     Traduzido nos 12 idiomas via i18n (pedido Miguel, 22/08:
                     "se tiver em inglês, vai aparecer em inglês?") — antes só

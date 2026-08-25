@@ -40,6 +40,10 @@ interface PdfPageCanvasProps {
   onCanvasReady?: (canvas: HTMLCanvasElement) => void;
   /** Entrega o número TOTAL de páginas do documento ao pai (pra nav bar). */
   onNumPages?: (n: number) => void;
+  /** Linha "🤖 LLM · modelo" pro recado de espera (Miguel, 25/08). */
+  modelHint?: string;
+  /** Progresso estimado 0-100 enquanto traduz (Miguel, 25/08). */
+  progress?: number;
 }
 
 type Status = "loading" | "ready" | "error";
@@ -111,6 +115,8 @@ export function PdfPageCanvas({
   onPageText,
   onCanvasReady,
   onNumPages,
+  modelHint,
+  progress,
 }: PdfPageCanvasProps) {
   const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -440,6 +446,13 @@ export function PdfPageCanvas({
                   hardcoded em português no caminho do PDF. */}
               <strong>{t("reader_translating_page")}</strong>
               <span>{t("reader_translating_page_sub")}</span>
+              {modelHint && <span className="page-ai-model">{modelHint}</span>}
+              {progress !== undefined && (
+                <div className="page-ai-progress" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+                  <div className="page-ai-progress-fill" style={{ width: `${progress}%` }} />
+                  <span className="page-ai-progress-label">{progress}%</span>
+                </div>
+              )}
             </div>
           </div>
         )}
