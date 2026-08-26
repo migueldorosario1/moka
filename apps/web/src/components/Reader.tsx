@@ -461,6 +461,7 @@ export function Reader({
   // você está usando a LLM X, modelo Y') + progresso estimado em %.
   const [textEntry, setTextEntry] = useState<{ providerName?: string; providerId: string; model?: string } | null>(null);
   const [pageProgress, setPageProgress] = useState(0);
+  const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   useEffect(() => {
     let alive = true;
     void import("@/lib/config")
@@ -1321,6 +1322,14 @@ export function Reader({
 
     setTranslatingPage(true);
     setPageProgress(0);
+    // BARRA DA ESPERA por TEMPO (Miguel, 26/08): antes do 1º chunk a IA está
+    // "pensando" (thinking) e a barra ficava presa em 0%. Aqui ela sobe
+    // gradualmente até 35% (rápido no início, desacelerando perto do teto);
+    // quando o texto começa a chegar, o % real do texto assume (nunca volta).
+    if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+    progressTimerRef.current = setInterval(() => {
+      setPageProgress((prev) => (prev >= 35 ? prev : prev + Math.max(0.4, (35 - prev) * 0.06)));
+    }, 1200);
     setOverlayMode(action === "explain" ? "explain" : "translate");
     setPageTranslation("");
     setShowTranslation(true);
@@ -1333,7 +1342,13 @@ export function Reader({
     const alvoLen = Math.max(200, (action === "translate-image" ? 2500 : currentPageText.length) * 1.05 + 80);
     const onChunk = (full: string) => {
       setPageTranslation(full);
-      setPageProgress(Math.min(95, Math.round((full.length / alvoLen) * 100)));
+      if (progressTimerRef.current) {
+        clearInterval(progressTimerRef.current);
+        progressTimerRef.current = null;
+      }
+      setPageProgress((prev) =>
+        Math.max(prev, Math.min(95, Math.round((full.length / alvoLen) * 100))),
+      );
     };
 
     const result =
@@ -1344,6 +1359,10 @@ export function Reader({
           : await explainPageStream(currentPageText, ctx, onChunk);
 
     setTranslatingPage(false);
+    if (progressTimerRef.current) {
+      clearInterval(progressTimerRef.current);
+      progressTimerRef.current = null;
+    }
     if (result.ok && result.text) {
       // Custo NÃO cola mais na página (Miguel, 25/08): só no pop-up.
       setPageProgress(100);
