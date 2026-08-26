@@ -13,7 +13,7 @@
  * Nunca trava o app: é 100% passivo (só escuta evento e renderiza).
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useI18n } from "./I18nProvider";
 import {
@@ -27,20 +27,16 @@ import {
 } from "@/lib/telemetry";
 import { tt, taskLabel } from "@/lib/telemetry-strings";
 
-/** Segundos até o pop-up fechar sozinho. */
-const AUTO_DISMISS_MS = 15000;
-
 export function UsageToast() {
   const { lang } = useI18n();
   const [detail, setDetail] = useState<UsageEventDetail | null>(null);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [copied, setCopied] = useState(false);
 
+  // AUTO-CLOSE REMOVIDO (Miguel, 26/08): o pop-up some rápido demais —
+  // "tem que ficar FIXO e só fechar manualmente (✕ ou Ok)".
   const dismiss = useCallback(() => {
     setDetail(null);
-    if (timerRef.current) {
-      clearTimeout(timerRef.current);
-      timerRef.current = null;
-    }
+    setCopied(false);
   }, []);
 
   useEffect(() => {
@@ -48,14 +44,10 @@ export function UsageToast() {
       const d = (ev as CustomEvent<UsageEventDetail>).detail;
       if (!d) return;
       setDetail(d);
-      if (timerRef.current) clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => setDetail(null), AUTO_DISMISS_MS);
+      setCopied(false);
     };
     window.addEventListener(USAGE_EVENT, onUsage);
-    return () => {
-      window.removeEventListener(USAGE_EVENT, onUsage);
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
+    return () => window.removeEventListener(USAGE_EVENT, onUsage);
   }, []);
 
   if (!detail) return null;
@@ -70,6 +62,25 @@ export function UsageToast() {
     const prefs = getPrefs();
     setPrefs({ ...prefs, popupMode: "off" });
     dismiss();
+  };
+
+  // Botão COPIAR (Miguel, 26/08): resume o gasto numa linha pro clipboard.
+  const handleCopy = () => {
+    const cur = getCurrency();
+    const linha =
+      `${taskLabel(lang, detail.task)} — ${detail.providerName ?? detail.task}` +
+      (detail.model ? ` (${detail.model})` : "") +
+      ` · in ${detail.promptTokens.toLocaleString()} / out ${detail.completionTokens.toLocaleString()} tokens` +
+      ` · US$ ${detail.costUsd >= 0.01 ? detail.costUsd.toFixed(4) : detail.costUsd.toFixed(5)}` +
+      (cur.code !== "USD" ? ` (≈ ${fmtMoney(localValue, cur)})` : "") +
+      (detail.usageEstimated ? ` (${tt(lang, "usage_estimated")})` : "");
+    void navigator.clipboard
+      .writeText(linha)
+      .then(() => {
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      })
+      .catch(() => {});
   };
 
   return (
@@ -129,7 +140,19 @@ export function UsageToast() {
         </p>
       )}
 
+      {/* Recado novo (Miguel, 26/08): os gastos vão pra telemetria. */}
+      <p className="usage-toast-note usage-toast-note-tele">
+        📊 {tt(lang, "usage_telemetry_note")}
+      </p>
+
       <div className="usage-toast-actions">
+        <button
+          type="button"
+          className="usage-toast-copy"
+          onClick={handleCopy}
+        >
+          {copied ? tt(lang, "usage_copied") : `📋 ${tt(lang, "usage_copy")}`}
+        </button>
         <Link href="/telemetria" className="usage-toast-link" onClick={dismiss}>
           📊 {tt(lang, "usage_view")}
         </Link>
@@ -139,6 +162,13 @@ export function UsageToast() {
           onClick={handleDontShow}
         >
           {tt(lang, "usage_dontshow")}
+        </button>
+        <button
+          type="button"
+          className="usage-toast-ok"
+          onClick={dismiss}
+        >
+          {tt(lang, "usage_ok")}
         </button>
       </div>
     </div>
