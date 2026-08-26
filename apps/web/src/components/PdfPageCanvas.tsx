@@ -449,8 +449,8 @@ export function PdfPageCanvas({
               {modelHint && <span className="page-ai-model">{modelHint}</span>}
               {progress !== undefined && (
                 <div className="page-ai-progress" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
-                  <div className="page-ai-progress-fill" style={{ width: `${progress}%` }} />
-                  <span className="page-ai-progress-label">{progress}%</span>
+                  <div className="page-ai-progress-fill" style={{ width: `${Math.round(progress)}%` }} />
+                  <span className="page-ai-progress-label">{Math.round(progress)}%</span>
                 </div>
               )}
             </div>
@@ -460,8 +460,8 @@ export function PdfPageCanvas({
           <div className="pdf-translation-overlay">
             {translating && progress !== undefined && (
               <div className="page-ai-progress-bar-top" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
-                <div className="page-ai-progress-fill" style={{ width: `${progress}%` }} />
-                <span className="page-ai-progress-label">{progress}%</span>
+                <div className="page-ai-progress-fill" style={{ width: `${Math.round(progress)}%` }} />
+                <span className="page-ai-progress-label">{Math.round(progress)}%</span>
               </div>
             )}
             <div className="pdf-translation-page">
