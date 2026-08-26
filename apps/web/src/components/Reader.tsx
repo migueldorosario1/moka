@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState, useCallback } from "react";
+import Link from "next/link";
 import type { Block, ParsedBook } from "@igot/parser";
 import type { SelectionAction } from "@/lib/types";
+import { tt } from "@/lib/telemetry-strings";
 import { PdfPageCanvas } from "./PdfPageCanvas";
 import { CafezinhoLogo } from "./CafezinhoLogo";
 import { AuthGate } from "./AuthGate";
@@ -451,6 +453,27 @@ export function Reader({
   /** Janelas "Pergunte qualquer coisa" e "Resumo". */
   const [askOpen, setAskOpen] = useState(false);
   const [summaryOpen, setSummaryOpen] = useState(false);
+  const [notesOpen, setNotesOpen] = useState(false);
+  const [bookmarksOpen, setBookmarksOpen] = useState(false);
+  // Hub 📊 (Suas IAs + Mural) — 1 ícone, 2 submenus (Miguel, 25/08).
+  const [statsHubOpen, setStatsHubOpen] = useState(false);
+  // LLM/modelo em uso (recado de espera — Miguel, 25/08: 'tem que dizer
+  // você está usando a LLM X, modelo Y') + progresso estimado em %.
+  const [textEntry, setTextEntry] = useState<{ providerName?: string; providerId: string; model?: string } | null>(null);
+  const [pageProgress, setPageProgress] = useState(0);
+  const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  useEffect(() => {
+    let alive = true;
+    void import("@/lib/config")
+      .then((mod) => mod.getEntryForText())
+      .then((e) => {
+        if (alive && e) setTextEntry(e);
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
   const [transBookOpen, setTransBookOpen] = useState(false);
   /** Escala da fonte de leitura (A−/A+) — persistida no localStorage. */
   const [fontScale, setFontScale] = useState(() => {
@@ -502,7 +525,6 @@ export function Reader({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [menuVisible, setMenuVisible] = useState(true);
-  const [bookmarksOpen, setBookmarksOpen] = useState(false);
 
   /** Entra/sai do modo tela cheia (só a página do livro visível). */
   const toggleFullscreen = () => {
@@ -539,7 +561,24 @@ export function Reader({
   // do BUG-20260801-MOKA-MENU-SUPERIOR-SOME: qualquer interação reexibe o menu.
   useEffect(() => {
     if (!isFullscreen) setMenuVisible(true);
-  }, [book, settingsOpen, isFullscreen, showTtsModal, transBookOpen, askOpen, summaryOpen]);
+    // Deps ampliadas (Miguel, 25/08): o menu sumiu ao FECHAR Anotações —
+    // painel que não estava na lista. Todos os modais/painéis do leitor
+    // agora reexibem o menu ao fechar.
+  }, [book, settingsOpen, isFullscreen, showTtsModal, transBookOpen, askOpen, summaryOpen, notesOpen, bookmarksOpen, statsHubOpen]);
+
+  // Cura da RECAÍDA (Miguel, 24/08: "voltei à página do livro e o menu
+  // desapareceu — só metade do botão de zoom"): navegar pra outra página
+  // AINDA EM TELA CHEIA congela o estado; o VOLTAR do navegador restaura
+  // isFullscreen=true órfão (o fullscreen real já caiu com a navegação) e
+  // nenhuma cura acima reexibe o menu (elas acreditam no estado interno).
+  // Aqui conferimos a VERDADE do DOM: sem fullscreenElement, não há tela
+  // cheia — corrija o estado e traga o menu de volta.
+  useEffect(() => {
+    if (isFullscreen && typeof document !== "undefined" && !document.fullscreenElement) {
+      setIsFullscreen(false);
+      setMenuVisible(true);
+    }
+  }, [isFullscreen, book]);
 
   /** Esta página já está marcada? Compara capítulo E página local
    *  (pedido Miguel, 13/08: "o 🔖 tem que aparecer só na página marcada"). */
@@ -843,7 +882,6 @@ export function Reader({
     return canvas;
   };
 
-  const [notesOpen, setNotesOpen] = useState(false);
   // Aba ativa no modal unificado: "notes" | "bookmarks" | "audio"
   const [notesTab, setNotesTab] = useState<"notes" | "bookmarks" | "audio">("notes");
 
@@ -1283,6 +1321,15 @@ export function Reader({
     }
 
     setTranslatingPage(true);
+    setPageProgress(0);
+    // BARRA DA ESPERA por TEMPO (Miguel, 26/08): antes do 1º chunk a IA está
+    // "pensando" (thinking) e a barra ficava presa em 0%. Aqui ela sobe
+    // gradualmente até 35% (rápido no início, desacelerando perto do teto);
+    // quando o texto começa a chegar, o % real do texto assume (nunca volta).
+    if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+    progressTimerRef.current = setInterval(() => {
+      setPageProgress((prev) => (prev >= 35 ? prev : prev + Math.max(0.4, (35 - prev) * 0.06)));
+    }, 1200);
     setOverlayMode(action === "explain" ? "explain" : "translate");
     setPageTranslation("");
     setShowTranslation(true);
@@ -1292,7 +1339,17 @@ export function Reader({
       bookAuthor: book.author,
       bookLanguage: book.language,
     };
-    const onChunk = (full: string) => setPageTranslation(full);
+    const alvoLen = Math.max(200, (action === "translate-image" ? 2500 : currentPageText.length) * 1.05 + 80);
+    const onChunk = (full: string) => {
+      setPageTranslation(full);
+      if (progressTimerRef.current) {
+        clearInterval(progressTimerRef.current);
+        progressTimerRef.current = null;
+      }
+      setPageProgress((prev) =>
+        Math.max(prev, Math.min(95, Math.round((full.length / alvoLen) * 100))),
+      );
+    };
 
     const result =
       action === "translate-image" && pageImage
@@ -1302,16 +1359,14 @@ export function Reader({
           : await explainPageStream(currentPageText, ctx, onChunk);
 
     setTranslatingPage(false);
+    if (progressTimerRef.current) {
+      clearInterval(progressTimerRef.current);
+      progressTimerRef.current = null;
+    }
     if (result.ok && result.text) {
-      // Página-IMAGEM (Miguel, 23/08): além da tradução, anexa a nota do
-      // custo REAL da chamada de visão — transparência exigida por ele
-      // ("depois de fazer, diz quanto custou"). A nota é visual: o
-      // auto-save em notas e o histórico salvam só a tradução limpa.
-      const costNote =
-        action === "translate-image" && result.costUsd !== undefined
-          ? `\n\n—\n💰 ${t("reader_vision_spent", { cost: result.costUsd > 0 && result.costUsd < 0.01 ? `US$ ${result.costUsd.toFixed(4)}` : `US$ ${result.costUsd.toFixed(2)}` })}`
-          : "";
-      setPageTranslation(result.text + costNote);
+      // Custo NÃO cola mais na página (Miguel, 25/08): só no pop-up.
+      setPageProgress(100);
+      setPageTranslation(result.text);
       if (action === "translate" || action === "translate-image") {
         onPageTranslation?.(pageKey, result.text);
       }
@@ -1937,6 +1992,33 @@ export function Reader({
             >
               ❓
             </a>
+            {/* 📊 Hub de dados (Miguel, 25/08): 1 ícone com 2 submenus —
+                Suas IAs (telemetria) e Mural das IAs. Com ⛶/👁 mudados pra
+                chave de zoom, o menu volta a caber numa linha. */}
+            <div className="stats-hub">
+              <button
+                type="button"
+                className="icon-btn"
+                onClick={() => setStatsHubOpen((v) => !v)}
+                title={tt(lang, "tele_nav")}
+                aria-label={tt(lang, "tele_nav")}
+              >
+                📊
+              </button>
+              {statsHubOpen && (
+                <>
+                  <div className="stats-hub-backdrop" onClick={() => setStatsHubOpen(false)} />
+                  <div className="stats-hub-menu">
+                    <Link href="/telemetria" onClick={() => setStatsHubOpen(false)}>
+                      📊 {tt(lang, "tele_nav")}
+                    </Link>
+                    <Link href="/mural-das-ias" onClick={() => setStatsHubOpen(false)}>
+                      {tt(lang, "tele_mural_btn")}
+                    </Link>
+                  </div>
+                </>
+              )}
+            </div>
             {/* ⚙️ Configurações */}
             {onOpenSettings && (
               <button
@@ -1953,34 +2035,10 @@ export function Reader({
             )}
             {/* 👤 Login (AuthGate: Google OU e-mail — modal com as duas portas) */}
             {auth && <AuthGate />}
-            {/* 🗐 Tela cheia */}
-            <button
-              onClick={toggleFullscreen}
-              className="icon-btn"
-              title={isFullscreen ? t("reader_exit_fullscreen") : t("reader_fullscreen")}
-              aria-label={isFullscreen ? t("reader_exit_fullscreen") : t("reader_fullscreen")}
-            >
-              {isFullscreen ? "🗗" : "⛶"}
-            </button>
-            {/* 👁 Ocultar menu (leitura imersiva) — o ícone precisa dizer o
-                que faz: antes era ☕ (a marca!), e o usuário tocava sem querer
-                achando que era "menu do Moka" → o menu sumia do nada (bug
-                crônico reportado pelo Miguel, 2026-08-01). O ☕ ficou só no
-                botão flutuante que TRAZ o menu de volta.
-                CURA DEFINITIVA (09/08): o botão só funciona em FULLSCREEN
-                (modo imersivo explícito). Fora de fullscreen, o menu NUNCA
-                some — acaba o "menu travou/sumiu sem querer" reportado pelo
-                Miguel ao mexer no campo de fala/configurações. */}
-            <button
-              onClick={() => isFullscreen && setMenuVisible((v) => !v)}
-              className="icon-btn menu-toggle-btn"
-              disabled={!isFullscreen}
-              style={{ opacity: isFullscreen ? 1 : 0.35, cursor: isFullscreen ? "pointer" : "not-allowed" }}
-              title={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
-              aria-label={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
-            >
-              {menuVisible ? "👁" : "🙈"}
-            </button>
+            {/* ⛶ tela cheia e 👁 esconder menu FORAM PRA CHAVE DE ZOOM
+                (pedido do Miguel, 25/08: "menu quebrou pra 2 linhas porque
+                tem item demais — deixa maximizar e o olho junto da chave
+                de +− do zoom"). Header volta a caber numa linha. */}
           </div>
         </div>
 
@@ -2015,6 +2073,38 @@ export function Reader({
         >
           −
         </button>
+        {/* ⛶ Tela cheia + 👁 esconder menu vieram DO HEADER pra cá (Miguel,
+            25/08: "deixar o ícone de maximizar e o olho de esconder o menu
+            logo abaixo/da chave de +− do zoom" — o menu de cima tinha itens
+            demais e quebrava em 2 linhas). Mantida a cura 09/08: 👁 só age
+            em fullscreen (modo imersivo explícito). */}
+        <button
+          onClick={toggleFullscreen}
+          className="zoom-rail-btn"
+          title={isFullscreen ? t("reader_exit_fullscreen") : t("reader_fullscreen")}
+          aria-label={isFullscreen ? t("reader_exit_fullscreen") : t("reader_fullscreen")}
+        >
+          {isFullscreen ? "🗗" : "⛶"}
+        </button>
+        {/* 👁 DESTRAVADOR UNIVERSAL (ideia do Miguel, 25/08 — após o menu
+            sumir de novo ao fechar Anotações): fora de fullscreen, clicar
+            SEMPRE TRAZ o menu de volta (destrava qualquer estado preso);
+            em fullscreen, alterna mostrar/esconder como antes. */}
+        <button
+          onClick={() => {
+            if (!isFullscreen) {
+              setIsFullscreen(false);
+              setMenuVisible(true);
+            } else {
+              setMenuVisible((v) => !v);
+            }
+          }}
+          className="zoom-rail-btn"
+          title={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
+          aria-label={menuVisible ? t("reader_hide_menu") : t("reader_show_menu")}
+        >
+          {menuVisible ? "👁" : "🙈"}
+        </button>
         {/* Indicador de marcador (pedido Miguel, 13/08): aparece 🔖 na "chave
             de zoom" (direita) quando a página atual está marcada. */}
         {isBookmarked && (
@@ -2042,6 +2132,12 @@ export function Reader({
             onPageText={setCurrentPageText}
             onCanvasReady={(c) => (pdfCanvasRef.current = c)}
             onNumPages={setPdfNumPages}
+            modelHint={
+              textEntry
+                ? `🤖 ${textEntry.providerName || textEntry.providerId}${textEntry.model ? ` · ${textEntry.model}` : ""}`
+                : undefined
+            }
+            progress={translatingPage ? pageProgress : undefined}
           />
         ) : showTranslation && overlayMode === "translate" ? (
           /* Tradução da página inteira em EPUB: troca o conteúdo da área da
@@ -2053,16 +2149,43 @@ export function Reader({
             className="reader-text"
             style={{ fontSize: `calc(var(--text-lg) * ${fontScale})` }}
           >
+            {/* BARRA DE PROGRESSO viva durante TODA a tradução (Miguel, 26/08):
+                antes só existia DENTRO do recado de espera — quando o texto
+                começava a chegar, o recado sumia e a barra morria em 0%.
+                Agora encima do texto que vai fluindo, enchendo de verdade. */}
+            {translatingPage && pageTranslation && (
+              <div className="page-ai-progress-bar-top" role="progressbar" aria-valuenow={pageProgress} aria-valuemin={0} aria-valuemax={100}>
+                <div className="page-ai-progress-fill" style={{ width: `${Math.round(pageProgress)}%` }} />
+                <span className="page-ai-progress-label">{Math.round(pageProgress)}% · {t("reader_translating")}</span>
+              </div>
+            )}
             {translatingPage && !pageTranslation ? (
               <div className="page-ai-waiting">
                 <div className="page-ai-spinner" />
                 <strong>{t("reader_translating_page")}</strong>
                 <span>{t("reader_translating_page_sub")}</span>
+                {/* LLM em uso + progresso estimado (Miguel, 25/08). */}
+                {textEntry && (
+                  <span className="page-ai-model">
+                    🤖 {textEntry.providerName || textEntry.providerId}
+                    {textEntry.model ? ` · ${textEntry.model}` : ""}
+                  </span>
+                )}
+                <div
+                  className="page-ai-progress"
+                  role="progressbar"
+                  aria-valuenow={pageProgress}
+                  aria-valuemin={0}
+                  aria-valuemax={100}
+                >
+                  <div className="page-ai-progress-fill" style={{ width: `${Math.round(pageProgress)}%` }} />
+                  <span className="page-ai-progress-label">{Math.round(pageProgress)}%</span>
+                </div>
                 {/* Aviso de paciência + link pro Mural das IAs (pedido Miguel, 13/08).
                     Traduzido nos 12 idiomas via i18n (pedido Miguel, 22/08:
                     "se tiver em inglês, vai aparecer em inglês?") — antes só
                     pt/en/es/fr tinham texto próprio; o resto caía em português. */}
-                <a className="page-ai-tip" href="/ajuda#mural-das-ias" target="_blank" rel="noreferrer">
+                <a className="page-ai-tip" href="/mural-das-ias" target="_blank" rel="noreferrer">
                   {t("reader_patience_pre")}{" "}
                   <b>{t("reader_patience_wall")}</b>{" "}
                   {t("reader_patience_post")}
@@ -2078,11 +2201,30 @@ export function Reader({
                 </div>
                 <div className="diag-err-text">{pageTranslation}</div>
 
+                {/* Atalho PRINCIPAL (Miguel, 24/08 — ampliado 25/08): TODO
+                    erro de IA oferece as CONFIGURAÇÕES primeiro — é lá que
+                    se troca chave, modelo ou provedor (resolve chave, modelo
+                    errado, crédito e rate na maioria dos casos). Ajuda e
+                    causas específicas ficam embaixo, como detalhe. */}
+                {onOpenSettings ? (
+                  <button
+                    type="button"
+                    className="diag-copy-btn diag-settings-btn"
+                    onClick={() => onOpenSettings()}
+                  >
+                    ⚙️ Abrir configurações e trocar de IA
+                  </button>
+                ) : (
+                  <a className="diag-copy-btn diag-settings-btn" href="/configuracoes">
+                    ⚙️ Abrir configurações e trocar de IA
+                  </a>
+                )}
+
                 {/* Causas auto-corrigíveis (autocura): o usuário tenta resolver
                     sozinho ANTES de chamar o suporte. */}
                 {getSuggestedCauses().length > 0 && (
                   <div className="diag-causes">
-                    <strong>Possíveis causas que você mesmo pode corrigir:</strong>
+                    <strong>{t("diag_causes_title")}</strong>
                     <ul>
                       {getSuggestedCauses().map((c) => (
                         <li key={c.text}>

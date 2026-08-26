@@ -248,25 +248,45 @@ export function getSuggestedCauses(): DiagCause[] {
   };
 
   if (s === 401 || s === 403 || /invalid|unauthoriz|api.?key|autentica/.test(msg)) {
-    add("Sua chave de IA pode estar inválida ou sem permissão.", "/ajuda");
+    // Link direto pras CONFIGURAÇÕES (pedido do Miguel, 24/08): erro de
+    // chave se resolve onde a chave se coloca — ajuda é secundária.
+    add("Sua chave de IA pode estar inválida ou sem permissão.", "/configuracoes");
   }
   if (s === 429 || /quota|credit|insufficient|saldo|rate.?limit|limite/.test(msg)) {
     add("Crédito/limite da sua IA pode ter acabado (recarregue o provedor).", "/ajuda");
   }
   if (s === 404 || /model.*not.*found|modelo.*não/.test(msg)) {
-    add("O modelo escolhido pode não existir mais — troque nas Configurações.", "/ajuda");
+    add("O modelo escolhido pode não existir mais — troque nas Configurações.", "/configuracoes");
   }
   if (/failed to fetch|network|load failed|timeout|abort|demorou/.test(msg)) {
     add("Conexão lenta ou a IA demorou demais — tente de novo.", "/ajuda");
   }
   if (/configur|abra as|cole a sua chave|nenhuma ia/.test(msg)) {
-    add("Nenhuma IA configurada — configure sua chave (leva 1 minuto).", "/tutorial");
+    add("Nenhuma IA configurada — configure sua chave (leva 1 minuto).", "/configuracoes");
   }
   // Se nada casou, causa genérica.
   if (out.length === 0) {
     add("Pode ser algo temporário — tente de novo. Se persistir, envie o diagnóstico.", "/ajuda");
   }
   return out;
+}
+
+/**
+ * O último erro é de CHAVE/CONFIG? (401/403, chave inválida, nada
+ * configurado). Usado pra oferecer CONFIGURAÇÕES como primeiro caminho
+ * no lugar do erro (pedido do Miguel, 24/08: "entrar direto nas
+ * configurações para eu botar minha chave").
+ */
+export function isKeyOrConfigError(): boolean {
+  const e = getLastError();
+  if (!e) return false;
+  const s = e.status;
+  const msg = (e.message + " " + (e.providerDetail ?? "")).toLowerCase();
+  return (
+    s === 401 ||
+    s === 403 ||
+    /invalid|unauthoriz|api.?key|autentica|configur|nenhuma ia/.test(msg)
+  );
 }
 
 /** Instala o capturador de erros GLOBAIS (1x). Pega o que não passa pelo ai-client. */

@@ -123,27 +123,27 @@ export default function HomePage() {
 
   // Abre um arquivo: se JÁ EXISTE na estante (mesmo título ou tamanho),
   // abre o livro existente (com progresso salvo). Senão, cria novo.
-  const handleFile = useCallback(
-    async (file: File) => {
+  // Ingestão de livro: mesma pipeline pra todo arquivo local
+  // (dedup → parse → aviso PDF-imagem → capa → estante).
+  const ingestBook = useCallback(
+    async (data: ArrayBuffer, fileName: string, fileSize: number) => {
       setAddingBook(true);
       setUploadError(null);
       try {
-        const data = await file.arrayBuffer();
-
         // ANTES de parsear, checa se já existe pelo tamanho do arquivo.
         // DEDUP DEFENSIVO: entre os candidatos, PREFERE o que tem chapters válidos.
         const existingBySize = books.find(
-          (b) => b.fileName === file.name && b.fileSize === file.size
+          (b) => b.fileName === fileName && b.fileSize === fileSize
             && (b.book?.chapters?.length ?? 0) > 0,
         ) ?? books.find(
-          (b) => b.fileName === file.name && b.fileSize === file.size,
+          (b) => b.fileName === fileName && b.fileSize === fileSize,
         );
         if (existingBySize) {
           router.push(`/book/${existingBySize.id}`);
           return;
         }
 
-        const result = await parseBook({ data: data.slice(0), fileName: file.name });
+        const result = await parseBook({ data: data.slice(0), fileName });
         if (result.ok) {
           // DEDUPLICAÇÃO por título — também prefere chapters válidos.
           const existingByTitle = books.find(
@@ -191,8 +191,8 @@ export default function HomePage() {
           }
           const session: Session = {
             id: bookId,
-            fileName: file.name,
-            fileSize: file.size,
+            fileName,
+            fileSize,
             book: result.book,
             coverImage,
             pdfSource: result.book.sourceFormat === "pdf" ? new Uint8Array(data) : null,
@@ -214,6 +214,12 @@ export default function HomePage() {
       }
     },
     [auth.userId, router, books],
+  );
+
+  const handleFile = useCallback(
+    async (file: File) =>
+      ingestBook(await file.arrayBuffer(), file.name, file.size),
+    [ingestBook],
   );
 
   return (
@@ -292,7 +298,7 @@ export default function HomePage() {
           {/* Oferta da Biblioteca Livre (pedido do Miguel, 29/07) */}
           <a className="shelf-bib-link" href="/biblioteca">
             📚 <b>Biblioteca Livre</b> — livros grátis de domínio público,
-            com capa e sinopse. <span>Baixe direto pra sua estante →</span>
+            com capa e sinopse. <span>{t("shelf_bib_cta")}</span>
           </a>
 
           {addingBook && (

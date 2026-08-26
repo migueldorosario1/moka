@@ -50,6 +50,8 @@ export interface AIActionResult {
   warning?: string;
   /** Custo real em US$ da chamada, quando dá pra calcular (telemetria). */
   costUsd?: number;
+  /** Consumo real (quando o provedor informa; senão estimativa). */
+  usage?: UsageInfo;
 }
 
 /** Callback chamado a cada pedaço de texto que chega (pra streaming). */
@@ -329,7 +331,7 @@ export async function translateStream(
       return { ok: true, text: result.text };
     }
     const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
+      streamFn: provider.stream.bind(provider),
       text,
       systemPrompt,
       contextText,
@@ -454,6 +456,26 @@ export async function translatePageStream(
   onChunk: StreamCallback,
 ): Promise<AIActionResult> {
   if (!text.trim()) return { ok: false, error: "Página sem texto para traduzir." };
+  // Custo real da página (usage do provedor ?? estimativa) — nota 💰 no
+  // leitor com tokens + US$ + moeda do usuário (Miguel, 25/08).
+  const pageCost = async (
+    identity: CallIdentity | undefined,
+    u: UsageInfo | undefined,
+  ): Promise<number | undefined> => {
+    if (!identity) return undefined;
+    const est =
+      u ?? {
+        promptTokens: estimateTokens(text) + 200,
+        completionTokens: estimateTokens(text),
+      };
+    return computeCostUsd(
+      identity.providerId,
+      identity.model,
+      est.promptTokens ?? 0,
+      est.completionTokens ?? 0,
+    );
+  };
+
   const targetLang = getTargetLang();
   const systemPrompt =
     `Você é um tradutor literário e técnico de excelência. ` +
@@ -489,10 +511,10 @@ export async function translatePageStream(
       });
       onChunk(result.text, result.text);
       recordCall({ meta, identity, usage, completionText: result.text });
-      return { ok: true, text: result.text };
+      return { ok: true, text: result.text, usage, costUsd: await pageCost(identity, usage) };
     }
     const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
+      streamFn: provider.stream.bind(provider),
       text,
       systemPrompt,
       contextText,
@@ -505,6 +527,8 @@ export async function translatePageStream(
     return {
       ok: true,
       text: full,
+      usage,
+      costUsd: await pageCost(identity, usage),
       warning: capCut ? t(getTargetLang(), "errCapCut", { cap: getPrefs().tokenCap }) : undefined,
     };
   } catch (err) {
@@ -615,7 +639,7 @@ export async function translatePageImageStream(
       return { ok: true, text: result.text, costUsd: await realCost() };
     }
     const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
+      streamFn: provider.stream.bind(provider),
       text: prompt,
       systemPrompt,
       contextText,
@@ -650,6 +674,25 @@ export async function explainPageStream(
   /** Tamanho-alvo em palavras (barra deslizante do modal de anotação). */
   targetWords?: number,
 ): Promise<AIActionResult> {
+  // Custo real da página (usage do provedor ?? estimativa) — nota 💰 no
+  // leitor com tokens + US$ + moeda do usuário (Miguel, 25/08).
+  const pageCost = async (
+    identity: CallIdentity | undefined,
+    u: UsageInfo | undefined,
+  ): Promise<number | undefined> => {
+    if (!identity) return undefined;
+    const est =
+      u ?? {
+        promptTokens: estimateTokens(text) + 200,
+        completionTokens: estimateTokens(text),
+      };
+    return computeCostUsd(
+      identity.providerId,
+      identity.model,
+      est.promptTokens ?? 0,
+      est.completionTokens ?? 0,
+    );
+  };
   if (!text.trim()) return { ok: false, error: "Página sem texto." };
   const targetLang = getTargetLang();
   const lengthRule = targetWords && targetWords > 0
@@ -688,10 +731,10 @@ export async function explainPageStream(
       });
       onChunk(result.text, result.text);
       recordCall({ meta, identity, usage, completionText: result.text });
-      return { ok: true, text: result.text };
+      return { ok: true, text: result.text, usage, costUsd: await pageCost(identity, usage) };
     }
     const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
+      streamFn: provider.stream.bind(provider),
       text,
       systemPrompt,
       contextText,
@@ -704,6 +747,8 @@ export async function explainPageStream(
     return {
       ok: true,
       text: full,
+      usage,
+      costUsd: await pageCost(identity, usage),
       warning: capCut ? t(getTargetLang(), "errCapCut", { cap: getPrefs().tokenCap }) : undefined,
     };
   } catch (err) {
@@ -796,7 +841,7 @@ export async function explainStream(
       return { ok: true, text: result.text };
     }
     const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
+      streamFn: provider.stream.bind(provider),
       text: promptText,
       systemPrompt,
       contextText,
@@ -947,7 +992,7 @@ export async function askStream(
       return { ok: true, text: result.text };
     }
     const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
+      streamFn: provider.stream.bind(provider),
       text: question,
       systemPrompt,
       contextText,
@@ -1033,7 +1078,7 @@ export async function summarizeStream(
       return { ok: true, text: result.text };
     }
     const { full, capCut } = await runStreamWithCap({
-      streamFn: provider.stream,
+      streamFn: provider.stream.bind(provider),
       text,
       systemPrompt,
       contextText,

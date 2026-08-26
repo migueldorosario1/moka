@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
  * o que baixar pra SUA estante (opt-in total — e pode remover tudo depois).
  */
 export default function Biblioteca() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const auth = useAuth();
   const router = useRouter();
   const [baixando, setBaixando] = useState<string | null>(null);
@@ -76,7 +76,7 @@ export default function Biblioteca() {
       </div>
 
       <div className="bib-body">
-        <p className="bib-kicker">📚 Biblioteca Livre</p>
+        <p className="bib-kicker">{t("bib_kicker")}</p>
         <h1 className="bib-title">{t("bib_title")}</h1>
         <p className="bib-sub">{t("bib_sub")}</p>
 
@@ -101,7 +101,7 @@ export default function Biblioteca() {
                   {livro.demoTraducao && <span className="bib-demo" title="Ótimo pra treinar a tradução"> 🌐</span>}
                 </h2>
                 <p className="bib-autor">{livro.autor}</p>
-                <p className="bib-sinopse">{livro.sinopse}</p>
+                <p className="bib-sinopse">{livro.sinopses[lang === "pt-BR" ? "pt" : "en"]}</p>
                 <div className="bib-acoes">
                   {naEstante[livro.id] ? (
                     <>

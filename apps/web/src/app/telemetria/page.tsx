@@ -8,7 +8,7 @@ import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
-import { LlmPriceRanking } from "@/components/LlmPriceRanking";
+import { TeleCharts } from "@/components/TeleCharts";
 import {
   listAllEntriesSync,
   loadConfigCache,
@@ -230,14 +230,7 @@ export default function TelemetriaPage() {
   const [records, setRecords] = useState<TelemetryRecord[] | null>(null);
   const [currency, setCurrencyState] = useState<Currency>(USD);
   const [showLocal, setShowLocal] = useState(true);
-  const [calcOpen, setCalcOpen] = useState(false);
 
-  // ── Calculadora ──
-  const [calcProvider, setCalcProvider] = useState("deepseek");
-  const [calcModel, setCalcModel] = useState("");
-  const [calcIn, setCalcIn] = useState(100000);
-  const [calcOut, setCalcOut] = useState(5000);
-  const [calcResult, setCalcResult] = useState<number | null>(null);
 
   const load = useCallback(() => {
     void listRecords().then(setRecords);
@@ -319,16 +312,6 @@ export default function TelemetriaPage() {
     const base = fmtMoney(usd, USD);
     if (!showLocal || currency.code === "USD") return base;
     return `${base} ≈ ${fmtMoney(convertFromUsd(usd, currency), currency)}`;
-  };
-
-  const handleCalc = async () => {
-    const cost = await computeCostUsd(
-      calcProvider,
-      calcModel.trim(),
-      Math.max(0, calcIn || 0),
-      Math.max(0, calcOut || 0),
-    );
-    setCalcResult(cost);
   };
 
   const handleExportCsv = () => {
@@ -460,55 +443,7 @@ export default function TelemetriaPage() {
               <input type="checkbox" checked={showLocal} onChange={toggleShowLocal} />
               💲 + {currency.code}
             </label>
-            <button
-              type="button"
-              className={`tele-calc-toggle ${calcOpen ? "active" : ""}`}
-              onClick={() => setCalcOpen((o) => !o)}
-            >
-              🧮 Calculadora
-            </button>
           </div>
-
-          {/* Calculadora de custo */}
-          {calcOpen && (
-            <div className="tele-calc-box">
-              <label>
-                {tt(lang, "tele_provider")}:
-                <select value={calcProvider} onChange={(e) => { setCalcProvider(e.target.value); setCalcResult(null); }}>
-                  {PRESETS.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name}</option>
-                  ))}
-                </select>
-              </label>
-              <label>
-                {tt(lang, "tele_model")}:
-                <input
-                  type="text"
-                  value={calcModel}
-                  onChange={(e) => { setCalcModel(e.target.value); setCalcResult(null); }}
-                  placeholder={PRESETS.find((p) => p.id === calcProvider)?.defaultModel ?? ""}
-                  spellCheck={false}
-                />
-              </label>
-              <label>
-                {tt(lang, "usage_in")} (tokens):
-                <input type="number" min={0} value={calcIn} onChange={(e) => { setCalcIn(Number(e.target.value) || 0); setCalcResult(null); }} />
-              </label>
-              <label>
-                {tt(lang, "usage_out")} (tokens):
-                <input type="number" min={0} value={calcOut} onChange={(e) => { setCalcOut(Number(e.target.value) || 0); setCalcResult(null); }} />
-              </label>
-              <button type="button" className="tele-btn" onClick={handleCalc}>
-                🧮 {tt(lang, "tele_cost")}
-              </button>
-              {calcResult !== null && (
-                <div className="tele-calc-result">
-                  ≈ {money(calcResult)}{" "}
-                  <em className="usage-toast-est">({tt(lang, "usage_estimated")})</em>
-                </div>
-              )}
-            </div>
-          )}
 
           {records === null ? (
             <p className="tele-empty">⏳ …</p>
@@ -516,6 +451,23 @@ export default function TelemetriaPage() {
             <p className="tele-empty">{tt(lang, "tele_empty")}</p>
           ) : (
             <>
+              {/* 3 linhas de GASTO (Miguel, 25/08): desde o início do
+                  app NESTE dispositivo, últimos 7 e últimos 30 dias. */}
+              <div className="tele-period-totals">
+                <div className="tele-period-row">
+                  <span className="lbl">{tt(lang, "tele_total_all")}</span>
+                  <span className="num">{money(totals.costUsd)}</span>
+                </div>
+                <div className="tele-period-row">
+                  <span className="lbl">{tt(lang, "tele_total_7")}</span>
+                  <span className="num">{money(records.filter((r) => r.ts >= Date.now() - 7 * 864e5).reduce((s, r) => s + r.costUsd, 0))}</span>
+                </div>
+                <div className="tele-period-row">
+                  <span className="lbl">{tt(lang, "tele_total_30")}</span>
+                  <span className="num">{money(records.filter((r) => r.ts >= Date.now() - 30 * 864e5).reduce((s, r) => s + r.costUsd, 0))}</span>
+                </div>
+              </div>
+
               {/* Totais */}
               <div className="tele-totals">
                 <div className="tele-total-card">
@@ -638,9 +590,20 @@ export default function TelemetriaPage() {
           )}
         </section>
 
-        {/* ═══ 3. PREÇOS DAS IAs (a página com os preços — Miguel, 22/08) ═══ */}
+        {/* 📈 Gráficos de gastos (Miguel, 24/08): DOIS gráficos por dia —
+            custo e tokens — com legenda clicável por LLM (todas ou só
+            algumas). Cobre todas as tarefas e idiomas cadastrados. */}
         <section className="cfg-section">
-          <LlmPriceRanking />
+          <h2 className="cfg-section-title">{tt(lang, "tele_charts_title")}</h2>
+          <TeleCharts records={records ?? []} />
+        </section>
+
+        {/* ═══ MURAL DAS IAs — página própria (Miguel, 24/08): telemetria é
+            o SEU bolso; mural é pra ESCOLHER IA. Sem misturar. ═══ */}
+        <section className="cfg-section">
+          <Link href="/mural-das-ias" className="tele-btn">
+            {tt(lang, "tele_mural_btn")} →
+          </Link>
         </section>
 
         {/* Atalho pras configurações completas (idiomas, vídeo, avisos). */}
