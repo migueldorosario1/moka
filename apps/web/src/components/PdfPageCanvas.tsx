@@ -174,7 +174,7 @@ export function PdfPageCanvas({
   // cancelada enquanto aguardava o getPage seguia em frente e iniciava um
   // render "zumbi" no canvas compartilhado — a página atual colidia
   // ("Cannot use the same canvas during multiple render() operations") ou
-  // esperava pra sempre, travando em "Carregando página…".
+  // esperava pra sempre, travando em "{t("pdf_loading")}".
   const renderSeqRef = useRef(0);
 
   // `pageReady` controla a opacidade do canvas/text-layer. Só vira true DEPOIS

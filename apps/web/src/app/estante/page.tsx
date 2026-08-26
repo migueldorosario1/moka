@@ -298,7 +298,7 @@ export default function HomePage() {
           {/* Oferta da Biblioteca Livre (pedido do Miguel, 29/07) */}
           <a className="shelf-bib-link" href="/biblioteca">
             📚 <b>Biblioteca Livre</b> — livros grátis de domínio público,
-            com capa e sinopse. <span>Baixe direto pra sua estante →</span>
+            com capa e sinopse. <span>{t("shelf_bib_cta")}</span>
           </a>
 
           {addingBook && (

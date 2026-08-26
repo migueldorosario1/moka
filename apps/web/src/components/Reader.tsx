@@ -2195,7 +2195,7 @@ export function Reader({
                     sozinho ANTES de chamar o suporte. */}
                 {getSuggestedCauses().length > 0 && (
                   <div className="diag-causes">
-                    <strong>Possíveis causas que você mesmo pode corrigir:</strong>
+                    <strong>{t("diag_causes_title")}</strong>
                     <ul>
                       {getSuggestedCauses().map((c) => (
                         <li key={c.text}>
