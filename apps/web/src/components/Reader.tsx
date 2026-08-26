@@ -462,6 +462,7 @@ export function Reader({
   const [textEntry, setTextEntry] = useState<{ providerName?: string; providerId: string; model?: string } | null>(null);
   const [pageProgress, setPageProgress] = useState(0);
   const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const cancelledRef = useRef(false);
   useEffect(() => {
     let alive = true;
     void import("@/lib/config")
@@ -1287,6 +1288,13 @@ export function Reader({
 
   // Traduz OU explica a página inteira. Estados SEPARADOS — um botão não
   // ativa o outro. overlayMode rastreia qual ação está sendo mostrada.
+  const sourcePreviewOf = (ctx: "cancelled" | "page"): string =>
+    ctx === "cancelled"
+      ? `[tradução interrompida pelo usuário] ${pageLabel}`
+      : currentPageText.length > 500
+        ? `${currentPageText.slice(0, 500)}…`
+        : currentPageText;
+
   const handlePageAction = async (
     action: "translate" | "explain" | "translate-image",
   ) => {
@@ -1322,6 +1330,7 @@ export function Reader({
 
     setTranslatingPage(true);
     setPageProgress(0);
+    cancelledRef.current = false;
     // BARRA DA ESPERA por TEMPO (Miguel, 26/08): antes do 1º chunk a IA está
     // "pensando" (thinking) e a barra ficava presa em 0%. Aqui ela sobe
     // gradualmente até 35% (rápido no início, desacelerando perto do teto);
@@ -1355,13 +1364,32 @@ export function Reader({
       action === "translate-image" && pageImage
         ? await translatePageImageStream(pageImage, ctx, onChunk)
         : action === "translate"
-          ? await translatePageStream(currentPageText, ctx, onChunk)
+          ? await translatePageStream(currentPageText, ctx, onChunk, { shouldCancel: () => cancelledRef.current })
           : await explainPageStream(currentPageText, ctx, onChunk);
 
     setTranslatingPage(false);
     if (progressTimerRef.current) {
       clearInterval(progressTimerRef.current);
       progressTimerRef.current = null;
+    }
+    // CANCELADO pelo usuário (Miguel, 26/08): guarda a PARTE PRONTA que já
+    // chegou como nota parcial (nada se perde do que já foi feito).
+    if (result.cancelCut) {
+      if (pageTranslation) {
+        setPageTranslation(
+          pageTranslation + `\n\n—\n⏹ ${t("reader_cancelled_partial")}`
+        );
+        onSaveNote?.({
+          kind: "translate",
+          source: sourcePreviewOf("cancelled"),
+          result: pageTranslation,
+          chapterId: chapter?.id,
+        });
+      } else {
+        setPageTranslation(null);
+      }
+      setOverlayMode(null);
+      return;
     }
     if (result.ok && result.text) {
       // Custo NÃO cola mais na página (Miguel, 25/08): só no pop-up.
@@ -2154,10 +2182,23 @@ export function Reader({
                 começava a chegar, o recado sumia e a barra morria em 0%.
                 Agora encima do texto que vai fluindo, enchendo de verdade. */}
             {translatingPage && pageTranslation && (
-              <div className="page-ai-progress-bar-top" role="progressbar" aria-valuenow={pageProgress} aria-valuemin={0} aria-valuemax={100}>
-                <div className="page-ai-progress-fill" style={{ width: `${Math.round(pageProgress)}%` }} />
-                <span className="page-ai-progress-label">{Math.round(pageProgress)}% · {t("reader_translating")}</span>
-              </div>
+              <>
+                <div className="page-ai-progress-bar-top" role="progressbar" aria-valuenow={pageProgress} aria-valuemin={0} aria-valuemax={100}>
+                  <div className="page-ai-progress-fill" style={{ width: `${Math.round(pageProgress)}%` }} />
+                  <span className="page-ai-progress-label">{Math.round(pageProgress)}% · {t("reader_translating")}</span>
+                </div>
+                <button
+                  type="button"
+                  className="page-ai-cancel-btn page-ai-cancel-inline"
+                  onClick={() => {
+                    if (confirm(t("reader_cancel_confirm"))) {
+                      cancelledRef.current = true;
+                    }
+                  }}
+                >
+                  ⏹ {t("reader_cancel_btn")}
+                </button>
+              </>
             )}
             {translatingPage && !pageTranslation ? (
               <div className="page-ai-waiting">
@@ -2181,6 +2222,20 @@ export function Reader({
                   <div className="page-ai-progress-fill" style={{ width: `${Math.round(pageProgress)}%` }} />
                   <span className="page-ai-progress-label">{Math.round(pageProgress)}%</span>
                 </div>
+                {/* ⏹ CANCELAR (Miguel, 26/08): cor chamativa, para a despesa
+                    NA HORA. Com confirmação simpática — liberdade do usuário,
+                    sem perder o que já foi feito (a parte pronta vira nota). */}
+                <button
+                  type="button"
+                  className="page-ai-cancel-btn"
+                  onClick={() => {
+                    if (confirm(t("reader_cancel_confirm"))) {
+                      cancelledRef.current = true;
+                    }
+                  }}
+                >
+                  ⏹ {t("reader_cancel_btn")}
+                </button>
                 {/* Aviso de paciência + link pro Mural das IAs (pedido Miguel, 13/08).
                     Traduzido nos 12 idiomas via i18n (pedido Miguel, 22/08:
                     "se tiver em inglês, vai aparecer em inglês?") — antes só

@@ -52,6 +52,8 @@ export interface AIActionResult {
   costUsd?: number;
   /** Consumo real (quando o provedor informa; senão estimativa). */
   usage?: UsageInfo;
+  /** true = a tarefa foi interrompida pelo usuário (botão cancelar). */
+  cancelCut?: boolean;
 }
 
 /** Callback chamado a cada pedaço de texto que chega (pra streaming). */
@@ -368,11 +370,13 @@ async function runStreamWithCap(args: {
   onChunk: StreamCallback;
   onUsage: (u: UsageInfo) => void;
   images?: string[];
-}): Promise<{ full: string; capCut: boolean }> {
+  shouldCancel?: () => boolean;
+}): Promise<{ full: string; capCut: boolean; cancelCut: boolean }> {
   const cap = getPrefs().tokenCap;
   const estIn = inputEstimate(args.meta);
   let full = "";
   let capCut = false;
+  let cancelCut = false;
   for await (const chunk of args.streamFn(args.text, {
     systemPrompt: args.systemPrompt,
     context: args.contextText,
@@ -382,13 +386,20 @@ async function runStreamWithCap(args: {
   })) {
     full += chunk;
     args.onChunk(full, chunk);
+    // CANCELAR pelo usuário (Miguel, 26/08): corta a despesa de token NA HORA
+    // (o break finaliza o stream de rede — o provider para de gerar) e
+    // preserva o que já chegou (vai pra nota parcial).
+    if (args.shouldCancel?.()) {
+      cancelCut = true;
+      break;
+    }
     // Trava em tempo real: estoura o cap → corta o stream, preserva o texto.
     if (cap > 0 && estIn + estimateTokens(full) > cap) {
       capCut = true;
       break;
     }
   }
-  return { full, capCut };
+  return { full, capCut, cancelCut };
 }
 
 /**
@@ -454,6 +465,7 @@ export async function translatePageStream(
   text: string,
   ctx: BookContext,
   onChunk: StreamCallback,
+  options?: { shouldCancel?: () => boolean },
 ): Promise<AIActionResult> {
   if (!text.trim()) return { ok: false, error: "Página sem texto para traduzir." };
   // Custo real da página (usage do provedor ?? estimativa) — nota 💰 no
@@ -513,7 +525,7 @@ export async function translatePageStream(
       recordCall({ meta, identity, usage, completionText: result.text });
       return { ok: true, text: result.text, usage, costUsd: await pageCost(identity, usage) };
     }
-    const { full, capCut } = await runStreamWithCap({
+    const { full, capCut, cancelCut } = await runStreamWithCap({
       streamFn: provider.stream.bind(provider),
       text,
       systemPrompt,
@@ -522,6 +534,7 @@ export async function translatePageStream(
       meta,
       onChunk,
       onUsage: captureUsage,
+      shouldCancel: options?.shouldCancel,
     });
     recordCall({ meta, identity, usage, completionText: full });
     return {
@@ -529,6 +542,7 @@ export async function translatePageStream(
       text: full,
       usage,
       costUsd: await pageCost(identity, usage),
+      cancelCut,
       warning: capCut ? t(getTargetLang(), "errCapCut", { cap: getPrefs().tokenCap }) : undefined,
     };
   } catch (err) {
