@@ -2130,6 +2130,16 @@ export function Reader({
             className="reader-text"
             style={{ fontSize: `calc(var(--text-lg) * ${fontScale})` }}
           >
+            {/* BARRA DE PROGRESSO viva durante TODA a tradução (Miguel, 26/08):
+                antes só existia DENTRO do recado de espera — quando o texto
+                começava a chegar, o recado sumia e a barra morria em 0%.
+                Agora encima do texto que vai fluindo, enchendo de verdade. */}
+            {translatingPage && pageTranslation && (
+              <div className="page-ai-progress-bar-top" role="progressbar" aria-valuenow={pageProgress} aria-valuemin={0} aria-valuemax={100}>
+                <div className="page-ai-progress-fill" style={{ width: `${pageProgress}%` }} />
+                <span className="page-ai-progress-label">{pageProgress}% · {t("reader_translating")}</span>
+              </div>
+            )}
             {translatingPage && !pageTranslation ? (
               <div className="page-ai-waiting">
                 <div className="page-ai-spinner" />

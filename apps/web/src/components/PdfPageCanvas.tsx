@@ -458,6 +458,12 @@ export function PdfPageCanvas({
         )}
         {showTranslation && translationOverlay && (
           <div className="pdf-translation-overlay">
+            {translating && progress !== undefined && (
+              <div className="page-ai-progress-bar-top" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}>
+                <div className="page-ai-progress-fill" style={{ width: `${progress}%` }} />
+                <span className="page-ai-progress-label">{progress}%</span>
+              </div>
+            )}
             <div className="pdf-translation-page">
               {splitParagraphs(translationOverlay).map((para, i) => (
                 <p key={i}>{para}</p>
