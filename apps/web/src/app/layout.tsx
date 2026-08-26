@@ -115,7 +115,7 @@ export default function RootLayout({
             a env aponta pra mokareader.com e o badge nunca renderiza. Pedido
             do Miguel 22/08 ("o espelho tem que ser total"): ninguém nunca mais
             confunde em qual dos dois sites está. */}
-        {(process.env.NEXT_PUBLIC_SITE_URL ?? "").includes("espelho") && (
+        {(process.env.NEXT_PUBLIC_SITE_URL ?? "").includes("ousadia") && (
           <div
             aria-hidden
             style={{
@@ -134,7 +134,7 @@ export default function RootLayout({
               letterSpacing: 0.4,
             }}
           >
-            🧪 ESPELHO
+            🎢 OUSADIA
           </div>
         )}
         <I18nProvider>
