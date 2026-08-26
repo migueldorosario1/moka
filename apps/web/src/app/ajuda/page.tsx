@@ -18,6 +18,23 @@ import { useI18n } from "@/components/I18nProvider";
  * funciona offline, sem gastar IA). Substitui o tutorial antigo (backup local).
  */
 
+
+/** Os ícones do leitor explicados (Miguel, 26/08). */
+const ICONES_HELP: Array<{ icon: string; nome: { pt: string; en: string }; desc: { pt: string; en: string } }> = [
+  { icon: "🌐", nome: { pt: "Traduzir página inteira", en: "Translate whole page" }, desc: { pt: "Traduz a página que está na tela (confirma antes).", en: "Translates the page on screen (asks first)." } },
+  { icon: "🧠", nome: { pt: "Explicar página inteira", en: "Explain whole page" }, desc: { pt: "A IA explica o que a página quer dizer, no seu idioma.", en: "The AI explains what the page means, in your language." } },
+  { icon: "🌍", nome: { pt: "Traduzir o livro inteiro", en: "Translate the whole book" }, desc: { pt: "O livro todo em volumes (mostra estimativa antes).", en: "The whole book in volumes (shows an estimate first)." } },
+  { icon: "🔊", nome: { pt: "Ler em voz alta", en: "Read aloud" }, desc: { pt: "O Moka lê a página em voz (neural ou mecânica).", en: "Moka reads the page aloud (neural or robotic voice)." } },
+  { icon: "📝", nome: { pt: "Resumo da página/livro", en: "Page/book summary" }, desc: { pt: "Resumo do que está na tela, em minutos.", en: "Summary of what's on screen, in minutes." } },
+  { icon: "💬", nome: { pt: "Perguntar sobre o texto", en: "Ask about the text" }, desc: { pt: "Faça perguntas sobre a página — a IA responde.", en: "Ask questions about the page — the AI answers." } },
+  { icon: "🔖", nome: { pt: "Marcar página", en: "Bookmark page" }, desc: { pt: "Salva a página pra achar depois (nos Marcadores).", en: "Saves the page to find later (in Bookmarks)." } },
+  { icon: "📊", nome: { pt: "Suas IAs / Mural das IAs", en: "Your AIs / AI Wall" }, desc: { pt: "Gastos (telemetria) e ranking das IAs pra escolher.", en: "Spending (telemetry) and AI ranking to choose." } },
+  { icon: "⚙️", nome: { pt: "Configurações", en: "Settings" }, desc: { pt: "Chaves de IA, idiomas, voz, vídeo, avisos.", en: "AI keys, languages, voice, video, notices." } },
+  { icon: "📚", nome: { pt: "Estante", en: "Bookshelf" }, desc: { pt: "Sua biblioteca (livros, capas, progresso).", en: "Your library (books, covers, progress)." } },
+  { icon: "👁", nome: { pt: "Mostrar/esconder menu", en: "Show/hide menu" }, desc: { pt: "Destrava o menu se sumir (clique traz de volta).", en: "Brings the menu back if it hides (click to recover)." } },
+  { icon: "⛶", nome: { pt: "Tela cheia", en: "Fullscreen" }, desc: { pt: "Leitura imersiva, só a página na tela.", en: "Immersive reading, only the page on screen." } },
+];
+
 interface Faq { q: string; a: string; tags: string[] }
 
 const FAQ_PT: Faq[] = [
@@ -164,6 +181,25 @@ export default function Ajuda() {
           </div>
         </section>
 
+
+        {/* 🧩 OS ÍCONES DO LEITOR (Miguel, 26/08: "logo no começo, bota a
+            explicação dos ícones — repete o ícone grande + para que serve").
+            pt-BR vê PT; demais idiomas vê EN. */}
+        <section className="help-icons">
+          <h2>🧩 {{pt: "Os ícones do leitor", en: "The reader icons"}[lang === "pt-BR" ? "pt" : "en"]}</h2>
+          <div className="help-icons-grid">
+            {ICONES_HELP.map((it) => (
+              <div key={it.icon} className="help-icon-item">
+                <span className="help-icon-big" aria-hidden>{it.icon}</span>
+                <div>
+                  <strong>{it.nome[lang === "pt-BR" ? "pt" : "en"]}</strong>
+                  <p>{it.desc[lang === "pt-BR" ? "pt" : "en"]}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         <p className="help-kicker">{t("help_center")}</p>
         <h1 className="help-title">{t("help_how_works")}</h1>
 
@@ -213,7 +249,7 @@ export default function Ajuda() {
 
         {/* Robô de dúvidas */}
         <section className="help-robo" id="robô">
-          <h2>🤖 Pergunte ao Zé Moca</h2>
+          <h2>🤖 {t("help_zemoca_title")}</h2>
           <form
             onSubmit={(e) => {
               e.preventDefault();

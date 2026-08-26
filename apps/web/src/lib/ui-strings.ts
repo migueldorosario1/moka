@@ -121,6 +121,7 @@ export type UIStringKey =
   | "capa_test_link"
   | "bib_title"
   | "bib_kicker"
+  | "help_zemoca_title"
   | "diag_causes_title"
   | "pdf_loading"
   | "shelf_bib_cta"
@@ -594,6 +595,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_test_link: "Só quer experimentar? Teste com US$ 10 →",
     bib_title: "Livros grátis, de domínio público, pra sua estante",
     bib_kicker: "📚 Biblioteca Livre",
+    help_zemoca_title: "🤖 Pergunte ao Zé Moca",
     diag_causes_title: "Possíveis causas que você mesmo pode corrigir:",
     pdf_loading: "Carregando página…",
     shelf_bib_cta: "Baixe direto pra sua estante →",
@@ -1078,6 +1080,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_test_link: "Just want to try? Test with US$ 10 →",
     bib_title: "Free public-domain books for your shelf",
     bib_kicker: "📚 Free Library",
+    help_zemoca_title: "🤖 Ask John Moca",
     diag_causes_title: "Possible causes you can fix yourself:",
     pdf_loading: "Loading page…",
     shelf_bib_cta: "Download straight to your shelf →",
@@ -1554,6 +1557,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_test_link: "¿Solo quieres probar? Test por US$ 10 →",
     bib_title: "Libros gratis, de dominio público, para tu estantería",
     bib_kicker: "📚 Biblioteca Gratuita",
+    help_zemoca_title: "🤖 Pregúntale a John Moca",
     diag_causes_title: "Posibles causas que tú mismo puedes corregir:",
     pdf_loading: "Cargando página…",
     shelf_bib_cta: "Descárgalo directo a tu estante →",
@@ -2030,6 +2034,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_test_link: "Envie d'essayer ? Test à 10 US$ →",
     bib_title: "Livres gratuits du domaine public pour votre bibliothèque",
     bib_kicker: "📚 Bibliothèque Gratuite",
+    help_zemoca_title: "🤖 Demandez à John Moca",
     diag_causes_title: "Causes possibles que vous pouvez corriger vous-même :",
     pdf_loading: "Chargement de la page…",
     shelf_bib_cta: "Téléchargez directement sur votre étagère →",
@@ -2506,6 +2511,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_test_link: "Nur ausprobieren? Test für 10 US$ →",
     bib_title: "Kostenlose gemeinfreie Bücher für Ihr Regal",
     bib_kicker: "📚 Freie Bibliothek",
+    help_zemoca_title: "🤖 Frag John Moca",
     diag_causes_title: "Mögliche Ursachen, die du selbst beheben kannst:",
     pdf_loading: "Seite wird geladen…",
     shelf_bib_cta: "Direkt auf dein Regal laden →",
@@ -2982,6 +2988,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_test_link: "Vuoi solo provare? Test a US$ 10 →",
     bib_title: "Libri gratis di pubblico dominio per la tua libreria",
     bib_kicker: "📚 Biblioteca Libera",
+    help_zemoca_title: "🤖 Chiedi a John Moca",
     diag_causes_title: "Possibili cause che puoi correggere da solo:",
     pdf_loading: "Caricamento pagina…",
     shelf_bib_cta: "Scarica direttamente sullo scaffale →",
@@ -3458,6 +3465,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_test_link: "Хотите просто попробовать? Тест за 10 US$ →",
     bib_title: "Бесплатные книги в общественном достоянии для вашей полки",
     bib_kicker: "📚 Бесплатная библиотека",
+    help_zemoca_title: "🤖 Спросите Джона Моку",
     diag_causes_title: "Возможные причины, которые вы можете исправить сами:",
     pdf_loading: "Загрузка страницы…",
     shelf_bib_cta: "Скачать прямо на полку →",
@@ -3934,6 +3942,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_test_link: "只想试试？US$ 10 试用 →",
     bib_title: "免费公有领域图书，加入您的书架",
     bib_kicker: "📚 免费图书馆",
+    help_zemoca_title: "🤖 问 John Moca",
     diag_causes_title: "你可以自己解决的可能原因：",
     pdf_loading: "页面加载中…",
     shelf_bib_cta: "直接下载到你的书架 →",
@@ -4410,6 +4419,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_test_link: "まず試したい方は？US$ 10 テスト →",
     bib_title: "無料のパブリックドメイン書籍を本棚へ",
     bib_kicker: "📚 無料ライブラリ",
+    help_zemoca_title: "🤖 John Mocaに聞く",
     diag_causes_title: "自分で解決できる可能性のある原因：",
     pdf_loading: "ページを読み込み中…",
     shelf_bib_cta: "本棚へ直接ダウンロード →",
@@ -4886,6 +4896,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_test_link: "그냥 체험해 보고 싶다면? US$ 10 테스트 →",
     bib_title: "묵료 퍼블릭 도메인 도서를 내 책장에",
     bib_kicker: "📚 물집 공개 도서관",
+    help_zemoca_title: "🤖 John Moca에게 물어보세요",
     diag_causes_title: "스스로 고칠 수 있는 가능한 원인:",
     pdf_loading: "페이지 로딩 중…",
     shelf_bib_cta: "서가로 바로 다운로드 →",
@@ -5362,6 +5373,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_test_link: "تريد التجربة فقط؟ جرّب بـ 10 US$ →",
     bib_title: "كتب مجانية من الملك العام لمكتبتك",
     bib_kicker: "📚 المكتبة المجانية",
+    help_zemoca_title: "🤖 اسأل John Moca",
     diag_causes_title: "أسباب محتملة يمكنك إصلاحها بنفسك:",
     pdf_loading: "جارٍ تحميل الصفحة…",
     shelf_bib_cta: "نزّل مباشرة إلى رفّك →",
@@ -5838,6 +5850,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_test_link: "बस आज़माना है? US$ 10 टेस्ट →",
     bib_title: "आपकी अलमारी के लिए मुफ़्त सार्वजनिक-डोमेन किताबें",
     bib_kicker: "📚 मुफ़्त पुस्तकालय",
+    help_zemoca_title: "🤖 John Moca से पूछें",
     diag_causes_title: "संभावित कारण जिन्हें आप खुद ठीक कर सकते हैं:",
     pdf_loading: "पृष्ठ लोड हो रहा है…",
     shelf_bib_cta: "सीधे अपनी शेल्फ़ पर डाउनलोड करें →",
