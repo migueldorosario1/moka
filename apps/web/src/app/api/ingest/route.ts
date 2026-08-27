@@ -1195,7 +1195,8 @@ export async function POST(req: Request) {
       const hasOpenAIKey = !!(req.headers.get("x-openai-key") || "").trim();
       if (!transkriptorEnabled() && !hasOpenAIKey) {
         return respond(
-          { error: SERVERLESS_NOTE_NO_CAPTIONS, needsWhisperKey: true, meta },
+          { error: SERVERLESS_NOTE_NO_CAPTIONS, needsWhisperKey: true, meta,
+            dbg: { proxy: !!process.env.PROXY_RESIDENCIAL_URL, ykey: !!process.env.YOUTUBE_API_KEY } },
           { status: 428 },
         );
       }
