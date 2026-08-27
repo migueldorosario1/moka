@@ -248,6 +248,15 @@ export default function Ajuda() {
             o Moka manda o link pro serviço — <b>quem baixa o vídeo é o serviço, com o
             IP dele</b> — e devolve o texto pronto, com timestamps.
           </p>
+          <p style={{ lineHeight: 1.6, marginTop: 8 }}>
+            <b>💡 Pode ativar mais de um (fallback em cascata):</b> marque quantos serviços
+            quiser e organize a ordem com ▲ e ▼ — o Moka tenta o 1º; se ele falhar (chave
+            inválida, sem créditos, fora do ar…), <b>cai pro 2º sozinho, e depois pro 3º</b>,
+            avisando em tempo real na tela o que está acontecendo. Exemplo prático:
+            Supadata em 1º (grátis) e TranscriptAPI em 2º — se o crédito do mês do
+            Supadata acabar no meio, a transcrição continua funcionando pelo 2º sem
+            você fazer nada.
+          </p>
           <p style={{ lineHeight: 1.6, marginTop: 8 }}><b>Como eu pego minha chave?</b></p>
           <ul style={{ lineHeight: 1.7, marginTop: 4, paddingLeft: 20 }}>
             <li>

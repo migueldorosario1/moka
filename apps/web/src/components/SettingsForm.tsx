@@ -12,8 +12,8 @@ import {
   getTtsMode, setTtsMode,
   setUseForText, setUseForVoice, setUseForVideo,
   TTS_VOICES_OPENAI, TTS_VOICES_GROK,
-  getTxService, setTxService, setTxKey, getTxKey, getTxKeyMasked, TX_SERVICE_LINKS,
-  type TxServiceChoice,
+  getTxServices, setTxServices, setTxServiceKey, getTxServiceKey,
+  getTxServiceKeyMasked, TX_SERVICE_LINKS, TX_SERVICE_IDS,
 } from "@/lib/config";
 import { testConnection, listModels } from "@/lib/ai-client";
 import { copyDiagnostics, hasRecentError } from "@/lib/diagnostics";
@@ -57,16 +57,18 @@ export function SettingsForm({
   const [whisperMasked, setWhisperMasked] = useState<string | null>(null);
   const [videoMsg, setVideoMsg] = useState<string | null>(null);
   const [testingVideo, setTestingVideo] = useState(false);
-  // ── 🎬 Serviço de transcrição próprio (BYOK — ordem do Miguel 27/08) ──
-  const [txService, setTxServiceState] = useState<TxServiceChoice>("");
-  const [txKeyDraft, setTxKeyDraft] = useState("");
-  const [txKeyMasked, setTxKeyMasked] = useState<string | null>(null);
-  const [txSaved, setTxSaved] = useState(false);
-  // Estado do botão "▶ Testar chave" (pedido do Miguel ~15h do 27/08).
+  // ── 🎬 Serviços de transcrição próprios (BYOK — ordem do Miguel 27/08) ──
+  // MULTI com fallback (~15:35): lista ORDENADA de ativos; a ordem é a
+  // ordem da cascata (1º tenta, se falha cai pro 2º…).
+  const [txActive, setTxActiveList] = useState<string[]>([]);
+  const [txDrafts, setTxDrafts] = useState<Record<string, string>>({});
+  const [txMasks, setTxMasks] = useState<Record<string, string | null>>({});
+  // Teste da linha que clicou (uma por vez).
   const [txTest, setTxTest] = useState<{
-    status: "idle" | "testing" | "ok" | "fail";
+    service: string;
+    status: "testing" | "ok" | "fail";
     message: string;
-  }>({ status: "idle", message: "" });
+  } | null>(null);
   // Feedback do botão "copiar diagnóstico" (13/08).
   const [diagMsg, setDiagMsg] = useState<string | null>(null);
 
@@ -174,8 +176,14 @@ const TTS_TEST_PHRASES: Record<string, string> = {
   // Assim, se o usuário fechar o modal sem salvar, não perde o que digitou.
   useEffect(() => {
     getWhisperKeyMasked().then(setWhisperMasked).catch(() => {});
-    setTxServiceState(getTxService());
-    getTxKeyMasked().then(setTxKeyMasked).catch(() => {});
+    (async () => {
+      setTxActiveList(getTxServices());
+      const masks: Record<string, string | null> = {};
+      for (const s of TX_SERVICE_IDS) {
+        masks[s] = await getTxServiceKeyMasked(s).catch(() => null);
+      }
+      setTxMasks(masks);
+    })();
   }, []);
 
   useEffect(() => {
@@ -1261,134 +1269,221 @@ const TTS_TEST_PHRASES: Record<string, string> = {
         <p className="hint" style={{ marginTop: "4px" }}>{t("set_content_lang")}</p>
       </div>
 
-      {/* ═══ 🎬 MOKA VÍDEO — serviço de transcrição próprio (BYOK) ═══
-          (ordem do Miguel 27/08: "bota uma explicação bonitinha, bota lá
-          nas configurações, bota o ícone de vídeo/cinema, bota o link de
-          como eu pego a API".) Legendas continuam grátis; o serviço próprio
-          entra quando o vídeo não tem legenda ou o YouTube bloqueia o IP. */}
+      {/* ═══ 🎬 MOKA VÍDEO — serviços de transcrição (MULTI + fallback) ═══
+          (ordem do Miguel 27/08: "bota uma explicação bonitinha… o link de
+          como eu pego a API" + ~15:35: "pode mais de um, por ordem, com
+          fallback"). Legendas continuam grátis; os serviços próprios entram
+          quando o vídeo não tem legenda ou o YouTube bloqueia o IP — em
+          CASCATA do 1º ao último, caindo pro próximo quando um falha. */}
       <div className="v3-simple" style={{ background: "var(--surface)" }}>
         <h3 className="v3-simple-title" style={{ fontSize: 17 }}>🎬 {t("tx_title")}</h3>
         <p className="v3-simple-sub">{t("tx_intro")}</p>
+        <p className="v3-simple-sub" style={{ marginTop: 6 }}>💡 {t("tx_multi_note")}</p>
 
-        <div className="field" style={{ marginTop: 10 }}>
-          <label htmlFor="tx-service">🎥 {t("tx_service_label")}</label>
-          <select
-            id="tx-service"
-            value={txService}
-            onChange={(e) => {
-              const v = e.target.value as TxServiceChoice;
-              setTxServiceState(v);
-              setTxService(v);
-              setTxSaved(false);
-            }}
-          >
-            <option value="">{t("tx_service_auto")}</option>
-            <option value="supadata">🥇 {t("tx_service_supadata")}</option>
-            <option value="transkriptor">📝 {t("tx_service_transkriptor")}</option>
-            <option value="transcriptapi">📄 {t("tx_service_transcriptapi")}</option>
-            <option value="assemblyai">🎙 {t("tx_service_assemblyai")}</option>
-          </select>
-          <p className="hint" style={{ marginTop: 6 }}>{t("tx_service_hint")}</p>
-        </div>
-
-        {txService && (
-          <>
-            <div className="field" style={{ marginTop: 8 }}>
-              <label htmlFor="tx-key">🔑 {t("tx_key_label")}</label>
-              <input
-                id="tx-key"
-                type="text"
-                autoComplete="off"
-                spellCheck={false}
-                value={txKeyDraft}
-                placeholder={t("tx_key_ph")}
-                onChange={(e) => { setTxKeyDraft(e.target.value); setTxSaved(false); }}
-              />
-              {!txKeyDraft && txKeyMasked && (
-                <p className="hint" style={{ marginTop: 4 }}>🔑 {txKeyMasked}</p>
-              )}
-            </div>
-
-            {/* Link "como eu pego minha chave" — abre o site do serviço. */}
-            <a
-              href={TX_SERVICE_LINKS[txService]}
-              target="_blank"
-              rel="noreferrer"
-              className="help-link-banner"
-              style={{ marginTop: 4, marginBottom: 6 }}
+        {/* Ativos primeiro (na ordem do fallback, com ▲▼), inativos por baixo. */}
+        {[
+          ...txActive,
+          ...TX_SERVICE_IDS.filter((s) => !txActive.includes(s)),
+        ].map((s) => {
+          const active = txActive.includes(s);
+          const pos = txActive.indexOf(s);
+          const emoji =
+            s === "supadata" ? "🥇" : s === "transkriptor" ? "📝" : s === "transcriptapi" ? "📄" : "🎙";
+          const label = t(
+            (s === "supadata"
+              ? "tx_service_supadata"
+              : s === "transkriptor"
+                ? "tx_service_transkriptor"
+                : s === "transcriptapi"
+                  ? "tx_service_transcriptapi"
+                  : "tx_service_assemblyai") as Parameters<typeof t>[0],
+          );
+          return (
+            <div
+              key={s}
+              className="field"
+              style={{
+                marginTop: 8,
+                padding: "8px 10px",
+                border: "1px solid var(--border, #ddd)",
+                borderRadius: 8,
+                ...(!active ? { opacity: 0.8 } : {}),
+              }}
             >
-              🔗 {t("tx_get_key")} →
-            </a>
+              <label
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8,
+                  fontWeight: 600,
+                  flexWrap: "wrap",
+                }}
+              >
+                <input
+                  type="checkbox"
+                  checked={active}
+                  onChange={(e) => {
+                    const list = e.target.checked
+                      ? [...txActive, s]
+                      : txActive.filter((x) => x !== s);
+                    setTxActiveList(list);
+                    setTxServices(list);
+                  }}
+                />
+                {emoji} {label}
+                {active && <small style={{ opacity: 0.8 }}>— {pos + 1}º</small>}
+                {active && txActive.length > 1 && (
+                  <span style={{ marginLeft: "auto", display: "flex", gap: 4 }}>
+                    <button
+                      type="button"
+                      className="key-refresh-btn"
+                      title={t("tx_order_up")}
+                      disabled={pos === 0}
+                      onClick={() => {
+                        const l = [...txActive];
+                        [l[pos - 1], l[pos]] = [l[pos], l[pos - 1]];
+                        setTxActiveList(l);
+                        setTxServices(l);
+                      }}
+                    >
+                      ▲
+                    </button>
+                    <button
+                      type="button"
+                      className="key-refresh-btn"
+                      title={t("tx_order_down")}
+                      disabled={pos === txActive.length - 1}
+                      onClick={() => {
+                        const l = [...txActive];
+                        [l[pos + 1], l[pos]] = [l[pos], l[pos + 1]];
+                        setTxActiveList(l);
+                        setTxServices(l);
+                      }}
+                    >
+                      ▼
+                    </button>
+                  </span>
+                )}
+              </label>
 
-            <div>
-              <button
-                type="button"
-                className="key-refresh-btn"
-                onClick={async () => {
-                  const clean = txKeyDraft.trim();
-                  if (!clean) return;
-                  await setTxKey(clean);
-                  setTxKeyDraft("");
-                  setTxKeyMasked(await getTxKeyMasked());
-                  setTxSaved(true);
-                }}
-              >
-                💾 {t("tx_save")}
-              </button>{" "}
-              {/* ▶ Testar chave — valida no serviço SEM consumir crédito
-                  (mesmo espírito do "Testar" das chaves de IA). */}
-              <button
-                type="button"
-                className="key-refresh-btn"
-                disabled={txTest.status === "testing"}
-                onClick={async () => {
-                  // Testa o que está no CAMPO; se vazio, a chave já salva.
-                  const keyToTest =
-                    txKeyDraft.trim() || (await getTxKey().catch(() => null)) || "";
-                  if (!keyToTest) {
-                    setTxTest({
-                      status: "fail",
-                      message: "Cole a chave primeiro (ou salve a que já usou).",
-                    });
-                    return;
-                  }
-                  setTxTest({ status: "testing", message: "" });
-                  try {
-                    const res = await fetch("/api/tx-test", {
-                      method: "POST",
-                      headers: { "Content-Type": "application/json" },
-                      body: JSON.stringify({ service: txService, key: keyToTest }),
-                    });
-                    const data = (await res.json()) as { ok?: boolean; message?: string };
-                    setTxTest({
-                      status: data.ok ? "ok" : "fail",
-                      message:
-                        data.message ??
-                        (data.ok ? "Chave aceita ✅" : "A chave não foi aceita."),
-                    });
-                  } catch {
-                    setTxTest({
-                      status: "fail",
-                      message: "Não consegui testar agora — tenta de novo. 🙏",
-                    });
-                  }
-                }}
-              >
-                {txTest.status === "testing" ? "⏳" : "▶"} {t("tx_test")}
-              </button>{" "}
-              {txSaved && txTest.status !== "ok" && txTest.status !== "fail" && (
-                <span style={{ fontSize: 13, color: "var(--ok, #16a34a)" }}>{t("tx_saved")}</span>
-              )}
-              {txTest.status === "ok" && (
-                <span className="feedback ok-big" style={{ marginTop: 6 }}>🎉 {txTest.message}</span>
-              )}
-              {txTest.status === "fail" && (
-                <span style={{ fontSize: 13, color: "var(--danger, #dc2626)" }}>{txTest.message}</span>
+              {active && (
+                <>
+                  <input
+                    type="text"
+                    autoComplete="off"
+                    spellCheck={false}
+                    style={{ marginTop: 6 }}
+                    value={txDrafts[s] ?? ""}
+                    placeholder={t("tx_key_ph")}
+                    onChange={(e) =>
+                      setTxDrafts({ ...txDrafts, [s]: e.target.value })
+                    }
+                  />
+                  {!txDrafts[s] && txMasks[s] && (
+                    <p className="hint" style={{ marginTop: 4 }}>🔑 {txMasks[s]}</p>
+                  )}
+                  <div
+                    style={{
+                      marginTop: 6,
+                      display: "flex",
+                      gap: 6,
+                      flexWrap: "wrap",
+                      alignItems: "center",
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className="key-refresh-btn"
+                      onClick={async () => {
+                        const clean = (txDrafts[s] ?? "").trim();
+                        if (!clean) return;
+                        await setTxServiceKey(s, clean);
+                        setTxDrafts({ ...txDrafts, [s]: "" });
+                        setTxMasks({
+                          ...txMasks,
+                          [s]: await getTxServiceKeyMasked(s),
+                        });
+                      }}
+                    >
+                      💾 {t("tx_save")}
+                    </button>
+                    {/* ▶ Testar — valida SEM consumir crédito (sonda 401/403). */}
+                    <button
+                      type="button"
+                      className="key-refresh-btn"
+                      disabled={txTest?.service === s && txTest.status === "testing"}
+                      onClick={async () => {
+                        const keyToTest =
+                          (txDrafts[s] ?? "").trim() ||
+                          (await getTxServiceKey(s).catch(() => null)) ||
+                          "";
+                        if (!keyToTest) {
+                          setTxTest({
+                            service: s,
+                            status: "fail",
+                            message: "Cole a chave primeiro (ou salve a que já usou).",
+                          });
+                          return;
+                        }
+                        setTxTest({ service: s, status: "testing", message: "" });
+                        try {
+                          const res = await fetch("/api/tx-test", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ service: s, key: keyToTest }),
+                          });
+                          const data = (await res.json()) as {
+                            ok?: boolean;
+                            message?: string;
+                          };
+                          setTxTest({
+                            service: s,
+                            status: data.ok ? "ok" : "fail",
+                            message:
+                              data.message ??
+                              (data.ok ? "Chave aceita ✅" : "A chave não foi aceita."),
+                          });
+                        } catch {
+                          setTxTest({
+                            service: s,
+                            status: "fail",
+                            message: "Não consegui testar agora — tenta de novo. 🙏",
+                          });
+                        }
+                      }}
+                    >
+                      {txTest?.service === s && txTest.status === "testing"
+                        ? "⏳"
+                        : "▶"}{" "}
+                      {t("tx_test")}
+                    </button>
+                    <a
+                      href={TX_SERVICE_LINKS[s as keyof typeof TX_SERVICE_LINKS]}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="help-link-banner"
+                      style={{ margin: 0 }}
+                    >
+                      🔗 {t("tx_get_key")} →
+                    </a>
+                  </div>
+                  {txTest?.service === s && txTest.status === "ok" && (
+                    <p className="feedback ok-big" style={{ marginTop: 6, display: "inline-block" }}>
+                      🎉 {txTest.message}
+                    </p>
+                  )}
+                  {txTest?.service === s && txTest.status === "fail" && (
+                    <p style={{ marginTop: 6, fontSize: 13, color: "var(--danger, #dc2626)" }}>
+                      {txTest.message}
+                    </p>
+                  )}
+                </>
               )}
             </div>
-            <p className="v3-simple-note" style={{ marginTop: 8 }}>🔐 {t("tx_note")}</p>
-          </>
-        )}
+          );
+        })}
+
+        <p className="v3-simple-note" style={{ marginTop: 8 }}>🔐 {t("tx_note")}</p>
       </div>
 
       {/* 🎬 VÍDEO & TRANSCRIÇÃO REMOVIDO (pedido do Miguel 10/08): agora o

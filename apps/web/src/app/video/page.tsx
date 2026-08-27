@@ -20,7 +20,9 @@ import {
   getWhisperKey,
   getIngestServer,
   getTxService,
-  getTxKey,
+  getTxChain,
+  getTxServiceKey,
+  type TxEntry,
 } from "@/lib/config";
 import { getConta } from "@/lib/moka-conta";
 import {
@@ -43,6 +45,9 @@ type Stage =
   | { kind: "whisper" }
   /** Transcrição da casa em andamento (polling) — elapsed em segundos. */
   | { kind: "listening"; elapsed: number }
+  /** Serviço próprio em uso (fallback em cascata — ordem do Miguel 27/08):
+   *  name = quem está tentando AGORA; note = quem já falhou antes. */
+  | { kind: "txTrying"; name: string; note?: string }
   | { kind: "saving" }
   | { kind: "error"; message: string; linkHref?: string; linkLabel?: string };
 
@@ -258,32 +263,37 @@ export default function HomePage() {
           ? { conta: { email: conta.email, senha: conta.senha } }
           : {};
 
-        // Serviço de transcrição PRÓPRIO (BYOK — ⚙️ → 🎬 Moka Vídeo): quem
-        // baixa o vídeo é o serviço escolhido, no IP dele. Vai como header
-        // em TODAS as chamadas (transcript e polling de status).
-        const txService = getTxService();
-        const txKey = txService ? ((await getTxKey()) ?? "") : "";
-        const txHeaders: Record<string, string> = {};
-        if (txService && txKey) {
-          txHeaders["x-tx-service"] = txService;
-          txHeaders["x-tx-key"] = txKey;
-        }
+        // Serviços de transcrição PRÓPRIOS (BYOK — ⚙️ → 🎬 Moka Vídeo) em
+        // CASCATA de fallback (ordem do Miguel ~15:35): quem baixa o vídeo
+        // é o serviço escolhido, no IP dele. O Moka tenta do 1º ao último
+        // e AVISA ao vivo quando um falha e cai pro próximo.
+        const txChain = await getTxChain();
+        const txAny = txChain.length > 0;
 
         // Ficou uma transcrição pendente DESTE link (usuário saiu e voltou)?
         // Retoma o polling em vez de submeter de novo — mas SÓ se o job
-        // pertence ao serviço configurado agora (trocou de serviço = submete de novo).
+        // pertence a um serviço que ainda está configurado com chave.
         const pendingJob = loadPendingJob(link);
-        const pendingCompatible =
-          pendingJob &&
-          (!pendingJob.service || !txService || pendingJob.service === txService);
+        let pollingHeaders: Record<string, string> | null = null;
+        if (pendingJob?.service) {
+          const ownerKey = await getTxServiceKey(pendingJob.service);
+          if (ownerKey) {
+            pollingHeaders = {
+              "x-tx-service": pendingJob.service,
+              "x-tx-key": ownerKey,
+            };
+          }
+        }
+        const pendingCompatible = pendingJob && (!pendingJob.service || pollingHeaders);
         let txData: TxData;
+        let txUsed = "";
         if (pendingCompatible && pendingJob) {
           txData = { pending: true, orderId: pendingJob.orderId, meta: pendingJob.meta };
+          txUsed = pendingJob.service ?? "";
         } else {
           if (pendingJob) clearPendingJob(link);
           // Chave pra transcrever: usa a chave de vídeo (Whisper) SE existir,
           // senão usa a chave OpenAI ATIVA do cofre (mesma de texto).
-          // (Antes só usava Whisper separada — agora OpenAI ativa também serve.)
           let whisperKey = (await getWhisperKey()) ?? "";
           if (!whisperKey) {
             // Usa a entry marcada pra vídeo (useForVideo), senão a ativa.
@@ -292,20 +302,58 @@ export default function HomePage() {
               whisperKey = videoConfig.apiKey;
             }
           }
-          const txRes = await postIngest(
-            { url: link, step: "transcript", ...contaBody },
-            {
-              ...(whisperKey ? { "x-openai-key": whisperKey } : {}),
-              ...txHeaders,
-            },
-          );
-          txData = (await safeJson(txRes)) as TxData;
+
+          // ── CASCATA: tenta cada serviço ativo (na ordem das ⚙️) ──
+          txData = { error: "Não consegui transcrever o vídeo." };
+          let failNote = "";
+          const failures: string[] = [];
+          for (const entry of txChain) {
+            setStage({
+              kind: "txTrying",
+              name: entry.service,
+              ...(failNote ? { note: failNote } : {}),
+            });
+            const txRes = await postIngest(
+              { url: link, step: "transcript", ...contaBody },
+              {
+                ...(whisperKey ? { "x-openai-key": whisperKey } : {}),
+                "x-tx-service": entry.service,
+                "x-tx-key": entry.key,
+              },
+            );
+            const data = (await safeJson(txRes)) as TxData;
+            if (data.segments || (data.pending && data.orderId)) {
+              txData = data;
+              txUsed = entry.service;
+              break;
+            }
+            failures.push(entry.service);
+            failNote = t("tx_step_fellback", { service: entry.service });
+          }
+          // Cascata inteira falhou (ou vazia): caminho padrão da casa.
+          if (!txData.segments && !(txData.pending && txData.orderId)) {
+            if (failures.length > 0) {
+              setStage({ kind: "txTrying", name: "—", note: t("tx_step_allfailed") });
+            }
+            const txRes = await postIngest(
+              { url: link, step: "transcript", ...contaBody },
+              whisperKey ? { "x-openai-key": whisperKey } : {},
+            );
+            txData = (await safeJson(txRes)) as TxData;
+          }
         }
 
         // Transcrição em andamento (casa ou serviço próprio) → polling.
         if (txData.pending && txData.orderId) {
           const orderId = txData.orderId;
-          savePendingJob(link, orderId, txData.meta ?? metaData.meta, txService || undefined);
+          const ownerEntry = txUsed
+            ? txChain.find((e: TxEntry) => e.service === txUsed)
+            : undefined;
+          const pollHeaders: Record<string, string> = pollingHeaders ??
+            (ownerEntry
+              ? { "x-tx-service": ownerEntry.service, "x-tx-key": ownerEntry.key }
+              : {});
+          savePendingJob(link, orderId, txData.meta ?? metaData.meta, txUsed || undefined);
           const t0 = Date.now();
           for (;;) {
             setStage({ kind: "listening", elapsed: Math.floor((Date.now() - t0) / 1000) });
@@ -314,7 +362,7 @@ export default function HomePage() {
             if (elapsed > 45 * 60) {
               clearPendingJob(link);
               throw new Error(
-                txService
+                txAny
                   ? "Seu serviço de transcrição está demorando mais que o normal. " +
                       "Tente de novo mais tarde — o Moka não cobra nada por isso."
                   : "A transcrição está demorando mais que o normal. Tente de novo " +
@@ -328,7 +376,7 @@ export default function HomePage() {
                 orderId,
                 ...contaBody,
               },
-              txHeaders,
+              pollHeaders,
             );
             const stData = (await safeJson(stRes)) as TxData;
             if (stData.pending) continue;
@@ -353,7 +401,7 @@ export default function HomePage() {
           // próprio configurado? Aponta pras ⚙️ — lá a pessoa cola a chave de
           // um serviço de transcrição (tem opção grátis) e o vídeo passa a
           // ser baixado pelo IP do serviço, imune ao bloqueio.
-          if (!txService) {
+          if (!txAny) {
             setStage({
               kind: "error",
               message:
@@ -476,6 +524,12 @@ export default function HomePage() {
                 <>
                   <strong>{t("video_step_captions")}</strong>
                   <span>o vídeo tem legendas — é rapidinho</span>
+                </>
+              )}
+              {stage.kind === "txTrying" && (
+                <>
+                  <strong>{t("tx_step_trying", { service: stage.name })}</strong>
+                  {stage.note && <span>{stage.note}</span>}
                 </>
               )}
               {stage.kind === "whisper" && (

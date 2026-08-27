@@ -688,13 +688,22 @@ export function setIngestServer(url: string): void {
   else window.localStorage.removeItem(INGEST_SERVER_KEY);
 }
 
-// ─── Serviço de transcrição de vídeo BYOK (ordem do Miguel 27/08) ────────
+// ─── Serviços de transcrição de vídeo BYOK (ordem do Miguel 27/08) ────────
 // Quando o vídeo não tem legenda (ou o YouTube bloqueia o IP do site), o
 // usuário pode plugar o PRÓPRIO serviço de transcrição: quem baixa o vídeo
 // é o SERVIÇO escolhido, no IP dele — mais estável e sem gastar pontos.
-// "" = Automático (grátis da casa: legendas do vídeo).
+// MULTI com fallback (ordem do Miguel ~15:35): pode ativar MAIS DE UM,
+// numa ordem; o Moka tenta do primeiro ao último e, se um falhar, cai
+// pro próximo sozinho (avisando em tempo real).
 
 export type TxServiceChoice = "" | "supadata" | "transkriptor" | "transcriptapi" | "assemblyai";
+
+export const TX_SERVICE_IDS = [
+  "supadata",
+  "transkriptor",
+  "transcriptapi",
+  "assemblyai",
+] as const;
 
 /** Onde criar conta / pegar a chave de cada serviço (botão "como pego?"). */
 export const TX_SERVICE_LINKS: Record<Exclude<TxServiceChoice, "">, string> = {
@@ -704,44 +713,101 @@ export const TX_SERVICE_LINKS: Record<Exclude<TxServiceChoice, "">, string> = {
   assemblyai: "https://www.assemblyai.com/dashboard",
 };
 
-const TX_SERVICE_KEY = "mokavideo.txService";
-const TX_KEY = "mokavideo.txKey";
+const TX_SERVICES_KEY = "mokavideo.txServices"; // JSON: lista ORDENADA dos ativados
+const TX_KEY_PREFIX = "mokavideo.txKey."; // + id do serviço (criptografada)
+// Formato antigo (pré-multi, 27/08 manhã): um serviço só + chave única.
+const TX_SERVICE_KEY_LEGACY = "mokavideo.txService";
+const TX_KEY_LEGACY = "mokavideo.txKey";
 
-/** Serviço escolhido ("" = automático/grátis). */
-export function getTxService(): TxServiceChoice {
-  if (typeof window === "undefined") return "";
-  return (window.localStorage.getItem(TX_SERVICE_KEY) ?? "") as TxServiceChoice;
+export interface TxEntry {
+  service: Exclude<TxServiceChoice, "">;
+  key: string;
 }
 
-export function setTxService(service: TxServiceChoice): void {
+/** Migra o formato antigo (1 serviço + 1 chave) pra lista — roda 1×. */
+function migrateTxLegacy(): void {
   if (typeof window === "undefined") return;
-  if (service) window.localStorage.setItem(TX_SERVICE_KEY, service);
-  else window.localStorage.removeItem(TX_SERVICE_KEY);
+  if (window.localStorage.getItem(TX_SERVICES_KEY)) return; // já é o novo
+  const old = window.localStorage.getItem(TX_SERVICE_KEY_LEGACY);
+  if (old) {
+    window.localStorage.setItem(TX_SERVICES_KEY, JSON.stringify([old]));
+    const oldKey = window.localStorage.getItem(TX_KEY_LEGACY);
+    if (oldKey) {
+      window.localStorage.setItem(`${TX_KEY_PREFIX}${old}`, oldKey);
+      window.localStorage.removeItem(TX_KEY_LEGACY);
+    }
+    window.localStorage.removeItem(TX_SERVICE_KEY_LEGACY);
+  }
 }
 
-/** Salva a chave do serviço escolhido (criptografada, só neste navegador). */
-export async function setTxKey(key: string): Promise<void> {
+/** Serviços ATIVOS, na ordem de tentativa (fallback em cascata). */
+export function getTxServices(): string[] {
+  if (typeof window === "undefined") return [];
+  migrateTxLegacy();
+  try {
+    const list = JSON.parse(
+      window.localStorage.getItem(TX_SERVICES_KEY) ?? "[]",
+    ) as string[];
+    return Array.isArray(list) ? list.filter((s) => typeof s === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+/** Salva a lista ORDENADA de serviços ativos (a ordem é a ordem do fallback). */
+export function setTxServices(list: string[]): void {
+  if (typeof window === "undefined") return;
+  const clean = [...new Set(list)].filter((s) =>
+    (TX_SERVICE_IDS as readonly string[]).includes(s),
+  );
+  if (clean.length > 0) {
+    window.localStorage.setItem(TX_SERVICES_KEY, JSON.stringify(clean));
+  } else {
+    window.localStorage.removeItem(TX_SERVICES_KEY);
+  }
+}
+
+/** Salva a chave de UM serviço (criptografada, só neste navegador). */
+export async function setTxServiceKey(service: string, key: string): Promise<void> {
   if (typeof window === "undefined") return;
   if (!key) {
-    window.localStorage.removeItem(TX_KEY);
+    window.localStorage.removeItem(`${TX_KEY_PREFIX}${service}`);
     return;
   }
-  window.localStorage.setItem(TX_KEY, await encrypt(key));
+  window.localStorage.setItem(`${TX_KEY_PREFIX}${service}`, await encrypt(key));
 }
 
-/** Lê a chave do serviço (descriptografada). Null se não configurada. */
-export async function getTxKey(): Promise<string | null> {
+/** Lê a chave de um serviço (descriptografada). Null se não configurada. */
+export async function getTxServiceKey(service: string): Promise<string | null> {
   if (typeof window === "undefined") return null;
-  const raw = window.localStorage.getItem(TX_KEY);
+  const raw = window.localStorage.getItem(`${TX_KEY_PREFIX}${service}`);
   if (!raw) return null;
   const key = await decrypt(raw);
   return key || null;
 }
 
-/** Versão mascarada da chave do serviço pra UI. */
-export async function getTxKeyMasked(): Promise<string | null> {
-  const key = await getTxKey();
+/** Versão mascarada da chave de um serviço pra UI. */
+export async function getTxServiceKeyMasked(service: string): Promise<string | null> {
+  const key = await getTxServiceKey(service);
   return key ? maskKey(key) : null;
+}
+
+/** A cadeia de fallback pronta pro uso: ativos + com chave, na ordem. */
+export async function getTxChain(): Promise<TxEntry[]> {
+  const out: TxEntry[] = [];
+  for (const service of getTxServices()) {
+    const key = await getTxServiceKey(service);
+    if (key) out.push({ service: service as TxEntry["service"], key });
+  }
+  return out;
+}
+
+// ── Compat legada (formato antigo de 1 serviço — usado só pela migração) ──
+
+/** @deprecated use getTxServices()/getTxChain() */
+export function getTxService(): TxServiceChoice {
+  const list = getTxServices();
+  return (list[0] ?? "") as TxServiceChoice;
 }
 
 // ─── Modelo da IA da casa (V4, pedido do Miguel 2026-08-01) ─────────────
