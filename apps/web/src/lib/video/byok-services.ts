@@ -429,3 +429,82 @@ export async function byokStatus(
       return assemblyaiStatus(key, ref);
   }
 }
+
+// ─── Teste de chave (botão "▶ Testar" — pedido do Miguel 27/08 ~15h) ─────
+// Cada sonda é desenhada pra NÃO consumir crédito: cutuca o serviço de um
+// jeito que só checa a autenticação (401/403 = chave ruim; qualquer outra
+// resposta = chave boa). Validado ao vivo nos 4 endpoints em 27/08.
+
+const SERVICE_NAMES: Record<TxByokService, string> = {
+  supadata: "Supadata",
+  transkriptor: "Transkriptor",
+  transcriptapi: "TranscriptAPI",
+  assemblyai: "AssemblyAI",
+};
+
+/** true se a resposta indica chave REJEITADA (senão, aceita). */
+function keyRejected(status: number): boolean {
+  return status === 401 || status === 403;
+}
+
+export async function byokTestKey(
+  service: TxByokService,
+  key: string,
+): Promise<{ ok: boolean; message: string }> {
+  const nome = SERVICE_NAMES[service];
+  const failMsg =
+    `A chave não foi aceita pelo ${nome} — confira se copiou a chave ` +
+    "inteira (e se a conta está ativa).";
+  try {
+    let status: number;
+    switch (service) {
+      case "supadata":
+        // Sem url: a chave é checada ANTES da validação (401 provado ao vivo).
+        status = (
+          await fetch("https://api.supadata.ai/v1/transcript", {
+            headers: { "x-api-key": key },
+            signal: AbortSignal.timeout(15_000),
+          })
+        ).status;
+        break;
+      case "transcriptapi":
+        status = (
+          await fetch("https://transcriptapi.com/api/v2/youtube/transcript", {
+            headers: { Authorization: `Bearer ${key}` },
+            signal: AbortSignal.timeout(15_000),
+          })
+        ).status;
+        break;
+      case "transkriptor":
+        // POST com url vazia: 403 com chave ruim (provado), 400 com chave boa.
+        status = (
+          await fetch("https://api.tor.app/developer/transcription/url", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${key}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ url: "" }),
+            signal: AbortSignal.timeout(15_000),
+          })
+        ).status;
+        break;
+      case "assemblyai":
+        // Listar transcrições valida a chave sem custo nenhum.
+        status = (
+          await fetch("https://api.assemblyai.com/v2/transcript?page_size=1", {
+            headers: { authorization: key },
+            signal: AbortSignal.timeout(15_000),
+          })
+        ).status;
+        break;
+    }
+    if (keyRejected(status)) return { ok: false, message: failMsg };
+    return { ok: true, message: `Chave aceita pelo ${nome} ✅` };
+  } catch {
+    return {
+      ok: false,
+      message: `Não consegui falar com o ${nome} agora — tenta de novo em instantes. 🙏`,
+    };
+  }
+}

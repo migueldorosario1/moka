@@ -102,6 +102,7 @@ export type UIStringKey =
   | "tx_get_key"
   | "tx_save"
   | "tx_saved"
+  | "tx_test"
   | "tx_note"
   | "video_tx_hint"
   | "video_tx_link"
@@ -597,6 +598,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tx_get_key: "Como eu pego minha chave?",
     tx_save: "Salvar chave",
     tx_saved: "Salvo!",
+    tx_test: "▶ Testar chave",
     tx_note: "A chave fica guardada só no seu navegador. O Moka a usa na hora de falar com o serviço — nunca guarda em servidor nenhum.",
     video_tx_hint: "Dica: configure um serviço de transcrição com sua própria chave (tem opção grátis) e este vídeo passa a ser lido pelo serviço.",
     video_tx_link: "⚙️ Configurar serviço de transcrição",
@@ -1103,6 +1105,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tx_get_key: "How do I get my key?",
     tx_save: "Save key",
     tx_saved: "Saved!",
+    tx_test: "▶ Test key",
     tx_note: "The key is stored only in your browser. Moka uses it just to talk to the service — never stored on any server.",
     video_tx_hint: "Tip: set up a transcription service with your own key (there's a free option) and this video gets read by the service.",
     video_tx_link: "⚙️ Set up transcription service",
@@ -1601,6 +1604,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tx_get_key: "¿Cómo consigo mi clave?",
     tx_save: "Guardar clave",
     tx_saved: "¡Guardado!",
+    tx_test: "▶ Probar clave",
     tx_note: "La clave se guarda solo en tu navegador. Moka la usa solo para hablar con el servicio — nunca se guarda en ningún servidor.",
     video_tx_hint: "Consejo: configura un servicio de transcripción con tu propia clave (hay opción gratis) y este vídeo pasará a ser leído por el servicio.",
     video_tx_link: "⚙️ Configurar servicio de transcripción",
@@ -2099,6 +2103,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tx_get_key: "Comment obtenir ma clé ?",
     tx_save: "Enregistrer la clé",
     tx_saved: "Enregistré !",
+    tx_test: "▶ Tester la clé",
     tx_note: "La clé est stockée uniquement dans votre navigateur. Moka s'en sert juste pour parler au service — jamais stockée sur un serveur.",
     video_tx_hint: "Astuce : configurez un service de transcription avec votre propre clé (option gratuite disponible) et cette vidéo sera lue par le service.",
     video_tx_link: "⚙️ Configurer le service de transcription",
@@ -2597,6 +2602,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tx_get_key: "Wie bekomme ich meinen Schlüssel?",
     tx_save: "Schlüssel speichern",
     tx_saved: "Gespeichert!",
+    tx_test: "▶ Schlüssel testen",
     tx_note: "Der Schlüssel wird nur in deinem Browser gespeichert. Moka nutzt ihn nur für die Verbindung zum Dienst — nie auf einem Server.",
     video_tx_hint: "Tipp: Richte einen Transkriptionsdienst mit deinem eigenen Schlüssel ein (es gibt eine kostenlose Option), dann wird dieses Video vom Dienst gelesen.",
     video_tx_link: "⚙️ Transkriptionsdienst einrichten",
@@ -3095,6 +3101,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tx_get_key: "Come ottengo la mia chiave?",
     tx_save: "Salva chiave",
     tx_saved: "Salvata!",
+    tx_test: "▶ Prova chiave",
     tx_note: "La chiave resta solo nel tuo browser. Moka la usa solo per parlare col servizio — mai salvata su nessun server.",
     video_tx_hint: "Suggerimento: configura un servizio di trascrizione con la tua chiave (c'è un'opzione gratuita) e questo video verrà letto dal servizio.",
     video_tx_link: "⚙️ Configura servizio di trascrizione",
@@ -3593,6 +3600,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tx_get_key: "Как получить свой ключ?",
     tx_save: "Сохранить ключ",
     tx_saved: "Сохранено!",
+    tx_test: "▶ Проверить ключ",
     tx_note: "Ключ хранится только в вашем браузере. Moka использует его только для связи с сервисом — и никогда не сохраняет на серверах.",
     video_tx_hint: "Совет: настройте сервис транскрипции со своим ключом (есть бесплатный вариант), и это видео будет прочитано сервисом.",
     video_tx_link: "⚙️ Настроить сервис транскрипции",
@@ -4091,6 +4099,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tx_get_key: "如何获取我的密钥？",
     tx_save: "保存密钥",
     tx_saved: "已保存！",
+    tx_test: "▶ 测试密钥",
     tx_note: "密钥只保存在你的浏览器里。Moka 仅在与该服务通信时使用它 — 绝不存储在任何服务器上。",
     video_tx_hint: "提示：用自己的密钥配置转录服务（有免费选项），这个视频就会由该服务读取。",
     video_tx_link: "⚙️ 配置转录服务",
@@ -4589,6 +4598,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tx_get_key: "キーの取得方法は？",
     tx_save: "キーを保存",
     tx_saved: "保存しました！",
+    tx_test: "▶ キーをテスト",
     tx_note: "キーはブラウザにのみ保存されます。Moka はサービスとの通信時にだけ使用し、サーバーには一切保存しません。",
     video_tx_hint: "ヒント：自分のキーで文字起こしサービスを設定すると（無料枠あり）、この動画はそのサービスが読み取ります。",
     video_tx_link: "⚙️ 文字起こしサービスを設定",
@@ -5087,6 +5097,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tx_get_key: "키는 어떻게 받나요?",
     tx_save: "키 저장",
     tx_saved: "저장됨!",
+    tx_test: "▶ 키 테스트",
     tx_note: "키는 브라우저에만 저장됩니다. Moka는 서비스와 통신할 때만 사용하며 서버에는 절대 저장하지 않습니다.",
     video_tx_hint: "팁: 자신의 키로 전사 서비스를 설정하면(무료 옵션 있음) 이 비디오는 해당 서비스가 읽어줍니다.",
     video_tx_link: "⚙️ 전사 서비스 설정",
@@ -5585,6 +5596,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tx_get_key: "كيف أحصل على مفتاحي؟",
     tx_save: "حفظ المفتاح",
     tx_saved: "تم الحفظ!",
+    tx_test: "▶ اختبار المفتاح",
     tx_note: "يُحفظ المفتاح في متصفحك فقط. يستخدمه Moka فقط للتواصل مع الخدمة — ولا يُخزَّن أبدًا على أي خادم.",
     video_tx_hint: "نصيحة: اضبط خدمة تفريغ بمفتاحك الخاص (يوجد خيار مجاني) وسيقرأ هذه الخدمة هذا الفيديو.",
     video_tx_link: "⚙️ ضبط خدمة التفريغ",
@@ -6083,6 +6095,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tx_get_key: "मैं अपनी कुंजी कैसे पाऊँ?",
     tx_save: "कुंजी सहेजें",
     tx_saved: "सहेज लिया!",
+    tx_test: "▶ कुंजी जाँचें",
     tx_note: "कुंजी केवल आपके ब्राउज़र में सहेजी जाती है। Moka उसका उपयोग केवल सेवा से बात करने के लिए करता है — किसी सर्वर पर कभी नहीं।",
     video_tx_hint: "सुझाव: अपनी कुंजी से ट्रांस्क्रिप्शन सेवा सेट करें (मुफ़्त विकल्प है) और यह वीडियो उस सेवा से पढ़ा जाएगा।",
     video_tx_link: "⚙️ ट्रांस्क्रिप्शन सेवा सेट करें",

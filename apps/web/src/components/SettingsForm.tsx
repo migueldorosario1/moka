@@ -12,7 +12,7 @@ import {
   getTtsMode, setTtsMode,
   setUseForText, setUseForVoice, setUseForVideo,
   TTS_VOICES_OPENAI, TTS_VOICES_GROK,
-  getTxService, setTxService, setTxKey, getTxKeyMasked, TX_SERVICE_LINKS,
+  getTxService, setTxService, setTxKey, getTxKey, getTxKeyMasked, TX_SERVICE_LINKS,
   type TxServiceChoice,
 } from "@/lib/config";
 import { testConnection, listModels } from "@/lib/ai-client";
@@ -62,6 +62,11 @@ export function SettingsForm({
   const [txKeyDraft, setTxKeyDraft] = useState("");
   const [txKeyMasked, setTxKeyMasked] = useState<string | null>(null);
   const [txSaved, setTxSaved] = useState(false);
+  // Estado do botão "▶ Testar chave" (pedido do Miguel ~15h do 27/08).
+  const [txTest, setTxTest] = useState<{
+    status: "idle" | "testing" | "ok" | "fail";
+    message: string;
+  }>({ status: "idle", message: "" });
   // Feedback do botão "copiar diagnóstico" (13/08).
   const [diagMsg, setDiagMsg] = useState<string | null>(null);
 
@@ -1330,8 +1335,55 @@ const TTS_TEST_PHRASES: Record<string, string> = {
               >
                 💾 {t("tx_save")}
               </button>{" "}
-              {txSaved && (
+              {/* ▶ Testar chave — valida no serviço SEM consumir crédito
+                  (mesmo espírito do "Testar" das chaves de IA). */}
+              <button
+                type="button"
+                className="key-refresh-btn"
+                disabled={txTest.status === "testing"}
+                onClick={async () => {
+                  // Testa o que está no CAMPO; se vazio, a chave já salva.
+                  const keyToTest =
+                    txKeyDraft.trim() || (await getTxKey().catch(() => null)) || "";
+                  if (!keyToTest) {
+                    setTxTest({
+                      status: "fail",
+                      message: "Cole a chave primeiro (ou salve a que já usou).",
+                    });
+                    return;
+                  }
+                  setTxTest({ status: "testing", message: "" });
+                  try {
+                    const res = await fetch("/api/tx-test", {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ service: txService, key: keyToTest }),
+                    });
+                    const data = (await res.json()) as { ok?: boolean; message?: string };
+                    setTxTest({
+                      status: data.ok ? "ok" : "fail",
+                      message:
+                        data.message ??
+                        (data.ok ? "Chave aceita ✅" : "A chave não foi aceita."),
+                    });
+                  } catch {
+                    setTxTest({
+                      status: "fail",
+                      message: "Não consegui testar agora — tenta de novo. 🙏",
+                    });
+                  }
+                }}
+              >
+                {txTest.status === "testing" ? "⏳" : "▶"} {t("tx_test")}
+              </button>{" "}
+              {txSaved && txTest.status !== "ok" && txTest.status !== "fail" && (
                 <span style={{ fontSize: 13, color: "var(--ok, #16a34a)" }}>{t("tx_saved")}</span>
+              )}
+              {txTest.status === "ok" && (
+                <span style={{ fontSize: 13, color: "var(--ok, #16a34a)" }}>{txTest.message}</span>
+              )}
+              {txTest.status === "fail" && (
+                <span style={{ fontSize: 13, color: "var(--danger, #dc2626)" }}>{txTest.message}</span>
               )}
             </div>
             <p className="v3-simple-note" style={{ marginTop: 8 }}>🔐 {t("tx_note")}</p>
