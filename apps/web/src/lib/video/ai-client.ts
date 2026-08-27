@@ -80,10 +80,16 @@ function videoHeader(meta: VideoMeta): string {
       dataPub = ` · publicado em ${d.toLocaleDateString("pt-BR")}`;
     }
   }
+  // Hashtags (#Assunto) são ruído pros nomes — a LLM listava "#Eleições"
+  // como personagem (relato do Miguel, 27/08). Limpa antes de enviar.
+  const cleanDescription = meta.description
+    ?.replace(/#\w+/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
   return (
     `Vídeo: "${meta.title}" — canal/perfil: ${meta.channel} ` +
     `(${meta.platform}, ${formatTime(meta.durationSec)}${dataPub})` +
-    (meta.description ? `\nDescrição: ${meta.description.slice(0, 600)}` : "")
+    (cleanDescription ? `\nDescrição: ${cleanDescription.slice(0, 600)}` : "")
   );
 }
 
@@ -428,11 +434,28 @@ export async function characters(
       "- Papel no vídeo, SEMPRE específico: apresentador, âncora, co-apresentador, " +
       "repórter, entrevistador, entrevistado, convidado, especialista, citado…\n" +
       "- O que diz ou o que dizem sobre ele, em 1-2 linhas\n" +
+      "🔍 FONTES DOS NOMES (use TODAS, em ordem de confiança):\n" +
+      "1. A DESCRIÇÃO do vídeo (logo acima) — costuma trazer o nome de quem " +
+      "apresenta, entrevista e participa (ex.: 'com Saagar e Krystal', " +
+      "'entrevista de Fulano com Beltrano'). É a fonte MAIS confiável de nomes " +
+      "CORRETOS: extraia dela os apresentadores/entrevistadores SEMPRE que " +
+      "mencionar algum.\n" +
+      "2. Como os próprios falantes se apresentam e se chamam uns aos outros " +
+      "na transcrição ('bem-vinda, Dra. Ana', 'obrigado, João').\n" +
+      "3. O nome do canal/programa no título — se o vídeo tem programa com nome " +
+      "(ex.: 'Breaking Points', 'Jornal Nacional'), identifique QUEM apresenta " +
+      "aquele programa.\n" +
       "OBRIGATÓRIO: os APRESENTADORES, ÂNCORAS E ENTREVISTADORES vêm PRIMEIRO na " +
       "lista e JAMAIS ficam de fora — quem conduz o programa e quem faz as " +
-      "perguntas é personagem tanto quanto quem responde. Se o vídeo tem " +
-      "programa/canal com nome (ex.: 'Breaking Points', 'Jornal Nacional'), " +
-      "identifique também QUEM apresenta aquele programa, além dos convidados.\n" +
+      "perguntas é personagem tanto quanto quem responde.\n" +
+      "Se a transcrição marca falantes genéricos ('Falante 1', 'Speaker A'), " +
+      "descubra QUEM é cada um pelo conteúdo (nome, vocativo, descrição) e " +
+      "apresente pelo NOME REAL — nunca pelo rótulo genérico.\n" +
+      "🚫 PROIBIDO listar como personagem: hashtags (#algumacoisa), @menções, " +
+      "links/URLs, nomes de programas (só quem APRESENTA o programa é " +
+      "personagem), temas/assuntos e rótulos como 'Falante 1' — isso é ruído, " +
+      "não é gente. A lista é de PESSOAS (ou personagens fictícios citados), " +
+      "com nome próprio de verdade.\n" +
       "Depois liste os entrevistados/convidados e, por fim, os apenas citados.\n" +
       "IMPORTANTE: os nomes podem ter sido transcritos errado pelo Whisper. " +
       "CORRIJA nomes próprios, cargos, partidos e instituições baseado no " +
