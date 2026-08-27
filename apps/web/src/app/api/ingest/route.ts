@@ -40,6 +40,12 @@ import {
   type ContaPontos,
   type TkSegment,
 } from "@/lib/video/transkriptor";
+import {
+  byokSubmit,
+  byokStatus,
+  ByokError,
+  type TxByokService,
+} from "@/lib/video/byok-services";
 
 const run = promisify(execFile);
 
@@ -1094,6 +1100,63 @@ async function handleTranscricaoStatus(payload: IngestBody) {
   );
 }
 
+// ─── Serviço de transcrição PRÓPRIO do usuário (BYOK — ordem Miguel 27/08) ─
+// Tem precedência sobre worker/casa: é a escolha mais deliberada do usuário
+// e, nos serviços de URL (Supadata/Transkriptor/TranscriptAPI), quem baixa
+// o vídeo do YouTube é o SERVIÇO, no IP DELES — bot-check fora da jogada.
+// A chave viaja no header `x-tx-key`, é usada na hora e nunca persistida.
+
+async function handleByokTranscription(
+  service: TxByokService,
+  key: string,
+  url: string,
+  videoId: string,
+  step: "meta" | "transcript" | "status",
+  payload: IngestBody,
+  meta: IngestMeta,
+): Promise<Response> {
+  try {
+    if (step === "status") {
+      const ref = payload.orderId?.trim();
+      if (!ref) {
+        return respond({ error: "Pedido de transcrição inválido." }, { status: 400 });
+      }
+      const st = await byokStatus(service, key, ref);
+      if ("pending" in st) return respond({ pending: true }, { status: 202 });
+      if ("failed" in st) {
+        return respond(
+          {
+            error:
+              "A transcrição falhou no serviço escolhido — nada foi cobrado no Moka. " +
+              "Tente de novo ou troque o serviço nas ⚙️ Configurações. 🙏",
+          },
+          { status: 422 },
+        );
+      }
+      return respond({ meta, transcriptSource: "whisper", segments: st.segments });
+    }
+    const result = await byokSubmit(service, key, url, videoId);
+    if ("segments" in result) {
+      return respond({ meta, transcriptSource: "whisper", segments: result.segments });
+    }
+    return respond({ meta, pending: true, orderId: result.orderId }, { status: 202 });
+  } catch (err) {
+    if (err instanceof ByokError) {
+      return respond({ error: err.message }, { status: err.status || 502 });
+    }
+    const message = err instanceof Error ? err.message : String(err);
+    console.error("[ingest] byok", service, "falhou:", message);
+    return respond(
+      {
+        error:
+          "O serviço de transcrição demorou ou falhou. Se o vídeo for longo, " +
+          "tente de novo — ou use o Supadata nas ⚙️ (ele costuma ser o mais rápido). 🙏",
+      },
+      { status: 502 },
+    );
+  }
+}
+
 // ─── Handler ────────────────────────────────────────────────────────────
 
 interface IngestBody {
@@ -1119,7 +1182,8 @@ interface IngestBody {
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, x-openai-key",
+  "Access-Control-Allow-Headers":
+    "Content-Type, x-openai-key, x-tx-service, x-tx-key",
   "Access-Control-Allow-Private-Network": "true",
 };
 
@@ -1172,6 +1236,25 @@ export async function POST(req: Request) {
         return respond({ error: SERVERLESS_NOTE_NOT_YOUTUBE }, { status: 501 });
       }
 
+      // Polling de um job do serviço PRÓPRIO do usuário (BYOK): o status
+      // tem que ir pro serviço DELE — intercepta ANTES do handler da casa,
+      // senão o orderId desconhecido morre no polling da casa. O transcript
+      // continua preferindo as legendas grátis (ver abaixo, pós-captions).
+      const txService = (req.headers.get("x-tx-service") ?? "").trim() as TxByokService;
+      const txKey = (req.headers.get("x-tx-key") ?? "").trim();
+      if (txService && txKey && step === "status") {
+        const meta = await youtubeMetaHttp(url, videoId);
+        return await handleByokTranscription(
+          txService,
+          txKey,
+          url,
+          videoId,
+          step,
+          payload,
+          meta,
+        );
+      }
+
       // Polling de uma transcrição da casa já submetida (step "status").
       if (step === "status") {
         return await handleTranscricaoStatus(payload);
@@ -1186,6 +1269,21 @@ export async function POST(req: Request) {
       const segments = await youtubeCaptionsHttp(videoId).catch(() => null);
       if (segments) {
         return respond({ meta, transcriptSource: "captions", segments });
+      }
+
+      // Sem legendas acessíveis — entra o serviço de transcrição PRÓPRIO
+      // do usuário (BYOK), ANTES do worker/casa: quem baixa o vídeo é o
+      // serviço escolhido, no IP DELES (bot-check fora da jogada).
+      if (txService && txKey) {
+        return await handleByokTranscription(
+          txService,
+          txKey,
+          url,
+          videoId,
+          step,
+          payload,
+          meta,
+        );
       }
 
       // Sem legendas acessíveis.

@@ -19,6 +19,8 @@ import {
   getEntryForVideo,
   getWhisperKey,
   getIngestServer,
+  getTxService,
+  getTxKey,
 } from "@/lib/config";
 import { getConta } from "@/lib/moka-conta";
 import {
@@ -84,9 +86,9 @@ type TxData = {
   insufficientFunds?: boolean;
 };
 
-/** Transcrições da casa em andamento — sobrevivem a sair da página. */
+/** Transcrições em andamento — sobrevivem a sair da página. */
 const PENDING_KEY = "mokavideo.pendingJobs";
-type PendingJob = { orderId: string; meta: VideoMeta; ts: number };
+type PendingJob = { orderId: string; meta: VideoMeta; ts: number; service?: string };
 
 function readPendingJobs(): Record<string, PendingJob> {
   if (typeof window === "undefined") return {};
@@ -106,10 +108,15 @@ function loadPendingJob(url: string): PendingJob | null {
   return j;
 }
 
-function savePendingJob(url: string, orderId: string, meta: VideoMeta): void {
+function savePendingJob(
+  url: string,
+  orderId: string,
+  meta: VideoMeta,
+  service?: string,
+): void {
   if (typeof window === "undefined") return;
   const all = readPendingJobs();
-  all[url.trim()] = { orderId, meta, ts: Date.now() };
+  all[url.trim()] = { orderId, meta, ts: Date.now(), ...(service ? { service } : {}) };
   window.localStorage.setItem(PENDING_KEY, JSON.stringify(all));
 }
 
@@ -137,11 +144,16 @@ export default function HomePage() {
   const [stage, setStage] = useState<Stage>({ kind: "idle" });
   const [configReady, setConfigReady] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // Serviço de transcrição próprio configurado? (🎨 ⚙️ → 🎬 Moka Vídeo)
+  const [txServiceActive, setTxServiceActive] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
     loadConfigCache().then(() => {
-      if (!cancelled) setConfigReady(hasConfig());
+      if (!cancelled) {
+        setConfigReady(hasConfig());
+        setTxServiceActive(Boolean(getTxService()));
+      }
     });
     listVideos()
       .then((list) => {
@@ -246,13 +258,29 @@ export default function HomePage() {
           ? { conta: { email: conta.email, senha: conta.senha } }
           : {};
 
+        // Serviço de transcrição PRÓPRIO (BYOK — ⚙️ → 🎬 Moka Vídeo): quem
+        // baixa o vídeo é o serviço escolhido, no IP dele. Vai como header
+        // em TODAS as chamadas (transcript e polling de status).
+        const txService = getTxService();
+        const txKey = txService ? ((await getTxKey()) ?? "") : "";
+        const txHeaders: Record<string, string> = {};
+        if (txService && txKey) {
+          txHeaders["x-tx-service"] = txService;
+          txHeaders["x-tx-key"] = txKey;
+        }
+
         // Ficou uma transcrição pendente DESTE link (usuário saiu e voltou)?
-        // Retoma o polling em vez de submeter de novo.
+        // Retoma o polling em vez de submeter de novo — mas SÓ se o job
+        // pertence ao serviço configurado agora (trocou de serviço = submete de novo).
         const pendingJob = loadPendingJob(link);
+        const pendingCompatible =
+          pendingJob &&
+          (!pendingJob.service || !txService || pendingJob.service === txService);
         let txData: TxData;
-        if (pendingJob) {
+        if (pendingCompatible && pendingJob) {
           txData = { pending: true, orderId: pendingJob.orderId, meta: pendingJob.meta };
         } else {
+          if (pendingJob) clearPendingJob(link);
           // Chave pra transcrever: usa a chave de vídeo (Whisper) SE existir,
           // senão usa a chave OpenAI ATIVA do cofre (mesma de texto).
           // (Antes só usava Whisper separada — agora OpenAI ativa também serve.)
@@ -266,15 +294,18 @@ export default function HomePage() {
           }
           const txRes = await postIngest(
             { url: link, step: "transcript", ...contaBody },
-            whisperKey ? { "x-openai-key": whisperKey } : {},
+            {
+              ...(whisperKey ? { "x-openai-key": whisperKey } : {}),
+              ...txHeaders,
+            },
           );
           txData = (await safeJson(txRes)) as TxData;
         }
 
-        // Transcrição da casa em andamento → polling até ficar pronta.
+        // Transcrição em andamento (casa ou serviço próprio) → polling.
         if (txData.pending && txData.orderId) {
           const orderId = txData.orderId;
-          savePendingJob(link, orderId, txData.meta ?? metaData.meta);
+          savePendingJob(link, orderId, txData.meta ?? metaData.meta, txService || undefined);
           const t0 = Date.now();
           for (;;) {
             setStage({ kind: "listening", elapsed: Math.floor((Date.now() - t0) / 1000) });
@@ -283,16 +314,22 @@ export default function HomePage() {
             if (elapsed > 45 * 60) {
               clearPendingJob(link);
               throw new Error(
-                "A transcrição está demorando mais que o normal. Tente de novo " +
-                  "mais tarde — seus pontos só são descontados quando o texto aparece.",
+                txService
+                  ? "Seu serviço de transcrição está demorando mais que o normal. " +
+                      "Tente de novo mais tarde — o Moka não cobra nada por isso."
+                  : "A transcrição está demorando mais que o normal. Tente de novo " +
+                      "mais tarde — seus pontos só são descontados quando o texto aparece.",
               );
             }
-            const stRes = await postIngest({
-              url: link,
-              step: "status",
-              orderId,
-              ...contaBody,
-            });
+            const stRes = await postIngest(
+              {
+                url: link,
+                step: "status",
+                orderId,
+                ...contaBody,
+              },
+              txHeaders,
+            );
             const stData = (await safeJson(stRes)) as TxData;
             if (stData.pending) continue;
             txData = stData;
@@ -309,6 +346,22 @@ export default function HomePage() {
               message: txData.error ?? "Seus pontos não cobrem esta transcrição.",
               linkHref: "/experimente",
               linkLabel: "☕ Comprar pontos",
+            });
+            return;
+          }
+          // Recado da queda (ordem do Miguel 27/08): falhou e NÃO tem serviço
+          // próprio configurado? Aponta pras ⚙️ — lá a pessoa cola a chave de
+          // um serviço de transcrição (tem opção grátis) e o vídeo passa a
+          // ser baixado pelo IP do serviço, imune ao bloqueio.
+          if (!txService) {
+            setStage({
+              kind: "error",
+              message:
+                (txData.error ?? "Não consegui transcrever o vídeo.") +
+                " " +
+                t("video_tx_hint"),
+              linkHref: "/configuracoes",
+              linkLabel: t("video_tx_link"),
             });
             return;
           }
@@ -438,7 +491,9 @@ export default function HomePage() {
                     {stage.elapsed >= 60
                       ? `já faz ${Math.floor(stage.elapsed / 60)} min — vídeo longo demora mais. `
                       : ""}
-                    Seus pontos só são descontados quando o texto fica pronto.
+                    {txServiceActive
+                      ? t("video_listening_own")
+                      : "Seus pontos só são descontados quando o texto fica pronto."}
                   </span>
                 </>
               )}

@@ -54,19 +54,22 @@ export function motorEnabled(): boolean {
   return Boolean(process.env.MOKA_MOTOR_KEY?.trim());
 }
 
-function tkHeaders(): Record<string, string> {
+function tkHeaders(byokKey?: string): Record<string, string> {
+  // BYOK (27/08, ordem do Miguel): quando o usuário traz a PRÓPRIA chave
+  // do Transkriptor, ela tem prioridade sobre a chave da casa (env).
+  const key = byokKey?.trim() || process.env.TRANSKRIPTOR_API_KEY?.trim();
   return {
-    Authorization: `Bearer ${process.env.TRANSKRIPTOR_API_KEY?.trim()}`,
+    Authorization: `Bearer ${key}`,
     "Content-Type": "application/json",
     Accept: "application/json",
   };
 }
 
 /** Submete a URL pra transcrição. Retorna o order_id (ou "" se falhou). */
-export async function tkSubmit(url: string): Promise<string> {
+export async function tkSubmit(url: string, byokKey?: string): Promise<string> {
   const res = await fetch(`${TK_BASE}/transcription/url`, {
     method: "POST",
-    headers: tkHeaders(),
+    headers: tkHeaders(byokKey),
     // Sem "language": o serviço detecta o idioma sozinho (objetivo do Moka:
     // qualquer língua do mundo). service Standard = melhor custo.
     body: JSON.stringify({ url, service: "Standard" }),
@@ -86,10 +89,11 @@ interface TkFileItem {
 /** Status rápido de UM job (endpoint unitário, ~2s — a lista completa é lenta). */
 export async function tkJobStatus(
   orderId: string,
+  byokKey?: string,
 ): Promise<"processing" | "completed" | "failed" | "unknown"> {
   try {
     const res = await fetch(`${TK_BASE}/files/${orderId}`, {
-      headers: tkHeaders(),
+      headers: tkHeaders(byokKey),
       signal: AbortSignal.timeout(30_000),
     });
     if (!res.ok) return "unknown";
@@ -111,9 +115,9 @@ interface TkContentSeg {
 }
 
 /** Busca os segmentos prontos, mapeados pro formato do Moka. */
-export async function tkSegments(orderId: string): Promise<TkSegment[]> {
+export async function tkSegments(orderId: string, byokKey?: string): Promise<TkSegment[]> {
   const res = await fetch(`${TK_BASE}/files/${orderId}/content`, {
-    headers: tkHeaders(),
+    headers: tkHeaders(byokKey),
     signal: AbortSignal.timeout(60_000),
   });
   if (!res.ok) return [];

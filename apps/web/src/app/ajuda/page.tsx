@@ -235,6 +235,51 @@ export default function Ajuda() {
           <p style={{ lineHeight: 1.6, marginTop: 8 }}>{t("byok_video_note")}</p>
         </section>
 
+        {/* 🎬 Serviço de transcrição próprio (ordem do Miguel 27/08: "bota
+            isso também no help"). Corpo em PT (padrão da página) — o passo
+            a passo de como pegar a chave de cada serviço. */}
+        <section className="help-robo" id="video-transcricao" style={{ marginBottom: 18 }}>
+          <h2>🎬 {t("tx_title")}</h2>
+          <p style={{ lineHeight: 1.6 }}>{t("tx_intro")}</p>
+          <p style={{ lineHeight: 1.6, marginTop: 8 }}>
+            <b>Como funciona:</b> nas <Link href="/configuracoes">⚙️ Configurações</Link>,
+            seção <b>🎬 Moka Vídeo</b>, você escolhe o serviço e cola a chave de API dele.
+            A chave fica guardada só no seu navegador. Quando um vídeo não tem legenda,
+            o Moka manda o link pro serviço — <b>quem baixa o vídeo é o serviço, com o
+            IP dele</b> — e devolve o texto pronto, com timestamps.
+          </p>
+          <p style={{ lineHeight: 1.6, marginTop: 8 }}><b>Como eu pego minha chave?</b></p>
+          <ul style={{ lineHeight: 1.7, marginTop: 4, paddingLeft: 20 }}>
+            <li>
+              <b>Supadata</b> (recomendado — 100 transcrições/mês de graça, sem cartão):
+              crie conta em{" "}
+              <a href="https://supadata.ai" target="_blank" rel="noreferrer">supadata.ai</a>,
+              abra o painel (dashboard) e copie a <b>API key</b>. Pronto — cola nas ⚙️.
+              Vídeo com legenda gasta 1 crédito; sem legenda, o Whisper deles entra
+              automaticamente (2 créditos/minuto).
+            </li>
+            <li>
+              <b>Transkriptor</b> (para quem já tem assinatura): entre em{" "}
+              <a href="https://transkriptor.com" target="_blank" rel="noreferrer">transkriptor.com</a>,
+              abra a área de API/Integrações da sua conta e gere a chave de desenvolvedor.
+              Transcreve qualquer áudio, com identificação de falantes.
+            </li>
+            <li>
+              <b>TranscriptAPI</b> (US$ 5/mês = 1.000 vídeos): crie conta em{" "}
+              <a href="https://transcriptapi.com" target="_blank" rel="noreferrer">transcriptapi.com</a>{" "}
+              e copie a chave do painel. Lê a legenda do vídeo — rápido e barato,
+              mas o vídeo precisa TER legenda.
+            </li>
+            <li>
+              <b>AssemblyAI</b> (pague só pelo que usar, ~US$ 0,37/hora): crie conta em{" "}
+              <a href="https://www.assemblyai.com/dashboard" target="_blank" rel="noreferrer">assemblyai.com</a>{" "}
+              e copie a API key do dashboard. Transcrição de alta qualidade com
+              identificação de falantes; o Moka envia o áudio pra sua conta.
+            </li>
+          </ul>
+          <p style={{ lineHeight: 1.6, marginTop: 8 }}>🔐 {t("tx_note")}</p>
+        </section>
+
         {/* 🏆 Mural das IAs — página PRÓPRIA agora (pedido do Miguel, 24/08:
             não misturar com telemetria nem viver como âncora da ajuda). */}
         <section className="help-robo" style={{ marginBottom: 18 }}>

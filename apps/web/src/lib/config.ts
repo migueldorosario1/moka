@@ -688,6 +688,62 @@ export function setIngestServer(url: string): void {
   else window.localStorage.removeItem(INGEST_SERVER_KEY);
 }
 
+// ─── Serviço de transcrição de vídeo BYOK (ordem do Miguel 27/08) ────────
+// Quando o vídeo não tem legenda (ou o YouTube bloqueia o IP do site), o
+// usuário pode plugar o PRÓPRIO serviço de transcrição: quem baixa o vídeo
+// é o SERVIÇO escolhido, no IP dele — mais estável e sem gastar pontos.
+// "" = Automático (grátis da casa: legendas do vídeo).
+
+export type TxServiceChoice = "" | "supadata" | "transkriptor" | "transcriptapi" | "assemblyai";
+
+/** Onde criar conta / pegar a chave de cada serviço (botão "como pego?"). */
+export const TX_SERVICE_LINKS: Record<Exclude<TxServiceChoice, "">, string> = {
+  supadata: "https://supadata.ai",
+  transkriptor: "https://transkriptor.com",
+  transcriptapi: "https://transcriptapi.com",
+  assemblyai: "https://www.assemblyai.com/dashboard",
+};
+
+const TX_SERVICE_KEY = "mokavideo.txService";
+const TX_KEY = "mokavideo.txKey";
+
+/** Serviço escolhido ("" = automático/grátis). */
+export function getTxService(): TxServiceChoice {
+  if (typeof window === "undefined") return "";
+  return (window.localStorage.getItem(TX_SERVICE_KEY) ?? "") as TxServiceChoice;
+}
+
+export function setTxService(service: TxServiceChoice): void {
+  if (typeof window === "undefined") return;
+  if (service) window.localStorage.setItem(TX_SERVICE_KEY, service);
+  else window.localStorage.removeItem(TX_SERVICE_KEY);
+}
+
+/** Salva a chave do serviço escolhido (criptografada, só neste navegador). */
+export async function setTxKey(key: string): Promise<void> {
+  if (typeof window === "undefined") return;
+  if (!key) {
+    window.localStorage.removeItem(TX_KEY);
+    return;
+  }
+  window.localStorage.setItem(TX_KEY, await encrypt(key));
+}
+
+/** Lê a chave do serviço (descriptografada). Null se não configurada. */
+export async function getTxKey(): Promise<string | null> {
+  if (typeof window === "undefined") return null;
+  const raw = window.localStorage.getItem(TX_KEY);
+  if (!raw) return null;
+  const key = await decrypt(raw);
+  return key || null;
+}
+
+/** Versão mascarada da chave do serviço pra UI. */
+export async function getTxKeyMasked(): Promise<string | null> {
+  const key = await getTxKey();
+  return key ? maskKey(key) : null;
+}
+
 // ─── Modelo da IA da casa (V4, pedido do Miguel 2026-08-01) ─────────────
 // A IA da casa roda no servidor (pontos) com default deepseek-v4-flash —
 // o mais econômico. O usuário pode trocar nas ⚙️ (modelos mais fortes

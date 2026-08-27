@@ -12,6 +12,8 @@ import {
   getTtsMode, setTtsMode,
   setUseForText, setUseForVoice, setUseForVideo,
   TTS_VOICES_OPENAI, TTS_VOICES_GROK,
+  getTxService, setTxService, setTxKey, getTxKeyMasked, TX_SERVICE_LINKS,
+  type TxServiceChoice,
 } from "@/lib/config";
 import { testConnection, listModels } from "@/lib/ai-client";
 import { copyDiagnostics, hasRecentError } from "@/lib/diagnostics";
@@ -55,6 +57,11 @@ export function SettingsForm({
   const [whisperMasked, setWhisperMasked] = useState<string | null>(null);
   const [videoMsg, setVideoMsg] = useState<string | null>(null);
   const [testingVideo, setTestingVideo] = useState(false);
+  // ── 🎬 Serviço de transcrição próprio (BYOK — ordem do Miguel 27/08) ──
+  const [txService, setTxServiceState] = useState<TxServiceChoice>("");
+  const [txKeyDraft, setTxKeyDraft] = useState("");
+  const [txKeyMasked, setTxKeyMasked] = useState<string | null>(null);
+  const [txSaved, setTxSaved] = useState(false);
   // Feedback do botão "copiar diagnóstico" (13/08).
   const [diagMsg, setDiagMsg] = useState<string | null>(null);
 
@@ -162,6 +169,8 @@ const TTS_TEST_PHRASES: Record<string, string> = {
   // Assim, se o usuário fechar o modal sem salvar, não perde o que digitou.
   useEffect(() => {
     getWhisperKeyMasked().then(setWhisperMasked).catch(() => {});
+    setTxServiceState(getTxService());
+    getTxKeyMasked().then(setTxKeyMasked).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -1245,6 +1254,89 @@ const TTS_TEST_PHRASES: Record<string, string> = {
           )}
         </div>
         <p className="hint" style={{ marginTop: "4px" }}>{t("set_content_lang")}</p>
+      </div>
+
+      {/* ═══ 🎬 MOKA VÍDEO — serviço de transcrição próprio (BYOK) ═══
+          (ordem do Miguel 27/08: "bota uma explicação bonitinha, bota lá
+          nas configurações, bota o ícone de vídeo/cinema, bota o link de
+          como eu pego a API".) Legendas continuam grátis; o serviço próprio
+          entra quando o vídeo não tem legenda ou o YouTube bloqueia o IP. */}
+      <div className="v3-simple" style={{ background: "var(--surface)" }}>
+        <h3 className="v3-simple-title" style={{ fontSize: 17 }}>🎬 {t("tx_title")}</h3>
+        <p className="v3-simple-sub">{t("tx_intro")}</p>
+
+        <div className="field" style={{ marginTop: 10 }}>
+          <label htmlFor="tx-service">🎥 {t("tx_service_label")}</label>
+          <select
+            id="tx-service"
+            value={txService}
+            onChange={(e) => {
+              const v = e.target.value as TxServiceChoice;
+              setTxServiceState(v);
+              setTxService(v);
+              setTxSaved(false);
+            }}
+          >
+            <option value="">{t("tx_service_auto")}</option>
+            <option value="supadata">🥇 {t("tx_service_supadata")}</option>
+            <option value="transkriptor">📝 {t("tx_service_transkriptor")}</option>
+            <option value="transcriptapi">📄 {t("tx_service_transcriptapi")}</option>
+            <option value="assemblyai">🎙 {t("tx_service_assemblyai")}</option>
+          </select>
+          <p className="hint" style={{ marginTop: 6 }}>{t("tx_service_hint")}</p>
+        </div>
+
+        {txService && (
+          <>
+            <div className="field" style={{ marginTop: 8 }}>
+              <label htmlFor="tx-key">🔑 {t("tx_key_label")}</label>
+              <input
+                id="tx-key"
+                type="text"
+                autoComplete="off"
+                spellCheck={false}
+                value={txKeyDraft}
+                placeholder={t("tx_key_ph")}
+                onChange={(e) => { setTxKeyDraft(e.target.value); setTxSaved(false); }}
+              />
+              {!txKeyDraft && txKeyMasked && (
+                <p className="hint" style={{ marginTop: 4 }}>🔑 {txKeyMasked}</p>
+              )}
+            </div>
+
+            {/* Link "como eu pego minha chave" — abre o site do serviço. */}
+            <a
+              href={TX_SERVICE_LINKS[txService]}
+              target="_blank"
+              rel="noreferrer"
+              className="help-link-banner"
+              style={{ marginTop: 4, marginBottom: 6 }}
+            >
+              🔗 {t("tx_get_key")} →
+            </a>
+
+            <div>
+              <button
+                type="button"
+                className="key-refresh-btn"
+                onClick={async () => {
+                  const clean = txKeyDraft.trim();
+                  if (!clean) return;
+                  await setTxKey(clean);
+                  setTxKeyDraft("");
+                  setTxKeyMasked(await getTxKeyMasked());
+                  setTxSaved(true);
+                }}
+              >
+                💾 {t("tx_save")}
+              </button>{" "}
+              {txSaved && (
+                <span style={{ fontSize: 13, color: "var(--ok, #16a34a)" }}>{t("tx_saved")}</span>
+              )}
+            </div>
+            <p className="v3-simple-note" style={{ marginTop: 8 }}>🔐 {t("tx_note")}</p>
+          </>
+        )}
       </div>
 
       {/* 🎬 VÍDEO & TRANSCRIÇÃO REMOVIDO (pedido do Miguel 10/08): agora o
