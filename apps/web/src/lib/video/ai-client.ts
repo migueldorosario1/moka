@@ -178,7 +178,7 @@ function chunkText(text: string, size: number): string[] {
 async function runStream(
   task: string,
   prompt: string,
-  opts: { context?: string; maxTokens?: number; temperature?: number },
+  opts: { context?: string; maxTokens?: number; temperature?: number; shouldCancel?: () => boolean },
   onChunk: (accumulated: string) => void,
 ): Promise<string> {
   const { p, config, providerName } = await provider();
@@ -212,6 +212,7 @@ async function runStream(
       })) {
         acc += chunk;
         onChunk(acc);
+        if (opts.shouldCancel?.()) break; // cancelado pelo usuário (Miguel, 27/08)
         // Trava em tempo real: estoura o cap → corta o stream, preserva o texto.
         if (cap > 0 && estIn + estimateTokens(acc) > cap) {
           capCut = true;
@@ -272,6 +273,7 @@ export async function quickExplain(
   meta: VideoMeta,
   segments: TranscriptSegment[],
   onChunk: (text: string) => void,
+  opts?: { shouldCancel?: () => boolean },
 ): Promise<string> {
   const transcript = fullOrSampledTranscript(segments);
   return runStream(
@@ -294,6 +296,7 @@ export async function summarize(
   segments: TranscriptSegment[],
   minutes: number,
   onChunk: (text: string) => void,
+  opts?: { shouldCancel?: () => boolean },
 ): Promise<string> {
   const targetWords = Math.round(minutes * WORDS_PER_MIN);
   const transcript = transcriptText(segments);
@@ -402,6 +405,7 @@ export async function characters(
   meta: VideoMeta,
   segments: TranscriptSegment[],
   onChunk: (text: string) => void,
+  opts?: { shouldCancel?: () => boolean },
 ): Promise<string> {
   const transcript = fullOrSampledTranscript(segments);
   return runStream(
@@ -429,6 +433,7 @@ export async function politicalContext(
   meta: VideoMeta,
   segments: TranscriptSegment[],
   onChunk: (text: string) => void,
+  opts?: { shouldCancel?: () => boolean },
 ): Promise<string> {
   const transcript = fullOrSampledTranscript(segments);
   return runStream(
@@ -452,6 +457,7 @@ export async function critique(
   meta: VideoMeta,
   segments: TranscriptSegment[],
   onChunk: (text: string) => void,
+  opts?: { shouldCancel?: () => boolean },
 ): Promise<string> {
   const transcript = fullOrSampledTranscript(segments);
   return runStream(

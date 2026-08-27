@@ -93,6 +93,11 @@ export default function VideoPage() {
   const [transcriptEditing, setTranscriptEditing] = useState(false);
   const [minutes, setMinutes] = useState(3);
   const [summaryPickerOpen, setSummaryPickerOpen] = useState(false);
+  // Progresso + LLM + cancelar (Miguel, 27/08 — modernização igual ao Reader)
+  const [analysisProgress, setAnalysisProgress] = useState(0);
+  const [analysisLLM, setAnalysisLLM] = useState<string | null>(null);
+  const cancelledRef = useRef(false);
+  const progressTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const [configReady, setConfigReady] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [askOpen, setAskOpen] = useState(false);
@@ -175,24 +180,52 @@ export default function VideoPage() {
 
       setError(null);
       setPanel({ kind, text: "", streaming: true });
-      const onChunk = (text: string) =>
+      setAnalysisProgress(0);
+      cancelledRef.current = false;
+      // LLM em uso (recado — Miguel, 27/08)
+      void import("@/lib/config").then((mod) => {
+        const e = mod.getEntryForText();
+        if (e) setAnalysisLLM(`${(e as { providerName?: string }).providerName || e.providerId}${e.model ? ` · ${e.model}` : ""}`);
+      }).catch(() => {});
+      // Barra da espera por tempo (até 35%, igual Reader)
+      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+      progressTimerRef.current = setInterval(() => {
+        setAnalysisProgress((prev) => (prev >= 35 ? prev : prev + Math.max(0.4, (35 - prev) * 0.06)));
+      }, 1200);
+      // Estimativa baseada no tamanho da transcrição
+      const estLen = Math.max(500, (video.segments?.length ?? 10) * 150);
+      const onChunk = (text: string) => {
         setPanel((p) => (p && p.kind === kind ? { ...p, text } : p));
+        if (progressTimerRef.current) {
+          clearInterval(progressTimerRef.current);
+          progressTimerRef.current = null;
+        }
+        setAnalysisProgress((prev) =>
+          Math.max(prev, Math.min(95, Math.round((text.length / estLen) * 100))),
+        );
+      };
 
       try {
         let final = "";
-        if (kind === "quick") final = await quickExplain(video.meta, video.segments, onChunk);
-        else if (kind === "characters") final = await characters(video.meta, video.segments, onChunk);
-        else if (kind === "politics") final = await politicalContext(video.meta, video.segments, onChunk);
-        else if (kind === "critique") final = await critique(video.meta, video.segments, onChunk);
+        if (kind === "quick") final = await quickExplain(video.meta, video.segments, onChunk, { shouldCancel: () => cancelledRef.current });
+        else if (kind === "characters") final = await characters(video.meta, video.segments, onChunk, { shouldCancel: () => cancelledRef.current });
+        else if (kind === "politics") final = await politicalContext(video.meta, video.segments, onChunk, { shouldCancel: () => cancelledRef.current });
+        else if (kind === "critique") final = await critique(video.meta, video.segments, onChunk, { shouldCancel: () => cancelledRef.current });
         else if (kind.startsWith("summary-")) {
           const m = Number(kind.split("-")[1]) || minutes;
-          final = await summarize(video.meta, video.segments, m, onChunk);
+          final = await summarize(video.meta, video.segments, m, onChunk, { shouldCancel: () => cancelledRef.current });
         }
+        setAnalysisProgress(100);
         setPanel({ kind, text: final, streaming: false });
         await cacheAnalysis(kind, final);
       } catch (err) {
         setPanel(null);
         setError(err instanceof Error ? err.message : String(err));
+      } finally {
+        if (progressTimerRef.current) {
+          clearInterval(progressTimerRef.current);
+          progressTimerRef.current = null;
+        }
       }
     },
     [video, minutes, cacheAnalysis],
@@ -508,6 +541,26 @@ export default function VideoPage() {
                 </div>
               )}
               {panel.streaming && panel.text && <span className="cursor">▌</span>}
+              {panel.streaming && (
+                <div className="video-analysis-overlay-info">
+                  {analysisLLM && <span className="page-ai-model">🤖 {analysisLLM}</span>}
+                  <div className="page-ai-progress" role="progressbar" aria-valuenow={Math.round(analysisProgress)} aria-valuemin={0} aria-valuemax={100}>
+                    <div className="page-ai-progress-fill" style={{ width: `${Math.round(analysisProgress)}%` }} />
+                    <span className="page-ai-progress-label">{Math.round(analysisProgress)}%</span>
+                  </div>
+                  <button
+                    type="button"
+                    className="page-ai-cancel-btn"
+                    onClick={() => {
+                      if (confirm("Cancelar agora? Você NÃO gasta mais nada — a despesa para imediatamente.")) {
+                        cancelledRef.current = true;
+                      }
+                    }}
+                  >
+                    ⏹ Cancelar
+                  </button>
+                </div>
+              )}
             </article>
           )}
 
