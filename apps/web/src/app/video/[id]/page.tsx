@@ -482,12 +482,50 @@ export default function VideoPage() {
                     setTranscriptView("ai");
                     if (!transcriptEdited && !transcriptEditing && video?.segments?.length) {
                       setTranscriptEditing(true);
-                      correctTranscript(video.meta, video.segments, (text) => {
-                        setTranscriptEdited(text);
-                      }).then(() => {
+                      // Modernização 27/08: barra %, LLM em uso e ⏹ cancelar —
+                      // igual às análises (o caminho antigo travava mudo).
+                      setError(null);
+                      setAnalysisProgress(0);
+                      cancelledRef.current = false;
+                      void import("@/lib/config").then((mod) => {
+                        const e = mod.getEntryForText();
+                        if (e) setAnalysisLLM(`${(e as { providerName?: string }).providerName || e.providerId}${e.model ? ` · ${e.model}` : ""}`);
+                      }).catch(() => {});
+                      if (progressTimerRef.current) clearInterval(progressTimerRef.current);
+                      progressTimerRef.current = setInterval(() => {
+                        setAnalysisProgress((prev) => (prev >= 35 ? prev : prev + Math.max(0.4, (35 - prev) * 0.06)));
+                      }, 1200);
+                      // A correção devolve ~o tamanho da transcrição original.
+                      const estLen = Math.max(500, video.segments.reduce((n, s) => n + s.text.length, 0));
+                      correctTranscript(
+                        video.meta,
+                        video.segments,
+                        (text) => {
+                          setTranscriptEdited(text);
+                          if (progressTimerRef.current) {
+                            clearInterval(progressTimerRef.current);
+                            progressTimerRef.current = null;
+                          }
+                          setAnalysisProgress((prev) =>
+                            Math.max(prev, Math.min(95, Math.round((text.length / estLen) * 100))),
+                          );
+                        },
+                        { shouldCancel: () => cancelledRef.current },
+                      ).then((final) => {
                         setTranscriptEditing(false);
-                      }).catch(() => {
+                        if (final.trim()) {
+                          setTranscriptEdited(final);
+                          setAnalysisProgress(100);
+                        }
+                      }).catch((err) => {
                         setTranscriptEditing(false);
+                        setAnalysisProgress(0);
+                        setError(err instanceof Error ? err.message : String(err));
+                      }).finally(() => {
+                        if (progressTimerRef.current) {
+                          clearInterval(progressTimerRef.current);
+                          progressTimerRef.current = null;
+                        }
                       });
                     }
                   }}
@@ -515,14 +553,42 @@ export default function VideoPage() {
                   })()}
                 </div>
               ) : (
-                /* Modo "ai" (corrigida com IA) */
+                /* Modo "ai" (corrigida com IA) — barra %, LLM e ⏹ cancelar (27/08) */
                 <div className="transcript-edited">
                   {transcriptEdited ? (
-                    <Markdown text={transcriptEdited} />
-                  ) : (
+                    <>
+                      <Markdown text={transcriptEdited} />
+                      {transcriptEditing && <span className="cursor">▌</span>}
+                    </>
+                  ) : transcriptEditing ? (
                     <div className="panel-thinking">
                       <div className="spinner" />
                       <p>🤖 A IA está corrigindo nomes e formatando a transcrição…</p>
+                    </div>
+                  ) : (
+                    <p style={{ opacity: 0.75 }}>
+                      ⚠️ A correção foi cancelada antes de gerar texto — clique de
+                      novo em “🤖 Corrigida com IA” para tentar outra vez.
+                    </p>
+                  )}
+                  {transcriptEditing && (
+                    <div className="video-analysis-overlay-info">
+                      {analysisLLM && <span className="page-ai-model">🤖 {analysisLLM}</span>}
+                      <div className="page-ai-progress" role="progressbar" aria-valuenow={Math.round(analysisProgress)} aria-valuemin={0} aria-valuemax={100}>
+                        <div className="page-ai-progress-fill" style={{ width: `${Math.round(analysisProgress)}%` }} />
+                        <span className="page-ai-progress-label">{Math.round(analysisProgress)}%</span>
+                      </div>
+                      <button
+                        type="button"
+                        className="page-ai-cancel-btn"
+                        onClick={() => {
+                          if (confirm("Cancelar agora? Você NÃO gasta mais nada — a despesa para imediatamente.")) {
+                            cancelledRef.current = true;
+                          }
+                        }}
+                      >
+                        ⏹ Cancelar
+                      </button>
                     </div>
                   )}
                 </div>

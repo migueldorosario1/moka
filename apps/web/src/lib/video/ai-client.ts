@@ -481,17 +481,10 @@ export async function correctTranscript(
   meta: VideoMeta,
   segments: TranscriptSegment[],
   onChunk: (text: string) => void,
+  opts?: { shouldCancel?: () => boolean },
 ): Promise<string> {
   const transcript = fullOrSampledTranscript(segments);
 
-  const { p, config, providerName } = await provider();
-  const identity: VideoIdentity = {
-    providerId: config.providerId,
-    providerName,
-    model: config.model ?? "",
-  };
-  // Usa COMPLETE (sem streaming) com texto DENTRO do prompt —
-  // evita o bug de loop/repetição que acontecia com context+stream.
   const prompt =
     `${videoHeader(meta)}\n\n` +
     "Você é um editor profissional. Corrija a transcrição abaixo (gerada por IA de " +
@@ -502,41 +495,17 @@ export async function correctTranscript(
     "3. DIVIDA em parágrafos curtos (2-3 frases cada).\n" +
     "4. MANTENHA o conteúdo fiel — não adicione nem remova informações.\n" +
     "5. NÃO inclua timestamps.\n\n" +
-    "Devolva APENAS o texto corrigido.\n\n" +
-    `TRANSCRIÇÃO:\n${transcript}`;
+    "Devolva APENAS o texto corrigido.";
 
-  // Trava de consumo: transcrição grande pode estourar o cap já na entrada.
-  const capMsg = capBlockedMessage(prompt);
-  if (capMsg) throw new Error(capMsg);
-
-  try {
-    let usage: UsageInfo | undefined;
-    const result = await p.complete(prompt, {
-      systemPrompt: systemPrompt(),
-      maxTokens: 8000,
-      temperature: 0.3,
-      onUsage: (u) => {
-        usage = u;
-      },
-    });
-    onChunk(result.text);
-    recordVideo({
-      task: "video-correct",
-      identity,
-      usage,
-      promptText: prompt,
-      completionText: result.text,
-    });
-    return result.text;
-  } catch (err) {
-    recordVideo({
-      task: "video-correct",
-      identity,
-      promptText: prompt,
-      status: "error",
-    });
-    throw err;
-  }
+  // Streaming como as demais análises (Miguel, 27/08): o caminho antigo
+  // p.complete sem stream travava sem barra e morria no timeout do proxy
+  // em transcrições grandes — texto corrigido é longo por natureza.
+  return runStream(
+    "video-correct",
+    prompt,
+    { context: transcript, maxTokens: 8000, temperature: 0.3, shouldCancel: opts?.shouldCancel },
+    onChunk,
+  );
 }
 
 // ─── ❓ Perguntar sobre o vídeo (Q&A com busca no contexto) ─────────────
