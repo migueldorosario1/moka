@@ -46,7 +46,7 @@ const TOOLS: Array<{
   { kind: "quick", icon: "⚡", label: "Explicação", title: "Explicação rápida — o que foi o vídeo, em poucas linhas" },
   { kind: "summary", icon: "📖", label: "Resumo", title: "Resumo regulável — de 1 a 10 minutos de leitura" },
   { kind: "characters", icon: "👥", label: "Personagens", title: "Personagens — quem fala e quem aparece" },
-  { kind: "politics", icon: "🏛️", label: "Política", title: "Contexto político — onde isso se encaixa" },
+  { kind: "politics", icon: "🏛️", label: "Contexto", title: "Contexto — datas e conjuntura do tema discutido" },
   { kind: "critique", icon: "🖊️", label: "Crítica", title: "Crítica — teses, argumentos, vieses e veredito" },
   { kind: "transcript", icon: "📜", label: "Transcrição", title: "Transcrição completa" },
   { kind: "ask", icon: "❓", label: "Perguntar", title: "Pergunte qualquer coisa sobre o vídeo — a IA pesquisa na transcrição" },

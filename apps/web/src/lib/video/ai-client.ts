@@ -71,9 +71,18 @@ const MAPREDUCE_THRESHOLD = 45000; // chars
 const CHUNK_SIZE = 12000; // chars por pedaço no map
 
 function videoHeader(meta: VideoMeta): string {
+  // Data de publicação (quando a ficha oficial trouxer) — âncora temporal
+  // pro Contexto calcular datas relativas ditas nas falas (Miguel, 27/08).
+  let dataPub = "";
+  if (meta.uploadDate) {
+    const d = new Date(meta.uploadDate);
+    if (!Number.isNaN(d.getTime())) {
+      dataPub = ` · publicado em ${d.toLocaleDateString("pt-BR")}`;
+    }
+  }
   return (
     `Vídeo: "${meta.title}" — canal/perfil: ${meta.channel} ` +
-    `(${meta.platform}, ${formatTime(meta.durationSec)})` +
+    `(${meta.platform}, ${formatTime(meta.durationSec)}${dataPub})` +
     (meta.description ? `\nDescrição: ${meta.description.slice(0, 600)}` : "")
   );
 }
@@ -411,13 +420,20 @@ export async function characters(
   return runStream(
     "video-characters",
     `${videoHeader(meta)}\n\n` +
-      "Identifique os PERSONAGENS do vídeo — quem fala e quem é citado com " +
-      "relevância. Para cada um:\n" +
+      "Identifique os PERSONAGENS do vídeo — TODOS os que falam E os citados " +
+      "com relevância. Para cada um:\n" +
       "- **Nome CORRETO** (corrija erros de transcrição — se ouviu 'Elmano' " +
       "mas o correto é 'Elmano de Freitas', use o nome correto; se é político, " +
       "confirme cargo e partido)\n" +
-      "- Papel no vídeo (apresentador, entrevistado, citado…)\n" +
+      "- Papel no vídeo, SEMPRE específico: apresentador, âncora, co-apresentador, " +
+      "repórter, entrevistador, entrevistado, convidado, especialista, citado…\n" +
       "- O que diz ou o que dizem sobre ele, em 1-2 linhas\n" +
+      "OBRIGATÓRIO: os APRESENTADORES, ÂNCORAS E ENTREVISTADORES vêm PRIMEIRO na " +
+      "lista e JAMAIS ficam de fora — quem conduz o programa e quem faz as " +
+      "perguntas é personagem tanto quanto quem responde. Se o vídeo tem " +
+      "programa/canal com nome (ex.: 'Breaking Points', 'Jornal Nacional'), " +
+      "identifique também QUEM apresenta aquele programa, além dos convidados.\n" +
+      "Depois liste os entrevistados/convidados e, por fim, os apenas citados.\n" +
       "IMPORTANTE: os nomes podem ter sido transcritos errado pelo Whisper. " +
       "CORRIJA nomes próprios, cargos, partidos e instituições baseado no " +
       "contexto. Se não tiver certeza do nome, indique.\n" +
@@ -439,14 +455,23 @@ export async function politicalContext(
   return runStream(
     "video-political",
     `${videoHeader(meta)}\n\n` +
-      "Situe este vídeo no CONTEXTO POLÍTICO:\n" +
-      "1. **Do que se trata** — o fato/tema político central\n" +
-      "2. **Momento** — em que conjuntura (país, governo, disputa) isso se insere\n" +
-      "3. **Atores e posições** — quem ganha, quem perde, que lado cada um defende\n" +
-      "4. **Por que importa** — consequências práticas pro cidadão\n" +
-      "Se o vídeo não for político, diga-o com franqueza e situe o contexto " +
-      "(cultural, econômico, esportivo…) que couber.",
-    { context: transcript, maxTokens: 1600 },
+      "Situe este vídeo no CONTEXTO GERAL do tema discutido:\n" +
+      "1. **Do que se trata** — o fato/tema central das falas, em 2-3 linhas claras\n" +
+      "2. **As datas** — TODA a linha do tempo: quando o vídeo foi publicado, e " +
+      "cada referência temporal dita nas falas ('nesta semana', 'no mês passado', " +
+      "'em outubro') traduzida em data CONCRETA, calculada a partir da data de " +
+      "publicação. Datas sempre por extenso com mês e ano (ex.: '15 de agosto de " +
+      "2026') — nunca 'recentemente' ou 'há pouco tempo' soltos.\n" +
+      "3. **A conjuntura** — o cenário mais amplo em que o tema se encaixa " +
+      "(político, econômico, cultural, esportivo…): os antecedentes que um " +
+      "leitor precisa pra entender por que essa discussão existe AGORA, quem " +
+      "são as partes envolvidas e o que já aconteceu entre elas antes deste vídeo\n" +
+      "4. **Atores e posições** — quem ganha, quem perde, que lado cada um defende\n" +
+      "5. **Por que importa agora** — o que está em jogo e as consequências " +
+      "práticas pro cidadão\n" +
+      "Se o tema não for político, aplique o mesmo rigor de datas e conjuntura " +
+      "ao contexto que couber (cultural, econômico, esportivo…).",
+    { context: transcript, maxTokens: 1800 },
     onChunk,
   );
 }
