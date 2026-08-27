@@ -796,8 +796,8 @@ const TTS_TEST_PHRASES: Record<string, string> = {
           </button>
         </div>
         {test.status !== "idle" && test.status !== "testing" && (
-          <p className={`feedback ${test.status === "ok" ? "ok" : "err"}`} style={{ marginTop: 6 }}>
-            {test.status === "ok" ? "✓ " : "⚠️ "}
+          <p className={`feedback ${test.status === "ok" ? "ok ok-big" : "err"}`} style={{ marginTop: 6 }}>
+            {test.status === "ok" ? "🎉 " : "⚠️ "}
             {test.message}
           </p>
         )}
@@ -975,11 +975,11 @@ const TTS_TEST_PHRASES: Record<string, string> = {
       {saved && <p className="feedback ok">{t("set_saved")}</p>}
 
       {test.status !== "idle" && test.status !== "testing" && (
-        <p className={`feedback ${test.status === "ok" ? "ok" : "err"}`}>
-          {test.status === "ok" ? "✓ " : "⚠️ "}
-          {test.message}
-        </p>
-      )}
+          <p className={`feedback ${test.status === "ok" ? "ok ok-big" : "err"}`}>
+            {test.status === "ok" ? "🎉 " : "⚠️ "}
+            {test.message}
+          </p>
+        )}
 
         </> // fecha o <> do {showForm && (
       )}
@@ -1380,7 +1380,7 @@ const TTS_TEST_PHRASES: Record<string, string> = {
                 <span style={{ fontSize: 13, color: "var(--ok, #16a34a)" }}>{t("tx_saved")}</span>
               )}
               {txTest.status === "ok" && (
-                <span style={{ fontSize: 13, color: "var(--ok, #16a34a)" }}>{txTest.message}</span>
+                <span className="feedback ok-big" style={{ marginTop: 6 }}>🎉 {txTest.message}</span>
               )}
               {txTest.status === "fail" && (
                 <span style={{ fontSize: 13, color: "var(--danger, #dc2626)" }}>{txTest.message}</span>

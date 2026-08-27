@@ -500,7 +500,7 @@ export async function byokTestKey(
         break;
     }
     if (keyRejected(status)) return { ok: false, message: failMsg };
-    return { ok: true, message: `Chave aceita pelo ${nome} ✅` };
+    return { ok: true, message: `Chave aceita pelo ${nome} — tá tudo certo! Pode usar. 🎉` };
   } catch {
     return {
       ok: false,
