@@ -484,61 +484,205 @@ interface OEmbed {
  * vez de estourar exceção (que virava página HTML de erro → o cliente
  * quebrava com "Unexpected token '<'").
  */
-async function youtubeMetaHttp(url: string, videoId: string) {
-  let title = "Vídeo do YouTube";
-  let channel = "YouTube";
-  let thumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+// ─── Innertube (API interna do player) + ficha oficial (Data API v3) ────
+//
+// A página /watch do YouTube vem com bot-check ("confirm you're not a bot")
+// quando o IP está marcado — e o HTML bloqueado NÃO contém os captionTracks,
+// matando o caminho antigo de legendas. A API interna do player (innertube)
+// com client ANDROID responde playabilityStatus OK mesmo nesses IPs e entrega
+// as faixas de legenda com baseUrl assinada (manuais E automáticas/asr),
+// além de título/canal/duração/descrição. Validado em 27/08/2026.
 
+interface InnertubePlayer {
+  playabilityStatus?: { status?: string; reason?: string };
+  videoDetails?: {
+    title?: string;
+    author?: string;
+    lengthSeconds?: string;
+    shortDescription?: string;
+    thumbnails?: Array<{ url?: string; width?: number }>;
+  };
+  captions?: {
+    playerCaptionsTracklistRenderer?: { captionTracks?: CaptionTrack[] };
+  };
+}
+
+/** Metadados "ricos" do YouTube (ficha oficial ou innertube). */
+interface YoutubeRichMeta {
+  title: string;
+  channel: string;
+  durationSec: number;
+  description?: string;
+  thumbnail?: string;
+  uploadDate?: string;
+}
+
+/** Player via innertube: metadados + faixas de legenda, sem autenticação. */
+async function youtubePlayerInnertube(
+  videoId: string,
+): Promise<{ meta: YoutubeRichMeta | null; tracks: CaptionTrack[] }> {
   try {
     const res = await fetch(
-      `https://www.youtube.com/oembed?url=${encodeURIComponent(
-        `https://www.youtube.com/watch?v=${videoId}`,
-      )}&format=json`,
-    );
-    if (res.ok) {
-      const oembed = (await res.json()) as OEmbed;
-      if (oembed.title) title = oembed.title;
-      if (oembed.author_name) channel = oembed.author_name;
-      if (oembed.thumbnail_url) thumbnail = oembed.thumbnail_url;
-    }
-  } catch {
-    // oEmbed indisponível — tenta a página do vídeo
-  }
-
-  if (title === "Vídeo do YouTube") {
-    try {
-      const watch = await fetch(
-        `https://www.youtube.com/watch?v=${videoId}&hl=pt`,
-        {
-          headers: {
-            "User-Agent":
-              "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
-            "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+      "https://www.youtube.com/youtubei/v1/player?prettyPrint=false",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          context: {
+            client: {
+              clientName: "ANDROID",
+              clientVersion: "20.10.38",
+              androidSdkVersion: 30,
+            },
           },
-        },
+          videoId,
+          contentCheckOk: true,
+          racyCheckOk: true,
+        }),
+        signal: AbortSignal.timeout(15_000),
+      },
+    );
+    if (!res.ok) return { meta: null, tracks: [] };
+    const data = (await res.json()) as InnertubePlayer;
+    if (data.playabilityStatus?.status !== "OK") return { meta: null, tracks: [] };
+    const vd = data.videoDetails ?? {};
+    const thumbs = [...(vd.thumbnails ?? [])].sort(
+      (a, b) => (b.width ?? 0) - (a.width ?? 0),
+    );
+    const meta = {
+      title: vd.title ?? "",
+      channel: vd.author ?? "",
+      durationSec: Number(vd.lengthSeconds ?? 0) || 0,
+      ...(vd.shortDescription?.trim()
+        ? { description: vd.shortDescription }
+        : {}),
+      ...(thumbs[0]?.url ? { thumbnail: thumbs[0].url! } : {}),
+    };
+    const tracks =
+      data.captions?.playerCaptionsTracklistRenderer?.captionTracks ?? [];
+    return { meta: meta.title ? meta : null, tracks };
+  } catch {
+    return { meta: null, tracks: [] }; // rede/timeout — segue o fallback
+  }
+}
+
+/**
+ * Ficha oficial via YouTube Data API v3 (chave da casa, só no servidor).
+ * Custo: 1 unidade de quota por chamada (cota gratuita: 10.000/dia).
+ * Sem YOUTUBE_API_KEY configurada, devolve null e o innertube cobre.
+ */
+async function youtubeMetaApiKey(
+  videoId: string,
+): Promise<YoutubeRichMeta | null> {
+  const key = process.env.YOUTUBE_API_KEY?.trim();
+  if (!key) return null;
+  try {
+    const res = await fetch(
+      `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${videoId}&key=${key}`,
+      { signal: AbortSignal.timeout(10_000) },
+    );
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      items?: Array<{
+        snippet?: {
+          title?: string;
+          channelTitle?: string;
+          description?: string;
+          publishedAt?: string;
+          thumbnails?: Record<string, { url?: string }>;
+        };
+        contentDetails?: { duration?: string }; // PT1H2M3S
+      }>;
+    };
+    const i = data.items?.[0];
+    if (!i?.snippet) return null;
+    const m = (i.contentDetails?.duration ?? "").match(
+      /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/,
+    );
+    const durationSec = m
+      ? Number(m[1] ?? 0) * 3600 + Number(m[2] ?? 0) * 60 + Number(m[3] ?? 0)
+      : 0;
+    const th = i.snippet.thumbnails ?? {};
+    const thumb = (th.maxres ?? th.standard ?? th.high ?? th.medium ?? th.default)?.url;
+    return {
+      title: i.snippet.title ?? "",
+      channel: i.snippet.channelTitle ?? "",
+      durationSec,
+      ...(i.snippet.description?.trim()
+        ? { description: i.snippet.description }
+        : {}),
+      ...(i.snippet.publishedAt ? { uploadDate: i.snippet.publishedAt } : {}),
+      ...(thumb ? { thumbnail: thumb } : {}),
+    };
+  } catch {
+    return null;
+  }
+}
+
+async function youtubeMetaHttp(url: string, videoId: string) {
+  // Cascata: ficha oficial (Data API v3) → innertube → oEmbed → og:title.
+  const rich =
+    (await youtubeMetaApiKey(videoId)) ??
+    (await youtubePlayerInnertube(videoId)).meta;
+  let title = rich?.title?.trim() || "Vídeo do YouTube";
+  let channel = rich?.channel?.trim() || "YouTube";
+  const thumbnail =
+    rich?.thumbnail || `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+  const durationSec = rich?.durationSec ?? 0;
+
+  if (!rich) {
+    try {
+      const res = await fetch(
+        `https://www.youtube.com/oembed?url=${encodeURIComponent(
+          `https://www.youtube.com/watch?v=${videoId}`,
+        )}&format=json`,
       );
-      if (watch.ok) {
-        const html = await watch.text();
-        const og = html.match(/<meta property="og:title" content="([^"]+)"/);
-        const tt = html.match(/<title>([^<]+)<\/title>/);
-        const raw = og?.[1] ?? tt?.[1]?.replace(/ - YouTube$/, "");
-        if (raw) title = raw;
-        const ch = html.match(/<meta itemprop="author" content="([^"]+)"/)
-          ?? html.match(/"ownerChannelName":"([^"]+)"/);
-        if (ch?.[1]) channel = ch[1];
+      if (res.ok) {
+        const oembed = (await res.json()) as OEmbed;
+        if (oembed.title) title = oembed.title;
+        if (oembed.author_name) channel = oembed.author_name;
       }
     } catch {
-      // segue com genéricos
+      // oEmbed indisponível — tenta a página do vídeo
+    }
+
+    if (title === "Vídeo do YouTube") {
+      try {
+        const watch = await fetch(
+          `https://www.youtube.com/watch?v=${videoId}&hl=pt`,
+          {
+            headers: {
+              "User-Agent":
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+              "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+            },
+          },
+        );
+        if (watch.ok) {
+          const html = await watch.text();
+          const og = html.match(/<meta property="og:title" content="([^"]+)"/);
+          const tt = html.match(/<title>([^<]+)<\/title>/);
+          const raw = og?.[1] ?? tt?.[1]?.replace(/ - YouTube$/, "");
+          if (raw) title = raw;
+          const ch = html.match(/<meta itemprop="author" content="([^"]+)"/)
+            ?? html.match(/"ownerChannelName":"([^"]+)"/);
+          if (ch?.[1]) channel = ch[1];
+        }
+      } catch {
+        // segue com genéricos
+      }
     }
   }
 
   return {
     title,
     channel,
-    durationSec: 0, // oEmbed não informa duração
+    durationSec,
     thumbnail,
     platform: "youtube",
     webpageUrl: url,
+    ...(rich?.description ? { description: rich.description.slice(0, 1200) } : {}),
+    ...(rich?.uploadDate ? { uploadDate: rich.uploadDate } : {}),
   };
 }
 
@@ -548,30 +692,37 @@ interface CaptionTrack {
   kind?: string; // "asr" = automática
 }
 
-/** Legendas via página do vídeo (captionTracks → timedtext json3). */
-async function youtubeCaptionsHttp(videoId: string): Promise<Segment[] | null> {
-  const watch = await fetch(
-    `https://www.youtube.com/watch?v=${videoId}&hl=pt`,
-    {
-      headers: {
-        "User-Agent":
-          "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
-        "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
-      },
-    },
-  );
-  if (!watch.ok) return null;
-  const html = await watch.text();
-  const m = html.match(/"captionTracks":(\[.*?\])/);
-  if (!m) return null;
-  let tracks: CaptionTrack[];
-  try {
-    tracks = JSON.parse(m[1]) as CaptionTrack[];
-  } catch {
-    return null;
-  }
-  if (tracks.length === 0) return null;
+const XML_ENTITIES: Array<[string, string]> = [
+  ["&#39;", "'"], ["&apos;", "'"], ["&quot;", '"'], ["&nbsp;", " "],
+  ["&lt;", "<"], ["&gt;", ">"], ["&amp;", "&"], // &amp; por último
+];
 
+/** Parser de srv3 — o XML <p t="ms" d="ms">texto</p> que o timedtext
+ *  devolve às vezes, mesmo quando pedido fmt=json3. */
+function parseSrv3(raw: string): Segment[] {
+  const segs: Segment[] = [];
+  const re = /<p t="(\d+)"(?:\s+d="(\d+)")?[^>]*>([\s\S]*?)<\/p>/g;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(raw))) {
+    let text = m[3]
+      .replace(/<[^>]+>/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+    if (!text) continue;
+    for (const [ent, ch] of XML_ENTITIES) {
+      if (text.includes(ent)) text = text.split(ent).join(ch);
+    }
+    const start = Number(m[1]) / 1000;
+    segs.push({ start, end: start + Number(m[2] ?? 0) / 1000, text });
+  }
+  return dedupeRollingSegments(segs);
+}
+
+/** Escolhe a melhor trilha (pt > en > es; manual > asr) e baixa o texto. */
+async function downloadCaptionTracks(
+  tracks: CaptionTrack[],
+): Promise<Segment[] | null> {
+  if (tracks.length === 0) return null;
   const rank = (t: CaptionTrack) => {
     const l = (t.languageCode ?? "").toLowerCase();
     let r = l.startsWith("pt") ? 0 : l.startsWith("en") ? 1 : l.startsWith("es") ? 2 : 3;
@@ -581,10 +732,58 @@ async function youtubeCaptionsHttp(videoId: string): Promise<Segment[] | null> {
   const track = [...tracks].sort((a, b) => rank(a) - rank(b))[0];
   if (!track.baseUrl) return null;
 
-  const res = await fetch(`${track.baseUrl}&fmt=json3`);
+  const res = await fetch(`${track.baseUrl}&fmt=json3`, {
+    signal: AbortSignal.timeout(30_000),
+  });
   if (!res.ok) return null;
-  const segments = parseJson3(await res.text());
-  return segments.length > 0 ? segments : null;
+  const raw = await res.text();
+  if (raw.startsWith("{")) {
+    try {
+      const segments = parseJson3(raw);
+      if (segments.length > 0) return segments;
+    } catch {
+      // JSON inválido — tenta srv3 abaixo
+    }
+  }
+  const srv = parseSrv3(raw);
+  return srv.length > 0 ? srv : null;
+}
+
+/** Legendas do vídeo: innertube (imune ao bot-check) → página HTML (fallback). */
+async function youtubeCaptionsHttp(videoId: string): Promise<Segment[] | null> {
+  // 1) Innertube com client ANDROID — o YouTube entrega as faixas com URL
+  //    assinada mesmo quando a página /watch vem bloqueada com bot-check.
+  const fromInnertube = await youtubePlayerInnertube(videoId)
+    .then(({ tracks }) => downloadCaptionTracks(tracks))
+    .catch(() => null);
+  if (fromInnertube) return fromInnertube;
+
+  // 2) Caminho antigo: captionTracks escondidos no HTML da página do vídeo.
+  try {
+    const watch = await fetch(
+      `https://www.youtube.com/watch?v=${videoId}&hl=pt`,
+      {
+        headers: {
+          "User-Agent":
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+          "Accept-Language": "pt-BR,pt;q=0.9,en;q=0.8",
+        },
+      },
+    );
+    if (!watch.ok) return null;
+    const html = await watch.text();
+    const m = html.match(/"captionTracks":(\[.*?\])/);
+    if (!m) return null;
+    let tracks: CaptionTrack[];
+    try {
+      tracks = JSON.parse(m[1]) as CaptionTrack[];
+    } catch {
+      return null;
+    }
+    return await downloadCaptionTracks(tracks);
+  } catch {
+    return null;
+  }
 }
 
 // Mensagens pro USUÁRIO FINAL — nada de tecniquês (Vercel/Whisper/yt-dlp/
