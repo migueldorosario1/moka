@@ -23,6 +23,7 @@ import { promisify } from "node:util";
 import { mkdtemp, rm, readdir, readFile, mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { ProxyAgent, fetch as undiciFetch } from "undici";
 import {
   transkriptorEnabled,
   tkSubmit,
@@ -517,12 +518,36 @@ interface YoutubeRichMeta {
   uploadDate?: string;
 }
 
+/**
+ * Proxy residencial (IProyal): IPs de datacenter (Vercel, Tencent, NYC)
+ * levam bot-check do YouTube até no innertube; IP residencial passa livre
+ * (provado em 27/08 — Tencent direto LOGIN_REQUIRED, Tencent+proxy OK).
+ * Uma chamada de player ≈ 300 KB: 2 GB de crédito ≈ 7 mil vídeos.
+ */
+const proxyAgent = process.env.PROXY_RESIDENCIAL_URL?.trim()
+  ? new ProxyAgent(process.env.PROXY_RESIDENCIAL_URL.trim())
+  : null;
+
+/** fetch pro domínio do YouTube: sai pelo proxy residencial quando há um. */
+async function tubeFetch(
+  url: string,
+  init: Parameters<typeof undiciFetch>[1],
+): Promise<Response> {
+  const res = await undiciFetch(url, {
+    ...init,
+    ...(proxyAgent ? { dispatcher: proxyAgent } : {}),
+  });
+  // Response do undici ≈ Response global (ok/json/text) — só os tipos
+  // genéricos divergem entre as libs; o cast é seguro pra o que usamos.
+  return res as unknown as Response;
+}
+
 /** Player via innertube: metadados + faixas de legenda, sem autenticação. */
 async function youtubePlayerInnertube(
   videoId: string,
 ): Promise<{ meta: YoutubeRichMeta | null; tracks: CaptionTrack[] }> {
   try {
-    const res = await fetch(
+    const res = await tubeFetch(
       "https://www.youtube.com/youtubei/v1/player?prettyPrint=false",
       {
         method: "POST",
@@ -732,7 +757,7 @@ async function downloadCaptionTracks(
   const track = [...tracks].sort((a, b) => rank(a) - rank(b))[0];
   if (!track.baseUrl) return null;
 
-  const res = await fetch(`${track.baseUrl}&fmt=json3`, {
+  const res = await tubeFetch(`${track.baseUrl}&fmt=json3`, {
     signal: AbortSignal.timeout(30_000),
   });
   if (!res.ok) return null;
