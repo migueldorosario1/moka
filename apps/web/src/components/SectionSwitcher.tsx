@@ -1,35 +1,37 @@
 "use client";
 
 import Link from "next/link";
+import { useI18n } from "./I18nProvider";
 
 /**
- * Seletor de seções do Moka unificado — A FAMÍLIA COMPLETA (obra MOKA).
+ * Seletor de seções do Moka — A FAMÍLIA COMPLETA (obra MOKA).
  *
  * 📖 Reader (livros) · 🎬 Vídeo · 🧠 Memória · 💬 Harness · ✍️ Writer
  *
  * Ordem do Miguel (30/08 ~15h): "ícones grandes" de reader, vídeo, memória,
- * harness e writer, todos do lado — botões GRANDES por natureza (DSC-019).
+ * harness e writer. TÍTULOS/LABELS 100% i18n (ordem ~16h: nada hardcode).
  */
 export type SectionKey = "reader" | "video" | "memoria" | "harness" | "writer";
 
-const SECTIONS: Array<{ key: SectionKey; href: string; icon: string; title: string; label: string }> = [
-  { key: "reader", href: "/estante", icon: "📖", title: "Moka Reader — seus livros", label: "Livros" },
-  { key: "video", href: "/video", icon: "🎬", title: "Moka Video — leia vídeos", label: "Vídeos" },
-  { key: "memoria", href: "/memoria", icon: "🧠", title: "Moka Memória — tudo que você leu e viu", label: "Memória" },
-  { key: "harness", href: "/harness", icon: "💬", title: "Moka Harness — converse com sua memória", label: "Harness" },
-  { key: "writer", href: "/writer", icon: "✍️", title: "Moka Writer — seu estúdio de escrever", label: "Writer" },
+const SECTIONS: Array<{ key: SectionKey; href: string; icon: string; titleKey: "sec_reader" | "sec_video" | "sec_memoria" | "sec_harness" | "sec_writer" }> = [
+  { key: "reader", href: "/estante", icon: "📖", titleKey: "sec_reader" },
+  { key: "video", href: "/video", icon: "🎬", titleKey: "sec_video" },
+  { key: "memoria", href: "/memoria", icon: "🧠", titleKey: "sec_memoria" },
+  { key: "harness", href: "/harness", icon: "💬", titleKey: "sec_harness" },
+  { key: "writer", href: "/writer", icon: "✍️", titleKey: "sec_writer" },
 ];
 
 export function SectionSwitcher({ active }: { active: SectionKey }) {
+  const { t } = useI18n();
   return (
-    <nav className="section-switch" aria-label="Seções do Moka">
+    <nav className="section-switch" aria-label={t("sec_nav")}>
       {SECTIONS.map((s) => (
         <Link
           key={s.key}
           href={s.href}
           className={`section-switch-btn ${active === s.key ? "active" : ""}`}
-          title={s.title}
-          aria-label={s.label}
+          title={t(s.titleKey)}
+          aria-label={t(s.titleKey)}
           aria-current={active === s.key ? "page" : undefined}
         >
           {s.icon}

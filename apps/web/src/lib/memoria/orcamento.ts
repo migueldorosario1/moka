@@ -59,6 +59,8 @@ export interface OrcamentoEstimativa {
   custoUsd: number;
   custoFmt: string;
   modelo: string;
+  /** Segundos estimados (velSeg do ranking; página ≈ 800 tokens). */
+  secs: number;
   /** Tarefa "grande" = merece orçamento (regra do Miguel). */
   grande: boolean;
 }
@@ -76,12 +78,14 @@ export function estimarTarefa(
   const tokensIn = estimateTokens(inputText);
   const tokensOut = Math.ceil(tokensIn * outRatio);
   const custoUsd = custo(price, tokensIn / 1000, tokensOut / 1000);
+  const pages = Math.max(1, tokensIn / 800);
   return {
     tokensIn,
     tokensOut,
     custoUsd,
     custoFmt: usd(custoUsd),
     modelo: price.modelo,
+    secs: Math.round(pages * (price.velSeg ?? 8)),
     grande: tokensIn >= 20_000,
   };
 }

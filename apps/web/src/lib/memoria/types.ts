@@ -13,6 +13,7 @@
 /** De onde veio o objeto. */
 export type MemoriaObjectType =
   | "md" // arquivo .md importado (conversor da v1)
+  | "livro" // livro da estante jogado na memória (ordem do Miguel 30/08)
   | "resumo" // resumo de livro gerado pelo Reader
   | "traducao" // tradução integral de livro (tarefa grande orçada)
   | "video" // resumo/transcrição do Moka Vídeo

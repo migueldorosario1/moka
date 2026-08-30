@@ -30,6 +30,7 @@ import { askFreeStream } from "@/lib/ai-client";
 import { getConfigSync, getTargetLang, hasConfig, loadConfigCache } from "@/lib/config";
 import { estimarTarefa } from "@/lib/memoria/orcamento";
 import { getActiveMemoriaId, putMemoriaObject } from "@/lib/memoria/store";
+import { OrcamentoModal, type OrcamentoInfo } from "@/components/OrcamentoModal";
 
 const TEXT_KEY = "moka.writer.texto";
 const STYLE_KEY = "moka.writer.estilo";
@@ -50,6 +51,7 @@ export default function WriterPage() {
   const [error, setError] = useState<string | null>(null);
   const [flash, setFlash] = useState<string | null>(null);
   const [confirmFix, setConfirmFix] = useState<string | null>(null); // custo estimado
+  const [orc, setOrc] = useState<OrcamentoInfo | null>(null); // orçamento internacional
   const areaRef = useRef<HTMLTextAreaElement>(null);
 
   // Boot: config + rascunho salvo.
@@ -118,7 +120,14 @@ export default function WriterPage() {
   const fixArmed = useCallback(() => {
     const est = estimarTarefa(text, getConfigSync()?.model, 1.05);
     if (est.grande) {
-      setConfirmFix(est.custoFmt); // tarefa grande: confirma com custo (DSC-018)
+      // Tarefa grande: orçamento internacional (modelo+tokens+tempo+moeda).
+      setOrc({
+        modelo: est.modelo,
+        tokensIn: est.tokensIn,
+        tokensOut: est.tokensOut,
+        custoUsd: est.custoUsd,
+        secs: est.secs,
+      });
       return;
     }
     void doFix();
@@ -127,6 +136,7 @@ export default function WriterPage() {
 
   const doFix = useCallback(async () => {
     setConfirmFix(null);
+    setOrc(null);
     setError(null);
     setBusy("fix");
     try {
@@ -287,29 +297,18 @@ export default function WriterPage() {
           </div>
 
           {/* Corrigir com IA */}
-          {confirmFix ? (
-            <div className="memoria-actions">
-              <button className="memoria-btn primary big" onClick={() => void doFix()}>
-                ✅ {t("tb_sure", { cost: confirmFix })}
-              </button>
-              <button className="memoria-btn big" onClick={() => setConfirmFix(null)}>
-                {t("tb_sure_no")}
-              </button>
-            </div>
-          ) : (
-            <div className="memoria-actions">
-              <button
-                className="memoria-btn big"
-                onClick={fixArmed}
-                disabled={busy !== null || text.trim().length < 200 || configReady === false}
-              >
-                {busy === "fix" ? "…" : `🩹 ${t("wr_fix")}`}
-              </button>
-              <button className="memoria-btn big" onClick={() => void toMemoria()} disabled={text.trim().length < 200}>
-                🧠 {t("wr_to_memory")}
-              </button>
-            </div>
-          )}
+          <div className="memoria-actions">
+            <button
+              className="memoria-btn big"
+              onClick={fixArmed}
+              disabled={busy !== null || text.trim().length < 200 || configReady === false}
+            >
+              {busy === "fix" ? "…" : `🩹 ${t("wr_fix")}`}
+            </button>
+            <button className="memoria-btn big" onClick={() => void toMemoria()} disabled={text.trim().length < 200}>
+              🧠 {t("wr_to_memory")}
+            </button>
+          </div>
         </section>
       ) : (
         <section className="writer-main">
@@ -328,6 +327,15 @@ export default function WriterPage() {
       )}
 
       <SiteFooter />
+
+      {/* Orçamento internacional antes de tarefa grande (DSC-018) */}
+      {orc && (
+        <OrcamentoModal
+          info={orc}
+          onConfirm={() => void doFix()}
+          onCancel={() => setOrc(null)}
+        />
+      )}
     </main>
   );
 }

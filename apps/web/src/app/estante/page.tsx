@@ -20,6 +20,8 @@ import {
   migrateLegacyBook,
   type Session,
 } from "@/lib/db";
+import { blocksToText } from "@/lib/paginate";
+import { getActiveMemoriaId, putMemoriaObject } from "@/lib/memoria/store";
 import { parseBook } from "@igot/parser";
 import { renderPdfCover, isImagePdf } from "@/lib/pdf-cover";
 import { generateDynamicBookCover } from "@/lib/cover-generator";
@@ -40,6 +42,9 @@ export default function HomePage() {
   const [addingBook, setAddingBook] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [configReady, setConfigReady] = useState(false);
+  // 🧠 jogar na memória (obra MOKA): qual card está salvando/salvo.
+  const [memSaving, setMemSaving] = useState<string | null>(null);
+  const [memSaved, setMemSaved] = useState<string | null>(null);
 
   // Carrega a estante (migrando livro legado primeiro).
   // Só roda UMA VEZ no boot — não re-roda quando auth muda de estado.
@@ -344,6 +349,51 @@ export default function HomePage() {
                     </span>
                   </div>
                 </Link>
+                {/* 🧠 Jogar na memória (obra MOKA — ordem do Miguel 30/08 ~16h:
+                    ícone embaixo do livro). Conversão 100% LOCAL: grátis, não
+                    gasta token — tarefa grande de IA é que tem orçamento (DSC-018). */}
+                <button
+                  className="book-memory-btn"
+                  title={t("mem_to_memory")}
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setMemSaving(book.id);
+                    setUploadError(null);
+                    try {
+                      const body = (book.book.chapters ?? [])
+                        .map((ch) => `## ${ch.title}\n\n${blocksToText(ch.blocks, "\n\n")}`)
+                        .join("\n\n")
+                        .trim();
+                      if (body.length < 200) {
+                        setUploadError(t("mem_rejected_count", { n: 1 }));
+                        return;
+                      }
+                      await putMemoriaObject({
+                        memoriaId: getActiveMemoriaId(),
+                        type: "livro",
+                        title: book.book.title,
+                        author: book.book.author,
+                        lang: book.book.language,
+                        source: "estante do Moka",
+                        tags: ["livro"],
+                        body,
+                        chars: body.length,
+                      });
+                      setMemSaved(book.id);
+                      setTimeout(() => setMemSaved(null), 2500);
+                    } catch {
+                      setUploadError("⚠️");
+                    } finally {
+                      setMemSaving(null);
+                    }
+                  }}
+                >
+                  <span aria-hidden>{memSaving === book.id ? "…" : memSaved === book.id ? "✅" : "🧠"}</span>
+                  <span className="book-memory-label">
+                    {memSaved === book.id ? t("mem_in_memory") : t("mem_to_memory")}
+                  </span>
+                </button>
                 <button
                   className="book-delete-btn"
                   title={t("shelf_remove_book")}

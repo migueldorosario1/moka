@@ -45,9 +45,13 @@ import {
   splitImportFile,
 } from "@/lib/memoria/markdown";
 import { searchMemoria } from "@/lib/memoria/store";
+import { listLibrary } from "@/lib/repository";
+import { blocksToText } from "@/lib/paginate";
+import type { Session } from "@/lib/db";
 
 const TYPE_ICON: Record<string, string> = {
   md: "📄",
+  livro: "📚",
   resumo: "📝",
   traducao: "🌍",
   video: "🎬",
@@ -56,6 +60,8 @@ const TYPE_ICON: Record<string, string> = {
 
 function typeKey(type: string): UIStringKey {
   switch (type) {
+    case "livro":
+      return "mem_type_livro";
     case "resumo":
       return "mem_type_resumo";
     case "traducao":
@@ -117,6 +123,56 @@ export default function MemoriaPage() {
   useEffect(() => {
     void loadAll();
   }, [loadAll]);
+
+  // ── Importar da biblioteca (ordem do Miguel 30/08 ~16h): os livros da
+  // estante entram na memória com 1 toque — conversão LOCAL, grátis.
+  const [libOpen, setLibOpen] = useState(false);
+  const [libBooks, setLibBooks] = useState<Session[]>([]);
+  const [libBusy, setLibBusy] = useState<string | null>(null);
+  const [libDone, setLibDone] = useState<string | null>(null);
+
+  const abrirBiblioteca = useCallback(async () => {
+    const next = !libOpen;
+    setLibOpen(next);
+    if (next && libBooks.length === 0) {
+      const list = await listLibrary(null).catch(() => []);
+      setLibBooks(list);
+    }
+  }, [libBooks.length, libOpen]);
+
+  const jogarLivro = useCallback(
+    async (b: Session) => {
+      setLibBusy(b.id);
+      try {
+        const body = (b.book.chapters ?? [])
+          .map((ch) => `## ${ch.title}\n\n${blocksToText(ch.blocks, "\n\n")}`)
+          .join("\n\n")
+          .trim();
+        if (body.length < 200) {
+          flashFor("warn", t("mem_rejected_count", { n: 1 }));
+          return;
+        }
+        await putMemoriaObject({
+          memoriaId: getActiveMemoriaId(),
+          type: "livro",
+          title: b.book.title,
+          author: b.book.author,
+          lang: b.book.language,
+          source: "estante do Moka",
+          tags: ["livro"],
+          body,
+          chars: body.length,
+        });
+        setLibDone(b.id);
+        setTimeout(() => setLibDone(null), 2500);
+        await loadAll();
+      } finally {
+        setLibBusy(null);
+      }
+    },
+    [flashFor, loadAll, t],
+  );
+
 
   const hits = useMemo(() => searchMemoria(objetos, query), [objetos, query]);
   const ativa = metas.find((m) => m.id === ativaId);
@@ -318,6 +374,35 @@ export default function MemoriaPage() {
             </Link>
           </div>
           <p className="memoria-hint">{t("mem_import_hint")}</p>
+
+          {/* Importar da biblioteca (estante) — ordem do Miguel 30/08 */}
+          <div className="memoria-actions">
+            <button className="memoria-btn big" onClick={() => void abrirBiblioteca()}>
+              📚 {t("mem_from_library")} {libOpen ? "▲" : "▼"}
+            </button>
+          </div>
+          {libOpen && (
+            <ul className="memoria-mem-list lib">
+              {libBooks.length === 0 && (
+                <li className="memoria-mem">
+                  <div className="memoria-mem-info">{t("mem_empty_title")}</div>
+                </li>
+              )}
+              {libBooks.map((b) => (
+                <li key={b.id} className="memoria-mem">
+                  <div className="memoria-mem-info">
+                    <strong>{b.book.title}</strong>
+                    {b.book.author && <span className="memoria-mem-date">{b.book.author}</span>}
+                  </div>
+                  <div className="memoria-mem-actions">
+                    <button className="memoria-btn" onClick={() => void jogarLivro(b)} disabled={libBusy !== null}>
+                      {libBusy === b.id ? "…" : libDone === b.id ? "✅" : "🧠"} {t("mem_to_memory")}
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
 
           {/* Busca instantânea */}
           {objetos.length > 0 && (
