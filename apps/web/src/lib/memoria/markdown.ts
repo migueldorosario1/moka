@@ -260,7 +260,7 @@ export function exportMemoriaMarkdown(
     "",
     `- Objetos: ${objetos.length}`,
     `- Exportado em: ${gerado}`,
-    "- Formato: cada objeto abaixo tem frontmatter + corpo; separador `%%%MOKA-OBJ%%%`.",
+    "- Formato: cada objeto abaixo tem frontmatter + corpo (separados pelo marcador oficial do Moka).",
     "- Importar de volta: Moka → Memória → Importar .md (este mesmo arquivo).",
     "",
     "## Índice",
@@ -276,5 +276,7 @@ export function exportMemoriaMarkdown(
     "",
   ].join("\n");
   const corpo = objetos.map(serializeObject).join(`\n${OBJ_SEPARATOR}\n\n`);
-  return `${header}${corpo}\n`;
+  // Separador TAMBÉM entre o Índice e o 1º objeto: assim o importador
+  // descarta o header com segurança (tudo antes do 1º separador é Índice).
+  return `${header}${OBJ_SEPARATOR}\n\n${corpo}\n`;
 }
