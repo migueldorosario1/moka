@@ -100,6 +100,14 @@ export function Capa() {
         />
 
         {/* ── Entradas do app (Estante & Videoteca) ── */}
+        {/* 💬 MOKA HARNESS — protagonista (ordem do Miguel ~18h: "link
+            grande, um dos protagonistas do Moka, não segundo plano") */}
+        <a className="capa-card capa-card-harness" href="/harness">
+          <b>💬 Moka Harness</b>
+          <span>{t("capa_harness_desc")}</span>
+          <i className="capa-card-cta">{t("capa_harness_cta")} →</i>
+        </a>
+
         <div className="capa-cards">
           <a className="capa-card" href="/estante">
             <b>📖 {t("capa_shelf_books")}</b>
@@ -108,6 +116,14 @@ export function Capa() {
           <a className="capa-card" href="/video">
             <b>🎬 {t("capa_shelf_videos")}</b>
             <span>{t("capa_videos_desc")}</span>
+          </a>
+          <a className="capa-card" href="/memoria">
+            <b>🧠 {t("mem_title")}</b>
+            <span>{t("mem_tagline")}</span>
+          </a>
+          <a className="capa-card" href="/writer">
+            <b>✍️ Moka Writer</b>
+            <span>{t("wr_tagline")}</span>
           </a>
         </div>
 

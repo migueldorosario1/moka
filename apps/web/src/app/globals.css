@@ -8919,3 +8919,36 @@ font-size: 14px;
   .section-switch-btn { width: 52px; height: 52px; font-size: 26px; }
   .topnav-eye { width: 52px; height: 52px; font-size: 24px; }
 }
+
+/* 💬 Moka Harness destaque na capa + chips de memória no harness (~18h) */
+.capa-card-harness {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 22px 24px;
+  border: 2px solid var(--accent, #ff9e3d);
+  background: var(--accent-soft, rgba(255,158,61,0.12));
+  border-radius: 18px;
+  text-decoration: none;
+  color: inherit;
+  margin-bottom: 10px;
+}
+.capa-card-harness b { font-size: 22px; }
+.capa-card-harness span { font-size: 15px; opacity: 0.85; }
+.capa-card-cta { font-style: normal; font-weight: 700; color: var(--accent, #ff9e3d); font-size: 16px; }
+.harness-mems { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin: 8px 0 4px; }
+.harness-mem-chip {
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 999px;
+  border: 1px solid var(--border-soft, #ccc);
+  background: var(--surface-alt, transparent);
+  cursor: pointer;
+  opacity: 0.55;
+}
+.harness-mem-chip.on {
+  opacity: 1;
+  border-color: var(--accent, #ff9e3d);
+  background: var(--accent-soft, rgba(255,158,61,0.15));
+}

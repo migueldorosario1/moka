@@ -8,7 +8,7 @@
  * Entra pelo site, zero install (PWA do Moka).
  */
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LangSwitcher } from "@/components/LangSwitcher";
@@ -20,6 +20,10 @@ import { useI18n } from "@/components/I18nProvider";
 import { hasConfig, loadConfigCache } from "@/lib/config";
 import type { MemoriaObject } from "@/lib/memoria/types";
 import { getActiveMemoriaId, listMemoriaObjects, listMemorias } from "@/lib/memoria/store";
+import { estimateTokens, matchPrice } from "@/lib/memoria/orcamento";
+import { custo } from "@/lib/llm-prices";
+import { getCurrency, convertFromUsd, fmtMoney } from "@/lib/telemetry";
+import { getConfigSync } from "@/lib/config";
 import { askHarnessStream, type HarnessTurn } from "@/lib/memoria/harness";
 
 interface ChatMsg extends HarnessTurn {
@@ -34,6 +38,9 @@ export default function HarnessPage() {
   const [configReady, setConfigReady] = useState<boolean | null>(null);
   const [objetos, setObjetos] = useState<MemoriaObject[]>([]);
   const [objetosOp, setObjetosOp] = useState<MemoriaObject[]>([]);
+  // Quais memórias o Harness usa na conversa (ordem do Miguel ~18h).
+  const [useBag, setUseBag] = useState(true);
+  const [useOp, setUseOp] = useState(true);
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -68,6 +75,23 @@ export default function HarnessPage() {
     };
   }, []);
 
+  // Custo estimado de contexto por pergunta (bagagem ≈ 5×1500 chars; operacional ≈ 3×800).
+  const costOf = useCallback((chars: number) => {
+    const price = matchPrice(getConfigSync()?.model);
+    const tokens = estimateTokens("x".repeat(chars));
+    const usdv = custo(price, tokens / 1000, 0);
+    const cur = getCurrency();
+    return fmtMoney(convertFromUsd(usdv, cur), cur);
+  }, []);
+  const bagCost = useMemo(
+    () => costOf(Math.min(objetos.length, 5) * 1500),
+    [objetos.length, costOf],
+  );
+  const opCost = useMemo(
+    () => costOf(Math.min(objetosOp.length, 3) * 800),
+    [objetosOp.length, costOf],
+  );
+
   // Rola pro fim a cada mensagem/streaming.
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
@@ -83,13 +107,19 @@ export default function HarnessPage() {
     setMsgs((m) => [...m, { role: "user", text: q }, { role: "assistant", text: "" }]);
     let consulted: MemoriaObject[] = [];
     try {
-      const answer = await askHarnessStream(q, objetos, history, (full) => {
-        setMsgs((m) => {
-          const copy = [...m];
-          copy[copy.length - 1] = { role: "assistant", text: full, consulted };
-          return copy;
-        });
-      });
+      const answer = await askHarnessStream(
+        q,
+        useBag ? objetos : [],
+        history,
+        (full) => {
+          setMsgs((m) => {
+            const copy = [...m];
+            copy[copy.length - 1] = { role: "assistant", text: full, consulted };
+            return copy;
+          });
+        },
+        useOp ? objetosOp : [],
+      );
       consulted = answer.consulted;
       if (!answer.ok) {
         setError(answer.error ?? "Erro.");
@@ -111,7 +141,7 @@ export default function HarnessPage() {
     } finally {
       setBusy(false);
     }
-  }, [busy, input, msgs, objetos, objetosOp]);
+  }, [busy, input, msgs, objetos, objetosOp, useBag, useOp]);
 
   return (
     <main className="harness-page">
@@ -134,6 +164,26 @@ export default function HarnessPage() {
         <h1>{t("har_title")}</h1>
         <p className="memoria-tagline">{t("har_tagline")}</p>
       </header>
+
+      {/* Seletor de memórias em uso + custo (ordem do Miguel ~18h) */}
+      <div className="harness-mems">
+        <button
+          className={`harness-mem-chip ${useBag ? "on" : ""}`}
+          onClick={() => setUseBag((v) => !v)}
+          aria-pressed={useBag}
+          title={t("mem_kind_bag")}
+        >
+          {t("mem_kind_bag")} · {objetos.length} · ≈{bagCost}
+        </button>
+        <button
+          className={`harness-mem-chip ${useOp ? "on" : ""}`}
+          onClick={() => setUseOp((v) => !v)}
+          aria-pressed={useOp}
+          title={t("mem_kind_op")}
+        >
+          {t("mem_kind_op")} · {objetosOp.length} · ≈{opCost}
+        </button>
+      </div>
 
       {configReady === false && (
         <div className="memoria-flash warn" role="alert">

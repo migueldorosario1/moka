@@ -51,6 +51,9 @@ export default function WriterPage() {
   const [flash, setFlash] = useState<string | null>(null);
   const [confirmFix, setConfirmFix] = useState<string | null>(null); // custo estimado
   const [orc, setOrc] = useState<OrcamentoInfo | null>(null); // orçamento internacional
+  // snapshot p/ ↩️ desfazer a última ação da IA (write/fix)
+  const [undoSnap, setUndoSnap] = useState<{ text: string } | null>(null);
+  const baseRef = useRef("");
   const areaRef = useRef<HTMLTextAreaElement>(null);
 
   // Boot: config + rascunho salvo.
@@ -90,7 +93,9 @@ export default function WriterPage() {
     if (!tema || busy) return;
     setError(null);
     setBusy("write");
-    let acc = "";
+    setUndoSnap({ text });
+    baseRef.current = text.trim();
+    const prefix = baseRef.current ? `${baseRef.current}\n\n` : "";
     try {
       const r = await askFreeStream(
         `Escreva um texto sobre: ${tema}`,
@@ -99,13 +104,12 @@ export default function WriterPage() {
           `Texto direto, sem títulos de seção artificiais, sem markdown pesado. ` +
           `Devolva SOMENTE o texto.`,
         styleBlock,
-        (full) => {
-          acc = full;
-          setText(full);
-        },
+        (full) => setText(prefix + full),
       );
-      if (!r.ok) setError(r.error ?? "Erro.");
-      else if (acc && text.trim()) setText(`${text.trim()}\n\n${acc}`); // anexa ao rascunho
+      if (!r.ok) {
+        setError(r.error ?? "Erro.");
+        setText(text); // restaura
+      }
       setIdea("");
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -138,6 +142,7 @@ export default function WriterPage() {
     setOrc(null);
     setError(null);
     setBusy("fix");
+    setUndoSnap({ text });
     try {
       const r = await askFreeStream(
         "Corrija o texto a seguir conforme a memória de estilo. Mantenha o sentido e a voz do autor; melhore clareza, ritmo e gramática. Devolva SOMENTE o texto corrigido, completo.",
