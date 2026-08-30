@@ -19,9 +19,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
-import { SectionSwitcher } from "@/components/SectionSwitcher";
+import { TopNav } from "@/components/TopNav";
 import { BackButton } from "@/components/BackButton";
 import { SiteFooter } from "@/components/SiteFooter";
 import { VisitPing } from "@/components/VisitPing";
@@ -180,25 +179,18 @@ export default function WriterPage() {
   return (
     <main className="writer-page">
       <VisitPing />
-      <div className="igot-topbar">
-        <div className="igot-topbar-left">
-          <Link href="/" className="brand" title="Moka">
-            <CafezinhoLogo size={26} opacity={0.85} /> <span>Moka</span>
-          </Link>
-          <SectionSwitcher active="writer" />
-        </div>
-        <div className="igot-topbar-actions">
-          <BackButton />
-          <LangSwitcher />
-          <button
-            className="gear"
-            onClick={() => router.push("/configuracoes")}
-            aria-label="Configurações de IA"
-          >
-            ⚙️
-          </button>
-        </div>
-      </div>
+      <TopNav active="writer" right={<>
+            <BackButton />
+            <LangSwitcher />
+            <button
+              className="gear"
+              onClick={() => router.push("/configuracoes")}
+              aria-label={t("settings")}
+              title={t("settings")}
+            >
+              ⚙️
+            </button>
+      </>} />
 
       <header className="memoria-hero">
         <div className="memoria-hero-icon" aria-hidden>✍️</div>

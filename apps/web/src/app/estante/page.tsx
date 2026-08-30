@@ -4,12 +4,11 @@ import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Uploader } from "@/components/Uploader";
-import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
 import { useI18n } from "@/components/I18nProvider";
-import { SectionSwitcher } from "@/components/SectionSwitcher";
+import { TopNav } from "@/components/TopNav";
 import { BackButton } from "@/components/BackButton";
 import { TelemetryIconButton } from "@/components/TelemetryIconButton";
 import { VisitPing } from "@/components/VisitPing";
@@ -231,28 +230,20 @@ export default function HomePage() {
     <main className="estante-page">
       <VisitPing />
       {/* TopBar com logo clicável */}
-      <div className="igot-topbar">
-        <div className="igot-topbar-left">
-          <Link href="/" className="brand" title="Moka — Ir para página central">
-            <CafezinhoLogo size={26} opacity={0.85} /> <span>Moka</span>
-          </Link>
-          <SectionSwitcher active="reader" />
-        </div>
-        <div className="igot-topbar-actions">
-          <BackButton />
-          <AuthGate />
-          <LangSwitcher />
-          <button
-            className={`gear ${configReady ? "" : "unset"}`}
-            onClick={() => router.push("/configuracoes")}
-            aria-label="Configurações de IA"
-          >
-            ⚙️
-          </button>
-          {/* 📊 Suas IAs e telemetria (pedido do Miguel, 22/08). */}
-          <TelemetryIconButton />
-        </div>
-      </div>
+      <TopNav active="reader" right={<>
+            <BackButton />
+            <AuthGate />
+            <LangSwitcher />
+            <button
+              className={`gear ${configReady ? "" : "unset"}`}
+              onClick={() => router.push("/configuracoes")}
+              aria-label={t("settings")}
+              title={t("settings")}
+            >
+              ⚙️
+            </button>
+            <TelemetryIconButton />
+      </>} />
 
       {/* Estante */}
       {loading ? (

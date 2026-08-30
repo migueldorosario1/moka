@@ -11,16 +11,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
-import { SectionSwitcher } from "@/components/SectionSwitcher";
+import { TopNav } from "@/components/TopNav";
 import { BackButton } from "@/components/BackButton";
 import { SiteFooter } from "@/components/SiteFooter";
 import { VisitPing } from "@/components/VisitPing";
 import { useI18n } from "@/components/I18nProvider";
 import { hasConfig, loadConfigCache } from "@/lib/config";
 import type { MemoriaObject } from "@/lib/memoria/types";
-import { getActiveMemoriaId, listMemoriaObjects } from "@/lib/memoria/store";
+import { getActiveMemoriaId, listMemoriaObjects, listMemorias } from "@/lib/memoria/store";
 import { askHarnessStream, type HarnessTurn } from "@/lib/memoria/harness";
 
 interface ChatMsg extends HarnessTurn {
@@ -34,6 +33,7 @@ export default function HarnessPage() {
 
   const [configReady, setConfigReady] = useState<boolean | null>(null);
   const [objetos, setObjetos] = useState<MemoriaObject[]>([]);
+  const [objetosOp, setObjetosOp] = useState<MemoriaObject[]>([]);
   const [msgs, setMsgs] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -51,6 +51,18 @@ export default function HarnessPage() {
         if (alive) setObjetos(os);
       })
       .catch(() => undefined);
+    // Memórias OPERACIONAIS (⚡): contexto de trabalho da IA (kinds do Miguel).
+    void (async () => {
+      try {
+        const metas = await listMemorias();
+        const ops: MemoriaObject[] = [];
+        for (const m of metas.filter((x) => x.kind === "operacional" && x.id !== getActiveMemoriaId())) {
+          const os = await listMemoriaObjects(m.id);
+          ops.push(...os.slice(0, 20));
+        }
+        if (alive) setObjetosOp(ops);
+      } catch { /* best-effort */ }
+    })();
     return () => {
       alive = false;
     };
@@ -99,30 +111,23 @@ export default function HarnessPage() {
     } finally {
       setBusy(false);
     }
-  }, [busy, input, msgs, objetos]);
+  }, [busy, input, msgs, objetos, objetosOp]);
 
   return (
     <main className="harness-page">
       <VisitPing />
-      <div className="igot-topbar">
-        <div className="igot-topbar-left">
-          <Link href="/" className="brand" title="Moka">
-            <CafezinhoLogo size={26} opacity={0.85} /> <span>Moka</span>
-          </Link>
-          <SectionSwitcher active="harness" />
-        </div>
-        <div className="igot-topbar-actions">
-          <BackButton />
-          <LangSwitcher />
-          <button
-            className="gear"
-            onClick={() => router.push("/configuracoes")}
-            aria-label="Configurações de IA"
-          >
-            ⚙️
-          </button>
-        </div>
-      </div>
+      <TopNav active="harness" right={<>
+            <BackButton />
+            <LangSwitcher />
+            <button
+              className="gear"
+              onClick={() => router.push("/configuracoes")}
+              aria-label={t("settings")}
+              title={t("settings")}
+            >
+              ⚙️
+            </button>
+      </>} />
 
       <header className="harness-hero">
         <div className="memoria-hero-icon" aria-hidden>💬</div>

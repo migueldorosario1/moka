@@ -49,10 +49,18 @@ export interface MemoriaObject {
   updatedAt: number;
 }
 
+/**
+ * Tipo de memória (ordem do Miguel 30/08 ~17h): a pessoa tem MEMÓRIA DE
+ * BAGAGEM (o que consumiu: livros, vídeos, traduções) e MEMÓRIA OPERACIONAL
+ * (contexto de trabalho — decisões e notas da conversa com a IA).
+ */
+export type MemoriaKind = "bagagem" | "operacional";
+
 /** Uma memória (perfil nomeado — DSC-019: "criar outra memória"). */
 export interface MemoriaMeta {
   id: string;
   nome: string;
+  kind: MemoriaKind;
   createdAt: number;
 }
 

@@ -50,10 +50,11 @@ function systemPrompt(lang: string, nObjetos: number): string {
   );
 }
 
-/** Monta o bloco de contexto: diálogo recente + trechos da memória. */
+/** Monta o bloco de contexto: diálogo + bagagem + operacional (kinds do Miguel). */
 export function buildHarnessContext(
   history: HarnessTurn[],
   consulted: MemoriaObject[],
+  consultedOp: MemoriaObject[] = [],
 ): string {
   const parts: string[] = [];
 
@@ -82,8 +83,18 @@ export function buildHarnessContext(
       );
     }
     parts.push(
-      "=== MEMÓRIA DA PESSOA (trechos relevantes pra esta pergunta) ===\n" +
+      "=== MEMÓRIA DE BAGAGEM (o que a pessoa leu/viu — trechos relevantes) ===\n" +
         blocks.join("\n\n"),
+    );
+  }
+
+  if (consultedOp.length) {
+    const blocksOp = consultedOp.map((o) =>
+      `--- ${o.title} ---\n${o.body.slice(0, 800)}`,
+    );
+    parts.push(
+      "=== MEMÓRIA OPERACIONAL (contexto de trabalho/decisões) ===\n" +
+        blocksOp.join("\n\n"),
     );
   }
 
@@ -99,6 +110,7 @@ export async function askHarnessStream(
   objetos: MemoriaObject[],
   history: HarnessTurn[],
   onChunk: (full: string, chunk: string) => void,
+  objetosOperacional: MemoriaObject[] = [],
 ): Promise<HarnessAnswer> {
   // Relevância: busca completa pela pergunta; se a pergunta é curta/vazia
   // de termos úteis, consulta os mais recentes.
@@ -110,7 +122,10 @@ export async function askHarnessStream(
   }
 
   const lang = getTargetLang();
-  const contextText = buildHarnessContext(history, consulted);
+  const consultedOp = searchMemoria(objetosOperacional, question)
+    .slice(0, 3)
+    .map((h) => h.obj);
+  const contextText = buildHarnessContext(history, consulted, consultedOp);
   const result = await askFreeStream(
     question,
     systemPrompt(lang, objetos.length),
@@ -121,6 +136,6 @@ export async function askHarnessStream(
     ok: result.ok,
     text: result.text,
     error: result.error,
-    consulted,
+    consulted: [...consultedOp, ...consulted],
   };
 }

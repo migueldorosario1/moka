@@ -10,7 +10,7 @@
  * A v1 é LOCAL-FIRST (parecer DSC-014 camada 1): nada sai do aparelho.
  */
 
-import type { MemoriaHit, MemoriaMeta, MemoriaObject } from "./types";
+import type { MemoriaHit, MemoriaKind, MemoriaMeta, MemoriaObject } from "./types";
 import { normalizeText } from "./markdown";
 
 const DB_NAME = "moka-memoria"; // banco PRÓPRIO — NUNCA sobe a versão do "igot"
@@ -140,6 +140,7 @@ export async function ensureDefaultMemoria(): Promise<MemoriaMeta> {
   const meta: MemoriaMeta = {
     id: DEFAULT_MEMORIA_ID,
     nome: DEFAULT_MEMORIA_NOME,
+    kind: "bagagem",
     createdAt: Date.now(),
   };
   store.put(meta);
@@ -161,12 +162,16 @@ export async function listMemorias(): Promise<MemoriaMeta[]> {
   return metas.sort((a, b) => a.createdAt - b.createdAt);
 }
 
-export async function createMemoria(nome: string): Promise<MemoriaMeta> {
+export async function createMemoria(
+  nome: string,
+  kind: MemoriaKind = "bagagem",
+): Promise<MemoriaMeta> {
   const clean = nome.trim().slice(0, 60);
   if (!clean) throw new Error("Nome vazio.");
   const meta: MemoriaMeta = {
     id: `m${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
     nome: clean,
+    kind,
     createdAt: Date.now(),
   };
   const db = await openMemoriaDB();

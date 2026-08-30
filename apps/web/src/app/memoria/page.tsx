@@ -16,9 +16,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
-import { SectionSwitcher } from "@/components/SectionSwitcher";
+import { TopNav } from "@/components/TopNav";
 import { BackButton } from "@/components/BackButton";
 import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -99,6 +98,7 @@ export default function MemoriaPage() {
   const [viewing, setViewing] = useState<MemoriaObject | null>(null);
   const [flash, setFlash] = useState<{ kind: "ok" | "warn"; text: string } | null>(null);
   const [novaMemNome, setNovaMemNome] = useState("");
+  const [novaMemKind, setNovaMemKind] = useState<"bagagem" | "operacional">("bagagem");
   const [dragOver, setDragOver] = useState(false);
   const [confirmDel, setConfirmDel] = useState<MemoriaObject | null>(null);
   const [confirmDelMem, setConfirmDelMem] = useState<MemoriaMeta | null>(null);
@@ -259,11 +259,11 @@ export default function MemoriaPage() {
   const criarMemoria = useCallback(async () => {
     const nome = novaMemNome.trim();
     if (!nome) return;
-    const meta = await createMemoria(nome);
+    const meta = await createMemoria(nome, novaMemKind);
     setNovaMemNome("");
     await loadAll();
     await ativar(meta.id);
-  }, [ativaId, loadAll, novaMemNome, ativar]);
+  }, [ativaId, loadAll, novaMemNome, novaMemKind, ativar]);
 
   const excluirMemoria = useCallback(
     async (m: MemoriaMeta) => {
@@ -285,26 +285,19 @@ export default function MemoriaPage() {
     <main className="memoria-page">
       <VisitPing />
       {/* TopBar padrão da casa */}
-      <div className="igot-topbar">
-        <div className="igot-topbar-left">
-          <Link href="/" className="brand" title="Moka">
-            <CafezinhoLogo size={26} opacity={0.85} /> <span>Moka</span>
-          </Link>
-          <SectionSwitcher active="memoria" />
-        </div>
-        <div className="igot-topbar-actions">
-          <BackButton />
-          <AuthGate />
-          <LangSwitcher />
-          <button
-            className="gear"
-            onClick={() => router.push("/configuracoes")}
-            aria-label="Configurações de IA"
-          >
-            ⚙️
-          </button>
-        </div>
-      </div>
+      <TopNav active="memoria" right={<>
+            <BackButton />
+            <AuthGate />
+            <LangSwitcher />
+            <button
+              className="gear"
+              onClick={() => router.push("/configuracoes")}
+              aria-label={t("settings")}
+              title={t("settings")}
+            >
+              ⚙️
+            </button>
+      </>} />
 
       {/* Cabeçalho do módulo */}
       <header className="memoria-hero">
@@ -498,6 +491,7 @@ export default function MemoriaPage() {
               <li key={m.id} className={`memoria-mem ${m.id === ativaId ? "active" : ""}`}>
                 <div className="memoria-mem-info">
                   <strong>{m.nome}</strong>
+                  <span className="memoria-badge kind">{m.kind === "operacional" ? t("mem_kind_op") : t("mem_kind_bag")}</span>
                   {m.id === ativaId && <span className="memoria-badge">{t("mem_active")}</span>}
                   <span className="memoria-mem-date">
                     {new Date(m.createdAt).toLocaleDateString()}
@@ -521,6 +515,22 @@ export default function MemoriaPage() {
               </li>
             ))}
           </ul>
+          <div className="memoria-kind-row">
+            <button
+              className={`memoria-btn ${novaMemKind === "bagagem" ? "primary" : ""}`}
+              onClick={() => setNovaMemKind("bagagem")}
+              type="button"
+            >
+              {t("mem_kind_bag")}
+            </button>
+            <button
+              className={`memoria-btn ${novaMemKind === "operacional" ? "primary" : ""}`}
+              onClick={() => setNovaMemKind("operacional")}
+              type="button"
+            >
+              {t("mem_kind_op")}
+            </button>
+          </div>
           <div className="memoria-new">
             <input
               type="text"

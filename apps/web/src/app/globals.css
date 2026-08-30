@@ -8889,3 +8889,33 @@ font-size: 14px;
 .or-list { list-style: none; margin: 0 0 10px; padding: 0; text-align: left; font-size: 15px; display: flex; flex-direction: column; gap: 6px; }
 .or-list b { margin-right: 4px; opacity: 0.7; font-size: 13px; text-transform: uppercase; letter-spacing: 0.03em; }
 .or-sure { font-size: 15px; margin: 0 0 4px; }
+
+/* ═══ TopNav PADRONIZADO (obra ~17h: menus grandes + olhinho invisível) ═══ */
+.topnav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 8px 0 6px;
+}
+.topnav-hidden {
+  justify-content: flex-end;
+}
+.topnav-eye {
+  width: 44px;
+  height: 44px;
+  font-size: 20px;
+  border-radius: var(--radius-pill, 999px);
+  border: 1px solid var(--border-soft, #ccc);
+  background: var(--surface-alt, transparent);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.topnav-eye:hover { background: var(--accent-soft, rgba(255,158,61,0.15)); }
+.memoria-kind-row { display: flex; gap: 8px; justify-content: center; margin-bottom: 8px; }
+.memoria-badge.kind { background: var(--surface-alt, #eee); }
+@media (max-width: 640px) {
+  .section-switch-btn { width: 52px; height: 52px; font-size: 26px; }
+  .topnav-eye { width: 52px; height: 52px; font-size: 24px; }
+}
