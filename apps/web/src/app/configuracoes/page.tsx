@@ -1,4 +1,5 @@
 "use client";
+import { TopNav } from "@/components/TopNav";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -60,15 +61,8 @@ export default function ConfiguracoesPage() {
   return (
     <main className="cfg-page">
       {/* TopBar — NÃO fixo (rola com a página, pedido do Miguel 09/08). */}
-      <div className="igot-topbar">
-        <div className="igot-topbar-left">
-          <Link href="/estante" className="brand" title="Voltar à estante">
-            <CafezinhoLogo size={26} opacity={0.85} /> <span>Moka</span>
-          </Link>
-          <span className="cfg-topbar-label">⚙️ {t("settings")}</span>
-        </div>
-        <div className="igot-topbar-actions">
-          <AuthGate />
+      <TopNav right={<>
+<AuthGate />
           <LangSwitcher />
           {/* ✕ Fechar — volta pra onde o usuário veio (estante, leitor, vídeo). */}
           <button
@@ -79,8 +73,12 @@ export default function ConfiguracoesPage() {
           >
             ✕
           </button>
-        </div>
-      </div>
+
+          <Link href="/estante" className="brand" title="Voltar à estante">
+            <CafezinhoLogo size={26} opacity={0.85} /> <span>Moka</span>
+          </Link>
+          <span className="cfg-topbar-label">⚙️ {t("settings")}</span>
+      </>} />
 
       {/* Corpo largo e respirável — rola naturalmente com a página. */}
       <div className="cfg-container">

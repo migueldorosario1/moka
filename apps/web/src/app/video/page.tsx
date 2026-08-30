@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { SettingsModal } from "@/components/SettingsModal";
-import { SectionSwitcher } from "@/components/SectionSwitcher";
+import { TopNav } from "@/components/TopNav";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { TelemetryIconButton } from "@/components/TelemetryIconButton";
 import { AuthGate } from "@/components/AuthGate";
@@ -450,7 +450,7 @@ export default function HomePage() {
             <CafezinhoLogo size={26} opacity={0.85} />
             <span>Moka</span>
           </Link>
-          <SectionSwitcher active="video" />
+          <TopNav active="video" />
         </div>
         <div className="igot-topbar-actions">
           <AuthGate />

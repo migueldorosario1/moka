@@ -6,7 +6,7 @@ import Link from "next/link";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { SettingsModal } from "@/components/SettingsModal";
 import { VideoAskModal } from "@/components/VideoAskModal";
-import { SectionSwitcher } from "@/components/SectionSwitcher";
+import { TopNav } from "@/components/TopNav";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { useAuth } from "@/lib/auth";
 import { Markdown } from "@/components/Markdown";
@@ -317,7 +317,7 @@ export default function VideoPage() {
             <CafezinhoLogo size={26} opacity={0.85} />
             <span>Moka</span>
           </Link>
-          <SectionSwitcher active="video" />
+          <TopNav active="video" />
         </div>
         <div className="igot-topbar-actions">
           <a

@@ -8952,3 +8952,47 @@ font-size: 14px;
   border-color: var(--accent, #ff9e3d);
   background: var(--accent-soft, rgba(255,158,61,0.15));
 }
+
+/* ═══ CAPA FUNCIONAL: a FAMÍLIA MOKA em botões grandes e iguais (~19h) ═══ */
+.capa-launch {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 18px auto 8px;
+  max-width: 760px;
+  width: 100%;
+}
+.capa-launch-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 22px 20px;
+  border-radius: 18px;
+  border: 2px solid var(--border-soft, #ddd);
+  background: var(--surface, #fff);
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.12s, background 0.15s;
+}
+.capa-launch-btn:hover {
+  border-color: var(--accent, #ff9e3d);
+  background: var(--accent-soft, rgba(255,158,61,0.08));
+}
+.capa-launch-btn:active { transform: scale(0.97); }
+.capa-launch-btn b {
+  font-size: 21px;
+  line-height: 1.25;
+}
+.capa-launch-btn span {
+  font-size: 14px;
+  opacity: 0.75;
+  line-height: 1.45;
+}
+.capa-launch-btn.settings b { font-size: 18px; }
+@media (max-width: 640px) {
+  .capa-launch { grid-template-columns: 1fr 1fr; gap: 10px; }
+  .capa-launch-btn { padding: 18px 14px; }
+  .capa-launch-btn b { font-size: 17px; }
+  .capa-launch-btn span { font-size: 12.5px; }
+  .capa-launch-btn.settings { grid-column: 1 / -1; }
+}

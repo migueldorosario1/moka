@@ -627,7 +627,9 @@ export type UIStringKey =
   | "capa_harness_desc"
   | "capa_harness_cta"
   | "wr_download"
-  | "wr_undo";
+  | "wr_undo"
+  // ── Obra 30/08 ~19h: capa funcional (família Moka igual em importância) ──
+  | "capa_btn_settings_desc";
 
 type LangStrings = Record<UIStringKey, string>;
 
@@ -715,6 +717,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_harness_cta: "Conversar agora",
     wr_download: "Baixar .md",
     wr_undo: "Desfazer IA",
+    capa_btn_settings_desc: "Chave de IA, idiomas e preferências — tudo fica no seu aparelho.",
     wr_title: "Moka Writer",
     wr_tagline: "Seu estúdio de escrever — com a sua IA e o seu estilo.",
     wr_tab_studio: "Estúdio",
@@ -1323,6 +1326,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_harness_cta: "Start chatting",
     wr_download: "Download .md",
     wr_undo: "Undo AI",
+    capa_btn_settings_desc: "AI key, languages and preferences — all stays on your device.",
     wr_title: "Moka Writer",
     wr_tagline: "Your writing studio — your AI, your style.",
     wr_tab_studio: "Studio",
@@ -1923,6 +1927,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_harness_cta: "Conversar ahora",
     wr_download: "Descargar .md",
     wr_undo: "Deshacer IA",
+    capa_btn_settings_desc: "Clave de IA, idiomas y preferencias — todo queda en tu aparato.",
     wr_title: "Moka Writer",
     wr_tagline: "Tu estudio de escritura — tu IA, tu estilo.",
     wr_tab_studio: "Estudio",
@@ -2523,6 +2528,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_harness_cta: "Discuter maintenant",
     wr_download: "Télécharger .md",
     wr_undo: "Annuler l'IA",
+    capa_btn_settings_desc: "Clé IA, langues et préférences — tout reste sur votre appareil.",
     wr_title: "Moka Writer",
     wr_tagline: "Votre studio d'écriture — votre IA, votre style.",
     wr_tab_studio: "Studio",
@@ -3123,6 +3129,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_harness_cta: "Jetzt chatten",
     wr_download: ".md herunterladen",
     wr_undo: "KI rückgängig",
+    capa_btn_settings_desc: "KI-Schlüssel, Sprachen und Einstellungen — alles bleibt auf deinem Gerät.",
     wr_title: "Moka Writer",
     wr_tagline: "Dein Schreibstudio — deine KI, dein Stil.",
     wr_tab_studio: "Studio",
@@ -3723,6 +3730,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_harness_cta: "Conversa ora",
     wr_download: "Scarica .md",
     wr_undo: "Annulla IA",
+    capa_btn_settings_desc: "Chiave IA, lingue e preferenze — tutto resta sul tuo dispositivo.",
     wr_title: "Moka Writer",
     wr_tagline: "Il tuo studio di scrittura — la tua IA, il tuo stile.",
     wr_tab_studio: "Studio",
@@ -4323,6 +4331,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_harness_cta: "Начать разговор",
     wr_download: "Скачать .md",
     wr_undo: "Отменить ИИ",
+    capa_btn_settings_desc: "Ключ ИИ, языки и настройки — всё остаётся на вашем устройстве.",
     wr_title: "Moka Writer",
     wr_tagline: "Ваша студия письма — ваш ИИ, ваш стиль.",
     wr_tab_studio: "Студия",
@@ -4923,6 +4932,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_harness_cta: "立即对话",
     wr_download: "下载 .md",
     wr_undo: "撤销 AI",
+    capa_btn_settings_desc: "AI 密钥、语言和偏好——全部保存在你的设备上。",
     wr_title: "Moka Writer",
     wr_tagline: "你的写作工作室——你的 AI，你的风格。",
     wr_tab_studio: "工作室",
@@ -5523,6 +5533,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_harness_cta: "今すぐ話す",
     wr_download: ".md をダウンロード",
     wr_undo: "AIを元に戻す",
+    capa_btn_settings_desc: "AIキー、言語、設定 — すべて端末内に保存。",
     wr_title: "Moka Writer",
     wr_tagline: "あなたの執筆スタジオ — あなたのAI、あなたの文体。",
     wr_tab_studio: "スタジオ",
@@ -6123,6 +6134,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_harness_cta: "바로 대화하기",
     wr_download: ".md 내려받기",
     wr_undo: "AI 되돌리기",
+    capa_btn_settings_desc: "AI 키, 언어, 환경설정 — 모두 기기에 저장됩니다.",
     wr_title: "Moka Writer",
     wr_tagline: "당신의 글쓰기 스튜디오 — 당신의 AI, 당신의 스타일.",
     wr_tab_studio: "스튜디오",
@@ -6723,6 +6735,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_harness_cta: "ابدأ الحديث",
     wr_download: "تنزيل .md",
     wr_undo: "تراجع عن الذكاء",
+    capa_btn_settings_desc: "مفتاح الذكاء، اللغات والتفضيلات — كل شيء يبقى على جهازك.",
     wr_title: "Moka Writer",
     wr_tagline: "استوديو الكتابة الخاص بك — ذكاؤك، أسلوبك.",
     wr_tab_studio: "الاستوديو",
@@ -7323,6 +7336,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     capa_harness_cta: "अभी बात करें",
     wr_download: ".md डाउनलोड",
     wr_undo: "AI पूर्ववत",
+    capa_btn_settings_desc: "AI कुंजी, भाषाएँ और सेटिंग्स — सब आपके डिवाइस पर रहता है।",
     wr_title: "Moka Writer",
     wr_tagline: "आपका लेखन स्टूडियो — आपकी AI, आपकी शैली।",
     wr_tab_studio: "स्टूडियो",

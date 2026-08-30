@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CafezinhoLogo } from "@/components/CafezinhoLogo";
+import { TopNav } from "@/components/TopNav";
 import { ZeMocaAvatar } from "@/components/ZeMocaAvatar";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -29,46 +29,26 @@ export function Capa() {
 
   return (
     <main className="igot-shell ft">
-      <div className="igot-topbar">
-        <div className="igot-topbar-left">
-          <Link href="/" className="brand" title="MOKA — Ir para página central">
-            <CafezinhoLogo size={26} opacity={0.85} />
-            <span>MOKA</span>
-          </Link>
-        </div>
-        <div className="igot-topbar-actions">
-          {/* QA-CHANGE (Kimi 3, 2026-08-05): "Quem somos" saiu das Configurações
-              e veio para o início da página (pedido do Miguel) — link direto /sobre */}
-          <Link href="/sobre" className="topbar-about" title="Quem somos — Saiba mais">
-            👥 {t("nav_about")}
-          </Link>
-          {/* 🤖 Ajuda do Zé Moca (agente-guia) — leva pro /ajuda por enquanto.
-              Futuro: abre o chat do Zé Moca. Ícone divertido ☕ (não ❓). */}
-          <Link
-            href="/ajuda"
-            className="topbar-help"
-            title={t("help_title")}
-            aria-label={t("help_title")}
-          >
-            <ZeMocaAvatar size={32} />
-          </Link>
-          {/* ⚙️ Configurações — tem que estar na capa também (não só no leitor). */}
-          <button
-            className="gear"
-            onClick={() => router.push("/configuracoes")}
-            aria-label={t("settings")}
-            title={t("settings")}
-          >
-            ⚙️
-          </button>
-          {/* 📊 Suas IAs e telemetria — visível na primeira página (Miguel, 22/08). */}
-          <TelemetryIconButton />
-          {/* 🏆 Mural das IAs — página própria (Miguel, 24/08). */}
-          <MuralIconButton />
-          <AuthGate />
-          <LangSwitcher />
-        </div>
-      </div>
+      <TopNav right={<>
+            <Link href="/sobre" className="topbar-about" title="Quem somos — Saiba mais">
+              👥 {t("nav_about")}
+            </Link>
+            <Link href="/ajuda" className="topbar-help" title={t("help_title")} aria-label={t("help_title")}>
+              <ZeMocaAvatar size={32} />
+            </Link>
+            <button
+              className="gear"
+              onClick={() => router.push("/configuracoes")}
+              aria-label={t("settings")}
+              title={t("settings")}
+            >
+              ⚙️
+            </button>
+            <TelemetryIconButton />
+            <MuralIconButton />
+            <AuthGate />
+            <LangSwitcher />
+      </>} />
 
       <div className="capa-body">
         <p className="capa-kicker">{t("capa_kicker")}</p>
@@ -92,38 +72,34 @@ export function Capa() {
           {t("capa_login_benefit")}
         </p>
 
-        {/* ── Ilustração Editorial de Destaque ── */}
-        <img
-          className="capa-hero-img"
-          src="/moka_hero_editorial.png"
-          alt="Moka — Inteligência de Leitura e Vídeos"
-        />
-
-        {/* ── Entradas do app (Estante & Videoteca) ── */}
-        {/* 💬 MOKA HARNESS — protagonista (ordem do Miguel ~18h: "link
-            grande, um dos protagonistas do Moka, não segundo plano") */}
-        <a className="capa-card capa-card-harness" href="/harness">
-          <b>💬 Moka Harness</b>
-          <span>{t("capa_harness_desc")}</span>
-          <i className="capa-card-cta">{t("capa_harness_cta")} →</i>
-        </a>
-
-        <div className="capa-cards">
-          <a className="capa-card" href="/estante">
-            <b>📖 {t("capa_shelf_books")}</b>
+        {/* ── A FAMÍLIA MOKA (ordem do Miguel ~18h, corrigida ~19h: o
+            protagonista é o CONJUNTO — os cinco Mokas com a MESMA
+            importância, botões GRANDES e IGUAIS, capa funcional sem
+            ilustração decorativa) ── */}
+        <div className="capa-launch">
+          <a className="capa-launch-btn" href="/estante">
+            <b>📖 Moka Reader</b>
             <span>{t("capa_books_desc")}</span>
           </a>
-          <a className="capa-card" href="/video">
-            <b>🎬 {t("capa_shelf_videos")}</b>
+          <a className="capa-launch-btn" href="/video">
+            <b>🎬 Moka Vídeo</b>
             <span>{t("capa_videos_desc")}</span>
           </a>
-          <a className="capa-card" href="/memoria">
-            <b>🧠 {t("mem_title")}</b>
+          <a className="capa-launch-btn" href="/memoria">
+            <b>🧠 Moka Memória</b>
             <span>{t("mem_tagline")}</span>
           </a>
-          <a className="capa-card" href="/writer">
+          <a className="capa-launch-btn" href="/harness">
+            <b>💬 Moka Harness</b>
+            <span>{t("capa_harness_desc")}</span>
+          </a>
+          <a className="capa-launch-btn" href="/writer">
             <b>✍️ Moka Writer</b>
             <span>{t("wr_tagline")}</span>
+          </a>
+          <a className="capa-launch-btn settings" href="/configuracoes">
+            <b>⚙️ {t("settings")}</b>
+            <span>{t("capa_btn_settings_desc")}</span>
           </a>
         </div>
 

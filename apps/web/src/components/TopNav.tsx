@@ -27,7 +27,8 @@ export function TopNav({
   active,
   right,
 }: {
-  active: SectionKey;
+  /** Seção ativa (a capa não marca nenhuma). */
+  active?: SectionKey;
   /** Extras da página (engrenagem c/ estado, telemetria etc.). */
   right?: ReactNode;
 }) {

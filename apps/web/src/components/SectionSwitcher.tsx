@@ -21,7 +21,7 @@ const SECTIONS: Array<{ key: SectionKey; href: string; icon: string; titleKey: "
   { key: "writer", href: "/writer", icon: "✍️", titleKey: "sec_writer" },
 ];
 
-export function SectionSwitcher({ active }: { active: SectionKey }) {
+export function SectionSwitcher({ active }: { active?: SectionKey }) {
   const { t } = useI18n();
   return (
     <nav className="section-switch" aria-label={t("sec_nav")}>
