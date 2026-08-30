@@ -3,47 +3,38 @@
 import Link from "next/link";
 
 /**
- * Seletor de seções do Moka unificado (V 2.0 — fusão Reader + Video).
+ * Seletor de seções do Moka unificado — A FAMÍLIA COMPLETA (obra MOKA).
  *
- * Fica no topo, ao lado da marca: 📖 livros · 🎬 vídeos · 🧠 memória.
- * Um app só, como pediu o Miguel: "íconezinho de vídeo e íconezinho de livro".
- * 🧠 MOKA MEMÓRIA entrou na OBRA MOKA (30/08/2026, DSC-019: módulo com
- * ícone próprio).
+ * 📖 Reader (livros) · 🎬 Vídeo · 🧠 Memória · 💬 Harness · ✍️ Writer
+ *
+ * Ordem do Miguel (30/08 ~15h): "ícones grandes" de reader, vídeo, memória,
+ * harness e writer, todos do lado — botões GRANDES por natureza (DSC-019).
  */
-export function SectionSwitcher({
-  active,
-}: {
-  active: "reader" | "video" | "memoria";
-}) {
+export type SectionKey = "reader" | "video" | "memoria" | "harness" | "writer";
+
+const SECTIONS: Array<{ key: SectionKey; href: string; icon: string; title: string; label: string }> = [
+  { key: "reader", href: "/estante", icon: "📖", title: "Moka Reader — seus livros", label: "Livros" },
+  { key: "video", href: "/video", icon: "🎬", title: "Moka Video — leia vídeos", label: "Vídeos" },
+  { key: "memoria", href: "/memoria", icon: "🧠", title: "Moka Memória — tudo que você leu e viu", label: "Memória" },
+  { key: "harness", href: "/harness", icon: "💬", title: "Moka Harness — converse com sua memória", label: "Harness" },
+  { key: "writer", href: "/writer", icon: "✍️", title: "Moka Writer — seu estúdio de escrever", label: "Writer" },
+];
+
+export function SectionSwitcher({ active }: { active: SectionKey }) {
   return (
     <nav className="section-switch" aria-label="Seções do Moka">
-      <Link
-        href="/estante"
-        className={`section-switch-btn ${active === "reader" ? "active" : ""}`}
-        title="Moka Reader — seus livros"
-        aria-label="Livros"
-        aria-current={active === "reader" ? "page" : undefined}
-      >
-        📖
-      </Link>
-      <Link
-        href="/video"
-        className={`section-switch-btn ${active === "video" ? "active" : ""}`}
-        title="Moka Video — leia vídeos"
-        aria-label="Vídeos"
-        aria-current={active === "video" ? "page" : undefined}
-      >
-        🎬
-      </Link>
-      <Link
-        href="/memoria"
-        className={`section-switch-btn ${active === "memoria" ? "active" : ""}`}
-        title="Moka Memória — tudo que você leu e viu"
-        aria-label="Memória"
-        aria-current={active === "memoria" ? "page" : undefined}
-      >
-        🧠
-      </Link>
+      {SECTIONS.map((s) => (
+        <Link
+          key={s.key}
+          href={s.href}
+          className={`section-switch-btn ${active === s.key ? "active" : ""}`}
+          title={s.title}
+          aria-label={s.label}
+          aria-current={active === s.key ? "page" : undefined}
+        >
+          {s.icon}
+        </Link>
+      ))}
     </nav>
   );
 }

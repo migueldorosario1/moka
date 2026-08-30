@@ -109,7 +109,7 @@ export default function HarnessPage() {
           <Link href="/" className="brand" title="Moka">
             <CafezinhoLogo size={26} opacity={0.85} /> <span>Moka</span>
           </Link>
-          <SectionSwitcher active="memoria" />
+          <SectionSwitcher active="harness" />
         </div>
         <div className="igot-topbar-actions">
           <BackButton />

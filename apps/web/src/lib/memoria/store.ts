@@ -13,8 +13,8 @@
 import type { MemoriaHit, MemoriaMeta, MemoriaObject } from "./types";
 import { normalizeText } from "./markdown";
 
-const DB_NAME = "igot";
-const DB_VERSION = 3;
+const DB_NAME = "moka-memoria"; // banco PRÓPRIO — NUNCA sobe a versão do "igot"
+const DB_VERSION = 1;
 const OBJ_STORE = "memoria";
 const META_STORE = "memoria_metas";
 const ACTIVE_KEY = "moka.memoria.ativa";
@@ -39,13 +39,6 @@ function openMemoriaDB(): Promise<IDBDatabase> {
     const req = indexedDB.open(DB_NAME, DB_VERSION);
     req.onupgradeneeded = () => {
       const db = req.result;
-      // Idempotente: recria o que faltar (banho novo OU upgrade v1/v2).
-      if (!db.objectStoreNames.contains("sessions")) {
-        db.createObjectStore("sessions");
-      }
-      if (!db.objectStoreNames.contains("books")) {
-        db.createObjectStore("books", { keyPath: "id" });
-      }
       if (!db.objectStoreNames.contains(OBJ_STORE)) {
         db.createObjectStore(OBJ_STORE, { keyPath: "id" });
       }
@@ -69,6 +62,56 @@ function openMemoriaDB(): Promise<IDBDatabase> {
   });
 }
 
+/**
+ * Migração best-effort da v1 da obra: a primeira versão do módulo criou os
+ * stores dentro do banco "igot" (subindo ele pra v3 — o que quebrava o
+ * db.ts dos livros, que abre v2). Aqui copiamos o que tiver sido gravado
+ * lá pro banco próprio e NÃO mexemos mais no igot.
+ */
+async function migrateFromIgotV3(): Promise<void> {
+  if (typeof indexedDB === "undefined") return;
+  if (typeof localStorage !== "undefined" && localStorage.getItem("moka.memoria.migrada") === "1") {
+    return;
+  }
+  try {
+    const igot: IDBDatabase = await new Promise((resolve, reject) => {
+      // Abre SEM versão: funciona mesmo se o igot já estiver na v3.
+      const r = indexedDB.open("igot");
+      r.onsuccess = () => resolve(r.result);
+      r.onerror = () => reject(r.error);
+    });
+    const hasMemoria = igot.objectStoreNames.contains(OBJ_STORE);
+    if (hasMemoria) {
+      const objs = await new Promise<MemoriaObject[]>((resolve) => {
+        const tx = igot.transaction(OBJ_STORE, "readonly");
+        const rq = tx.objectStore(OBJ_STORE).getAll();
+        rq.onsuccess = () => resolve((rq.result as MemoriaObject[]) ?? []);
+        rq.onerror = () => resolve([]);
+      });
+      const metas = await new Promise<MemoriaMeta[]>((resolve) => {
+        const tx = igot.transaction(META_STORE, "readonly");
+        const rq = tx.objectStore(META_STORE).getAll();
+        rq.onsuccess = () => resolve((rq.result as MemoriaMeta[]) ?? []);
+        rq.onerror = () => resolve([]);
+      });
+      if (objs.length || metas.length) {
+        const db = await openMemoriaDB();
+        const tx = db.transaction([OBJ_STORE, META_STORE], "readwrite");
+        for (const m of metas) tx.objectStore(META_STORE).put(m);
+        for (const o of objs) tx.objectStore(OBJ_STORE).put(o);
+        await txDone(tx);
+        db.close();
+      }
+    }
+    igot.close();
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem("moka.memoria.migrada", "1");
+    }
+  } catch {
+    /* migração é best-effort */
+  }
+}
+
 function txDone(tx: IDBTransaction): Promise<void> {
   return new Promise((resolve, reject) => {
     tx.oncomplete = () => resolve();
@@ -80,6 +123,7 @@ function txDone(tx: IDBTransaction): Promise<void> {
 
 /** Garante que a memória "Principal" exista (idempotente). */
 export async function ensureDefaultMemoria(): Promise<MemoriaMeta> {
+  await migrateFromIgotV3(); // v1 da obra: tira a memória do banco igot
   const db = await openMemoriaDB();
   const tx = db.transaction(META_STORE, "readwrite");
   const store = tx.objectStore(META_STORE);
