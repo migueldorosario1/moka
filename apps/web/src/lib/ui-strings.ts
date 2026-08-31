@@ -686,7 +686,15 @@ export type UIStringKey =
   // ── Obra 31/08 ~12:4x: objeto-livro → estante ──
   | "mem_to_shelf"
   | "mem_to_shelf_ok"
-  | "mem_shelf_empty";
+  | "mem_shelf_empty"
+  // ── Obra 31/08 ~13h: estante na nuvem com ORIGINAIS (regra do Miguel) ──
+  | "shelf_cloud_save"
+  | "shelf_cloud_restore"
+  | "shelf_cloud_progress"
+  | "shelf_cloud_saved"
+  | "shelf_cloud_restored"
+  | "shelf_cloud_none"
+  | "shelf_cloud_skip_old";
 
 type LangStrings = Record<UIStringKey, string>;
 
@@ -1349,6 +1357,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     mem_to_shelf: "Pra estante",
     mem_to_shelf_ok: "Livro \"{title}\" voltou pra estante!",
     mem_shelf_empty: "Este objeto não tem texto suficiente pra virar livro.",
+    shelf_cloud_save: "Salvar estante na nuvem",
+    shelf_cloud_restore: "Restaurar estante",
+    shelf_cloud_progress: "Nuvem: livro {n} de {total}…",
+    shelf_cloud_saved: "{n} livro(s) salvos na nuvem COM o arquivo original (PDF/EPUB).",
+    shelf_cloud_restored: "{n} livro(s) restaurados na estante — os originais (PDF/EPUB) voltaram inteiros.",
+    shelf_cloud_none: "Nenhum livro na nuvem ainda — salve a estante primeiro.",
+    shelf_cloud_skip_old: "{n} livro(s) antigo(s) ficaram de fora (adicionados antes de guardarmos o original — reabra o arquivo pra incluí-los)",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -2001,6 +2016,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     mem_to_shelf: "To shelf",
     mem_to_shelf_ok: "Book \"{title}\" is back on your shelf!",
     mem_shelf_empty: "This object doesn't have enough text to become a book.",
+    shelf_cloud_save: "Save shelf to cloud",
+    shelf_cloud_restore: "Restore shelf",
+    shelf_cloud_progress: "Cloud: book {n} of {total}…",
+    shelf_cloud_saved: "{n} book(s) saved to the cloud WITH the original file (PDF/EPUB).",
+    shelf_cloud_restored: "{n} book(s) restored to your shelf — the originals (PDF/EPUB) came back whole.",
+    shelf_cloud_none: "No books in the cloud yet — save the shelf first.",
+    shelf_cloud_skip_old: "{n} old book(s) left out (added before we kept originals — reopen the file to include them)",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -2653,6 +2675,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     mem_to_shelf: "A la estantería",
     mem_to_shelf_ok: "¡El libro \"{title}\" volvió a la estantería!",
     mem_shelf_empty: "Este objeto no tiene texto suficiente para ser un libro.",
+    shelf_cloud_save: "Guardar estantería en la nube",
+    shelf_cloud_restore: "Restaurar estantería",
+    shelf_cloud_progress: "Nube: libro {n} de {total}…",
+    shelf_cloud_saved: "{n} libro(s) guardados en la nube CON el archivo original (PDF/EPUB).",
+    shelf_cloud_restored: "{n} libro(s) restaurados en la estantería — los originales (PDF/EPUB) volvieron enteros.",
+    shelf_cloud_none: "Aún no hay libros en la nube — guarda la estantería primero.",
+    shelf_cloud_skip_old: "{n} libro(s) antiguo(s) quedaron fuera (añadidos antes de guardar originales — vuelve a abrir el archivo)",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -3305,6 +3334,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     mem_to_shelf: "Vers la bibliothèque",
     mem_to_shelf_ok: "Le livre « {title} » est de retour dans la bibliothèque !",
     mem_shelf_empty: "Cet objet n'a pas assez de texte pour devenir un livre.",
+    shelf_cloud_save: "Enregistrer la bibliothèque dans le cloud",
+    shelf_cloud_restore: "Restaurer la bibliothèque",
+    shelf_cloud_progress: "Cloud : livre {n} sur {total}…",
+    shelf_cloud_saved: "{n} livre(s) enregistrés dans le cloud AVEC le fichier original (PDF/EPUB).",
+    shelf_cloud_restored: "{n} livre(s) restaurés dans la bibliothèque — les originaux (PDF/EPUB) sont revenus entiers.",
+    shelf_cloud_none: "Aucun livre dans le cloud pour l'instant — enregistrez d'abord la bibliothèque.",
+    shelf_cloud_skip_old: "{n} ancien(s) livre(s) exclus (ajoutés avant la sauvegarde des originaux — rouvrez le fichier)",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -3957,6 +3993,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     mem_to_shelf: "Ins Regal",
     mem_to_shelf_ok: "Buch „{title}“ ist zurück im Regal!",
     mem_shelf_empty: "Dieses Objekt hat nicht genug Text für ein Buch.",
+    shelf_cloud_save: "Regal in der Cloud speichern",
+    shelf_cloud_restore: "Regal wiederherstellen",
+    shelf_cloud_progress: "Cloud: Buch {n} von {total}…",
+    shelf_cloud_saved: "{n} Buch/Bücher mit Originaldatei (PDF/EPUB) in der Cloud gespeichert.",
+    shelf_cloud_restored: "{n} Buch/Bücher im Regal wiederhergestellt — die Originale (PDF/EPUB) kamen vollständig zurück.",
+    shelf_cloud_none: "Noch keine Bücher in der Cloud — speichere zuerst das Regal.",
+    shelf_cloud_skip_old: "{n} alte(s) Buch/Bücher ausgelassen (vor der Original-Speicherung hinzugefügt — Datei erneut öffnen)",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -4609,6 +4652,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     mem_to_shelf: "Alla libreria",
     mem_to_shelf_ok: "Il libro \"{title}\" è tornato nella libreria!",
     mem_shelf_empty: "Questo oggetto non ha abbastanza testo per diventare un libro.",
+    shelf_cloud_save: "Salva libreria nel cloud",
+    shelf_cloud_restore: "Ripristina libreria",
+    shelf_cloud_progress: "Cloud: libro {n} di {total}…",
+    shelf_cloud_saved: "{n} libro/i salvati nel cloud CON il file originale (PDF/EPUB).",
+    shelf_cloud_restored: "{n} libro/i ripristinati nella libreria — gli originali (PDF/EPUB) sono tornati interi.",
+    shelf_cloud_none: "Nessun libro nel cloud — salva prima la libreria.",
+    shelf_cloud_skip_old: "{n} libro/i vecchi esclusi (aggiunti prima di salvare gli originali — riapri il file)",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -5261,6 +5311,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     mem_to_shelf: "На полку",
     mem_to_shelf_ok: "Книга «{title}» снова на полке!",
     mem_shelf_empty: "В этом объекте мало текста для книги.",
+    shelf_cloud_save: "Сохранить полку в облако",
+    shelf_cloud_restore: "Восстановить полку",
+    shelf_cloud_progress: "Облако: книга {n} из {total}…",
+    shelf_cloud_saved: "{n} книг(и) сохранены в облаке С оригинальным файлом (PDF/EPUB).",
+    shelf_cloud_restored: "{n} книг(и) восстановлены на полке — оригиналы (PDF/EPUB) вернулись целиком.",
+    shelf_cloud_none: "В облаке пока нет книг — сначала сохраните полку.",
+    shelf_cloud_skip_old: "{n} старых книг пропущено (добавлены до сохранения оригиналов — откройте файл заново)",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -5913,6 +5970,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     mem_to_shelf: "到书架",
     mem_to_shelf_ok: "图书《{title}》已回到书架！",
     mem_shelf_empty: "该对象的文本不足以生成图书。",
+    shelf_cloud_save: "书架保存到云端",
+    shelf_cloud_restore: "恢复书架",
+    shelf_cloud_progress: "云端：第 {n}/{total} 本书…",
+    shelf_cloud_saved: "{n} 本图书已连同原始文件（PDF/EPUB）保存到云端。",
+    shelf_cloud_restored: "{n} 本图书已恢复到书架 — 原始文件（PDF/EPUB）完整回来了。",
+    shelf_cloud_none: "云端还没有图书 — 请先保存书架。",
+    shelf_cloud_skip_old: "{n} 本旧书未包含（在开始保存原文件之前添加 — 重新打开文件即可包含）",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -6565,6 +6629,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     mem_to_shelf: "本棚へ",
     mem_to_shelf_ok: "『{title}』が本棚に戻りました！",
     mem_shelf_empty: "このオブジェクトは本にするのに十分なテキストがありません。",
+    shelf_cloud_save: "本棚をクラウドに保存",
+    shelf_cloud_restore: "本棚を復元",
+    shelf_cloud_progress: "クラウド：{n}/{total} 冊目…",
+    shelf_cloud_saved: "{n} 冊の本を元のファイル（PDF/EPUB）ごとクラウドに保存しました。",
+    shelf_cloud_restored: "{n} 冊の本を本棚に復元しました — 元のファイル（PDF/EPUB）がそのまま戻りました。",
+    shelf_cloud_none: "クラウドに本がまだありません — 先に本棚を保存してください。",
+    shelf_cloud_skip_old: "{n} 冊の古い本は対象外（元ファイル保存前に追加されたもの — ファイルを開き直すと含まれます）",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -7217,6 +7288,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     mem_to_shelf: "책장으로",
     mem_to_shelf_ok: "《{title}》 책장에 돌아왔습니다!",
     mem_shelf_empty: "이 객체는 책이 되기에 텍스트가 부족합니다.",
+    shelf_cloud_save: "책장을 클라우드에 저장",
+    shelf_cloud_restore: "책장 복원",
+    shelf_cloud_progress: "클라우드: {n}/{total}번째 책…",
+    shelf_cloud_saved: "{n}권의 책을 원본 파일(PDF/EPUB)과 함께 클라우드에 저장했습니다.",
+    shelf_cloud_restored: "{n}권의 책을 책장에 복원했습니다 — 원본(PDF/EPUB)이 온전히 돌아왔습니다.",
+    shelf_cloud_none: "클라우드에 아직 책이 없습니다 — 먼저 책장을 저장하세요.",
+    shelf_cloud_skip_old: "{n}권의 오래된 책 제외(원본 저장 이전에 추가됨 — 파일을 다시 열면 포함됩니다)",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -7869,6 +7947,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     mem_to_shelf: "إلى الرف",
     mem_to_shelf_ok: "عاد الكتاب \"{title}\" إلى الرف!",
     mem_shelf_empty: "هذا الكائن لا يحتوي نصًا كافيًا ليصبح كتابًا.",
+    shelf_cloud_save: "حفظ الرف في السحابة",
+    shelf_cloud_restore: "استعادة الرف",
+    shelf_cloud_progress: "السحابة: الكتاب {n} من {total}…",
+    shelf_cloud_saved: "تم حفظ {n} كتاب في السحابة مع الملف الأصلي (PDF/EPUB).",
+    shelf_cloud_restored: "تمت استعادة {n} كتاب في الرف — عادت النسخ الأصلية (PDF/EPUB) كاملة.",
+    shelf_cloud_none: "لا توجد كتب في السحابة بعد — احفظ الرف أولاً.",
+    shelf_cloud_skip_old: "استُبعد {n} كتاب قديم (أُضيفت قبل حفظ النسخ الأصلية — أعد فتح الملف لإدراجها)",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -8521,5 +8606,12 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     mem_to_shelf: "शेल्फ़ में",
     mem_to_shelf_ok: "पुस्तक \"{title}\" शेल्फ़ पर वापस आ गई!",
     mem_shelf_empty: "इस ऑब्जेक्ट में पुस्तक बनने के लिए पर्याप्त पाठ नहीं है।",
+    shelf_cloud_save: "शेल्फ़ क्लाउड में सहेजें",
+    shelf_cloud_restore: "शेल्फ़ पुनर्स्थापित",
+    shelf_cloud_progress: "क्लाउड: पुस्तक {n}/{total}…",
+    shelf_cloud_saved: "{n} पुस्तकें मूल फ़ाइल (PDF/EPUB) सहित क्लाउड में सहेजी गईं।",
+    shelf_cloud_restored: "{n} पुस्तकें शेल्फ़ पर पुनर्स्थापित — मूल फ़ाइलें (PDF/EPUB) पूरी वापस आ गईं।",
+    shelf_cloud_none: "क्लाउड में अभी कोई पुस्तक नहीं — पहले शेल्फ़ सहेजें।",
+    shelf_cloud_skip_old: "{n} पुरानी पुस्तकें छोड़ी गईं (मूल सहेजने से पहले जोड़ी गईं — शामिल करने के लिए फ़ाइल फिर खोलें)",
   },
 };

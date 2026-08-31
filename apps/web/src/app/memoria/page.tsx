@@ -46,8 +46,7 @@ import {
 import { searchMemoria } from "@/lib/memoria/store";
 import { loadCloudConfig } from "@/lib/cloud";
 import { cloudPut, cloudGet } from "@/lib/cloud-s3";
-import { listLibrary, saveToLibrary } from "@/lib/repository";
-import { generateDynamicBookCover } from "@/lib/cover-generator";
+import { listLibrary } from "@/lib/repository";
 import { blocksToText } from "@/lib/paginate";
 import type { Session } from "@/lib/db";
 
@@ -235,60 +234,6 @@ export default function MemoriaPage() {
       })();
     },
     [flashFor, importText, t],
-  );
-
-  // ── 📖 Objeto-livro da memória → ESTANTE (ordem do Miguel, 31/08:
-  //    "quando uma coisa está na memória da nuvem, o livro pode aparecer
-  //    na estante?") — restaura da nuvem, aponta "Pra estante" e o livro
-  //    volta navegável (texto reconstruído dos capítulos do objeto). ──
-  const [shelfBusy, setShelfBusy] = useState<string | null>(null);
-  const livroParaEstante = useCallback(
-    async (obj: MemoriaObject) => {
-      setShelfBusy(obj.id);
-      try {
-        const chapters = obj.body
-          .split(/^## /m)
-          .map((part) => part.trim())
-          .filter((part) => part.length > 0)
-          .map((part, i) => {
-            const [titleLine, ...rest] = part.split("\n");
-            const text = rest.join("\n").trim();
-            return {
-              id: `c${i + 1}`,
-              title: titleLine.trim() || `Capítulo ${i + 1}`,
-              blocks: text ? [{ id: `c${i + 1}-p0`, type: "paragraph" as const, text }] : [],
-            };
-          });
-        if (chapters.length === 0) {
-          flashFor("warn", t("mem_shelf_empty"));
-          return;
-        }
-        const session: Session = {
-          id: `b${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`,
-          fileName: `${obj.title.slice(0, 60)}.md`,
-          fileSize: obj.chars,
-          book: {
-            title: obj.title,
-            author: obj.author,
-            sourceFormat: "txt",
-            chapters,
-            metadata: { source: "memoria-do-moka" },
-          },
-          coverImage: generateDynamicBookCover({ title: obj.title, author: obj.author }),
-          pdfSource: null,
-          chapterIdx: 0,
-          zoom: 1,
-          savedAt: Date.now(),
-          translations: {},
-          notes: [],
-        };
-        await saveToLibrary(session);
-        flashFor("ok", t("mem_to_shelf_ok", { title: obj.title }));
-      } finally {
-        setShelfBusy(null);
-      }
-    },
-    [flashFor, t],
   );
 
   // ── ☁️ Nuvem (R2/B2 do usuário — ordem do Miguel, 31/08) ──
@@ -578,15 +523,6 @@ export default function MemoriaPage() {
                     <button className="memoria-btn" onClick={() => setViewing(obj)}>
                       👁️ {t("mem_view")}
                     </button>
-                    {obj.type === "livro" && (
-                      <button
-                        className="memoria-btn"
-                        disabled={shelfBusy !== null}
-                        onClick={() => void livroParaEstante(obj)}
-                      >
-                        {shelfBusy === obj.id ? "…" : "📖"} {t("mem_to_shelf")}
-                      </button>
-                    )}
                     <button className="memoria-btn" onClick={() => exportOne(obj)}>
                       ⬆️ {t("mem_export_one")}
                     </button>

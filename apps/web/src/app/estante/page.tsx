@@ -14,7 +14,9 @@ import { TelemetryIconButton } from "@/components/TelemetryIconButton";
 import { VisitPing } from "@/components/VisitPing";
 import { hasConfig, loadConfigCache } from "@/lib/config";
 import { useAuth } from "@/lib/auth";
-import { listLibrary, saveToLibrary, removeFromLibrary, clearAllBooks } from "@/lib/repository";
+import { listLibrary, saveToLibrary, removeFromLibrary, clearAllBooks, getBook } from "@/lib/repository";
+import { loadCloudConfig } from "@/lib/cloud";
+import { cloudPut, cloudGet, cloudPutBytes, cloudGetBytes, cloudList } from "@/lib/cloud-s3";
 import {
   migrateLegacyBook,
   type Session,
@@ -208,6 +210,7 @@ export default function HomePage() {
 
           if (existingByTitle) {
             existingByTitle.pdfSource = result.book.sourceFormat === "pdf" ? new Uint8Array(data) : null;
+            existingByTitle.epubSource = result.book.sourceFormat === "epub" ? new Uint8Array(data) : null;
             // Re-enviou o arquivo: recalcula a capa com a detecção V4 (examina
             // as 10 primeiras páginas e elege a melhor — pedido do Miguel,
             // 23/08; caso-escola: Roman Political Institutions, capa na p.9).
@@ -242,6 +245,7 @@ export default function HomePage() {
             book: result.book,
             coverImage,
             pdfSource: result.book.sourceFormat === "pdf" ? new Uint8Array(data) : null,
+            epubSource: result.book.sourceFormat === "epub" ? new Uint8Array(data) : null,
             chapterIdx: 0,
             zoom: 1,
             savedAt: Date.now(),
@@ -263,6 +267,121 @@ export default function HomePage() {
     },
     [auth.userId, router, books, t, coverProgress, ingestIntro],
   );
+
+  // ── ☁️ ESTANTE NA NUVEM — o ORIGINAL de cada livro (regra do Miguel,
+  //    31/08: "pra estante tem que voltar o PDF e o EPUB original; na
+  //    estante não pode ter livro convertido pra texto"). Um .bin (o
+  //    arquivo original, bytes crus) + um .json (capa/progresso) por livro. ──
+  const [shelfCloud, setShelfCloud] = useState<"save" | "restore" | null>(null);
+  const [shelfCloudMsg, setShelfCloudMsg] = useState<string | null>(null);
+
+  const shelfCloudSave = useCallback(async () => {
+    setShelfCloud("save");
+    setShelfCloudMsg(null);
+    try {
+      const c = await loadCloudConfig();
+      if (!c) {
+        setShelfCloudMsg(`⚠️ ${t("cloud_missing")}`);
+        return;
+      }
+      let ok = 0;
+      let semOriginal = 0;
+      let falha = 0;
+      for (let i = 0; i < books.length; i++) {
+        setShelfCloudMsg(t("shelf_cloud_progress", { n: i + 1, total: books.length }));
+        const full = await getBook(books[i].id).catch(() => null);
+        const origem = full?.pdfSource ?? full?.epubSource ?? null;
+        if (!full || !origem) {
+          semOriginal += 1; // livro antigo, adicionado antes de guardarmos o original
+          continue;
+        }
+        const meta = JSON.stringify({
+          id: full.id,
+          fileName: full.fileName,
+          fileSize: full.fileSize,
+          title: full.book.title,
+          author: full.book.author ?? null,
+          sourceFormat: full.book.sourceFormat,
+          coverImage: full.coverImage ?? null,
+          chapterIdx: full.chapterIdx,
+          zoom: full.zoom,
+          savedAt: full.savedAt,
+        });
+        const okBin = await cloudPutBytes(c, `moka-estante/${full.id}.bin`, origem);
+        const okJson = await cloudPut(c, `moka-estante/${full.id}.json`, meta);
+        if (okBin && okJson) ok += 1;
+        else falha += 1;
+      }
+      setShelfCloudMsg(
+        t("shelf_cloud_saved", { n: ok }) +
+          (semOriginal > 0 ? ` · ${t("shelf_cloud_skip_old", { n: semOriginal })}` : "") +
+          (falha > 0 ? ` · ${falha} ✗` : ""),
+      );
+    } finally {
+      setShelfCloud(null);
+    }
+  }, [books, t]);
+
+  const shelfCloudRestore = useCallback(async () => {
+    setShelfCloud("restore");
+    setShelfCloudMsg(null);
+    try {
+      const c = await loadCloudConfig();
+      if (!c) {
+        setShelfCloudMsg(`⚠️ ${t("cloud_missing")}`);
+        return;
+      }
+      const objs = await cloudList(c, "moka-estante/");
+      if (!objs) {
+        setShelfCloudMsg(`⚠️ ${t("cloud_test_net")}`);
+        return;
+      }
+      const jsons = objs.filter((o) => o.key.endsWith(".json"));
+      if (jsons.length === 0) {
+        setShelfCloudMsg(t("shelf_cloud_none"));
+        return;
+      }
+      let ok = 0;
+      for (let i = 0; i < jsons.length; i++) {
+        setShelfCloudMsg(t("shelf_cloud_progress", { n: i + 1, total: jsons.length }));
+        const metaTxt = await cloudGet(c, jsons[i].key);
+        if (!metaTxt) continue;
+        const meta = JSON.parse(metaTxt) as {
+          id: string; fileName: string; fileSize: number; coverImage?: string | null;
+          chapterIdx?: number; zoom?: number; savedAt?: number;
+        };
+        const bin = await cloudGetBytes(c, jsons[i].key.replace(/\.json$/, ".bin"));
+        if (!bin) continue;
+        const result = await parseBook({
+          data: bin.slice().buffer as ArrayBuffer,
+          fileName: meta.fileName,
+        });
+        if (!result.ok) continue;
+        const jaExiste = books.some((b) => b.id === meta.id || b.book.title === result.book?.title);
+        const session: Session = {
+          id: jaExiste ? `b${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}` : meta.id,
+          fileName: meta.fileName,
+          fileSize: meta.fileSize,
+          book: result.book,
+          pdfSource: result.book.sourceFormat === "pdf" ? bin : null,
+          epubSource: result.book.sourceFormat === "epub" ? bin : null,
+          chapterIdx: meta.chapterIdx ?? 0,
+          zoom: meta.zoom ?? 1,
+          savedAt: meta.savedAt ?? Date.now(),
+          translations: {},
+          notes: [],
+          coverImage: meta.coverImage ?? result.book.coverImage ?? undefined,
+        };
+        await saveToLibrary(session, auth.userId);
+        ok += 1;
+      }
+      setShelfCloudMsg(t("shelf_cloud_restored", { n: ok }));
+      const list = await listLibrary(auth.userId).catch(() => []);
+      if (list.length > 0) setBooks(list);
+    } finally {
+      setShelfCloud(null);
+    }
+  }, [books, auth.userId, t]);
 
   const handleFile = useCallback(
     async (file: File) =>
@@ -307,6 +426,22 @@ export default function HomePage() {
               >
                 {t("shelf_clear_all")}
               </button>
+              <button
+                className="cloud-btn"
+                disabled={shelfCloud !== null || books.length === 0}
+                onClick={() => void shelfCloudSave()}
+                title={t("cloud_backup")}
+              >
+                {shelfCloud === "save" ? "…" : "☁️"} {t("shelf_cloud_save")}
+              </button>
+              <button
+                className="cloud-btn"
+                disabled={shelfCloud !== null}
+                onClick={() => void shelfCloudRestore()}
+                title={t("cloud_restore")}
+              >
+                {shelfCloud === "restore" ? "…" : "⬇️"} {t("shelf_cloud_restore")}
+              </button>
               <button className="add-book-btn" onClick={() => document.getElementById("file-input")?.click()}>
                 {t("shelf_add_book")}
               </button>
@@ -328,6 +463,10 @@ export default function HomePage() {
             📚 <b>Biblioteca Livre</b> — livros grátis de domínio público,
             com capa e sinopse. <span>{t("shelf_bib_cta")}</span>
           </a>
+
+          {shelfCloudMsg && (
+            <p className="shelf-cloud-msg" role="status" aria-live="polite">{shelfCloudMsg}</p>
+          )}
 
           {addingBook && (
             ingest ? (

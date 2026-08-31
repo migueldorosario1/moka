@@ -9236,3 +9236,11 @@ font-size: 14px;
   justify-content: flex-end;
   padding: 10px 16px 0;
 }
+
+/* Status do backup/restauração da estante na nuvem */
+.shelf-cloud-msg {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+}

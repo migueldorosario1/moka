@@ -38,7 +38,7 @@ async function s3Fetch(
   c: CloudConfig,
   method: "GET" | "PUT" | "HEAD",
   path: string,
-  opts: { body?: string; query?: string } = {},
+  opts: { body?: string | Uint8Array; query?: string } = {},
 ): Promise<Response> {
   const endpoint = endpointOf(c).replace(/\/+$/, "");
   const host = endpoint.replace("https://", "");
@@ -88,9 +88,11 @@ async function s3Fetch(
       authorization,
       "x-amz-content-sha256": payloadHash,
       "x-amz-date": amzDate,
-      ...(opts.body !== undefined ? { "content-type": "text/markdown; charset=utf-8" } : {}),
+      ...(opts.body !== undefined
+        ? { "content-type": typeof opts.body === "string" ? "text/markdown; charset=utf-8" : "application/octet-stream" }
+        : {}),
     },
-    body: opts.body,
+    body: opts.body as BodyInit | undefined,
   });
 }
 
@@ -136,6 +138,62 @@ export async function cloudGet(c: CloudConfig, key: string): Promise<string | nu
     const res = await s3Fetch(c, "GET", `/${key}`);
     if (!res.ok) return null;
     return await res.text();
+  } catch {
+    return null;
+  }
+}
+
+/** Envia BYTES crus (o arquivo original do livro — sem base64, sem gordura). */
+export async function cloudPutBytes(
+  c: CloudConfig,
+  key: string,
+  bytes: Uint8Array,
+): Promise<boolean> {
+  try {
+    const res = await s3Fetch(c, "PUT", `/${key}`, { body: bytes });
+    return res.ok;
+  } catch {
+    return false;
+  }
+}
+
+/** Baixa BYTES crus (null se não existir / falhar). */
+export async function cloudGetBytes(
+  c: CloudConfig,
+  key: string,
+): Promise<Uint8Array | null> {
+  try {
+    const res = await s3Fetch(c, "GET", `/${key}`);
+    if (!res.ok) return null;
+    return new Uint8Array(await res.arrayBuffer());
+  } catch {
+    return null;
+  }
+}
+
+export interface CloudObject {
+  key: string;
+  size: number;
+}
+
+/** Lista objetos do bucket por prefixo (pra achar os backups da estante). */
+export async function cloudList(c: CloudConfig, prefix: string): Promise<CloudObject[] | null> {
+  try {
+    const res = await s3Fetch(c, "GET", "", {
+      query: `list-type=2&max-keys=1000&prefix=${encodeURIComponent(prefix)}`,
+    });
+    if (!res.ok) return null;
+    const xml = await res.text();
+    const objs: CloudObject[] = [];
+    const re = /<Contents>([\s\S]*?)<\/Contents>/g;
+    let m: RegExpExecArray | null;
+    while ((m = re.exec(xml)) !== null) {
+      const block = m[1];
+      const key = block.match(/<Key>([\s\S]*?)<\/Key>/)?.[1];
+      const size = block.match(/<Size>(\d+)<\/Size>/)?.[1];
+      if (key) objs.push({ key, size: size ? Number(size) : 0 });
+    }
+    return objs;
   } catch {
     return null;
   }

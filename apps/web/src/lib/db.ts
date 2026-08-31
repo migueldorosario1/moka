@@ -42,6 +42,10 @@ export interface Session {
   book: ParsedBook;
   /** Buffer do PDF original (só quando sourceFormat === "pdf"). */
   pdfSource: Uint8Array | null;
+  /** Buffer do EPUB original — pra backup/restauração na nuvem (regra do
+   *  Miguel, 31/08: a estante só aceita o livro ORIGINAL, nunca texto
+   *  convertido). */
+  epubSource?: Uint8Array | null;
   chapterIdx: number;
   zoom: number;
   savedAt: number;
