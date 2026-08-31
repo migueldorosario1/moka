@@ -1,14 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { TopNav } from "@/components/TopNav";
-import { ZeMocaAvatar } from "@/components/ZeMocaAvatar";
-import { LangSwitcher } from "@/components/LangSwitcher";
 import { SiteFooter } from "@/components/SiteFooter";
-import { AuthGate } from "@/components/AuthGate";
-import { TelemetryIconButton } from "@/components/TelemetryIconButton";
-import { MuralIconButton } from "@/components/MuralIconButton";
 import { useI18n } from "@/components/I18nProvider";
 
 /**
@@ -25,30 +18,9 @@ import { useI18n } from "@/components/I18nProvider";
  */
 export function Capa() {
   const { t } = useI18n();
-  const router = useRouter();
 
   return (
     <main className="igot-shell ft">
-      <TopNav right={<>
-            <Link href="/sobre" className="topbar-about" title="Quem somos — Saiba mais">
-              👥 {t("nav_about")}
-            </Link>
-            <Link href="/ajuda" className="topbar-help" title={t("help_title")} aria-label={t("help_title")}>
-              <ZeMocaAvatar size={32} />
-            </Link>
-            <button
-              className="gear"
-              onClick={() => router.push("/configuracoes")}
-              aria-label={t("settings")}
-              title={t("settings")}
-            >
-              ⚙️
-            </button>
-            <TelemetryIconButton />
-            <MuralIconButton />
-            <AuthGate />
-            <LangSwitcher />
-      </>} />
 
       <div className="capa-body">
         <p className="capa-kicker">{t("capa_kicker")}</p>
@@ -78,27 +50,33 @@ export function Capa() {
             ilustração decorativa) ── */}
         <div className="capa-launch">
           <a className="capa-launch-btn" href="/estante">
-            <b>📖 Moka Reader</b>
+            <span className="capa-launch-ico" aria-hidden>📖</span>
+            <b>Moka Reader</b>
             <span>{t("capa_books_desc")}</span>
           </a>
           <a className="capa-launch-btn" href="/video">
-            <b>🎬 Moka Vídeo</b>
+            <span className="capa-launch-ico" aria-hidden>🎬</span>
+            <b>Moka Vídeo</b>
             <span>{t("capa_videos_desc")}</span>
           </a>
           <a className="capa-launch-btn" href="/memoria">
-            <b>🧠 Moka Memória</b>
+            <span className="capa-launch-ico" aria-hidden>🧠</span>
+            <b>Moka Memória</b>
             <span>{t("mem_tagline")}</span>
           </a>
           <a className="capa-launch-btn" href="/harness">
-            <b>💬 Moka Harness</b>
+            <span className="capa-launch-ico" aria-hidden>💬</span>
+            <b>Moka Harness</b>
             <span>{t("capa_harness_desc")}</span>
           </a>
           <a className="capa-launch-btn" href="/writer">
-            <b>✍️ Moka Writer</b>
+            <span className="capa-launch-ico" aria-hidden>✍️</span>
+            <b>Moka Writer</b>
             <span>{t("wr_tagline")}</span>
           </a>
-          <a className="capa-launch-btn settings" href="/configuracoes">
-            <b>⚙️ {t("settings")}</b>
+          <a className="capa-launch-btn" href="/configuracoes">
+            <span className="capa-launch-ico" aria-hidden>⚙️</span>
+            <b>{t("settings")}</b>
             <span>{t("capa_btn_settings_desc")}</span>
           </a>
         </div>

@@ -6103,12 +6103,15 @@ gap: 6px;
 flex-wrap: wrap;
 min-height: 42px;
 }
-/* Container principal: GRID (scroll + right) */
+/* Container principal: GRID — pequenos | BOTÕES GRANDES | controles.
+   Reforma 31/08: os botões grandes saíram da reader-row-scroll (o
+   overflow-x da fileira CORTAVA os submenus — "não abre no celular"). */
 .reader-row-main {
 display: grid;
-grid-template-columns: minmax(0, 1fr) max-content;
+grid-template-areas: "left big right";
+grid-template-columns: minmax(0, auto) 1fr max-content;
 align-items: center;
-gap: 6px;
+gap: 8px;
 width: 100%;
 min-width: 0;
 overflow: visible;
@@ -8954,47 +8957,64 @@ font-size: 14px;
 }
 
 /* ═══ CAPA FUNCIONAL: a FAMÍLIA MOKA em botões grandes e iguais (~19h) ═══ */
+/* ── Capa (reforma 31/08: "botões mais bonitos, TODOS do mesmo
+   tamanho" — sem TopNav no topo, a capa é limpa) ── */
 .capa-launch {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(3, 1fr);
   gap: 14px;
-  margin: 18px auto 8px;
-  max-width: 760px;
+  margin: 22px auto 8px;
+  max-width: 820px;
   width: 100%;
 }
 .capa-launch-btn {
   display: flex;
   flex-direction: column;
-  gap: 6px;
-  padding: 22px 20px;
-  border-radius: 18px;
-  border: 2px solid var(--border-soft, #ddd);
+  align-items: center;
+  justify-content: flex-start;
+  gap: 4px;
+  padding: 20px 12px 16px;
+  text-align: center;
+  border-radius: 20px;
+  border: 1px solid var(--border-soft, #ddd);
   background: var(--surface, #fff);
   text-decoration: none;
   color: inherit;
-  transition: border-color 0.15s, transform 0.12s, background 0.15s;
+  box-shadow: 0 3px 12px rgba(60, 40, 15, 0.07);
+  transition: transform 0.15s ease, box-shadow 0.15s ease,
+    border-color 0.15s ease;
 }
 .capa-launch-btn:hover {
+  transform: translateY(-3px);
   border-color: var(--accent, #ff9e3d);
-  background: var(--accent-soft, rgba(255,158,61,0.08));
+  box-shadow: 0 10px 26px rgba(60, 40, 15, 0.14);
 }
 .capa-launch-btn:active { transform: scale(0.97); }
+.capa-launch-ico {
+  font-size: 34px;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
 .capa-launch-btn b {
-  font-size: 21px;
+  font-size: 17.5px;
   line-height: 1.25;
+  font-weight: 700;
 }
 .capa-launch-btn span {
-  font-size: 14px;
-  opacity: 0.75;
-  line-height: 1.45;
+  font-size: 13px;
+  opacity: 0.72;
+  line-height: 1.4;
 }
-.capa-launch-btn.settings b { font-size: 18px; }
 @media (max-width: 640px) {
   .capa-launch { grid-template-columns: 1fr 1fr; gap: 10px; }
-  .capa-launch-btn { padding: 18px 14px; }
-  .capa-launch-btn b { font-size: 17px; }
-  .capa-launch-btn span { font-size: 12.5px; }
-  .capa-launch-btn.settings { grid-column: 1 / -1; }
+  .capa-launch-btn { padding: 16px 8px 14px; border-radius: 18px; }
+  .capa-launch-ico { font-size: 30px; }
+  .capa-launch-btn b { font-size: 15.5px; }
+  .capa-launch-btn span { font-size: 12px; }
+}
+@media (max-width: 380px) {
+  .capa-launch-ico { font-size: 26px; }
+  .capa-launch-btn b { font-size: 14.5px; }
 }
 
 /* ── Barra de progresso da ingestão de livros (ordem do Miguel, 31/08:
@@ -9171,4 +9191,22 @@ font-size: 14px;
 @media (max-width: 640px) {
   /* No celular apertado a etiqueta some e o ícone cresce (fica redondão) */
   .reader-big-group { gap: 8px; }
+}
+
+/* ── Reforma 31/08: áreas do header do leitor ── */
+.reader-row-scroll { grid-area: left; }
+.reader-big-group { grid-area: big; }
+.reader-row-right { grid-area: right; }
+@media (max-width: 760px) {
+  .reader-row-main {
+    grid-template-areas:
+      "left right"
+      "big big";
+    grid-template-columns: minmax(0, 1fr) max-content;
+  }
+  .reader-big-group { justify-content: flex-start; }
+  /* A chave de zoom (top fixo 64px) ficava ATRÁS do header de 2 linhas —
+     desce junto no celular (ordem do Miguel: "o menu ficou em cima do
+     joguinho vertical"). */
+  .zoom-rail { top: 132px; }
 }
