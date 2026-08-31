@@ -682,7 +682,11 @@ export type UIStringKey =
   // ── Tutorial passo 6: botões grandes + nuvem ──
   | "tut_s6_t"
   | "tut_s6_d"
-  | "tut_s6_d2";
+  | "tut_s6_d2"
+  // ── Obra 31/08 ~12:4x: objeto-livro → estante ──
+  | "mem_to_shelf"
+  | "mem_to_shelf_ok"
+  | "mem_shelf_empty";
 
 type LangStrings = Record<UIStringKey, string>;
 
@@ -1303,7 +1307,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_provider: "Provedor",
     cloud_provider_r2: "Cloudflare R2",
     cloud_provider_b2: "Backblaze B2",
-    cloud_provider_s3: "Outro (S3)",
+    cloud_provider_s3: "Outro — S3 compatível",
     cloud_host_r2: "ID da conta Cloudflare (Account ID)",
     cloud_host_b2: "Região do Backblaze (ex.: us-west-004)",
     cloud_host_s3: "Endpoint do S3",
@@ -1342,6 +1346,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_s6_t: "Os botões grandes do livro (e a memória na nuvem)",
     tut_s6_d: "Dentro do livro, 3 botões grandes resolvem tudo: 📖 Página (ler em voz alta, resumir/explicar, traduzir), 📌 Marcar (marcar página, foto, notas) e 🎤 Perguntar (qualquer coisa sobre o livro, por voz ou texto). Eles abrem submenus — toque e escolha.",
     tut_s6_d2: "E a sua memória do Moka pode morar na SUA nuvem: ⚙️ Configurações → ☁️ Memória na nuvem (Cloudflare R2 ou Backblaze B2 grátis), Salvar — e Restaurar em qualquer aparelho.",
+    mem_to_shelf: "Pra estante",
+    mem_to_shelf_ok: "Livro \"{title}\" voltou pra estante!",
+    mem_shelf_empty: "Este objeto não tem texto suficiente pra virar livro.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1952,7 +1959,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_provider: "Provider",
     cloud_provider_r2: "Cloudflare R2",
     cloud_provider_b2: "Backblaze B2",
-    cloud_provider_s3: "Other (S3)",
+    cloud_provider_s3: "Other — S3 compatible",
     cloud_host_r2: "Cloudflare Account ID",
     cloud_host_b2: "Backblaze region (e.g. us-west-004)",
     cloud_host_s3: "S3 endpoint",
@@ -1991,6 +1998,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_s6_t: "The big book buttons (and cloud memory)",
     tut_s6_d: "Inside the book, 3 big buttons do everything: 📖 Page (read aloud, summarize/explain, translate), 📌 Mark (bookmark, photo, notes) and 🎤 Ask (anything about the book, by voice or text). They open submenus — tap and choose.",
     tut_s6_d2: "And your Moka memory can live in YOUR cloud: ⚙️ Settings → ☁️ Cloud memory (free Cloudflare R2 or Backblaze B2), Save — and Restore on any device.",
+    mem_to_shelf: "To shelf",
+    mem_to_shelf_ok: "Book \"{title}\" is back on your shelf!",
+    mem_shelf_empty: "This object doesn't have enough text to become a book.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -2601,7 +2611,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_provider: "Proveedor",
     cloud_provider_r2: "Cloudflare R2",
     cloud_provider_b2: "Backblaze B2",
-    cloud_provider_s3: "Otro (S3)",
+    cloud_provider_s3: "Otro — compatible S3",
     cloud_host_r2: "ID de cuenta de Cloudflare",
     cloud_host_b2: "Región de Backblaze (p. ej. us-west-004)",
     cloud_host_s3: "Endpoint de S3",
@@ -2640,6 +2650,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_s6_t: "Los botones grandes del libro (y la memoria en la nube)",
     tut_s6_d: "Dentro del libro, 3 botones grandes lo resuelven todo: 📖 Página (leer en voz alta, resumir/explicar, traducir), 📌 Marcar (marcar página, foto, notas) y 🎤 Preguntar (cualquier cosa sobre el libro, por voz o texto). Abren submenús — toca y elige.",
     tut_s6_d2: "Y tu memoria de Moka puede vivir en TU nube: ⚙️ Ajustes → ☁️ Memoria en la nube (Cloudflare R2 o Backblaze B2 gratis), Guardar — y Restaurar en cualquier dispositivo.",
+    mem_to_shelf: "A la estantería",
+    mem_to_shelf_ok: "¡El libro \"{title}\" volvió a la estantería!",
+    mem_shelf_empty: "Este objeto no tiene texto suficiente para ser un libro.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -3250,7 +3263,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_provider: "Fournisseur",
     cloud_provider_r2: "Cloudflare R2",
     cloud_provider_b2: "Backblaze B2",
-    cloud_provider_s3: "Autre (S3)",
+    cloud_provider_s3: "Autre — compatible S3",
     cloud_host_r2: "ID de compte Cloudflare",
     cloud_host_b2: "Région Backblaze (ex. us-west-004)",
     cloud_host_s3: "Point de terminaison S3",
@@ -3289,6 +3302,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_s6_t: "Les gros boutons du livre (et la mémoire cloud)",
     tut_s6_d: "Dans le livre, 3 gros boutons font tout : 📖 Page (lecture à voix haute, résumé/explication, traduction), 📌 Marquer (marque-page, photo, notes) et 🎤 Demander (tout sur le livre, à la voix ou par écrit). Ils ouvrent des sous-menus — touchez et choisissez.",
     tut_s6_d2: "Et votre mémoire Moka peut vivre dans VOTRE cloud : ⚙️ Paramètres → ☁️ Mémoire cloud (Cloudflare R2 ou Backblaze B2 gratuit), Enregistrer — puis Restaurer sur n'importe quel appareil.",
+    mem_to_shelf: "Vers la bibliothèque",
+    mem_to_shelf_ok: "Le livre « {title} » est de retour dans la bibliothèque !",
+    mem_shelf_empty: "Cet objet n'a pas assez de texte pour devenir un livre.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -3899,7 +3915,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_provider: "Anbieter",
     cloud_provider_r2: "Cloudflare R2",
     cloud_provider_b2: "Backblaze B2",
-    cloud_provider_s3: "Andere (S3)",
+    cloud_provider_s3: "Andere — S3-kompatibel",
     cloud_host_r2: "Cloudflare-Konto-ID",
     cloud_host_b2: "Backblaze-Region (z. B. us-west-004)",
     cloud_host_s3: "S3-Endpunkt",
@@ -3938,6 +3954,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_s6_t: "Die großen Buch-Buttons (und Cloud-Speicher)",
     tut_s6_d: "Im Buch erledigen 3 große Buttons alles: 📖 Seite (vorlesen, zusammenfassen/erklären, übersetzen), 📌 Markieren (Lesezeichen, Foto, Notizen) und 🎤 Fragen (alles zum Buch, per Sprache oder Text). Sie öffnen Untermenüs — antippen und wählen.",
     tut_s6_d2: "Und deine Moka-Erinnerung kann in DEINER Cloud leben: ⚙️ Einstellungen → ☁️ Cloud-Speicher (kostenloses Cloudflare R2 oder Backblaze B2), Speichern — und auf jedem Gerät Wiederherstellen.",
+    mem_to_shelf: "Ins Regal",
+    mem_to_shelf_ok: "Buch „{title}“ ist zurück im Regal!",
+    mem_shelf_empty: "Dieses Objekt hat nicht genug Text für ein Buch.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -4548,7 +4567,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_provider: "Provider",
     cloud_provider_r2: "Cloudflare R2",
     cloud_provider_b2: "Backblaze B2",
-    cloud_provider_s3: "Altro (S3)",
+    cloud_provider_s3: "Altro — compatibile S3",
     cloud_host_r2: "ID account Cloudflare",
     cloud_host_b2: "Regione Backblaze (es. us-west-004)",
     cloud_host_s3: "Endpoint S3",
@@ -4587,6 +4606,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_s6_t: "I bottoni grandi del libro (e la memoria nel cloud)",
     tut_s6_d: "Nel libro, 3 bottoni grandi fanno tutto: 📖 Pagina (leggi ad alta voce, riassunta/spiega, traduci), 📌 Segna (segnapaghi, foto, note) e 🎤 Chiedi (qualsiasi cosa sul libro, a voce o per testo). Aprono sottomenu — tocca e scegli.",
     tut_s6_d2: "E la tua memoria Moka può vivere nella TUA cloud: ⚙️ Impostazioni → ☁️ Memoria nel cloud (Cloudflare R2 o Backblaze B2 gratis), Salva — e Ripristina su qualsiasi dispositivo.",
+    mem_to_shelf: "Alla libreria",
+    mem_to_shelf_ok: "Il libro \"{title}\" è tornato nella libreria!",
+    mem_shelf_empty: "Questo oggetto non ha abbastanza testo per diventare un libro.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -5197,7 +5219,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_provider: "Провайдер",
     cloud_provider_r2: "Cloudflare R2",
     cloud_provider_b2: "Backblaze B2",
-    cloud_provider_s3: "Другой (S3)",
+    cloud_provider_s3: "Другое — совместимо с S3",
     cloud_host_r2: "ID аккаунта Cloudflare",
     cloud_host_b2: "Регион Backblaze (напр. us-west-004)",
     cloud_host_s3: "S3-эндпоинт",
@@ -5236,6 +5258,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_s6_t: "Большие кнопки книги (и память в облаке)",
     tut_s6_d: "В книге 3 большие кнопки делают всё: 📖 Страница (читать вслух, конспект/объяснение, перевод), 📌 Отметить (закладка, фото, заметки) и 🎤 Спросить (что угодно о книге, голосом или текстом). Они открывают подменю — нажмите и выберите.",
     tut_s6_d2: "И ваша память Moka может жить в ВАШЕМ облаке: ⚙️ Настройки → ☁️ Память в облаке (бесплатные Cloudflare R2 или Backblaze B2), Сохранить — и Восстановить на любом устройстве.",
+    mem_to_shelf: "На полку",
+    mem_to_shelf_ok: "Книга «{title}» снова на полке!",
+    mem_shelf_empty: "В этом объекте мало текста для книги.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -5846,7 +5871,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_provider: "提供商",
     cloud_provider_r2: "Cloudflare R2",
     cloud_provider_b2: "Backblaze B2",
-    cloud_provider_s3: "其他 (S3)",
+    cloud_provider_s3: "其他 — 兼容 S3",
     cloud_host_r2: "Cloudflare 账户 ID",
     cloud_host_b2: "Backblaze 地区（如 us-west-004）",
     cloud_host_s3: "S3 端点",
@@ -5885,6 +5910,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_s6_t: "书内大按钮（和云端记忆）",
     tut_s6_d: "在书中，3 个大按钮搞定一切：📖 页面（朗读、摘要/讲解、翻译）、📌 标记（书签、拍照、笔记）和 🎤 提问（语音或文字问书里的任何问题）。它们会打开子菜单 — 点按选择即可。",
     tut_s6_d2: "你的 Moka 记忆可以放在你自己的云里：⚙️ 设置 → ☁️ 云端记忆（免费的 Cloudflare R2 或 Backblaze B2），保存 — 然后在任何设备上恢复。",
+    mem_to_shelf: "到书架",
+    mem_to_shelf_ok: "图书《{title}》已回到书架！",
+    mem_shelf_empty: "该对象的文本不足以生成图书。",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -6495,7 +6523,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_provider: "プロバイダー",
     cloud_provider_r2: "Cloudflare R2",
     cloud_provider_b2: "Backblaze B2",
-    cloud_provider_s3: "その他 (S3)",
+    cloud_provider_s3: "その他 — S3互換",
     cloud_host_r2: "Cloudflare アカウント ID",
     cloud_host_b2: "Backblaze リージョン（例: us-west-004）",
     cloud_host_s3: "S3 エンドポイント",
@@ -6534,6 +6562,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_s6_t: "本の大きなボタン（とクラウドメモリー）",
     tut_s6_d: "本の中では 3 つの大きなボタンで全てできます：📖 ページ（読み上げ、要約/解説、翻訳）、📌 マーク（しおり、写真、ノート）、🎤 質問（音声やテキストで何でも質問）。サブメニューが開きます — タップして選択。",
     tut_s6_d2: "Mokaのメモリーはあなたのクラウドに置けます：⚙️ 設定 → ☁️ クラウドメモリー（無料のCloudflare R2またはBackblaze B2）、保存 — そして任意の端末で復元。",
+    mem_to_shelf: "本棚へ",
+    mem_to_shelf_ok: "『{title}』が本棚に戻りました！",
+    mem_shelf_empty: "このオブジェクトは本にするのに十分なテキストがありません。",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -7144,7 +7175,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_provider: "공급자",
     cloud_provider_r2: "Cloudflare R2",
     cloud_provider_b2: "Backblaze B2",
-    cloud_provider_s3: "기타 (S3)",
+    cloud_provider_s3: "기타 — S3 호환",
     cloud_host_r2: "Cloudflare 계정 ID",
     cloud_host_b2: "Backblaze 리전(예: us-west-004)",
     cloud_host_s3: "S3 엔드포인트",
@@ -7183,6 +7214,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_s6_t: "책의 큰 버튼(그리고 클라우드 메모리)",
     tut_s6_d: "책 안에서는 3개의 큰 버튼으로 모든 걸 할 수 있습니다: 📖 페이지(읽어주기, 요약/설명, 번역), 📌 표시(책갈피, 사진, 노트), 🎤 질문(음성이나 텍스트로 무엇이든). 서브메뉴가 열립니다 — 눌러서 선택하세요.",
     tut_s6_d2: "Moka 기억은 당신의 클라우드에 둘 수 있습니다: ⚙️ 설정 → ☁️ 클라우드 메모리(무료 Cloudflare R2 또는 Backblaze B2), 저장 — 그리고 어떤 기기에서든 복원.",
+    mem_to_shelf: "책장으로",
+    mem_to_shelf_ok: "《{title}》 책장에 돌아왔습니다!",
+    mem_shelf_empty: "이 객체는 책이 되기에 텍스트가 부족합니다.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -7793,7 +7827,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_provider: "المزوّد",
     cloud_provider_r2: "Cloudflare R2",
     cloud_provider_b2: "Backblaze B2",
-    cloud_provider_s3: "آخر (S3)",
+    cloud_provider_s3: "آخر — متوافق مع S3",
     cloud_host_r2: "معرّف حساب Cloudflare",
     cloud_host_b2: "منطقة Backblaze (مثال us-west-004)",
     cloud_host_s3: "نقطة نهاية S3",
@@ -7832,6 +7866,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_s6_t: "أزرار الكتاب الكبيرة (والذاكرة السحابية)",
     tut_s6_d: "داخل الكتاب، 3 أزرار كبيرة تفعل كل شيء: 📖 صفحة (قراءة صوتية، تلخيص/شرح، ترجمة)، 📌 علّم (إشارة مرجعية، صورة، ملاحظات) و🎤 اسأل (أي شيء عن الكتاب، بالصوت أو الكتابة). تفتح قوائم فرعية — المس واختر.",
     tut_s6_d2: "وذاكرة Moka يمكن أن تعيش في سحابتك: ⚙️ الإعدادات → ☁️ الذاكرة السحابية (Cloudflare R2 أو Backblaze B2 مجانًا)، احفظ — واستعد على أي جهاز.",
+    mem_to_shelf: "إلى الرف",
+    mem_to_shelf_ok: "عاد الكتاب \"{title}\" إلى الرف!",
+    mem_shelf_empty: "هذا الكائن لا يحتوي نصًا كافيًا ليصبح كتابًا.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -8442,7 +8479,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_provider: "प्रदाता",
     cloud_provider_r2: "Cloudflare R2",
     cloud_provider_b2: "Backblaze B2",
-    cloud_provider_s3: "अन्य (S3)",
+    cloud_provider_s3: "अन्य — S3 संगत",
     cloud_host_r2: "Cloudflare खाता ID",
     cloud_host_b2: "Backblaze क्षेत्र (जैसे us-west-004)",
     cloud_host_s3: "S3 एंडपॉइंट",
@@ -8481,5 +8518,8 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tut_s6_t: "पुस्तक के बड़े बटन (और क्लाउड मेमोरी)",
     tut_s6_d: "पुस्तक के अंदर, 3 बड़े बटन सब कुछ करते हैं: 📖 पृष्ठ (आवाज़ में पढ़ें, सारांश/समझाएँ, अनुवाद), 📌 चिह्न (बुकमार्क, फ़ोटो, नोट्स) और 🎤 पूछें (आवाज़ या टेक्स्ट से कुछ भी)। ये सबमेनू खोलते हैं — टैप करके चुनें।",
     tut_s6_d2: "और आपकी Moka मेमोरी आपके ही क्लाउड में रह सकती है: ⚙️ सेटिंग्स → ☁️ क्लाउड मेमोरी (मुफ़्त Cloudflare R2 या Backblaze B2), सहेजें — और किसी भी डिवाइस पर पुनर्स्थापित करें।",
+    mem_to_shelf: "शेल्फ़ में",
+    mem_to_shelf_ok: "पुस्तक \"{title}\" शेल्फ़ पर वापस आ गई!",
+    mem_shelf_empty: "इस ऑब्जेक्ट में पुस्तक बनने के लिए पर्याप्त पाठ नहीं है।",
   },
 };
