@@ -128,6 +128,26 @@ export default function HomePage() {
     return () => window.clearTimeout(id);
   }, []);
 
+  // Aviso inicial do PDF GRANDE (ordem do Miguel, 31/08): "livro de tantos
+  // megas, PDF, vai demorar um minuto ou dois pra subir tudo renderizando
+  // pra encontrar a capa" — com a barrinha subindo junto desde o início.
+  const ingestIntro = useCallback(
+    (fileName: string, fileSize: number): string => {
+      const isPdf = fileName.toLowerCase().endsWith(".pdf");
+      const mb = fileSize / (1024 * 1024);
+      if (isPdf && mb >= 10) {
+        const time =
+          mb > 80 ? t("ingest_time_slow") : t("ingest_time_mid");
+        return t("ingest_big_pdf_intro", {
+          mb: Math.max(1, Math.round(mb)),
+          time,
+        });
+      }
+      return t("ingest_open");
+    },
+    [t],
+  );
+
   // Progresso da geração de capa (45%..90% da barra).
   const coverProgress = useCallback(
     (d: number, n: number) =>
@@ -146,7 +166,7 @@ export default function HomePage() {
     async (data: ArrayBuffer, fileName: string, fileSize: number) => {
       setAddingBook(true);
       setUploadError(null);
-      setIngest({ pct: 8, label: t("ingest_open") });
+      setIngest({ pct: 6, label: ingestIntro(fileName, fileSize) });
       try {
         // ANTES de parsear, checa se já existe pelo tamanho do arquivo.
         // DEDUP DEFENSIVO: entre os candidatos, PREFERE o que tem chapters válidos.
@@ -241,7 +261,7 @@ export default function HomePage() {
         setIngest(null);
       }
     },
-    [auth.userId, router, books, t, coverProgress],
+    [auth.userId, router, books, t, coverProgress, ingestIntro],
   );
 
   const handleFile = useCallback(

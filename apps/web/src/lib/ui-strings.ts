@@ -669,7 +669,11 @@ export type UIStringKey =
   | "reader_big_mark"
   | "reader_big_ask"
   | "reader_menu_more"
-  | "reader_menu_translate_page";
+  | "reader_menu_translate_page"
+  // ── Obra 31/08: aviso de PDF grande (megas + estimativa) ──
+  | "ingest_big_pdf_intro"
+  | "ingest_time_mid"
+  | "ingest_time_slow";
 
 type LangStrings = Record<UIStringKey, string>;
 
@@ -1283,7 +1287,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_error_hint: "Nada se perdeu: o progresso está salvo. Toque em Continuar pra retomar da página onde parou.",
     ingest_open: "Abrindo o livro…",
     ingest_check: "Verificando as páginas…",
-    ingest_cover: "Preparando a capa — página {n} de {total}…",
+    ingest_cover: "Renderizando pra achar a capa — página {n} de {total}…",
     ingest_saving: "Salvando na estante…",
     cloud_title: "Memória na nuvem",
     cloud_intro: "Guarde o backup da sua memória no SEU próprio bucket (Cloudflare R2 ou Backblaze B2) e use depois, em outro aparelho. O plano grátis dos dois dá mais que suficiente.",
@@ -1319,6 +1323,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_big_ask: "Perguntar",
     reader_menu_more: "Mais opções",
     reader_menu_translate_page: "Traduzir a página",
+    ingest_big_pdf_intro: "Livro de {mb} MB (PDF) — vai demorar {time} pra subir tudo, renderizando pra encontrar a capa…",
+    ingest_time_mid: "um ou dois minutos",
+    ingest_time_slow: "alguns minutos",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1922,7 +1929,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_error_hint: "Nothing was lost: progress is saved. Tap Resume to pick up from the exact page where it stopped.",
     ingest_open: "Opening the book…",
     ingest_check: "Checking the pages…",
-    ingest_cover: "Preparing the cover — page {n} of {total}…",
+    ingest_cover: "Rendering to find the cover — page {n} of {total}…",
     ingest_saving: "Saving to your shelf…",
     cloud_title: "Cloud memory",
     cloud_intro: "Store your memory backup in YOUR own bucket (Cloudflare R2 or Backblaze B2) and use it later on another device. Both free tiers are more than enough.",
@@ -1958,6 +1965,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_big_ask: "Ask",
     reader_menu_more: "More options",
     reader_menu_translate_page: "Translate the page",
+    ingest_big_pdf_intro: "Book of {mb} MB (PDF) — it may take {time} to upload everything while rendering to find the cover…",
+    ingest_time_mid: "a minute or two",
+    ingest_time_slow: "a few minutes",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -2561,7 +2571,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_error_hint: "Nada se perdió: el progreso está guardado. Toca Continuar para retomar desde la página donde paró.",
     ingest_open: "Abriendo el libro…",
     ingest_check: "Verificando las páginas…",
-    ingest_cover: "Preparando la portada — página {n} de {total}…",
+    ingest_cover: "Renderizando para hallar la portada — página {n} de {total}…",
     ingest_saving: "Guardando en la estantería…",
     cloud_title: "Memoria en la nube",
     cloud_intro: "Guarda el respaldo de tu memoria en TU propio bucket (Cloudflare R2 o Backblaze B2) y úsalo luego en otro dispositivo. Los planes gratis alcanzan de sobra.",
@@ -2597,6 +2607,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_big_ask: "Preguntar",
     reader_menu_more: "Más opciones",
     reader_menu_translate_page: "Traducir la página",
+    ingest_big_pdf_intro: "Libro de {mb} MB (PDF) — puede tardar {time} en subir todo, renderizando para encontrar la portada…",
+    ingest_time_mid: "un minuto o dos",
+    ingest_time_slow: "algunos minutos",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -3200,7 +3213,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_error_hint: "Rien n'a été perdu : la progression est enregistrée. Touchez Reprendre pour continuer à la page exacte où ça s'est arrêté.",
     ingest_open: "Ouverture du livre…",
     ingest_check: "Vérification des pages…",
-    ingest_cover: "Préparation de la couverture — page {n} sur {total}…",
+    ingest_cover: "Rendu pour trouver la couverture — page {n} sur {total}…",
     ingest_saving: "Enregistrement dans la bibliothèque…",
     cloud_title: "Mémoire dans le cloud",
     cloud_intro: "Sauvegardez votre mémoire dans VOTRE propre bucket (Cloudflare R2 ou Backblaze B2) et retrouvez-la plus tard sur un autre appareil. Les offres gratuites suffisent largement.",
@@ -3236,6 +3249,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_big_ask: "Demander",
     reader_menu_more: "Plus d'options",
     reader_menu_translate_page: "Traduire la page",
+    ingest_big_pdf_intro: "Livre de {mb} Mo (PDF) — {time} pour tout charger, en rendant pour trouver la couverture…",
+    ingest_time_mid: "une à deux minutes",
+    ingest_time_slow: "quelques minutes",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -3839,7 +3855,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_error_hint: "Nichts ging verloren: Der Fortschritt ist gespeichert. Tippe auf Fortsetzen, um genau an der Stelle weiterzumachen.",
     ingest_open: "Buch wird geöffnet…",
     ingest_check: "Seiten werden geprüft…",
-    ingest_cover: "Cover wird erstellt — Seite {n} von {total}…",
+    ingest_cover: "Rendern, um das Cover zu finden — Seite {n} von {total}…",
     ingest_saving: "Wird ins Regal gespeichert…",
     cloud_title: "Speicher in der Cloud",
     cloud_intro: "Sichere deine Erinnerung in DEINEM eigenen Bucket (Cloudflare R2 oder Backblaze B2) und nutze sie später auf einem anderen Gerät. Die Gratis-Tarife reichen locker.",
@@ -3875,6 +3891,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_big_ask: "Fragen",
     reader_menu_more: "Weitere Optionen",
     reader_menu_translate_page: "Seite übersetzen",
+    ingest_big_pdf_intro: "Buch mit {mb} MB (PDF) — es kann {time} dauern, alles hochzuladen und beim Rendern das Cover zu finden…",
+    ingest_time_mid: "ein bis zwei Minuten",
+    ingest_time_slow: "einige Minuten",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -4478,7 +4497,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_error_hint: "Nulla è andato perso: i progressi sono salvati. Tocca Riprendi per continuare dalla pagina esatta.",
     ingest_open: "Apertura del libro…",
     ingest_check: "Verifica delle pagine…",
-    ingest_cover: "Preparo della copertina — pagina {n} di {total}…",
+    ingest_cover: "Rendering per trovare la copertina — pagina {n} di {total}…",
     ingest_saving: "Salvataggio nella libreria…",
     cloud_title: "Memoria nel cloud",
     cloud_intro: "Salva il backup della memoria nel TUO bucket (Cloudflare R2 o Backblaze B2) e usalo dopo su un altro dispositivo. I piani gratuiti bastano ampiamente.",
@@ -4514,6 +4533,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_big_ask: "Chiedi",
     reader_menu_more: "Altre opzioni",
     reader_menu_translate_page: "Traduci la pagina",
+    ingest_big_pdf_intro: "Libro di {mb} MB (PDF) — ci possono volere {time} per caricare tutto, renderizzando per trovare la copertina…",
+    ingest_time_mid: "uno o due minuti",
+    ingest_time_slow: "alcuni minuti",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -5117,7 +5139,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_error_hint: "Ничего не потеряно: прогресс сохранён. Нажмите «Продолжить», чтобы начать со страницы, где остановились.",
     ingest_open: "Открываем книгу…",
     ingest_check: "Проверяем страницы…",
-    ingest_cover: "Готовим обложку — страница {n} из {total}…",
+    ingest_cover: "Рендерим, чтобы найти обложку — страница {n} из {total}…",
     ingest_saving: "Сохраняем на полку…",
     cloud_title: "Память в облаке",
     cloud_intro: "Храните резервную копию памяти в СВОЁМ бакете (Cloudflare R2 или Backblaze B2) и используйте её позже на другом устройстве. Бесплатных тарифов хватает с запасом.",
@@ -5153,6 +5175,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_big_ask: "Спросить",
     reader_menu_more: "Ещё",
     reader_menu_translate_page: "Перевести страницу",
+    ingest_big_pdf_intro: "Книга {mb} МБ (PDF) — загрузка может занять {time}: рендерим, чтобы найти обложку…",
+    ingest_time_mid: "минуту-две",
+    ingest_time_slow: "несколько минут",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -5756,7 +5781,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_error_hint: "没有丢失任何内容：进度已保存。点击“继续”从中断的页面接着翻译。",
     ingest_open: "正在打开图书…",
     ingest_check: "正在检查页面…",
-    ingest_cover: "正在生成封面 — 第 {n}/{total} 页…",
+    ingest_cover: "正在渲染以找到封面 — 第 {n}/{total} 页…",
     ingest_saving: "正在保存到书架…",
     cloud_title: "云端记忆",
     cloud_intro: "把记忆备份到你自己的存储桶（Cloudflare R2 或 Backblaze B2），以后在其他设备上使用。两家的免费额度都绰绰有余。",
@@ -5792,6 +5817,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_big_ask: "提问",
     reader_menu_more: "更多选项",
     reader_menu_translate_page: "翻译本页",
+    ingest_big_pdf_intro: "{mb} MB 的图书（PDF）— 上传全部内容并渲染寻找封面可能需要{time}…",
+    ingest_time_mid: "一两分钟",
+    ingest_time_slow: "几分钟",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -6395,7 +6423,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_error_hint: "進捗は保存されているので何も失われていません。「続ける」で止まったページから再開できます。",
     ingest_open: "本を開いています…",
     ingest_check: "ページを確認中…",
-    ingest_cover: "表紙を準備中 — {n}/{total} ページ…",
+    ingest_cover: "表紙を見つけるためレンダリング中 — {n}/{total} ページ…",
     ingest_saving: "本棚に保存中…",
     cloud_title: "クラウドメモリー",
     cloud_intro: "あなたのメモリーを自分のバケット（Cloudflare R2 または Backblaze B2）にバックアップし、後で別の端末で利用できます。両社の無料枠で十分です。",
@@ -6431,6 +6459,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_big_ask: "質問",
     reader_menu_more: "その他のオプション",
     reader_menu_translate_page: "このページを翻訳",
+    ingest_big_pdf_intro: "{mb} MB の本（PDF）— すべてアップロードし表紙を探すレンダリングに{time}かかることがあります…",
+    ingest_time_mid: "1〜2分",
+    ingest_time_slow: "数分",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -7034,7 +7065,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_error_hint: "진행 상황이 저장되어 아무것도 잃지 않았습니다. '계속'을 눌러 멈춘 페이지부터 다시 시작하세요.",
     ingest_open: "책을 여는 중…",
     ingest_check: "페이지 확인 중…",
-    ingest_cover: "표지 준비 중 — {n}/{total} 페이지…",
+    ingest_cover: "표지를 찾기 위해 렌더링 중 — {n}/{total} 페이지…",
     ingest_saving: "책장에 저장 중…",
     cloud_title: "클라우드 메모리",
     cloud_intro: "기억 백업을 직접 소유한 버킷(Cloudflare R2 또는 Backblaze B2)에 저장하고 나중에 다른 기기에서 사용하세요. 두 서비스의 무료 요금제로 충분합니다.",
@@ -7070,6 +7101,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_big_ask: "질문",
     reader_menu_more: "더보기",
     reader_menu_translate_page: "이 페이지 번역",
+    ingest_big_pdf_intro: "{mb} MB 책(PDF) — 모두 업로드하고 표지를 찾기 위한 렌더링에 {time} 걸릴 수 있습니다…",
+    ingest_time_mid: "1~2분",
+    ingest_time_slow: "몇 분",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -7673,7 +7707,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_error_hint: "لم يضع شيء: التقدم محفوظ. اضغط «متابعة» للاستئناف من الصفحة التي توقفت عندها.",
     ingest_open: "جارٍ فتح الكتاب…",
     ingest_check: "جارٍ التحقق من الصفحات…",
-    ingest_cover: "جارٍ تجهيز الغلاف — صفحة {n} من {total}…",
+    ingest_cover: "جارٍ التصيير لإيجاد الغلاف — صفحة {n} من {total}…",
     ingest_saving: "جارٍ الحفظ في الرف…",
     cloud_title: "الذاكرة السحابية",
     cloud_intro: "احفظ نسخة ذاكرتك في الدلو الخاص بك (Cloudflare R2 أو Backblaze B2) واستخدمها لاحقًا على جهاز آخر. الخطط المجانية أكثر من كافية.",
@@ -7709,6 +7743,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_big_ask: "اسأل",
     reader_menu_more: "المزيد من الخيارات",
     reader_menu_translate_page: "ترجم الصفحة",
+    ingest_big_pdf_intro: "كتاب بحجم {mb} MB (PDF) — قد يستغرق {time} لتحميل كل شيء مع التصيير لإيجاد الغلاف…",
+    ingest_time_mid: "دقيقة أو دقيقتين",
+    ingest_time_slow: "بضع دقائق",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -8312,7 +8349,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     tb_error_hint: "कुछ भी खोया नहीं: प्रगति सहेजी गई है। 'जारी रखें' दबाएँ और जहाँ रुका था वहीं से शुरू करें।",
     ingest_open: "पुस्तक खोली जा रही है…",
     ingest_check: "पृष्ठों की जाँच हो रही है…",
-    ingest_cover: "कवर तैयार हो रहा है — पृष्ठ {n}/{total}…",
+    ingest_cover: "कवर खोजने के लिए रेंडर हो रहा है — पृष्ठ {n}/{total}…",
     ingest_saving: "शेल्फ़ में सहेजा जा रहा है…",
     cloud_title: "क्लाउड मेमोरी",
     cloud_intro: "अपनी मेमोरी का बैकअप अपने ही बकेट (Cloudflare R2 या Backblaze B2) में रखें और बाद में किसी दूसरे डिवाइस पर उपयोग करें। दोनों का मुफ़्त प्लान पर्याप्त से ज़्यादा है।",
@@ -8348,5 +8385,8 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     reader_big_ask: "पूछें",
     reader_menu_more: "अधिक विकल्प",
     reader_menu_translate_page: "पृष्ठ अनुवाद करें",
+    ingest_big_pdf_intro: "{mb} MB की पुस्तक (PDF) — सब कुछ अपलोड और कवर खोजने के रेंडरिंग में {time} लग सकते हैं…",
+    ingest_time_mid: "एक या दो मिनट",
+    ingest_time_slow: "कुछ मिनट",
   },
 };
