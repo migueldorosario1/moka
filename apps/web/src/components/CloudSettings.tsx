@@ -82,8 +82,14 @@ export function CloudSettings() {
 
   const hostKey: "cloud_host_r2" | "cloud_host_b2" | "cloud_host_s3" =
     cfg.provider === "r2" ? "cloud_host_r2" : cfg.provider === "b2" ? "cloud_host_b2" : "cloud_host_s3";
+  // Placeholder = DICA, nunca um valor que pareça real (o fake de 32 hex
+  // confundiu o Miguel: "porque está colado o nome do meu id?").
   const hostPh =
-    cfg.provider === "r2" ? "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6" : cfg.provider === "b2" ? "us-west-004" : "s3.exemplo.com";
+    cfg.provider === "r2"
+      ? "copie o Account ID do painel R2 (32 caracteres)"
+      : cfg.provider === "b2"
+        ? "ex.: us-west-004"
+        : "ex.: s3.exemplo.com";
 
   return (
     <div className="cloud-settings">
@@ -146,7 +152,7 @@ export function CloudSettings() {
           type="text"
           value={cfg.bucket}
           onChange={(e) => setCfg((c) => ({ ...c, bucket: e.target.value }))}
-          placeholder={cfg.provider === "r2" ? "moka-memoria" : "meu-bucket-moka"}
+          placeholder="ex.: meu-bucket"
           autoComplete="off"
           spellCheck={false}
         />
