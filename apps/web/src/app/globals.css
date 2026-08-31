@@ -9269,3 +9269,167 @@ font-size: 14px;
   resize: vertical;
 }
 .cloud-magic:focus { outline: 2px solid var(--accent); }
+
+/* ═════════════════════════════════════════════════════════════════════
+   🎨 KIT DE BOTÃO UNIFICADO MOKA (Moka Button Design System v1.0)
+   Implementado após aprovação automática do parecer de design
+   ═════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Tokens de Raio e Geometria */
+  --btn-radius-sm: 8px;
+  --btn-radius-md: 12px;
+  --btn-radius-lg: 16px;
+  --btn-radius-pill: 999px;
+
+  /* Animações e Sombras de Elevação Tátil */
+  --btn-transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  --btn-shadow-rest: 0 1px 2px rgba(15, 23, 42, 0.05), 0 2px 5px rgba(15, 23, 42, 0.04);
+  --btn-shadow-hover: 0 4px 12px rgba(15, 23, 42, 0.08), 0 8px 22px rgba(15, 23, 42, 0.07);
+  --btn-shadow-active: 0 1px 2px rgba(15, 23, 42, 0.08);
+
+  /* Botão Primary (Ação Principal / CTA) */
+  --btn-primary-bg: linear-gradient(180deg, #1e40af 0%, #1e3a8a 100%);
+  --btn-primary-text: #ffffff;
+  --btn-primary-border: rgba(255, 255, 255, 0.18);
+  --btn-primary-hover-bg: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+
+  /* Botão Secondary (Cards / Superfícies Elevações) */
+  --btn-secondary-bg: var(--surface);
+  --btn-secondary-text: var(--text);
+  --btn-secondary-border: var(--border-soft);
+  --btn-secondary-hover-border: var(--accent);
+  --btn-secondary-hover-bg: var(--surface-alt);
+
+  /* Botão Ghost (Navegação / TopNav) */
+  --btn-ghost-bg: transparent;
+  --btn-ghost-text: var(--text-muted);
+  --btn-ghost-hover-bg: var(--accent-soft);
+  --btn-ghost-hover-text: var(--accent);
+}
+
+/* Modo Escuro (Tokens Calibrados) */
+:root[data-theme="dark"] {
+  --btn-shadow-rest: 0 2px 5px rgba(0, 0, 0, 0.4);
+  --btn-shadow-hover: 0 6px 18px rgba(0, 0, 0, 0.55), 0 0 12px rgba(96, 165, 250, 0.15);
+  --btn-primary-bg: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+  --btn-secondary-bg: #16161a;
+  --btn-secondary-border: #2e2e36;
+}
+
+/* Base Genérica do Botão Moka */
+.moka-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-weight: 600;
+  font-size: var(--text-base);
+  line-height: 1.25;
+  border-radius: var(--btn-radius-md);
+  border: 1px solid transparent;
+  padding: 10px 18px;
+  cursor: pointer;
+  user-select: none;
+  white-space: nowrap;
+  transition: var(--btn-transition);
+  box-shadow: var(--btn-shadow-rest);
+}
+
+.moka-btn:hover {
+  transform: translateY(-1.5px);
+  box-shadow: var(--btn-shadow-hover);
+}
+
+.moka-btn:active {
+  transform: translateY(0) scale(0.98);
+  box-shadow: var(--btn-shadow-active);
+}
+
+.moka-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* 1. Botão Primary */
+.moka-btn-primary {
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+  border-color: var(--btn-primary-border);
+}
+.moka-btn-primary:hover {
+  background: var(--btn-primary-hover-bg);
+}
+
+/* 2. Botão Secondary */
+.moka-btn-secondary {
+  background: var(--btn-secondary-bg);
+  color: var(--btn-secondary-text);
+  border-color: var(--btn-secondary-border);
+}
+.moka-btn-secondary:hover {
+  background: var(--btn-secondary-hover-bg);
+  border-color: var(--btn-secondary-hover-border);
+}
+
+/* 3. Botão Ghost (Navegação & Ícones) */
+.moka-btn-ghost {
+  background: var(--btn-ghost-bg);
+  color: var(--btn-ghost-text);
+  box-shadow: none;
+  border-color: transparent;
+}
+.moka-btn-ghost:hover {
+  background: var(--btn-ghost-hover-bg);
+  color: var(--btn-ghost-hover-text);
+  box-shadow: none;
+}
+
+/* 4. Refinamento dos 6 Botões Grandes da Capa (.capa-launch-btn) */
+.capa-launch-btn {
+  border-radius: var(--btn-radius-lg) !important;
+  border: 1px solid var(--border-soft) !important;
+  background: var(--surface) !important;
+  box-shadow: var(--btn-shadow-rest) !important;
+  transition: var(--btn-transition) !important;
+}
+.capa-launch-btn:hover {
+  transform: translateY(-3px) !important;
+  border-color: var(--accent) !important;
+  box-shadow: var(--btn-shadow-hover) !important;
+}
+.capa-launch-btn:active {
+  transform: translateY(0) scale(0.98) !important;
+}
+
+.capa-launch-ico {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  background: var(--accent-soft, rgba(30, 64, 175, 0.08));
+  transition: var(--btn-transition);
+}
+
+/* 5. Refinamento dos 3 Botões Grandes do Leitor (.reader-big-btn) */
+.reader-big-btn {
+  border-radius: var(--btn-radius-pill) !important;
+  border: 1px solid var(--border-soft) !important;
+  background: var(--surface) !important;
+  font-weight: 600 !important;
+  box-shadow: var(--btn-shadow-rest) !important;
+  transition: var(--btn-transition) !important;
+}
+.reader-big-btn:hover, .reader-big-btn.open {
+  border-color: var(--accent) !important;
+  background: var(--accent-soft) !important;
+  color: var(--accent-dark) !important;
+  box-shadow: var(--btn-shadow-hover) !important;
+}
+.reader-big-btn:active {
+  transform: translateY(0) scale(0.98) !important;
+}
+
