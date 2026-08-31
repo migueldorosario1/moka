@@ -96,6 +96,13 @@ export function CloudSettings() {
       next.accessKeyId = ak;
       achou = true;
     }
+    // Nome do bucket: a tela do token lista "Buckets: <nome>" — preenche
+    // junto (pedido do Miguel, 31/08: "veio o nome do bucket na tela e
+    // você esqueceu de preencher"). "All buckets" não tem nome único.
+    const mBucket = texto.match(/Buckets?\s*:\s*\n\s*([a-z0-9][a-z0-9.-]{1,61}[a-z0-9])/i);
+    if (mBucket && !/^all$/i.test(mBucket[1].trim())) {
+      next.bucket = mBucket[1].trim();
+    }
     if (achou) {
       setCfg(next);
       setMagicMsg("ok");
