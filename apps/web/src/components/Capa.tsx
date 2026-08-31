@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { SiteFooter } from "@/components/SiteFooter";
 import { useI18n } from "@/components/I18nProvider";
+import { LangSwitcher } from "@/components/LangSwitcher";
 
 /**
  * CAPA — fase GRATUITA (pivô do Miguel, 2026-08-04):
@@ -21,6 +22,12 @@ export function Capa() {
 
   return (
     <main className="igot-shell ft">
+
+      {/* 🌐 Bandeirinha de idioma (ordem do Miguel, 31/08: o menu saiu
+          da capa, mas a bandeirinha FICA — ela é importante) */}
+      <div className="capa-lang">
+        <LangSwitcher />
+      </div>
 
       <div className="capa-body">
         <p className="capa-kicker">{t("capa_kicker")}</p>
