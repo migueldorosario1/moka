@@ -54,9 +54,28 @@ export async function clearCloudConfig(): Promise<void> {
   } catch { /* best-effort */ }
 }
 
+/**
+ * Normaliza o campo "host": aceita TANTO o identificador (Account ID do
+ * R2, região do B2) QUANTO o endereço completo copiado do painel — a
+ * pessoa cola o "Default" do token e o Moka acha o número sozinho
+ * (ordem do Miguel, 31/08: "onde acho o ID? tá complicando").
+ */
+export function normalizeHost(provider: CloudProvider, raw: string): string {
+  let h = raw.trim().replace(/^https?:\/\//i, "").replace(/\/+$/, "");
+  if (provider === "r2") {
+    const m = h.match(/^([0-9a-f]{32})\.r2\.cloudflarestorage\.com$/i);
+    if (m) return m[1].toLowerCase();
+  }
+  if (provider === "b2") {
+    const m = h.match(/^s3\.([a-z0-9-]+)\.backblazeb2\.com$/i);
+    if (m) return m[1];
+  }
+  return h;
+}
+
 /** Endpoint HTTPS do provedor (path-style: https://endpoint/bucket/chave). */
 export function endpointOf(c: CloudConfig): string {
-  const host = c.host.trim().replace(/^https?:\/\//, "").replace(/\/+$/, "");
+  const host = normalizeHost(c.provider, c.host);
   if (c.provider === "r2") return `https://${host}.r2.cloudflarestorage.com`;
   if (c.provider === "b2") return `https://s3.${host}.backblazeb2.com`;
   return `https://${host}`;
@@ -65,6 +84,6 @@ export function endpointOf(c: CloudConfig): string {
 /** Região usada na assinatura SigV4. */
 export function regionOf(c: CloudConfig): string {
   if (c.provider === "r2") return "auto";
-  if (c.provider === "b2") return c.host.trim();
+  if (c.provider === "b2") return normalizeHost("b2", c.host);
   return "us-east-1";
 }

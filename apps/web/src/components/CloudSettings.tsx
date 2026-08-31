@@ -86,9 +86,9 @@ export function CloudSettings() {
   // confundiu o Miguel: "porque está colado o nome do meu id?").
   const hostPh =
     cfg.provider === "r2"
-      ? "copie o Account ID do painel R2 (32 caracteres)"
+      ? "cole o ID da conta OU o endereço Default do token (https://…r2.cloudflarestorage.com)"
       : cfg.provider === "b2"
-        ? "ex.: us-west-004"
+        ? "cole a região (ex.: us-west-004) ou o endpoint"
         : "ex.: s3.exemplo.com";
 
   return (
