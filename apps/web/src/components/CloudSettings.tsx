@@ -109,6 +109,7 @@ export function CloudSettings() {
         <label>{t(hostKey)}</label>
         <input
           type="text"
+          name="moka-cloud-host-off"
           value={cfg.host}
           onChange={(e) => setCfg((c) => ({ ...c, host: e.target.value }))}
           placeholder={hostPh}

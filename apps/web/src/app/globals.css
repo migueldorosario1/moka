@@ -9244,3 +9244,12 @@ font-size: 14px;
   font-weight: 600;
   color: var(--text-muted);
 }
+
+/* Botão de restaurar na estante VAZIA (novo aparelho) */
+.shelf-cloud-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 0 16px 24px;
+}

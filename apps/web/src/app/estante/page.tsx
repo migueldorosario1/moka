@@ -402,6 +402,7 @@ export default function HomePage() {
           <p>{t("shelf_loading")}</p>
         </div>
       ) : books.length === 0 ? (
+        <>
         <Uploader
           onFile={handleFile}
           error={uploadError}
@@ -409,6 +410,22 @@ export default function HomePage() {
           onOpenSettings={() => router.push("/configuracoes")}
           progress={addingBook ? ingest : null}
         />
+        {/* ☁️ Estante vazia = o caso "novo aparelho": o botão de
+            RESTAURAR DA NUVEM é a porta de entrada (ordem do Miguel,
+            31/08: o botão de nuvem tem que aparecer SEMPRE). */}
+        <div className="shelf-cloud-empty">
+          <button
+            className="cloud-btn primary"
+            disabled={shelfCloud !== null}
+            onClick={() => void shelfCloudRestore()}
+          >
+            {shelfCloud === "restore" ? "…" : "⬇️"} {t("shelf_cloud_restore")}
+          </button>
+          {shelfCloudMsg && (
+            <p className="shelf-cloud-msg" role="status" aria-live="polite">{shelfCloudMsg}</p>
+          )}
+        </div>
+        </>
       ) : (
         <div className="shelf-page">
           <div className="shelf-header">
@@ -428,8 +445,8 @@ export default function HomePage() {
               </button>
               <button
                 className="cloud-btn"
-                disabled={shelfCloud !== null || books.length === 0}
-                onClick={() => void shelfCloudSave()}
+                disabled={shelfCloud !== null}
+                onClick={() => (books.length === 0 ? setShelfCloudMsg(`⚠️ ${t("shelf_empty_for_cloud")}`) : void shelfCloudSave())}
                 title={t("cloud_backup")}
               >
                 {shelfCloud === "save" ? "…" : "☁️"} {t("shelf_cloud_save")}

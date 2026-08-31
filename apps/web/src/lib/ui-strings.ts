@@ -694,7 +694,8 @@ export type UIStringKey =
   | "shelf_cloud_saved"
   | "shelf_cloud_restored"
   | "shelf_cloud_none"
-  | "shelf_cloud_skip_old";
+  | "shelf_cloud_skip_old"
+  | "shelf_empty_for_cloud";
 
 type LangStrings = Record<UIStringKey, string>;
 
@@ -1364,6 +1365,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_restored: "{n} livro(s) restaurados na estante — os originais (PDF/EPUB) voltaram inteiros.",
     shelf_cloud_none: "Nenhum livro na nuvem ainda — salve a estante primeiro.",
     shelf_cloud_skip_old: "{n} livro(s) antigo(s) ficaram de fora (adicionados antes de guardarmos o original — reabra o arquivo pra incluí-los)",
+    shelf_empty_for_cloud: "Sua estante está vazia — suba um livro primeiro, ou use ⬇️ Restaurar pra trazer seus livros da nuvem.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -2023,6 +2025,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_restored: "{n} book(s) restored to your shelf — the originals (PDF/EPUB) came back whole.",
     shelf_cloud_none: "No books in the cloud yet — save the shelf first.",
     shelf_cloud_skip_old: "{n} old book(s) left out (added before we kept originals — reopen the file to include them)",
+    shelf_empty_for_cloud: "Your shelf is empty — add a book first, or use ⬇️ Restore to bring your books from the cloud.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -2682,6 +2685,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_restored: "{n} libro(s) restaurados en la estantería — los originales (PDF/EPUB) volvieron enteros.",
     shelf_cloud_none: "Aún no hay libros en la nube — guarda la estantería primero.",
     shelf_cloud_skip_old: "{n} libro(s) antiguo(s) quedaron fuera (añadidos antes de guardar originales — vuelve a abrir el archivo)",
+    shelf_empty_for_cloud: "Tu estantería está vacía — sube un libro primero, o usa ⬇️ Restaurar para traer tus libros de la nube.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -3341,6 +3345,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_restored: "{n} livre(s) restaurés dans la bibliothèque — les originaux (PDF/EPUB) sont revenus entiers.",
     shelf_cloud_none: "Aucun livre dans le cloud pour l'instant — enregistrez d'abord la bibliothèque.",
     shelf_cloud_skip_old: "{n} ancien(s) livre(s) exclus (ajoutés avant la sauvegarde des originaux — rouvrez le fichier)",
+    shelf_empty_for_cloud: "Votre bibliothèque est vide — ajoutez d'abord un livre, ou utilisez ⬇️ Restaurer pour ramener vos livres du cloud.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -4000,6 +4005,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_restored: "{n} Buch/Bücher im Regal wiederhergestellt — die Originale (PDF/EPUB) kamen vollständig zurück.",
     shelf_cloud_none: "Noch keine Bücher in der Cloud — speichere zuerst das Regal.",
     shelf_cloud_skip_old: "{n} alte(s) Buch/Bücher ausgelassen (vor der Original-Speicherung hinzugefügt — Datei erneut öffnen)",
+    shelf_empty_for_cloud: "Dein Regal ist leer — lade zuerst ein Buch hoch oder nutze ⬇️ Wiederherstellen, um deine Bücher aus der Cloud zu holen.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -4659,6 +4665,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_restored: "{n} libro/i ripristinati nella libreria — gli originali (PDF/EPUB) sono tornati interi.",
     shelf_cloud_none: "Nessun libro nel cloud — salva prima la libreria.",
     shelf_cloud_skip_old: "{n} libro/i vecchi esclusi (aggiunti prima di salvare gli originali — riapri il file)",
+    shelf_empty_for_cloud: "La tua libreria è vuota — carica prima un libro, oppure usa ⬇️ Ripristina per portare i tuoi libri dal cloud.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -5318,6 +5325,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_restored: "{n} книг(и) восстановлены на полке — оригиналы (PDF/EPUB) вернулись целиком.",
     shelf_cloud_none: "В облаке пока нет книг — сначала сохраните полку.",
     shelf_cloud_skip_old: "{n} старых книг пропущено (добавлены до сохранения оригиналов — откройте файл заново)",
+    shelf_empty_for_cloud: "Ваша полка пуста — сначала добавьте книгу или используйте ⬇️ Восстановить, чтобы вернуть книги из облака.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -5977,6 +5985,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_restored: "{n} 本图书已恢复到书架 — 原始文件（PDF/EPUB）完整回来了。",
     shelf_cloud_none: "云端还没有图书 — 请先保存书架。",
     shelf_cloud_skip_old: "{n} 本旧书未包含（在开始保存原文件之前添加 — 重新打开文件即可包含）",
+    shelf_empty_for_cloud: "书架是空的 — 请先添加图书，或使用 ⬇️ 恢复从云端带回您的书。",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -6636,6 +6645,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_restored: "{n} 冊の本を本棚に復元しました — 元のファイル（PDF/EPUB）がそのまま戻りました。",
     shelf_cloud_none: "クラウドに本がまだありません — 先に本棚を保存してください。",
     shelf_cloud_skip_old: "{n} 冊の古い本は対象外（元ファイル保存前に追加されたもの — ファイルを開き直すと含まれます）",
+    shelf_empty_for_cloud: "本棚は空です — まず本を追加するか、⬇️ 復元でクラウドから本を持ってきてください。",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -7295,6 +7305,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_restored: "{n}권의 책을 책장에 복원했습니다 — 원본(PDF/EPUB)이 온전히 돌아왔습니다.",
     shelf_cloud_none: "클라우드에 아직 책이 없습니다 — 먼저 책장을 저장하세요.",
     shelf_cloud_skip_old: "{n}권의 오래된 책 제외(원본 저장 이전에 추가됨 — 파일을 다시 열면 포함됩니다)",
+    shelf_empty_for_cloud: "책장이 비어 있습니다 — 먼저 책을 추가하거나 ⬇️ 복원으로 클라우드에서 책을 가져오세요.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -7954,6 +7965,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_restored: "تمت استعادة {n} كتاب في الرف — عادت النسخ الأصلية (PDF/EPUB) كاملة.",
     shelf_cloud_none: "لا توجد كتب في السحابة بعد — احفظ الرف أولاً.",
     shelf_cloud_skip_old: "استُبعد {n} كتاب قديم (أُضيفت قبل حفظ النسخ الأصلية — أعد فتح الملف لإدراجها)",
+    shelf_empty_for_cloud: "رفك فارغ — أضف كتابًا أولاً، أو استخدم ⬇️ الاستعادة لإحضار كتبك من السحابة.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -8613,5 +8625,6 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_restored: "{n} पुस्तकें शेल्फ़ पर पुनर्स्थापित — मूल फ़ाइलें (PDF/EPUB) पूरी वापस आ गईं।",
     shelf_cloud_none: "क्लाउड में अभी कोई पुस्तक नहीं — पहले शेल्फ़ सहेजें।",
     shelf_cloud_skip_old: "{n} पुरानी पुस्तकें छोड़ी गईं (मूल सहेजने से पहले जोड़ी गईं — शामिल करने के लिए फ़ाइल फिर खोलें)",
+    shelf_empty_for_cloud: "आपकी शेल्फ़ खाली है — पहले पुस्तक जोड़ें, या ⬇️ पुनर्स्थापित से अपनी पुस्तकें क्लाउड से लाएँ।",
   },
 };
