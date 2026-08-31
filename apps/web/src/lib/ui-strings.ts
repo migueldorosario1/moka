@@ -663,7 +663,13 @@ export type UIStringKey =
   | "cloud_backup_ok"
   | "cloud_restore"
   | "cloud_restore_empty"
-  | "cloud_setup_link";
+  | "cloud_setup_link"
+  // ── Reforma 31/08 ~11h: botões grandes do leitor ──
+  | "reader_big_page"
+  | "reader_big_mark"
+  | "reader_big_ask"
+  | "reader_menu_more"
+  | "reader_menu_translate_page";
 
 type LangStrings = Record<UIStringKey, string>;
 
@@ -1308,6 +1314,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_restore: "Restaurar da nuvem",
     cloud_restore_empty: "Nenhum backup encontrado na nuvem ainda.",
     cloud_setup_link: "Configurar nuvem →",
+    reader_big_page: "Página",
+    reader_big_mark: "Marcar",
+    reader_big_ask: "Perguntar",
+    reader_menu_more: "Mais opções",
+    reader_menu_translate_page: "Traduzir a página",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1942,6 +1953,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_restore: "Restore from cloud",
     cloud_restore_empty: "No backup found in the cloud yet.",
     cloud_setup_link: "Set up cloud →",
+    reader_big_page: "Page",
+    reader_big_mark: "Mark",
+    reader_big_ask: "Ask",
+    reader_menu_more: "More options",
+    reader_menu_translate_page: "Translate the page",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -2576,6 +2592,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_restore: "Restaurar desde la nube",
     cloud_restore_empty: "Aún no hay respaldo en la nube.",
     cloud_setup_link: "Configurar nube →",
+    reader_big_page: "Página",
+    reader_big_mark: "Marcar",
+    reader_big_ask: "Preguntar",
+    reader_menu_more: "Más opciones",
+    reader_menu_translate_page: "Traducir la página",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -3210,6 +3231,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_restore: "Restaurer depuis le cloud",
     cloud_restore_empty: "Aucune sauvegarde trouvée dans le cloud.",
     cloud_setup_link: "Configurer le cloud →",
+    reader_big_page: "Page",
+    reader_big_mark: "Marquer",
+    reader_big_ask: "Demander",
+    reader_menu_more: "Plus d'options",
+    reader_menu_translate_page: "Traduire la page",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -3844,6 +3870,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_restore: "Aus der Cloud wiederherstellen",
     cloud_restore_empty: "Noch kein Backup in der Cloud gefunden.",
     cloud_setup_link: "Cloud einrichten →",
+    reader_big_page: "Seite",
+    reader_big_mark: "Markieren",
+    reader_big_ask: "Fragen",
+    reader_menu_more: "Weitere Optionen",
+    reader_menu_translate_page: "Seite übersetzen",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -4478,6 +4509,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_restore: "Ripristina dal cloud",
     cloud_restore_empty: "Nessun backup trovato nel cloud.",
     cloud_setup_link: "Configura cloud →",
+    reader_big_page: "Pagina",
+    reader_big_mark: "Segna",
+    reader_big_ask: "Chiedi",
+    reader_menu_more: "Altre opzioni",
+    reader_menu_translate_page: "Traduci la pagina",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -5112,6 +5148,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_restore: "Восстановить из облака",
     cloud_restore_empty: "В облаке пока нет бэкапа.",
     cloud_setup_link: "Настроить облако →",
+    reader_big_page: "Страница",
+    reader_big_mark: "Отметить",
+    reader_big_ask: "Спросить",
+    reader_menu_more: "Ещё",
+    reader_menu_translate_page: "Перевести страницу",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -5746,6 +5787,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_restore: "从云端恢复",
     cloud_restore_empty: "云端还没有备份。",
     cloud_setup_link: "配置云端 →",
+    reader_big_page: "页面",
+    reader_big_mark: "标记",
+    reader_big_ask: "提问",
+    reader_menu_more: "更多选项",
+    reader_menu_translate_page: "翻译本页",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -6380,6 +6426,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_restore: "クラウドから復元",
     cloud_restore_empty: "クラウドにバックアップがまだありません。",
     cloud_setup_link: "クラウドを設定 →",
+    reader_big_page: "ページ",
+    reader_big_mark: "マーク",
+    reader_big_ask: "質問",
+    reader_menu_more: "その他のオプション",
+    reader_menu_translate_page: "このページを翻訳",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -7014,6 +7065,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_restore: "클라우드에서 복원",
     cloud_restore_empty: "클라우드에 아직 백업이 없습니다.",
     cloud_setup_link: "클라우드 설정 →",
+    reader_big_page: "페이지",
+    reader_big_mark: "표시",
+    reader_big_ask: "질문",
+    reader_menu_more: "더보기",
+    reader_menu_translate_page: "이 페이지 번역",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -7648,6 +7704,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_restore: "الاستعادة من السحابة",
     cloud_restore_empty: "لا توجد نسخة احتياطية في السحابة بعد.",
     cloud_setup_link: "إعداد السحابة →",
+    reader_big_page: "صفحة",
+    reader_big_mark: "علّم",
+    reader_big_ask: "اسأل",
+    reader_menu_more: "المزيد من الخيارات",
+    reader_menu_translate_page: "ترجم الصفحة",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -8282,5 +8343,10 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_restore: "क्लाउड से पुनर्स्थापित करें",
     cloud_restore_empty: "क्लाउड में अभी कोई बैकअप नहीं मिला।",
     cloud_setup_link: "क्लाउड सेटअप →",
+    reader_big_page: "पृष्ठ",
+    reader_big_mark: "चिह्न",
+    reader_big_ask: "पूछें",
+    reader_menu_more: "अधिक विकल्प",
+    reader_menu_translate_page: "पृष्ठ अनुवाद करें",
   },
 };

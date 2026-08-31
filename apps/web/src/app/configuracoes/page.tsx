@@ -1,5 +1,5 @@
 "use client";
-import { TopNav } from "@/components/TopNav";
+import { TopNav, TopNavActions } from "@/components/TopNav";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -61,25 +61,9 @@ export default function ConfiguracoesPage() {
 
   return (
     <main className="cfg-page">
-      {/* TopBar — NÃO fixo (rola com a página, pedido do Miguel 09/08). */}
-      <TopNav right={<>
-<AuthGate />
-          <LangSwitcher />
-          {/* ✕ Fechar — volta pra onde o usuário veio (estante, leitor, vídeo). */}
-          <button
-            className="cfg-close-btn"
-            onClick={() => router.back()}
-            aria-label={t("close")}
-            title={t("close")}
-          >
-            ✕
-          </button>
-
-          <Link href="/estante" className="brand" title="Voltar à estante">
-            <CafezinhoLogo size={26} opacity={0.85} /> <span>Moka</span>
-          </Link>
-          <span className="cfg-topbar-label">⚙️ {t("settings")}</span>
-      </>} />
+      {/* TopBar PADRÃO da casa (reforma 31/08: era logo dos dois lados e
+          menu diferente — agora igual a TODAS as outras páginas). */}
+      <TopNav right={<TopNavActions />} />
 
       {/* Corpo largo e respirável — rola naturalmente com a página. */}
       <div className="cfg-container">
