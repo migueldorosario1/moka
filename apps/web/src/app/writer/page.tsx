@@ -21,6 +21,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { TopNav, TopNavActions } from "@/components/TopNav";
+import { LlmChip } from "@/components/LlmChip";
 import { BackButton } from "@/components/BackButton";
 import { SiteFooter } from "@/components/SiteFooter";
 import { VisitPing } from "@/components/VisitPing";
@@ -187,6 +188,7 @@ export default function WriterPage() {
       <TopNav active="writer" right={<TopNavActions />} />
 
       <header className="memoria-hero">
+        <LlmChip />
         <div className="memoria-hero-icon" aria-hidden>✍️</div>
         <h1>{t("wr_title")}</h1>
         <p className="memoria-tagline">{t("wr_tagline")}</p>

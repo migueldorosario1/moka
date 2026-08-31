@@ -417,9 +417,6 @@ export default function MemoriaPage() {
             <button className="memoria-btn big" onClick={exportAll} disabled={objetos.length === 0}>
               ⬆️ {t("mem_export")}
             </button>
-            <Link href="/harness" className="memoria-btn big harness-link">
-              💬 {t("mem_talk")}
-            </Link>
           </div>
           <p className="memoria-hint">{t("mem_import_hint")}</p>
 

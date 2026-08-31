@@ -9210,3 +9210,22 @@ font-size: 14px;
      joguinho vertical"). */
   .zoom-rail { top: 132px; }
 }
+
+/* ── Chip "quem está ligada" (ordem do Miguel, 31/08: modelo LLM visível) ── */
+.llm-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--accent);
+  background: var(--accent-soft);
+  color: var(--text);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.15s ease;
+}
+.llm-chip:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(60,40,15,0.12); }
+.llm-chip.none { border-color: #b3261e; background: rgba(179,38,30,0.08); }

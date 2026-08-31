@@ -673,7 +673,16 @@ export type UIStringKey =
   // ── Obra 31/08: aviso de PDF grande (megas + estimativa) ──
   | "ingest_big_pdf_intro"
   | "ingest_time_mid"
-  | "ingest_time_slow";
+  | "ingest_time_slow"
+  // ── Obra 31/08 ~12h: chip do modelo LLM + título do leitor ──
+  | "llm_on"
+  | "llm_none"
+  | "llm_change"
+  | "reader_home_title"
+  // ── Tutorial passo 6: botões grandes + nuvem ──
+  | "tut_s6_t"
+  | "tut_s6_d"
+  | "tut_s6_d2";
 
 type LangStrings = Record<UIStringKey, string>;
 
@@ -1326,6 +1335,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ingest_big_pdf_intro: "Livro de {mb} MB (PDF) — vai demorar {time} pra subir tudo, renderizando pra encontrar a capa…",
     ingest_time_mid: "um ou dois minutos",
     ingest_time_slow: "alguns minutos",
+    llm_on: "Ligado: {model}",
+    llm_none: "Nenhuma IA configurada",
+    llm_change: "trocar",
+    reader_home_title: "Moka — Ir para página central",
+    tut_s6_t: "Os botões grandes do livro (e a memória na nuvem)",
+    tut_s6_d: "Dentro do livro, 3 botões grandes resolvem tudo: 📖 Página (ler em voz alta, resumir/explicar, traduzir), 📌 Marcar (marcar página, foto, notas) e 🎤 Perguntar (qualquer coisa sobre o livro, por voz ou texto). Eles abrem submenus — toque e escolha.",
+    tut_s6_d2: "E a sua memória do Moka pode morar na SUA nuvem: ⚙️ Configurações → ☁️ Memória na nuvem (Cloudflare R2 ou Backblaze B2 grátis), Salvar — e Restaurar em qualquer aparelho.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1968,6 +1984,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ingest_big_pdf_intro: "Book of {mb} MB (PDF) — it may take {time} to upload everything while rendering to find the cover…",
     ingest_time_mid: "a minute or two",
     ingest_time_slow: "a few minutes",
+    llm_on: "Connected: {model}",
+    llm_none: "No AI configured",
+    llm_change: "change",
+    reader_home_title: "Moka — Go to home page",
+    tut_s6_t: "The big book buttons (and cloud memory)",
+    tut_s6_d: "Inside the book, 3 big buttons do everything: 📖 Page (read aloud, summarize/explain, translate), 📌 Mark (bookmark, photo, notes) and 🎤 Ask (anything about the book, by voice or text). They open submenus — tap and choose.",
+    tut_s6_d2: "And your Moka memory can live in YOUR cloud: ⚙️ Settings → ☁️ Cloud memory (free Cloudflare R2 or Backblaze B2), Save — and Restore on any device.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -2610,6 +2633,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ingest_big_pdf_intro: "Libro de {mb} MB (PDF) — puede tardar {time} en subir todo, renderizando para encontrar la portada…",
     ingest_time_mid: "un minuto o dos",
     ingest_time_slow: "algunos minutos",
+    llm_on: "Conectado: {model}",
+    llm_none: "Sin IA configurada",
+    llm_change: "cambiar",
+    reader_home_title: "Moka — Ir a la página principal",
+    tut_s6_t: "Los botones grandes del libro (y la memoria en la nube)",
+    tut_s6_d: "Dentro del libro, 3 botones grandes lo resuelven todo: 📖 Página (leer en voz alta, resumir/explicar, traducir), 📌 Marcar (marcar página, foto, notas) y 🎤 Preguntar (cualquier cosa sobre el libro, por voz o texto). Abren submenús — toca y elige.",
+    tut_s6_d2: "Y tu memoria de Moka puede vivir en TU nube: ⚙️ Ajustes → ☁️ Memoria en la nube (Cloudflare R2 o Backblaze B2 gratis), Guardar — y Restaurar en cualquier dispositivo.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -3252,6 +3282,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ingest_big_pdf_intro: "Livre de {mb} Mo (PDF) — {time} pour tout charger, en rendant pour trouver la couverture…",
     ingest_time_mid: "une à deux minutes",
     ingest_time_slow: "quelques minutes",
+    llm_on: "Connecté : {model}",
+    llm_none: "Aucune IA configurée",
+    llm_change: "changer",
+    reader_home_title: "Moka — Aller à la page d'accueil",
+    tut_s6_t: "Les gros boutons du livre (et la mémoire cloud)",
+    tut_s6_d: "Dans le livre, 3 gros boutons font tout : 📖 Page (lecture à voix haute, résumé/explication, traduction), 📌 Marquer (marque-page, photo, notes) et 🎤 Demander (tout sur le livre, à la voix ou par écrit). Ils ouvrent des sous-menus — touchez et choisissez.",
+    tut_s6_d2: "Et votre mémoire Moka peut vivre dans VOTRE cloud : ⚙️ Paramètres → ☁️ Mémoire cloud (Cloudflare R2 ou Backblaze B2 gratuit), Enregistrer — puis Restaurer sur n'importe quel appareil.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -3894,6 +3931,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ingest_big_pdf_intro: "Buch mit {mb} MB (PDF) — es kann {time} dauern, alles hochzuladen und beim Rendern das Cover zu finden…",
     ingest_time_mid: "ein bis zwei Minuten",
     ingest_time_slow: "einige Minuten",
+    llm_on: "Aktiv: {model}",
+    llm_none: "Keine KI konfiguriert",
+    llm_change: "wechseln",
+    reader_home_title: "Moka — Zur Startseite",
+    tut_s6_t: "Die großen Buch-Buttons (und Cloud-Speicher)",
+    tut_s6_d: "Im Buch erledigen 3 große Buttons alles: 📖 Seite (vorlesen, zusammenfassen/erklären, übersetzen), 📌 Markieren (Lesezeichen, Foto, Notizen) und 🎤 Fragen (alles zum Buch, per Sprache oder Text). Sie öffnen Untermenüs — antippen und wählen.",
+    tut_s6_d2: "Und deine Moka-Erinnerung kann in DEINER Cloud leben: ⚙️ Einstellungen → ☁️ Cloud-Speicher (kostenloses Cloudflare R2 oder Backblaze B2), Speichern — und auf jedem Gerät Wiederherstellen.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -4536,6 +4580,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ingest_big_pdf_intro: "Libro di {mb} MB (PDF) — ci possono volere {time} per caricare tutto, renderizzando per trovare la copertina…",
     ingest_time_mid: "uno o due minuti",
     ingest_time_slow: "alcuni minuti",
+    llm_on: "Attivo: {model}",
+    llm_none: "Nessuna IA configurata",
+    llm_change: "cambia",
+    reader_home_title: "Moka — Torna alla home",
+    tut_s6_t: "I bottoni grandi del libro (e la memoria nel cloud)",
+    tut_s6_d: "Nel libro, 3 bottoni grandi fanno tutto: 📖 Pagina (leggi ad alta voce, riassunta/spiega, traduci), 📌 Segna (segnapaghi, foto, note) e 🎤 Chiedi (qualsiasi cosa sul libro, a voce o per testo). Aprono sottomenu — tocca e scegli.",
+    tut_s6_d2: "E la tua memoria Moka può vivere nella TUA cloud: ⚙️ Impostazioni → ☁️ Memoria nel cloud (Cloudflare R2 o Backblaze B2 gratis), Salva — e Ripristina su qualsiasi dispositivo.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -5178,6 +5229,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ingest_big_pdf_intro: "Книга {mb} МБ (PDF) — загрузка может занять {time}: рендерим, чтобы найти обложку…",
     ingest_time_mid: "минуту-две",
     ingest_time_slow: "несколько минут",
+    llm_on: "Подключено: {model}",
+    llm_none: "ИИ не настроен",
+    llm_change: "сменить",
+    reader_home_title: "Moka — На главную",
+    tut_s6_t: "Большие кнопки книги (и память в облаке)",
+    tut_s6_d: "В книге 3 большие кнопки делают всё: 📖 Страница (читать вслух, конспект/объяснение, перевод), 📌 Отметить (закладка, фото, заметки) и 🎤 Спросить (что угодно о книге, голосом или текстом). Они открывают подменю — нажмите и выберите.",
+    tut_s6_d2: "И ваша память Moka может жить в ВАШЕМ облаке: ⚙️ Настройки → ☁️ Память в облаке (бесплатные Cloudflare R2 или Backblaze B2), Сохранить — и Восстановить на любом устройстве.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -5820,6 +5878,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ingest_big_pdf_intro: "{mb} MB 的图书（PDF）— 上传全部内容并渲染寻找封面可能需要{time}…",
     ingest_time_mid: "一两分钟",
     ingest_time_slow: "几分钟",
+    llm_on: "已连接：{model}",
+    llm_none: "未配置 AI",
+    llm_change: "更换",
+    reader_home_title: "Moka — 回到主页",
+    tut_s6_t: "书内大按钮（和云端记忆）",
+    tut_s6_d: "在书中，3 个大按钮搞定一切：📖 页面（朗读、摘要/讲解、翻译）、📌 标记（书签、拍照、笔记）和 🎤 提问（语音或文字问书里的任何问题）。它们会打开子菜单 — 点按选择即可。",
+    tut_s6_d2: "你的 Moka 记忆可以放在你自己的云里：⚙️ 设置 → ☁️ 云端记忆（免费的 Cloudflare R2 或 Backblaze B2），保存 — 然后在任何设备上恢复。",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -6462,6 +6527,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ingest_big_pdf_intro: "{mb} MB の本（PDF）— すべてアップロードし表紙を探すレンダリングに{time}かかることがあります…",
     ingest_time_mid: "1〜2分",
     ingest_time_slow: "数分",
+    llm_on: "接続中：{model}",
+    llm_none: "AI未設定",
+    llm_change: "変更",
+    reader_home_title: "Moka — ホームへ",
+    tut_s6_t: "本の大きなボタン（とクラウドメモリー）",
+    tut_s6_d: "本の中では 3 つの大きなボタンで全てできます：📖 ページ（読み上げ、要約/解説、翻訳）、📌 マーク（しおり、写真、ノート）、🎤 質問（音声やテキストで何でも質問）。サブメニューが開きます — タップして選択。",
+    tut_s6_d2: "Mokaのメモリーはあなたのクラウドに置けます：⚙️ 設定 → ☁️ クラウドメモリー（無料のCloudflare R2またはBackblaze B2）、保存 — そして任意の端末で復元。",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -7104,6 +7176,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ingest_big_pdf_intro: "{mb} MB 책(PDF) — 모두 업로드하고 표지를 찾기 위한 렌더링에 {time} 걸릴 수 있습니다…",
     ingest_time_mid: "1~2분",
     ingest_time_slow: "몇 분",
+    llm_on: "연결됨: {model}",
+    llm_none: "AI 미설정",
+    llm_change: "변경",
+    reader_home_title: "Moka — 홈으로",
+    tut_s6_t: "책의 큰 버튼(그리고 클라우드 메모리)",
+    tut_s6_d: "책 안에서는 3개의 큰 버튼으로 모든 걸 할 수 있습니다: 📖 페이지(읽어주기, 요약/설명, 번역), 📌 표시(책갈피, 사진, 노트), 🎤 질문(음성이나 텍스트로 무엇이든). 서브메뉴가 열립니다 — 눌러서 선택하세요.",
+    tut_s6_d2: "Moka 기억은 당신의 클라우드에 둘 수 있습니다: ⚙️ 설정 → ☁️ 클라우드 메모리(무료 Cloudflare R2 또는 Backblaze B2), 저장 — 그리고 어떤 기기에서든 복원.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -7746,6 +7825,13 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ingest_big_pdf_intro: "كتاب بحجم {mb} MB (PDF) — قد يستغرق {time} لتحميل كل شيء مع التصيير لإيجاد الغلاف…",
     ingest_time_mid: "دقيقة أو دقيقتين",
     ingest_time_slow: "بضع دقائق",
+    llm_on: "متصل: {model}",
+    llm_none: "لا توجد ذكاء اصطناعي مهيأ",
+    llm_change: "تغيير",
+    reader_home_title: "Moka — الصفحة الرئيسية",
+    tut_s6_t: "أزرار الكتاب الكبيرة (والذاكرة السحابية)",
+    tut_s6_d: "داخل الكتاب، 3 أزرار كبيرة تفعل كل شيء: 📖 صفحة (قراءة صوتية، تلخيص/شرح، ترجمة)، 📌 علّم (إشارة مرجعية، صورة، ملاحظات) و🎤 اسأل (أي شيء عن الكتاب، بالصوت أو الكتابة). تفتح قوائم فرعية — المس واختر.",
+    tut_s6_d2: "وذاكرة Moka يمكن أن تعيش في سحابتك: ⚙️ الإعدادات → ☁️ الذاكرة السحابية (Cloudflare R2 أو Backblaze B2 مجانًا)، احفظ — واستعد على أي جهاز.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -8388,5 +8474,12 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     ingest_big_pdf_intro: "{mb} MB की पुस्तक (PDF) — सब कुछ अपलोड और कवर खोजने के रेंडरिंग में {time} लग सकते हैं…",
     ingest_time_mid: "एक या दो मिनट",
     ingest_time_slow: "कुछ मिनट",
+    llm_on: "जुड़ा हुआ: {model}",
+    llm_none: "कोई AI कॉन्फ़िगर नहीं",
+    llm_change: "बदलें",
+    reader_home_title: "Moka — होम पेज",
+    tut_s6_t: "पुस्तक के बड़े बटन (और क्लाउड मेमोरी)",
+    tut_s6_d: "पुस्तक के अंदर, 3 बड़े बटन सब कुछ करते हैं: 📖 पृष्ठ (आवाज़ में पढ़ें, सारांश/समझाएँ, अनुवाद), 📌 चिह्न (बुकमार्क, फ़ोटो, नोट्स) और 🎤 पूछें (आवाज़ या टेक्स्ट से कुछ भी)। ये सबमेनू खोलते हैं — टैप करके चुनें।",
+    tut_s6_d2: "और आपकी Moka मेमोरी आपके ही क्लाउड में रह सकती है: ⚙️ सेटिंग्स → ☁️ क्लाउड मेमोरी (मुफ़्त Cloudflare R2 या Backblaze B2), सहेजें — और किसी भी डिवाइस पर पुनर्स्थापित करें।",
   },
 };

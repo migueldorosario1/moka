@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { TopNav, TopNavActions } from "@/components/TopNav";
+import { LlmChip } from "@/components/LlmChip";
 import { BackButton } from "@/components/BackButton";
 import { SiteFooter } from "@/components/SiteFooter";
 import { VisitPing } from "@/components/VisitPing";
@@ -152,6 +153,8 @@ export default function HarnessPage() {
         <div className="memoria-hero-icon" aria-hidden>💬</div>
         <h1>{t("har_title")}</h1>
         <p className="memoria-tagline">{t("har_tagline")}</p>
+        {/* Quem está ligada + trocar (ordem do Miguel, 31/08) */}
+        <LlmChip />
       </header>
 
       {/* Seletor de memórias em uso + custo (ordem do Miguel ~18h) */}

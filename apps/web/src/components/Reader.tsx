@@ -1814,8 +1814,8 @@ export function Reader({
           <a
             href="/"
             className="cafezinho-mark"
-            title="Moka — Ir para página central"
-            aria-label="Moka — Ir para página central"
+            title={t("reader_home_title")}
+            aria-label={t("reader_home_title")}
           >
             <CafezinhoLogo size={26} opacity={0.85} />
           </a>
