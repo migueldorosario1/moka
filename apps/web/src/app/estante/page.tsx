@@ -8,7 +8,7 @@ import { LangSwitcher } from "@/components/LangSwitcher";
 import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
 import { useI18n } from "@/components/I18nProvider";
-import { TopNav } from "@/components/TopNav";
+import { TopNav, TopNavActions } from "@/components/TopNav";
 import { BackButton } from "@/components/BackButton";
 import { TelemetryIconButton } from "@/components/TelemetryIconButton";
 import { VisitPing } from "@/components/VisitPing";
@@ -39,6 +39,9 @@ export default function HomePage() {
   const [books, setBooks] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
   const [addingBook, setAddingBook] = useState(false);
+  // Progresso da ingestão (ordem do Miguel, 31/08: livro grande tem que
+  // mostrar BARRINHA DE PERCENTUAL subindo — nunca mais "parado" sem dizer nada).
+  const [ingest, setIngest] = useState<{ pct: number; label: string } | null>(null);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const [configReady, setConfigReady] = useState(false);
   // 🧠 jogar na memória (obra MOKA): qual card está salvando/salvo.
@@ -125,6 +128,16 @@ export default function HomePage() {
     return () => window.clearTimeout(id);
   }, []);
 
+  // Progresso da geração de capa (45%..90% da barra).
+  const coverProgress = useCallback(
+    (d: number, n: number) =>
+      setIngest({
+        pct: Math.round(45 + 45 * (d / Math.max(1, n))),
+        label: t("ingest_cover", { n: d, total: n }),
+      }),
+    [t],
+  );
+
   // Abre um arquivo: se JÁ EXISTE na estante (mesmo título ou tamanho),
   // abre o livro existente (com progresso salvo). Senão, cria novo.
   // Ingestão de livro: mesma pipeline pra todo arquivo local
@@ -133,6 +146,7 @@ export default function HomePage() {
     async (data: ArrayBuffer, fileName: string, fileSize: number) => {
       setAddingBook(true);
       setUploadError(null);
+      setIngest({ pct: 8, label: t("ingest_open") });
       try {
         // ANTES de parsear, checa se já existe pelo tamanho do arquivo.
         // DEDUP DEFENSIVO: entre os candidatos, PREFERE o que tem chapters válidos.
@@ -160,7 +174,15 @@ export default function HomePage() {
           // avisa ANTES de adicionar que ler é normal, mas traduzir/explicar
           // páginas exige IA com VISÃO e custa um pouco mais por página.
           // Confirm com explicação nos 12 idiomas; cancelar = não adiciona.
-          if (result.book.sourceFormat === "pdf" && (await isImagePdf(data))) {
+          const isPdfScan =
+            result.book.sourceFormat === "pdf" &&
+            (await isImagePdf(data, (d, n) =>
+              setIngest({
+                pct: Math.round(10 + 30 * (d / Math.max(1, n))),
+                label: t("ingest_check"),
+              }),
+            ));
+          if (isPdfScan) {
             if (!confirm(t("shelf_image_pdf_confirm"))) return;
           }
 
@@ -172,7 +194,7 @@ export default function HomePage() {
             // Best-effort: falha silencosa mantém a capa antiga.
             if (result.book.sourceFormat === "pdf") {
               existingByTitle.coverImage =
-                (await renderPdfCover(data)) ?? existingByTitle.coverImage;
+                (await renderPdfCover(data, coverProgress)) ?? existingByTitle.coverImage;
             }
             await saveToLibrary(existingByTitle, auth.userId);
             router.push(`/book/${existingByTitle.id}`);
@@ -185,7 +207,7 @@ export default function HomePage() {
           let coverImage =
             result.book.coverImage ??
             (result.book.sourceFormat === "pdf"
-              ? await renderPdfCover(data) ?? undefined
+              ? await renderPdfCover(data, coverProgress) ?? undefined
               : undefined);
           if (!coverImage) {
             coverImage = generateDynamicBookCover({
@@ -206,6 +228,7 @@ export default function HomePage() {
             translations: {},
             notes: [],
           };
+          setIngest({ pct: 96, label: t("ingest_saving") });
           await saveToLibrary(session, auth.userId);
           router.push(`/book/${bookId}`);
         } else {
@@ -215,9 +238,10 @@ export default function HomePage() {
         setUploadError(err instanceof Error ? err.message : String(err));
       } finally {
         setAddingBook(false);
+        setIngest(null);
       }
     },
-    [auth.userId, router, books],
+    [auth.userId, router, books, t, coverProgress],
   );
 
   const handleFile = useCallback(
@@ -230,20 +254,7 @@ export default function HomePage() {
     <main className="estante-page">
       <VisitPing />
       {/* TopBar com logo clicável */}
-      <TopNav active="reader" right={<>
-            <BackButton />
-            <AuthGate />
-            <LangSwitcher />
-            <button
-              className={`gear ${configReady ? "" : "unset"}`}
-              onClick={() => router.push("/configuracoes")}
-              aria-label={t("settings")}
-              title={t("settings")}
-            >
-              ⚙️
-            </button>
-            <TelemetryIconButton />
-      </>} />
+      <TopNav active="reader" right={<TopNavActions gearUnset={!configReady} />} />
 
       {/* Estante */}
       {loading ? (
@@ -251,12 +262,13 @@ export default function HomePage() {
           <div className="spinner" />
           <p>{t("shelf_loading")}</p>
         </div>
-      ) : books.length === 0 && !addingBook ? (
+      ) : books.length === 0 ? (
         <Uploader
           onFile={handleFile}
           error={uploadError}
           configReady={configReady}
           onOpenSettings={() => router.push("/configuracoes")}
+          progress={addingBook ? ingest : null}
         />
       ) : (
         <div className="shelf-page">
@@ -298,10 +310,21 @@ export default function HomePage() {
           </a>
 
           {addingBook && (
-            <div className="igot-loading">
-              <div className="spinner" />
-              <p>{t("shelf_adding")}</p>
-            </div>
+            ingest ? (
+              <div className="ingest-progress" role="status" aria-live="polite">
+                <div className="ingest-progress-bar">
+                  <div className="ingest-progress-fill" style={{ width: `${ingest.pct}%` }} />
+                </div>
+                <p className="ingest-progress-label">
+                  <span className="ingest-progress-pct">{ingest.pct}%</span> — {ingest.label}
+                </p>
+              </div>
+            ) : (
+              <div className="igot-loading">
+                <div className="spinner" />
+                <p>{t("shelf_adding")}</p>
+              </div>
+            )
           )}
 
           {uploadError && (

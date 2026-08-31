@@ -9,6 +9,7 @@ import { LangSwitcher } from "@/components/LangSwitcher";
 import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
 import { SettingsForm } from "@/components/SettingsForm";
+import { CloudSettings } from "@/components/CloudSettings";
 import { A11yControls } from "@/components/A11yControls";
 import { useI18n } from "@/components/I18nProvider";
 import type { AIConfig } from "@igot/ai-providers";
@@ -98,6 +99,13 @@ export default function ConfiguracoesPage() {
         <section className="cfg-section">
           <h2 className="cfg-section-title">{t("cfg_keys_section")}</h2>
           <SettingsForm initial={config} onSaved={handleSaved} />
+        </section>
+
+        {/* ☁️ Memória na nuvem (ordem do Miguel, 31/08): o "espaçozinho" pro
+            token do Cloudflare R2 / Backblaze B2 — backup da memória do usuário. */}
+        <section className="cfg-section">
+          <h2 className="cfg-section-title">☁️ {t("cloud_title")}</h2>
+          <CloudSettings />
         </section>
       </div>
 

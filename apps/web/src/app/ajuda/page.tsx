@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { CafezinhoLogo } from "@/components/CafezinhoLogo";
+import { TopNav, TopNavActions } from "@/components/TopNav";
 import { ZeMocaAvatar } from "@/components/ZeMocaAvatar";
 import { LangSwitcher } from "@/components/LangSwitcher";
 import { AuthGate } from "@/components/AuthGate";
@@ -146,28 +146,7 @@ export default function Ajuda() {
 
   return (
     <main className="help">
-      <div className="igot-topbar help-topbar">
-        <div className="igot-topbar-left">
-          <a className="brand" href="/">
-            <CafezinhoLogo size={26} opacity={0.85} />
-            <span>Moka</span>
-          </a>
-        </div>
-        <div className="igot-topbar-actions">
-          <button
-            className="gear"
-            onClick={() => router.push("/configuracoes")}
-            aria-label={t("settings")}
-            title={t("settings")}
-          >
-            ⚙️
-          </button>
-          {/* 📊 Suas IAs e telemetria (pedido do Miguel, 22/08). */}
-          <TelemetryIconButton />
-          <AuthGate />
-          <LangSwitcher />
-        </div>
-      </div>
+      <TopNav right={<TopNavActions />} />
 
       <div className="help-body">
         {/* 🤖 ZÉ MOCA — agente-guia em destaque, no topo da ajuda.

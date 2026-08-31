@@ -17,7 +17,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LangSwitcher } from "@/components/LangSwitcher";
-import { TopNav } from "@/components/TopNav";
+import { TopNav, TopNavActions } from "@/components/TopNav";
 import { BackButton } from "@/components/BackButton";
 import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
@@ -44,6 +44,8 @@ import {
   splitImportFile,
 } from "@/lib/memoria/markdown";
 import { searchMemoria } from "@/lib/memoria/store";
+import { loadCloudConfig } from "@/lib/cloud";
+import { cloudPut, cloudGet } from "@/lib/cloud-s3";
 import { listLibrary } from "@/lib/repository";
 import { blocksToText } from "@/lib/paginate";
 import type { Session } from "@/lib/db";
@@ -234,6 +236,52 @@ export default function MemoriaPage() {
     [flashFor, importText, t],
   );
 
+  // ── ☁️ Nuvem (R2/B2 do usuário — ordem do Miguel, 31/08) ──
+  const [cloudBusy, setCloudBusy] = useState<"save" | "restore" | null>(null);
+  const [cloudReady, setCloudReady] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    void loadCloudConfig().then((c) => setCloudReady(!!c));
+  }, []);
+
+  const cloudSave = useCallback(async () => {
+    setCloudBusy("save");
+    try {
+      const c = await loadCloudConfig();
+      if (!c) {
+        flashFor("warn", t("cloud_missing"));
+        return;
+      }
+      const md = exportMemoriaMarkdown(ativa?.nome ?? "memoria", objetos);
+      const day = new Date().toISOString().slice(0, 10);
+      const ok =
+        (await cloudPut(c, "moka-memoria/memoria-latest.md", md)) &&
+        (await cloudPut(c, `moka-memoria/memoria-${day}.md`, md));
+      flashFor(ok ? "ok" : "warn", ok ? t("cloud_backup_ok", { n: objetos.length }) : t("cloud_test_net"));
+    } finally {
+      setCloudBusy(null);
+    }
+  }, [ativa?.nome, objetos, flashFor, t]);
+
+  const cloudRestore = useCallback(async () => {
+    setCloudBusy("restore");
+    try {
+      const c = await loadCloudConfig();
+      if (!c) {
+        flashFor("warn", t("cloud_missing"));
+        return;
+      }
+      const md = await cloudGet(c, "moka-memoria/memoria-latest.md");
+      if (!md) {
+        flashFor("warn", t("cloud_restore_empty"));
+        return;
+      }
+      await importText("nuvem: memoria-latest.md", md);
+    } finally {
+      setCloudBusy(null);
+    }
+  }, [flashFor, t, importText]);
+
   // ── Export ──
   const exportAll = useCallback(() => {
     const nome = ativa?.nome ?? "Moka";
@@ -285,19 +333,7 @@ export default function MemoriaPage() {
     <main className="memoria-page">
       <VisitPing />
       {/* TopBar padrão da casa */}
-      <TopNav active="memoria" right={<>
-            <BackButton />
-            <AuthGate />
-            <LangSwitcher />
-            <button
-              className="gear"
-              onClick={() => router.push("/configuracoes")}
-              aria-label={t("settings")}
-              title={t("settings")}
-            >
-              ⚙️
-            </button>
-      </>} />
+      <TopNav active="memoria" right={<TopNavActions />} />
 
       {/* Cabeçalho do módulo */}
       <header className="memoria-hero">
@@ -308,6 +344,25 @@ export default function MemoriaPage() {
           {t("mem_objects_count", { n: objetos.length })}
           {metas.length > 1 ? ` · ${ativa?.nome ?? ""}` : ""}
         </p>
+        <div className="memoria-cloud">
+          <button
+            className="cloud-btn"
+            disabled={cloudBusy !== null || objetos.length === 0}
+            onClick={cloudSave}
+          >
+            {cloudBusy === "save" ? "…" : "☁️"} {t("cloud_backup")}
+          </button>
+          <button
+            className="cloud-btn"
+            disabled={cloudBusy !== null}
+            onClick={cloudRestore}
+          >
+            {cloudBusy === "restore" ? "…" : "⬇️"} {t("cloud_restore")}
+          </button>
+          {cloudReady === false && (
+            <a href="/configuracoes" className="cloud-setup-link">{t("cloud_setup_link")}</a>
+          )}
+        </div>
       </header>
 
       {/* Abas */}

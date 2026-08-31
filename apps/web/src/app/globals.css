@@ -2636,8 +2636,9 @@ main.igot-shell.ft {
 /* ─── /biblioteca (Livraria Livre) — estilos globais pra matar o FOUC:
    styled-jsx injeta depois do primeiro paint na navegação client-side;
    aqui o estilo chega junto com a página. (Miguel, 2026-08-05) ─── */
-.bib { min-height: 100vh; background: #fff6ee; color: #1a1a1a; }
-.bib-topbar { background: #fff6ee; border-bottom: 1px solid #e8d9c8; }
+/* Padronização (ordem do Miguel, 31/08: "um tá bege, outro tá azulzinho —
+   unificar"): biblioteca e ajuda acompanham o fundo/cor das demais páginas. */
+.bib { min-height: 100vh; background: var(--bg); color: var(--text); }
 .bib-body { max-width: 980px; margin: 0 auto; padding: 36px 22px 64px; }
 .bib-kicker {
   text-transform: uppercase; letter-spacing: 0.16em; font-size: 11px;
@@ -3728,9 +3729,8 @@ body {
   color: var(--text-muted);
   font-size: 13px;
 }
-        .help { min-height: 100vh; background: #fff6ee; color: #1a1a1a; }
-        .help-topbar { background: #fff6ee; border-bottom: 1px solid #d9c8b8; }
-        .help-body { max-width: 640px; margin: 0 auto; padding: 40px 22px 64px; }
+        .help { min-height: 100vh; background: var(--bg); color: var(--text); }
+                .help-body { max-width: 640px; margin: 0 auto; padding: 40px 22px 64px; }
 
         /* 🤖 Banner do Zé Moca — destaque no topo da ajuda */
         .ze-moca-banner {
@@ -8995,4 +8995,84 @@ font-size: 14px;
   .capa-launch-btn b { font-size: 17px; }
   .capa-launch-btn span { font-size: 12.5px; }
   .capa-launch-btn.settings { grid-column: 1 / -1; }
+}
+
+/* ── Barra de progresso da ingestão de livros (ordem do Miguel, 31/08:
+   PDF grande não pode ficar "parado" — a pessoa tem que VER o % subindo). */
+.ingest-progress {
+  max-width: 460px;
+  margin: 22px auto;
+  text-align: center;
+}
+.ingest-progress-bar {
+  height: 16px;
+  border-radius: 999px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+}
+.ingest-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-dark));
+  transition: width 0.35s ease;
+  min-width: 6%;
+}
+.ingest-progress-label {
+  margin: 10px 0 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+.ingest-progress-pct { font-weight: 700; color: var(--text); }
+@media (max-width: 640px) {
+  .ingest-progress { margin: 18px 6px; }
+}
+
+/* ── ☁️ Memória na nuvem (R2/B2 do usuário — obra MOKA, 31/08) ── */
+.cloud-settings { max-width: 560px; }
+.cloud-intro {
+  font-size: 13.5px; line-height: 1.6; color: var(--text-muted);
+  margin: 0 0 14px;
+}
+.cloud-providers { display: flex; gap: 8px; flex-wrap: wrap; }
+.cloud-provider-btn {
+  padding: 8px 14px; border-radius: 999px; cursor: pointer;
+  border: 1px solid var(--border-soft); background: var(--surface);
+  font-size: 13.5px; font-weight: 600; color: var(--text);
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+.cloud-provider-btn.active {
+  background: var(--accent-soft); border-color: var(--accent);
+}
+.cloud-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 14px; }
+.cloud-btn {
+  padding: 10px 16px; border-radius: 12px; cursor: pointer;
+  border: 1px solid var(--border-soft); background: var(--surface);
+  font-size: 14px; font-weight: 600; color: var(--text);
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+.cloud-btn:hover:not(:disabled) { background: var(--surface-alt); }
+.cloud-btn:disabled { opacity: 0.5; cursor: default; }
+.cloud-btn.primary {
+  background: linear-gradient(160deg, var(--accent), var(--accent-dark));
+  color: #fff8ee; border: none;
+}
+.cloud-msg { font-size: 13.5px; margin: 10px 0 0; font-weight: 600; }
+.cloud-msg.ok { color: #1f7a33; }
+.cloud-msg.err { color: #b3261e; }
+.cloud-note {
+  font-size: 12.5px; line-height: 1.55; color: var(--text-muted); margin: 8px 0 0;
+}
+.memoria-cloud {
+  display: flex; gap: 10px; flex-wrap: wrap; justify-content: center;
+  margin-top: 12px;
+}
+.cloud-setup-link {
+  font-size: 13px; font-weight: 600; color: var(--accent-dark);
+  align-self: center;
+}
+@media (max-width: 640px) {
+  .cloud-btn { padding: 12px 16px; font-size: 15px; }
+  .cloud-provider-btn { padding: 10px 16px; font-size: 14px; }
 }

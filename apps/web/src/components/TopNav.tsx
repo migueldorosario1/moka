@@ -20,8 +20,46 @@ import { CafezinhoLogo } from "./CafezinhoLogo";
 import { LangSwitcher } from "./LangSwitcher";
 import { SectionSwitcher, type SectionKey } from "./SectionSwitcher";
 import { useI18n } from "./I18nProvider";
+import { BackButton } from "./BackButton";
+import { AuthGate } from "./AuthGate";
+import { TelemetryIconButton } from "./TelemetryIconButton";
 
 const HIDDEN_KEY = "moka.navHidden";
+
+/**
+ * TopNavActions — o CONJUNTO PADRÃO de ações da barra (ordem do Miguel,
+ * 31/08: "os menus lá de cima têm todos iguais, padronizados, em todas
+ * as páginas"). Toda página interna usa o mesmo bloco: voltar, conta,
+ * idioma, engrenagem e telemetria. A capa mantém o dela (sobre/ajuda).
+ */
+export function TopNavActions({
+  back = true,
+  gearUnset = false,
+}: {
+  /** Mostra o botão de voltar (padrão: sim). */
+  back?: boolean;
+  /** Engrenagem com o pontinho "IA não configurada". */
+  gearUnset?: boolean;
+}) {
+  const router = useRouter();
+  const { t } = useI18n();
+  return (
+    <>
+      {back && <BackButton />}
+      <AuthGate />
+      <LangSwitcher />
+      <button
+        className={`gear ${gearUnset ? "unset" : ""}`}
+        onClick={() => router.push("/configuracoes")}
+        aria-label={t("settings")}
+        title={t("settings")}
+      >
+        ⚙️
+      </button>
+      <TelemetryIconButton />
+    </>
+  );
+}
 
 export function TopNav({
   active,

@@ -20,7 +20,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LangSwitcher } from "@/components/LangSwitcher";
-import { TopNav } from "@/components/TopNav";
+import { TopNav, TopNavActions } from "@/components/TopNav";
 import { BackButton } from "@/components/BackButton";
 import { SiteFooter } from "@/components/SiteFooter";
 import { VisitPing } from "@/components/VisitPing";
@@ -184,18 +184,7 @@ export default function WriterPage() {
   return (
     <main className="writer-page">
       <VisitPing />
-      <TopNav active="writer" right={<>
-            <BackButton />
-            <LangSwitcher />
-            <button
-              className="gear"
-              onClick={() => router.push("/configuracoes")}
-              aria-label={t("settings")}
-              title={t("settings")}
-            >
-              ⚙️
-            </button>
-      </>} />
+      <TopNav active="writer" right={<TopNavActions />} />
 
       <header className="memoria-hero">
         <div className="memoria-hero-icon" aria-hidden>✍️</div>

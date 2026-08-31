@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { LangSwitcher } from "@/components/LangSwitcher";
-import { TopNav } from "@/components/TopNav";
+import { TopNav, TopNavActions } from "@/components/TopNav";
 import { BackButton } from "@/components/BackButton";
 import { SiteFooter } from "@/components/SiteFooter";
 import { VisitPing } from "@/components/VisitPing";
@@ -146,18 +146,7 @@ export default function HarnessPage() {
   return (
     <main className="harness-page">
       <VisitPing />
-      <TopNav active="harness" right={<>
-            <BackButton />
-            <LangSwitcher />
-            <button
-              className="gear"
-              onClick={() => router.push("/configuracoes")}
-              aria-label={t("settings")}
-              title={t("settings")}
-            >
-              ⚙️
-            </button>
-      </>} />
+      <TopNav active="harness" right={<TopNavActions />} />
 
       <header className="harness-hero">
         <div className="memoria-hero-icon" aria-hidden>💬</div>
