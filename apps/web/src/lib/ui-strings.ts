@@ -701,7 +701,11 @@ export type UIStringKey =
   | "cloud_magic_ph"
   | "cloud_magic_btn"
   | "cloud_magic_ok"
-  | "cloud_magic_fail";
+  | "cloud_magic_fail"
+  // ── Obra 31/08 ~14:3x: salvar livro POR LIVRO na estante ──
+  | "shelf_cloud_one"
+  | "cloud_saved_short"
+  | "cloud_book_no_original";
 
 type LangStrings = Record<UIStringKey, string>;
 
@@ -1377,6 +1381,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_magic_btn: "✨ Preencher sozinho",
     cloud_magic_ok: "✅ Preenchido! Só confere os campos embaixo e escolhe o nome do bucket.",
     cloud_magic_fail: "Não achei as chaves aí — cole também o endereço Default (https://…) da tela do token.",
+    shelf_cloud_one: "Salvar na nuvem",
+    cloud_saved_short: "Salvo!",
+    cloud_book_no_original: "“{title}” não tem o original guardado no aparelho (livro antigo). Reabra o arquivo uma vez (botão ＋ Adicionar livro) — depois o backup pega ele inteiro.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -2042,6 +2049,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_magic_btn: "✨ Fill it for me",
     cloud_magic_ok: "✅ Filled! Just check the fields below and pick the bucket name.",
     cloud_magic_fail: "Couldn't find the keys there — also paste the Default endpoint (https://…) from the token screen.",
+    shelf_cloud_one: "Save to cloud",
+    cloud_saved_short: "Saved!",
+    cloud_book_no_original: "“{title}” has no original file stored on this device (old book). Reopen the file once (+ Add book) — then the backup takes it whole.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -2707,6 +2717,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_magic_btn: "✨ Rellenar automáticamente",
     cloud_magic_ok: "✅ ¡Relleno! Revisa los campos de abajo y elige el nombre del bucket.",
     cloud_magic_fail: "No encontré las claves ahí — pega también el endpoint Default (https://…) de la pantalla del token.",
+    shelf_cloud_one: "Guardar en la nube",
+    cloud_saved_short: "¡Guardado!",
+    cloud_book_no_original: "“{title}” no tiene el original guardado en el aparato (libro antiguo). Reabre el archivo una vez (＋ Añadir libro) — después el backup lo toma entero.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -3372,6 +3385,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_magic_btn: "✨ Remplir automatiquement",
     cloud_magic_ok: "✅ Rempli ! Vérifiez les champs ci-dessous et choisissez le nom du bucket.",
     cloud_magic_fail: "Clés introuvables — collez aussi l'endpoint Default (https://…) de l'écran du token.",
+    shelf_cloud_one: "Enregistrer dans le cloud",
+    cloud_saved_short: "Enregistré !",
+    cloud_book_no_original: "« {title} » n'a pas d'original stocké sur l'appareil (ancien livre). Rouvrez le fichier une fois (＋ Ajouter) — ensuite la sauvegarde le prend en entier.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -4037,6 +4053,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_magic_btn: "✨ Automatisch ausfüllen",
     cloud_magic_ok: "✅ Ausgefüllt! Prüfe die Felder unten und wähle den Bucket-Namen.",
     cloud_magic_fail: "Keys nicht gefunden — füge auch den Default-Endpunkt (https://…) der Token-Seite ein.",
+    shelf_cloud_one: "In die Cloud",
+    cloud_saved_short: "Gespeichert!",
+    cloud_book_no_original: "„{title}“ hat keine Originaldatei auf dem Gerät (altes Buch). Datei einmal neu öffnen (＋ Buch hinzufügen) — dann nimmt das Backup es komplett.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -4702,6 +4721,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_magic_btn: "✨ Compila per me",
     cloud_magic_ok: "✅ Compilato! Controlla i campi sotto e scegli il nome del bucket.",
     cloud_magic_fail: "Chiavi non trovate — incolla anche l'endpoint Default (https://…) dalla schermata del token.",
+    shelf_cloud_one: "Salva nel cloud",
+    cloud_saved_short: "Salvato!",
+    cloud_book_no_original: "“{title}” non ha l'originale salvato sul dispositivo (libro vecchio). Riapri il file una volta (＋ Aggiungi libro) — poi il backup lo prende intero.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -5367,6 +5389,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_magic_btn: "✨ Заполнить за меня",
     cloud_magic_ok: "✅ Заполнено! Проверьте поля ниже и выберите имя бакета.",
     cloud_magic_fail: "Ключи не найдены — вставьте также Default-эндпоинт (https://…) с экрана токена.",
+    shelf_cloud_one: "В облако",
+    cloud_saved_short: "Сохранено!",
+    cloud_book_no_original: "У «{title}» нет оригинала на устройстве (старая книга). Откройте файл заново один раз (＋ Добавить книгу) — после этого бэкап возьмёт его целиком.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -6032,6 +6057,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_magic_btn: "✨ 自动填写",
     cloud_magic_ok: "✅ 已填好！只需检查下方字段并选择存储桶名称。",
     cloud_magic_fail: "没找到密钥 — 请把令牌页面的 Default 地址（https://…）也一起粘贴。",
+    shelf_cloud_one: "存到云端",
+    cloud_saved_short: "已保存！",
+    cloud_book_no_original: "《{title}》的原始文件未保存在本设备（旧书）。重新打开一次文件（＋ 添加图书）— 之后备份就会完整带上它。",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -6697,6 +6725,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_magic_btn: "✨ 自動入力",
     cloud_magic_ok: "✅ 入力済み！下のフィールドを確認してバケット名を選ぶだけです。",
     cloud_magic_fail: "キーが見つかりません — トークン画面のDefaultエンドポイント（https://…）も一緒に貼り付けてください。",
+    shelf_cloud_one: "クラウドに保存",
+    cloud_saved_short: "保存しました！",
+    cloud_book_no_original: "『{title}』の元ファイルが端末に保存されていません（古い本）。もう一度ファイルを開けば（＋ 本を追加）、バックアップが丸ごと取得します。",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -7362,6 +7393,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_magic_btn: "✨ 자동 채우기",
     cloud_magic_ok: "✅ 채웠습니다! 아래 필드를 확인하고 버킷 이름을 선택하기만 하면 됩니다.",
     cloud_magic_fail: "키를 찾지 못했습니다 — 토큰 화면의 Default 엔드포인트(https://…)도 함께 붙여넣으세요.",
+    shelf_cloud_one: "클라우드에 저장",
+    cloud_saved_short: "저장됨!",
+    cloud_book_no_original: "《{title}》의 원본 파일이 기기에 없습니다(이전 책). 파일을 한 번 다시 열면(＋ 책 추가) 백업이 전체를 가져갑니다.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -8027,6 +8061,9 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_magic_btn: "✆ املأ تلقائيًا",
     cloud_magic_ok: "✅ تم الملء! تحقق من الحقول بالأسفل واختر اسم الدلو فقط.",
     cloud_magic_fail: "لم أجد المفاتيح هنا — الصق أيضًا نقطة النهاية Default (https://…) من شاشة الرمز.",
+    shelf_cloud_one: "حفظ في السحابة",
+    cloud_saved_short: "تم الحفظ!",
+    cloud_book_no_original: "«{title}» لا يوجد له ملف أصلي محفوظ على الجهاز (كتاب قديم). أعد فتح الملف مرة واحدة (＋ إضافة كتاب) — بعدها يأخذه النسخ الاحتياطي كاملًا.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -8692,5 +8729,8 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_magic_btn: "✨ अपने भरें",
     cloud_magic_ok: "✅ भर दिया! नीचे के फ़ील्ड जाँचें और बकेट का नाम चुनें।",
     cloud_magic_fail: "कुंजियाँ नहीं मिलीं — टोकन स्क्रीन का Default एंडपॉइंट (https://…) भी साथ पेस्ट करें।",
+    shelf_cloud_one: "क्लाउड में सहेजें",
+    cloud_saved_short: "सहेजा गया!",
+    cloud_book_no_original: "«{title}» का मूल फ़ाइल डिवाइस पर सहेजा नहीं है (पुरानी पुस्तक)। फ़ाइल एक बार फिर खोलें (＋ पुस्तक जोड़ें) — फिर बैकअप उसे पूरा ले लेगा।",
   },
 };

@@ -268,6 +268,53 @@ export default function HomePage() {
     [auth.userId, router, books, t, coverProgress, ingestIntro],
   );
 
+  // ── ☁️ Por LIVRO (ordem do Miguel, 31/08: "bota um botãozinho embaixo
+  //    do jogar-na-memória: salvar na nuvem") — o original DESTE livro. ──
+  const [bookCloud, setBookCloud] = useState<string | null>(null);
+  const [bookCloudSaved, setBookCloudSaved] = useState<string | null>(null);
+  const salvarLivroNaNuvem = useCallback(
+    async (bookId: string) => {
+      setBookCloud(bookId);
+      setUploadError(null);
+      try {
+        const c = await loadCloudConfig();
+        if (!c) {
+          setUploadError(`⚠️ ${t("cloud_missing")}`);
+          return;
+        }
+        const full = await getBook(bookId).catch(() => null);
+        const origem = full?.pdfSource ?? full?.epubSource ?? null;
+        if (!full || !origem) {
+          setUploadError(`⚠️ ${t("cloud_book_no_original", { title: full?.book.title ?? "" })}`);
+          return;
+        }
+        const meta = JSON.stringify({
+          id: full.id,
+          fileName: full.fileName,
+          fileSize: full.fileSize,
+          title: full.book.title,
+          author: full.book.author ?? null,
+          sourceFormat: full.book.sourceFormat,
+          coverImage: full.coverImage ?? null,
+          chapterIdx: full.chapterIdx,
+          zoom: full.zoom,
+          savedAt: full.savedAt,
+        });
+        const okBin = await cloudPutBytes(c, `moka-estante/${full.id}.bin`, origem);
+        const okJson = await cloudPut(c, `moka-estante/${full.id}.json`, meta);
+        if (okBin && okJson) {
+          setBookCloudSaved(bookId);
+          setTimeout(() => setBookCloudSaved(null), 2500);
+        } else {
+          setUploadError(`⚠️ ${t("cloud_test_net")}`);
+        }
+      } finally {
+        setBookCloud(null);
+      }
+    },
+    [t],
+  );
+
   // ── ☁️ ESTANTE NA NUVEM — o ORIGINAL de cada livro (regra do Miguel,
   //    31/08: "pra estante tem que voltar o PDF e o EPUB original; na
   //    estante não pode ter livro convertido pra texto"). Um .bin (o
@@ -314,8 +361,8 @@ export default function HomePage() {
       }
       setShelfCloudMsg(
         t("shelf_cloud_saved", { n: ok }) +
-          (semOriginal > 0 ? ` · ${t("shelf_cloud_skip_old", { n: semOriginal })}` : "") +
-          (falha > 0 ? ` · ${falha} ✗` : ""),
+          (semOriginal > 0 ? ` · ⚠️ ${t("shelf_cloud_skip_old", { n: semOriginal })}` : "") +
+          (falha > 0 ? ` · ⚠️ ${falha} ✗` : ""),
       );
     } finally {
       setShelfCloud(null);
@@ -582,6 +629,22 @@ export default function HomePage() {
                   <span aria-hidden>{memSaving === book.id ? "…" : memSaved === book.id ? "✅" : "🧠"}</span>
                   <span className="book-memory-label">
                     {memSaved === book.id ? t("mem_in_memory") : t("mem_to_memory")}
+                  </span>
+                </button>
+                {/* ☁️ Salvar ESTE livro na nuvem (ordem do Miguel, 31/08:
+                    botãozinho embaixo do jogar-na-memória). */}
+                <button
+                  className="book-memory-btn"
+                  title={t("shelf_cloud_one")}
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    await salvarLivroNaNuvem(book.id);
+                  }}
+                >
+                  <span aria-hidden>{bookCloud === book.id ? "…" : bookCloudSaved === book.id ? "✅" : "☁️"}</span>
+                  <span className="book-memory-label">
+                    {bookCloudSaved === book.id ? t("cloud_saved_short") : t("shelf_cloud_one")}
                   </span>
                 </button>
                 <button
