@@ -9253,3 +9253,19 @@ font-size: 14px;
   gap: 4px;
   padding: 0 16px 24px;
 }
+
+/* ✨ Cola mágica da nuvem */
+.cloud-magic {
+  width: 100%;
+  min-height: 90px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px dashed var(--accent);
+  background: var(--surface);
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 12px;
+  line-height: 1.5;
+  resize: vertical;
+}
+.cloud-magic:focus { outline: 2px solid var(--accent); }

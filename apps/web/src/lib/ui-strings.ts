@@ -695,7 +695,13 @@ export type UIStringKey =
   | "shelf_cloud_restored"
   | "shelf_cloud_none"
   | "shelf_cloud_skip_old"
-  | "shelf_empty_for_cloud";
+  | "shelf_empty_for_cloud"
+  // ── Obra 31/08 ~14h: cola mágica da nuvem ──
+  | "cloud_magic"
+  | "cloud_magic_ph"
+  | "cloud_magic_btn"
+  | "cloud_magic_ok"
+  | "cloud_magic_fail";
 
 type LangStrings = Record<UIStringKey, string>;
 
@@ -1328,7 +1334,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_test_ok: "Conexão OK — bucket acessível ({n} objetos)",
     cloud_test_403: "Credencial recusada — confira a chave de acesso e a secreta.",
     cloud_test_404: "Bucket não encontrado — confira o nome (e a região).",
-    cloud_test_net: "Falha de rede — provavelmente o CORS do bucket (ou endpoint errado). Ative o CORS no painel do provedor permitindo este site.",
+    cloud_test_net: "Falha de rede OU o token não tem acesso a este bucket. Confira: 1) o CORS do bucket libera este site; 2) o token foi criado com acesso a ESTE bucket (All buckets resolve); 3) o endereço/chaves estão certos.",
     cloud_save: "Salvar",
     cloud_forget: "Esquecer daqui",
     cloud_saved: "Configuração de nuvem salva neste aparelho.",
@@ -1366,6 +1372,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_none: "Nenhum livro na nuvem ainda — salve a estante primeiro.",
     shelf_cloud_skip_old: "{n} livro(s) antigo(s) ficaram de fora (adicionados antes de guardarmos o original — reabra o arquivo pra incluí-los)",
     shelf_empty_for_cloud: "Sua estante está vazia — suba um livro primeiro, ou use ⬇️ Restaurar pra trazer seus livros da nuvem.",
+    cloud_magic: "✨ Atalho: cole aqui a tela do token do Cloudflare inteira (endereço + chaves) e preenchemos tudo pra você",
+    cloud_magic_ph: "Ex.: Token value… Access Key ID… Secret… https://…r2.cloudflarestorage.com",
+    cloud_magic_btn: "✨ Preencher sozinho",
+    cloud_magic_ok: "✅ Preenchido! Só confere os campos embaixo e escolhe o nome do bucket.",
+    cloud_magic_fail: "Não achei as chaves aí — cole também o endereço Default (https://…) da tela do token.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -1988,7 +1999,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_test_ok: "Connection OK — bucket reachable ({n} objects)",
     cloud_test_403: "Credential rejected — check the access key and secret.",
     cloud_test_404: "Bucket not found — check the name (and region).",
-    cloud_test_net: "Network failure — probably bucket CORS (or wrong endpoint). Enable CORS in the provider dashboard allowing this site.",
+    cloud_test_net: "Network failure OR the token has no access to this bucket. Check: 1) the bucket CORS allows this site; 2) the token was created with access to THIS bucket (All buckets works); 3) the endpoint/keys are right.",
     cloud_save: "Save",
     cloud_forget: "Forget here",
     cloud_saved: "Cloud configuration saved on this device.",
@@ -2026,6 +2037,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_none: "No books in the cloud yet — save the shelf first.",
     shelf_cloud_skip_old: "{n} old book(s) left out (added before we kept originals — reopen the file to include them)",
     shelf_empty_for_cloud: "Your shelf is empty — add a book first, or use ⬇️ Restore to bring your books from the cloud.",
+    cloud_magic: "✨ Shortcut: paste the whole Cloudflare token screen here (endpoint + keys) and we fill everything for you",
+    cloud_magic_ph: "e.g. Token value… Access Key ID… Secret… https://…r2.cloudflarestorage.com",
+    cloud_magic_btn: "✨ Fill it for me",
+    cloud_magic_ok: "✅ Filled! Just check the fields below and pick the bucket name.",
+    cloud_magic_fail: "Couldn't find the keys there — also paste the Default endpoint (https://…) from the token screen.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -2648,7 +2664,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_test_ok: "Conexión OK — bucket accesible ({n} objetos)",
     cloud_test_403: "Credencial rechazada — revisa la clave de acceso y la secreta.",
     cloud_test_404: "Bucket no encontrado — revisa el nombre (y la región).",
-    cloud_test_net: "Fallo de red — probablemente el CORS del bucket (o endpoint equivocado). Activa el CORS en el panel del proveedor permitiendo este sitio.",
+    cloud_test_net: "Fallo de red O el token no tiene acceso a este bucket. Revisa: 1) el CORS del bucket permite este sitio; 2) el token fue creado con acceso a ESTE bucket; 3) endpoint/claves correctos.",
     cloud_save: "Guardar",
     cloud_forget: "Olvidar aquí",
     cloud_saved: "Configuración de nube guardada en este dispositivo.",
@@ -2686,6 +2702,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_none: "Aún no hay libros en la nube — guarda la estantería primero.",
     shelf_cloud_skip_old: "{n} libro(s) antiguo(s) quedaron fuera (añadidos antes de guardar originales — vuelve a abrir el archivo)",
     shelf_empty_for_cloud: "Tu estantería está vacía — sube un libro primero, o usa ⬇️ Restaurar para traer tus libros de la nube.",
+    cloud_magic: "✨ Atajo: pega aquí la pantalla del token de Cloudflare entera (endpoint + claves) y lo rellenamos todo",
+    cloud_magic_ph: "Ej.: Token value… Access Key ID… Secret… https://…r2.cloudflarestorage.com",
+    cloud_magic_btn: "✨ Rellenar automáticamente",
+    cloud_magic_ok: "✅ ¡Relleno! Revisa los campos de abajo y elige el nombre del bucket.",
+    cloud_magic_fail: "No encontré las claves ahí — pega también el endpoint Default (https://…) de la pantalla del token.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -3308,7 +3329,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_test_ok: "Connexion OK — bucket accessible ({n} objets)",
     cloud_test_403: "Identifiants refusés — vérifiez la clé d'accès et la clé secrète.",
     cloud_test_404: "Bucket introuvable — vérifiez le nom (et la région).",
-    cloud_test_net: "Échec réseau — sans doute le CORS du bucket (ou mauvais endpoint). Activez le CORS dans la console du fournisseur pour ce site.",
+    cloud_test_net: "Échec réseau OU le token n'a pas accès à ce bucket. Vérifiez : 1) le CORS du bucket autorise ce site ; 2) le token a accès À CE bucket ; 3) endpoint/clés corrects.",
     cloud_save: "Enregistrer",
     cloud_forget: "Oublier ici",
     cloud_saved: "Configuration cloud enregistrée sur cet appareil.",
@@ -3346,6 +3367,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_none: "Aucun livre dans le cloud pour l'instant — enregistrez d'abord la bibliothèque.",
     shelf_cloud_skip_old: "{n} ancien(s) livre(s) exclus (ajoutés avant la sauvegarde des originaux — rouvrez le fichier)",
     shelf_empty_for_cloud: "Votre bibliothèque est vide — ajoutez d'abord un livre, ou utilisez ⬇️ Restaurer pour ramener vos livres du cloud.",
+    cloud_magic: "✨ Raccourci : collez ici tout l'écran du token Cloudflare (endpoint + clés) et nous remplissons tout",
+    cloud_magic_ph: "Ex. : Token value… Access Key ID… Secret… https://…r2.cloudflarestorage.com",
+    cloud_magic_btn: "✨ Remplir automatiquement",
+    cloud_magic_ok: "✅ Rempli ! Vérifiez les champs ci-dessous et choisissez le nom du bucket.",
+    cloud_magic_fail: "Clés introuvables — collez aussi l'endpoint Default (https://…) de l'écran du token.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -3968,7 +3994,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_test_ok: "Verbindung OK — Bucket erreichbar ({n} Objekte)",
     cloud_test_403: "Zugangsdaten abgelehnt — Zugriffsschlüssel und Geheimschlüssel prüfen.",
     cloud_test_404: "Bucket nicht gefunden — Name (und Region) prüfen.",
-    cloud_test_net: "Netzwerkfehler — vermutlich Bucket-CORS (oder falscher Endpunkt). CORS im Anbieter-Dashboard für diese Seite freigeben.",
+    cloud_test_net: "Netzwerkfehler ODER der Token hat keinen Zugriff auf diesen Bucket. Prüfe: 1) Bucket-CORS erlaubt diese Seite; 2) Token hat Zugriff auf DIESEN Bucket; 3) Endpoint/Keys korrekt.",
     cloud_save: "Speichern",
     cloud_forget: "Hier vergessen",
     cloud_saved: "Cloud-Konfiguration auf diesem Gerät gespeichert.",
@@ -4006,6 +4032,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_none: "Noch keine Bücher in der Cloud — speichere zuerst das Regal.",
     shelf_cloud_skip_old: "{n} alte(s) Buch/Bücher ausgelassen (vor der Original-Speicherung hinzugefügt — Datei erneut öffnen)",
     shelf_empty_for_cloud: "Dein Regal ist leer — lade zuerst ein Buch hoch oder nutze ⬇️ Wiederherstellen, um deine Bücher aus der Cloud zu holen.",
+    cloud_magic: "✨ Abkürzung: füge den ganzen Cloudflare-Token-Bildschirm hier ein (Endpoint + Keys) — wir füllen alles aus",
+    cloud_magic_ph: "Z. B. Token value… Access Key ID… Secret… https://…r2.cloudflarestorage.com",
+    cloud_magic_btn: "✨ Automatisch ausfüllen",
+    cloud_magic_ok: "✅ Ausgefüllt! Prüfe die Felder unten und wähle den Bucket-Namen.",
+    cloud_magic_fail: "Keys nicht gefunden — füge auch den Default-Endpunkt (https://…) der Token-Seite ein.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -4628,7 +4659,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_test_ok: "Connessione OK — bucket raggiungibile ({n} oggetti)",
     cloud_test_403: "Credenziali rifiutate — controlla chiave di accesso e segreta.",
     cloud_test_404: "Bucket non trovato — controlla nome (e regione).",
-    cloud_test_net: "Errore di rete — probabilmente CORS del bucket (o endpoint errato). Abilita il CORS nel pannello del provider per questo sito.",
+    cloud_test_net: "Errore di rete O il token non ha accesso a questo bucket. Controlla: 1) il CORS del bucket consente questo sito; 2) il token ha accesso a QUESTO bucket; 3) endpoint/chiavi corretti.",
     cloud_save: "Salva",
     cloud_forget: "Dimentica qui",
     cloud_saved: "Configurazione cloud salvata su questo dispositivo.",
@@ -4666,6 +4697,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_none: "Nessun libro nel cloud — salva prima la libreria.",
     shelf_cloud_skip_old: "{n} libro/i vecchi esclusi (aggiunti prima di salvare gli originali — riapri il file)",
     shelf_empty_for_cloud: "La tua libreria è vuota — carica prima un libro, oppure usa ⬇️ Ripristina per portare i tuoi libri dal cloud.",
+    cloud_magic: "✨ Scorciatoia: incolla qui l'intera schermata del token Cloudflare (endpoint + chiavi) e riempiamo tutto noi",
+    cloud_magic_ph: "Es.: Token value… Access Key ID… Secret… https://…r2.cloudflarestorage.com",
+    cloud_magic_btn: "✨ Compila per me",
+    cloud_magic_ok: "✅ Compilato! Controlla i campi sotto e scegli il nome del bucket.",
+    cloud_magic_fail: "Chiavi non trovate — incolla anche l'endpoint Default (https://…) dalla schermata del token.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -5288,7 +5324,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_test_ok: "Соединение ОК — бакет доступен ({n} объектов)",
     cloud_test_403: "Доступ отклонён — проверьте ключ доступа и секретный ключ.",
     cloud_test_404: "Бакет не найден — проверьте имя (и регион).",
-    cloud_test_net: "Сбой сети — скорее всего CORS бакета (или неверный эндпоинт). Разрешите CORS в панели провайдера для этого сайта.",
+    cloud_test_net: "Сбой сети ИЛИ у токена нет доступа к этому бакету. Проверьте: 1) CORS бакета разрешает этот сайт; 2) у токена есть доступ к ЭТОМУ бакету; 3) эндпоинт/ключи верны.",
     cloud_save: "Сохранить",
     cloud_forget: "Забыть здесь",
     cloud_saved: "Настройка облака сохранена на этом устройстве.",
@@ -5326,6 +5362,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_none: "В облаке пока нет книг — сначала сохраните полку.",
     shelf_cloud_skip_old: "{n} старых книг пропущено (добавлены до сохранения оригиналов — откройте файл заново)",
     shelf_empty_for_cloud: "Ваша полка пуста — сначала добавьте книгу или используйте ⬇️ Восстановить, чтобы вернуть книги из облака.",
+    cloud_magic: "✨ Ярлык: вставьте сюда весь экран токена Cloudflare (эндпоинт + ключи) — мы заполним всё сами",
+    cloud_magic_ph: "Напр.: Token value… Access Key ID… Secret… https://…r2.cloudflarestorage.com",
+    cloud_magic_btn: "✨ Заполнить за меня",
+    cloud_magic_ok: "✅ Заполнено! Проверьте поля ниже и выберите имя бакета.",
+    cloud_magic_fail: "Ключи не найдены — вставьте также Default-эндпоинт (https://…) с экрана токена.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -5948,7 +5989,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_test_ok: "连接正常 — 存储桶可访问（{n} 个对象）",
     cloud_test_403: "凭据被拒绝 — 请检查访问密钥和机密密钥。",
     cloud_test_404: "找不到存储桶 — 请检查名称（和地区）。",
-    cloud_test_net: "网络失败 — 可能是存储桶 CORS（或端点错误）。在提供商控制台为本站启用 CORS。",
+    cloud_test_net: "网络失败或令牌无权访问此存储桶。请检查：1）存储桶 CORS 允许本站；2）令牌创建时包含对此存储桶的访问；3）地址/密钥正确。",
     cloud_save: "保存",
     cloud_forget: "在此清除",
     cloud_saved: "云配置已保存在此设备上。",
@@ -5986,6 +6027,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_none: "云端还没有图书 — 请先保存书架。",
     shelf_cloud_skip_old: "{n} 本旧书未包含（在开始保存原文件之前添加 — 重新打开文件即可包含）",
     shelf_empty_for_cloud: "书架是空的 — 请先添加图书，或使用 ⬇️ 恢复从云端带回您的书。",
+    cloud_magic: "✨ 捷径：把 Cloudflare 令牌页面整个粘贴到这里（端点+密钥），我们帮你全部填好",
+    cloud_magic_ph: "例如：Token value… Access Key ID… Secret… https://…r2.cloudflarestorage.com",
+    cloud_magic_btn: "✨ 自动填写",
+    cloud_magic_ok: "✅ 已填好！只需检查下方字段并选择存储桶名称。",
+    cloud_magic_fail: "没找到密钥 — 请把令牌页面的 Default 地址（https://…）也一起粘贴。",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -6608,7 +6654,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_test_ok: "接続 OK — バケットにアクセス可能（{n} 件）",
     cloud_test_403: "認証情報が拒否されました — アクセスキーとシークレットを確認してください。",
     cloud_test_404: "バケットが見つかりません — 名前（とリージョン）を確認してください。",
-    cloud_test_net: "ネットワークエラー — バケットの CORS（またはエンドポイント誤り）の可能性があります。プロバイダのダッシュボードでこのサイトの CORS を許可してください。",
+    cloud_test_net: "ネットワークエラーまたはトークンにこのバケットへのアクセス権がありません。確認：1）バケットのCORSがこのサイトを許可しているか；2）トークンがこのバケットへのアクセスを持っているか；3）エンドポイント/キーが正しいか。",
     cloud_save: "保存",
     cloud_forget: "ここから削除",
     cloud_saved: "クラウド設定をこの端末に保存しました。",
@@ -6646,6 +6692,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_none: "クラウドに本がまだありません — 先に本棚を保存してください。",
     shelf_cloud_skip_old: "{n} 冊の古い本は対象外（元ファイル保存前に追加されたもの — ファイルを開き直すと含まれます）",
     shelf_empty_for_cloud: "本棚は空です — まず本を追加するか、⬇️ 復元でクラウドから本を持ってきてください。",
+    cloud_magic: "✨ ショートカット：Cloudflareのトークン画面（エンドポイント＋キー）をここにまるごと貼り付け — すべて自動入力します",
+    cloud_magic_ph: "例: Token value… Access Key ID… Secret… https://…r2.cloudflarestorage.com",
+    cloud_magic_btn: "✨ 自動入力",
+    cloud_magic_ok: "✅ 入力済み！下のフィールドを確認してバケット名を選ぶだけです。",
+    cloud_magic_fail: "キーが見つかりません — トークン画面のDefaultエンドポイント（https://…）も一緒に貼り付けてください。",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -7268,7 +7319,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_test_ok: "연결 OK — 버킷 접근 가능({n}개)",
     cloud_test_403: "자격 증명이 거부됨 — 액세스 키와 시크릿을 확인하세요.",
     cloud_test_404: "버킷을 찾을 수 없음 — 이름(과 리전)을 확인하세요.",
-    cloud_test_net: "네트워크 오류 — 버킷 CORS(또는 잘못된 엔드포인트) 문제일 가능성이 높습니다. 공급자 대시보드에서 이 사이트의 CORS를 허용하세요.",
+    cloud_test_net: "네트워크 오류 또는 이 버킷에 토큰 접근 권한 없음. 확인: 1) 버킷 CORS가 이 사이트를 허용하는지; 2) 토큰이 이 버킷에 접근 권한이 있는지; 3) 엔드포인트/키가 올바른지.",
     cloud_save: "저장",
     cloud_forget: "여기서 지우기",
     cloud_saved: "클라우드 설정이 이 기기에 저장되었습니다.",
@@ -7306,6 +7357,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_none: "클라우드에 아직 책이 없습니다 — 먼저 책장을 저장하세요.",
     shelf_cloud_skip_old: "{n}권의 오래된 책 제외(원본 저장 이전에 추가됨 — 파일을 다시 열면 포함됩니다)",
     shelf_empty_for_cloud: "책장이 비어 있습니다 — 먼저 책을 추가하거나 ⬇️ 복원으로 클라우드에서 책을 가져오세요.",
+    cloud_magic: "✨ 지름길: Cloudflare 토큰 화면(엔드포인트+키) 전체를 여기에 붙여넣으면 전부 채워드립니다",
+    cloud_magic_ph: "예: Token value… Access Key ID… Secret… https://…r2.cloudflarestorage.com",
+    cloud_magic_btn: "✨ 자동 채우기",
+    cloud_magic_ok: "✅ 채웠습니다! 아래 필드를 확인하고 버킷 이름을 선택하기만 하면 됩니다.",
+    cloud_magic_fail: "키를 찾지 못했습니다 — 토큰 화면의 Default 엔드포인트(https://…)도 함께 붙여넣으세요.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -7928,7 +7984,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_test_ok: "الاتصال سليم — الدلو متاح ({n} كائن)",
     cloud_test_403: "تم رفض بيانات الاعتماد — تحقق من مفتاح الوصول والسرّي.",
     cloud_test_404: "لم يتم العثور على الدلو — تحقق من الاسم (والمنطقة).",
-    cloud_test_net: "فشل في الشبكة — على الأرجح بسبب CORS الدلو (أو نقطة نهاية خاطئة). فعّل CORS في لوحة المزوّد بالسماح لهذا الموقع.",
+    cloud_test_net: "فشل في الشبكة أو لا يملك الرمز وصولًا لهذا الدلو. تحقق: 1) CORS الدلو يسمح لهذا الموقع؛ 2) الرمز أُنشئ بوصول لهذا الدلو؛ 3) صحة نقطة النهاية/المفاتيح.",
     cloud_save: "حفظ",
     cloud_forget: "انسَ من هنا",
     cloud_saved: "تم حفظ إعداد السحابة على هذا الجهاز.",
@@ -7966,6 +8022,11 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_none: "لا توجد كتب في السحابة بعد — احفظ الرف أولاً.",
     shelf_cloud_skip_old: "استُبعد {n} كتاب قديم (أُضيفت قبل حفظ النسخ الأصلية — أعد فتح الملف لإدراجها)",
     shelf_empty_for_cloud: "رفك فارغ — أضف كتابًا أولاً، أو استخدم ⬇️ الاستعادة لإحضار كتبك من السحابة.",
+    cloud_magic: "✨ اختصار: الصق شاشة رمز Cloudflare كاملة هنا (نقطة النهاية + المفاتيح) وسنملأ كل شيء لك",
+    cloud_magic_ph: "مثال: Token value… Access Key ID… Secret… https://…r2.cloudflarestorage.com",
+    cloud_magic_btn: "✆ املأ تلقائيًا",
+    cloud_magic_ok: "✅ تم الملء! تحقق من الحقول بالأسفل واختر اسم الدلو فقط.",
+    cloud_magic_fail: "لم أجد المفاتيح هنا — الصق أيضًا نقطة النهاية Default (https://…) من شاشة الرمز.",
   },
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -8588,7 +8649,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     cloud_test_ok: "कनेक्शन ठीक है — बकेट उपलब्ध ({n} ऑब्जेक्ट)",
     cloud_test_403: "क्रेडेंशियल अस्वीकृत — एक्सेस की और सीक्रेट की जाँच करें।",
     cloud_test_404: "बकेट नहीं मिला — नाम (और क्षेत्र) जाँचें।",
-    cloud_test_net: "नेटवर्क विफल — संभवतः बकेट CORS (या ग़लत एंडपॉइंट)। प्रदाता डैशबोर्ड में इस साइट के लिए CORS सक्षम करें।",
+    cloud_test_net: "नेटवर्क विफल या टोकन को इस बकेट की पहुँच नहीं। जाँचें: 1) बकेट CORS इस साइट को अनुमत करता है; 2) टोकन में इस बकेट की पहुँच है; 3) एंडपॉइंट/कुंजियाँ सही हैं।",
     cloud_save: "सहेजें",
     cloud_forget: "यहाँ से हटाएँ",
     cloud_saved: "क्लाउड सेटिंग इस डिवाइस पर सहेजी गई।",
@@ -8626,5 +8687,10 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     shelf_cloud_none: "क्लाउड में अभी कोई पुस्तक नहीं — पहले शेल्फ़ सहेजें।",
     shelf_cloud_skip_old: "{n} पुरानी पुस्तकें छोड़ी गईं (मूल सहेजने से पहले जोड़ी गईं — शामिल करने के लिए फ़ाइल फिर खोलें)",
     shelf_empty_for_cloud: "आपकी शेल्फ़ खाली है — पहले पुस्तक जोड़ें, या ⬇️ पुनर्स्थापित से अपनी पुस्तकें क्लाउड से लाएँ।",
+    cloud_magic: "✨ शॉर्टकट: Cloudflare टोकन स्क्रीन (एंडपॉइंट + कुंजियाँ) पूरी यहाँ पेस्ट करें — हम सब भर देंगे",
+    cloud_magic_ph: "उदा.: Token value… Access Key ID… Secret… https://…r2.cloudflarestorage.com",
+    cloud_magic_btn: "✨ अपने भरें",
+    cloud_magic_ok: "✅ भर दिया! नीचे के फ़ील्ड जाँचें और बकेट का नाम चुनें।",
+    cloud_magic_fail: "कुंजियाँ नहीं मिलीं — टोकन स्क्रीन का Default एंडपॉइंट (https://…) भी साथ पेस्ट करें।",
   },
 };
