@@ -79,13 +79,19 @@ export function CloudSettings() {
       achou = true;
     }
     const accountId = mR2?.[1]?.toLowerCase();
-    const mSk = texto.match(/\b([0-9a-f]{64})\b/i);
+    // Secret: R2 = 64 hex; B2 = applicationKey (começa com K, ~25+ chars).
+    const mSk = texto.match(/\b([0-9a-f]{64})\b/i)
+      ?? texto.match(/(?:applicationKey|application key|secret)\D{0,20}\b(K[0-9A-Za-z_-]{16,})\b/i);
     if (mSk) {
       next.secretAccessKey = mSk[1];
       achou = true;
     }
+    // Access Key: R2 = 32 hex (≠ accountId); B2 = keyID 25 hex (ou com label).
     const hashes = texto.match(/\b([0-9a-f]{32})\b/ig) ?? [];
-    const ak = hashes.map((h) => h.toLowerCase()).find((h) => h !== accountId);
+    const akR2 = hashes.map((h) => h.toLowerCase()).find((h) => h !== accountId);
+    const akB2 = texto.match(/(?:keyID|key id|access key id)\D{0,20}\b([0-9a-f]{20,27})\b/i)?.[1]
+      ?? texto.match(/\b([0-9a-f]{25})\b/i)?.[1];
+    const ak = next.provider === "b2" ? (akB2 ?? akR2) : (akR2 ?? akB2);
     if (ak) {
       next.accessKeyId = ak;
       achou = true;
@@ -165,7 +171,16 @@ export function CloudSettings() {
               key={p.key}
               type="button"
               className={`cloud-provider-btn ${cfg.provider === p.key ? "active" : ""}`}
-              onClick={() => setCfg((c) => ({ ...c, provider: p.key }))}
+              onClick={() => {
+                if (cfg.provider !== p.key) {
+                  // trocou de provedor: campos do outro não servem — limpa
+                  // (ordem do Miguel, 31/08: "quando muda pra Backblaze
+                  // tem que limpar, o campo fica cheio").
+                  setCfg({ provider: p.key, host: "", accessKeyId: "", secretAccessKey: "", bucket: "" });
+                  setTest({ status: "idle" });
+                  setMagicMsg(null);
+                }
+              }}
             >
               {t(p.labelKey)}
             </button>
