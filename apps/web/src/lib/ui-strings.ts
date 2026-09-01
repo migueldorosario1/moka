@@ -604,6 +604,7 @@ export type UIStringKey =
   | "wr_empty"
   // ── Obra 30/08 ~16h: estante→memória, biblioteca, orçamento internacional, seções i18n ──
   | "mem_to_memory"
+  | "mem_already_in_memory"
   | "mem_in_memory"
   | "mem_type_livro"
   | "mem_from_library"
@@ -771,6 +772,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     har_consulted: "consultou {n} objeto(s) da memória:",
     mem_talk: "💬 Moka Harness",
     mem_to_memory: "Jogar na memória",
+    mem_already_in_memory: "Já está na memória",
     mem_in_memory: "Na memória ✓",
     mem_type_livro: "Livro",
     mem_from_library: "Importar da biblioteca",
@@ -1447,6 +1449,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     har_consulted: "consulted {n} object(s) from memory:",
     mem_talk: "💬 Moka Harness",
     mem_to_memory: "Add to memory",
+    mem_already_in_memory: "Already in memory",
     mem_in_memory: "In memory ✓",
     mem_type_livro: "Book",
     mem_from_library: "Import from library",
@@ -2115,6 +2118,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     har_consulted: "consultó {n} objeto(s) de la memoria:",
     mem_talk: "💬 Moka Harness",
     mem_to_memory: "Añadir a la memoria",
+    mem_already_in_memory: "Ya está en la memoria",
     mem_in_memory: "En memoria ✓",
     mem_type_livro: "Libro",
     mem_from_library: "Importar de la biblioteca",
@@ -2783,6 +2787,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     har_consulted: "a consulté {n} objet(s) de la mémoire :",
     mem_talk: "💬 Moka Harness",
     mem_to_memory: "Ajouter à la mémoire",
+    mem_already_in_memory: "Déjà dans la mémoire",
     mem_in_memory: "En mémoire ✓",
     mem_type_livro: "Livre",
     mem_from_library: "Importer depuis la bibliothèque",
@@ -3451,6 +3456,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     har_consulted: "hat {n} Objekt(e) aus dem Speicher konsultiert:",
     mem_talk: "💬 Moka Harness",
     mem_to_memory: "In den Speicher",
+    mem_already_in_memory: "Bereits im Speicher",
     mem_in_memory: "Im Speicher ✓",
     mem_type_livro: "Buch",
     mem_from_library: "Aus der Bibliothek importieren",
@@ -4119,6 +4125,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     har_consulted: "ha consultato {n} oggetto/i dalla memoria:",
     mem_talk: "💬 Moka Harness",
     mem_to_memory: "Metti in memoria",
+    mem_already_in_memory: "Già in memoria",
     mem_in_memory: "In memoria ✓",
     mem_type_livro: "Libro",
     mem_from_library: "Importa dalla biblioteca",
@@ -4787,6 +4794,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     har_consulted: "проконсультировалась с {n} объект(ами) памяти:",
     mem_talk: "💬 Moka Harness",
     mem_to_memory: "Добавить в память",
+    mem_already_in_memory: "Уже в памяти",
     mem_in_memory: "В памяти ✓",
     mem_type_livro: "Книга",
     mem_from_library: "Импорт из библиотеки",
@@ -5455,6 +5463,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     har_consulted: "查阅了 {n} 个记忆对象：",
     mem_talk: "💬 Moka Harness",
     mem_to_memory: "存入记忆",
+    mem_already_in_memory: "已在记忆中",
     mem_in_memory: "已在记忆 ✓",
     mem_type_livro: "书籍",
     mem_from_library: "从书库导入",
@@ -6123,6 +6132,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     har_consulted: "メモリーから {n} 件を参照：",
     mem_talk: "💬 Moka Harness",
     mem_to_memory: "メモリーへ入れる",
+    mem_already_in_memory: "すでにメモリーにあります",
     mem_in_memory: "メモリー済み ✓",
     mem_type_livro: "書籍",
     mem_from_library: "ライブラリから取り込む",
@@ -6791,6 +6801,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     har_consulted: "메모리에서 {n}개를 참고:",
     mem_talk: "💬 Moka Harness",
     mem_to_memory: "메모리에 넣기",
+    mem_already_in_memory: "이미 메모리에 있음",
     mem_in_memory: "메모리 됨 ✓",
     mem_type_livro: "책",
     mem_from_library: "라이브러리에서 가져오기",
@@ -7459,6 +7470,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     har_consulted: "استشار {n} كائنًا من الذاكرة:",
     mem_talk: "💬 Moka Harness",
     mem_to_memory: "أضف إلى الذاكرة",
+    mem_already_in_memory: "موجود في الذاكرة بالفعل",
     mem_in_memory: "في الذاكرة ✓",
     mem_type_livro: "كتاب",
     mem_from_library: "استيراد من المكتبة",
@@ -8127,6 +8139,7 @@ export const UI_STRINGS: Record<string, LangStrings> = {
     har_consulted: "मेमोरी से {n} वस्तुएँ देखीं:",
     mem_talk: "💬 Moka Harness",
     mem_to_memory: "मेमोरी में डालें",
+    mem_already_in_memory: "पहले से मेमोरी में",
     mem_in_memory: "मेमोरी में ✓",
     mem_type_livro: "किताब",
     mem_from_library: "लाइब्रेरी से लाएँ",

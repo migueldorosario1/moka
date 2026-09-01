@@ -142,8 +142,19 @@ export default function MemoriaPage() {
     }
   }, [libBooks.length, libOpen]);
 
+  // Livro que JÁ está na memória aparece como "já colocado", sem botão de
+  // jogar de novo (ordem do Miguel 31/08 ~22:55 — evitar import duplicado).
+  const livroJaNaMemoria = useCallback(
+    (b: Session) =>
+      objetos.some(
+        (o) => o.type === "livro" && o.title.trim() === b.book.title.trim(),
+      ),
+    [objetos],
+  );
+
   const jogarLivro = useCallback(
     async (b: Session) => {
+      if (livroJaNaMemoria(b)) return;
       setLibBusy(b.id);
       try {
         const body = (b.book.chapters ?? [])
@@ -172,7 +183,7 @@ export default function MemoriaPage() {
         setLibBusy(null);
       }
     },
-    [flashFor, loadAll, t],
+    [flashFor, livroJaNaMemoria, loadAll, t],
   );
 
 
@@ -434,15 +445,19 @@ export default function MemoriaPage() {
                 </li>
               )}
               {libBooks.map((b) => (
-                <li key={b.id} className="memoria-mem">
+                <li key={b.id} className={"memoria-mem" + (livroJaNaMemoria(b) ? " already" : "")}>
                   <div className="memoria-mem-info">
                     <strong>{b.book.title}</strong>
                     {b.book.author && <span className="memoria-mem-date">{b.book.author}</span>}
                   </div>
                   <div className="memoria-mem-actions">
-                    <button className="memoria-btn" onClick={() => void jogarLivro(b)} disabled={libBusy !== null}>
-                      {libBusy === b.id ? "…" : libDone === b.id ? "✅" : "🧠"} {t("mem_to_memory")}
-                    </button>
+                    {livroJaNaMemoria(b) ? (
+                      <span className="memoria-already">✅ {t("mem_already_in_memory")}</span>
+                    ) : (
+                      <button className="memoria-btn" onClick={() => void jogarLivro(b)} disabled={libBusy !== null}>
+                        {libBusy === b.id ? "…" : libDone === b.id ? "✅" : "🧠"} {t("mem_to_memory")}
+                      </button>
+                    )}
                   </div>
                 </li>
               ))}

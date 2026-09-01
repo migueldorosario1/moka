@@ -8506,6 +8506,25 @@ font-size: 14px;
   opacity: 0.45;
   cursor: not-allowed;
 }
+/* Selo "já está na memória" — livro da estante já importado (ordem do
+   Miguel 31/08 ~22:55): mesma métrica do botão que substitui, tom de
+   sucesso suave que funciona no claro e no escuro. */
+.memoria-already {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  font-size: 15px;
+  font-weight: 600;
+  border-radius: 12px;
+  border: 1px solid rgba(34, 140, 90, 0.38);
+  background: rgba(34, 140, 90, 0.14);
+  color: #35a06b;
+  white-space: nowrap;
+}
+.memoria-mem.already .memoria-mem-info {
+  opacity: 0.62;
+}
 .memoria-hint {
   text-align: center;
   font-size: 13px;
