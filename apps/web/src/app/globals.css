@@ -224,6 +224,7 @@ html,
 body {
   margin: 0;
   padding: 0;
+  overflow-x: clip;
   min-height: 100vh;
   background: var(--bg);
   background-attachment: fixed;
@@ -8929,7 +8930,18 @@ font-size: 14px;
   justify-content: space-between;
   gap: 10px;
   flex-wrap: wrap;
-  padding: 8px 0 6px;
+  /* Full-bleed (reforma 31/08): o menu vaza do container de cada página
+     (estante não tinha margem; memória 1080px, writer 880px...) e ganha
+     a MESMA margem interna em todas — logo nunca mais colado no canto. */
+  margin-inline: calc(50% - 50vw);
+  box-sizing: border-box;
+  padding: 8px 20px 6px;
+}
+.topnav-hidden {
+  justify-content: flex-end;
+}
+@media (max-width: 640px) {
+  .topnav { padding: 8px 14px 6px; }
 }
 .topnav-hidden {
   justify-content: flex-end;
