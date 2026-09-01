@@ -72,11 +72,15 @@ export function TopNav({
 }) {
   const router = useRouter();
   const { t } = useI18n();
-  const [hidden, setHidden] = useState(false);
+  // Reforma 31/08 (ordem do Miguel): menu CLEAN por padrão — nasce ESCONDIDO;
+  // o olhinho 👁 agora ABRE o menu (era o contrário). Quem já escolheu
+  // mostrar/esconder antes, mantém a própria preferência salva no aparelho.
+  const [hidden, setHidden] = useState(true);
 
   useEffect(() => {
     try {
-      setHidden(localStorage.getItem(HIDDEN_KEY) === "1");
+      const saved = localStorage.getItem(HIDDEN_KEY);
+      setHidden(saved === null ? true : saved === "1");
     } catch { /* sem storage */ }
   }, []);
 
