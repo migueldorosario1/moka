@@ -4,8 +4,8 @@
    A IA é invisível; o texto é o protagonista. */
 
 :root {
-  /* Cores — LIGHT MODE (Porcelana Azul + Safira Nobre + Cobalto) */
-  --bg: #f0f4f9;              /* porcelana azulada elegante (fundo) */
+  /* Cores — LIGHT MODE (Amanhecer Azul + Porcelana + Safira) */
+  --bg: linear-gradient(180deg, #f4f7fb 0%, #e8eef7 100%); /* Amanhecer no ambiente */
   --surface: #ffffff;         /* louça branca pura (cards/superfícies) */
   --surface-alt: #e2ebf6;     /* azul acinzentado suave (áreas secundárias) */
   --text: #0f172a;            /* azul noite / espresso azulado (texto principal) */
@@ -71,15 +71,15 @@
    O usuário escolhe o tema no controle de acessibilidade; o JS seta
    data-theme no <html>. Isto SOBREPÕE o prefers-color-scheme automático. */
 
-/* DARK forte (preto + letra branca) — mais dramático que o automático. */
+/* DARK forte (Amanhecer Azul Escuro). */
 :root[data-theme="dark"] {
-  --bg: #0a0a0c;
-  --surface: #16161a;
-  --surface-alt: #1f1f25;
-  --text: #f5f5f7;
-  --text-muted: #a0a0ab;
-  --border: #2e2e36;
-  --border-soft: #232329;
+  --bg: linear-gradient(180deg, #0b132b 0%, #0a0f22 100%);
+  --surface: #1c2541;
+  --surface-alt: #192138;
+  --text: #f1f5f9;
+  --text-muted: #94a3b8;
+  --border: #334155;
+  --border-soft: rgba(51, 65, 85, 0.7);
   --accent: #60a5fa;
   --accent-soft: #1e293b;
   --accent-dark: #3b82f6;
@@ -174,14 +174,14 @@
    (a especificidade de [data-theme] no :root ganha do media query). */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
-    /* DARK MODE (Azul Noite Profundo + Safira à meia-luz) */
-    --bg: #0b132b;            /* azul noite profundo (fundo) */
-    --surface: #1c2541;       /* azul safira escuro (superfícies) */
-    --surface-alt: #2a385b;   /* azul cobalto escuro */
+    /* DARK MODE (Amanhecer Azul Escuro) */
+    --bg: linear-gradient(180deg, #0b132b 0%, #0a0f22 100%);
+    --surface: #1c2541;
+    --surface-alt: #192138;
     --text: #f1f5f9;          /* porcelana branca (texto) */
     --text-muted: #94a3b8;    /* azul ardósia claro (texto secundário) */
     --border: #334155;        /* borda azul noite */
-    --border-soft: #1e293b;
+    --border-soft: rgba(51, 65, 85, 0.7);
     --accent: #60a5fa;        /* azul safira iluminado */
     --accent-soft: #1e293b;   /* azul escuro (hover) */
     --accent-dark: #3b82f6;   /* azul cobalto médio */
@@ -224,8 +224,9 @@ html,
 body {
   margin: 0;
   padding: 0;
-  height: 100%;
+  min-height: 100vh;
   background: var(--bg);
+  background-attachment: fixed;
   color: var(--text);
   font-family: var(--font-sans);
   font-size: 16px;
@@ -233,6 +234,7 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
+
 
 /* Foco visível — anel de cobre suave, só via teclado */
 :focus-visible {
@@ -2086,24 +2088,51 @@ main.igot-shell.ft {
   overflow-y: auto !important;
 }
 .ft {
-  --ft-paper: #faf8f5;
-  --ft-paper-warm: #f6efe3;
-  --ft-paper-deep: #eee3d1;
-  --ft-surface: #fffcf5;
-  --ft-ink: #2b2015;
-  --ft-ink-soft: #7c6856;
-  --ft-hairline: #e3d6c1;
-  --ft-hairline-soft: #ede3d2;
+  --ft-paper: #f4f7fb;
+  --ft-paper-warm: #e8eef7;
+  --ft-paper-deep: #dbeafe;
+  --ft-surface: #ffffff;
+  --ft-ink: #0f172a;
+  --ft-ink-soft: #475569;
+  --ft-hairline: rgba(203, 213, 225, 0.45);
+  --ft-hairline-soft: rgba(203, 213, 225, 0.3);
   --ft-teal: #0f7680;
-  --ft-copper: #a35d2f;
-  --ft-copper-dark: #7e4522;
-  --ft-crema: #f3e4d0;
-  --ft-gold: #c2955c;
+  --ft-copper: #1e40af;
 
-  background: linear-gradient(180deg, var(--ft-paper) 0%, var(--ft-paper-warm) 100%);
+  background: linear-gradient(180deg, #f4f7fb 0%, #e8eef7 100%) !important;
+  background-attachment: fixed !important;
   color: var(--ft-ink);
   min-height: 100vh;
 }
+
+:root[data-theme="dark"] .ft {
+  --ft-paper: #0b132b;
+  --ft-paper-warm: #0a0f22;
+  --ft-surface: #1c2541;
+  --ft-ink: #f1f5f9;
+  --ft-ink-soft: #94a3b8;
+  --ft-hairline: rgba(51, 65, 85, 0.7);
+  --ft-hairline-soft: rgba(51, 65, 85, 0.5);
+  --ft-copper: #60a5fa;
+
+  background: linear-gradient(180deg, #0b132b 0%, #0a0f22 100%) !important;
+  background-attachment: fixed !important;
+  color: #f1f5f9 !important;
+}
+:root[data-theme="dark"] .ft .capa-logo,
+:root[data-theme="dark"] .ft .capa-tagline,
+:root[data-theme="dark"] .ft .capa-path b {
+  color: #f1f5f9 !important;
+}
+:root[data-theme="dark"] .ft .capa-path span {
+  color: #94a3b8 !important;
+}
+:root[data-theme="dark"] .ft .capa-kicker {
+  background: #1e293b !important;
+  color: #60a5fa !important;
+  border-color: rgba(96, 165, 250, 0.3) !important;
+}
+
 .ft .igot-topbar {
   background: rgba(250, 248, 245, 0.92);
   backdrop-filter: blur(12px);
@@ -9386,23 +9415,50 @@ font-size: 14px;
   box-shadow: none;
 }
 
-/* 4. Refinamento dos 6 Botões Grandes da Capa (.capa-launch-btn) */
+/* ═════════════════════════════════════════════════════════════════════
+   🎨 SPEC DE CORES MOKA v2 — DIREÇÃO B: "AMANHECER AZUL"
+   Especificado pelo Diretor de Design (Claude), aprovado por Miguel
+   ═════════════════════════════════════════════════════════════════════ */
+
+/* 0. Fundo Geral da Capa e Aplicação (Amanhecer no Ambiente) */
+body {
+  background: linear-gradient(180deg, #f4f7fb 0%, #e8eef7 100%);
+  background-attachment: fixed;
+}
+
+/* 1. Refinamento dos 6 Botões Grandes da Capa (.capa-launch-btn) */
 .capa-launch-btn {
-  border-radius: var(--btn-radius-lg) !important;
-  border: 1px solid var(--border-soft) !important;
-  background: var(--surface) !important;
-  box-shadow: var(--btn-shadow-rest) !important;
-  transition: var(--btn-transition) !important;
+  border-radius: var(--btn-radius-lg, 16px) !important;
+  border: 1px solid rgba(203, 213, 225, 0.45) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #f9fbfe 92%, #f4f8fd 100%) !important;
+  box-shadow: 0 1px 2px rgba(23, 37, 84, 0.05), 0 3px 8px rgba(23, 37, 84, 0.05) !important;
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 .capa-launch-btn:hover {
   transform: translateY(-3px) !important;
-  border-color: var(--accent) !important;
-  box-shadow: var(--btn-shadow-hover) !important;
+  border-color: rgba(30, 64, 175, 0.4) !important;
+  background: linear-gradient(180deg, #ffffff 0%, #eff5fc 100%) !important;
+  box-shadow: 0 6px 16px rgba(23, 37, 84, 0.09), 0 12px 32px rgba(23, 37, 84, 0.08) !important;
 }
 .capa-launch-btn:active {
   transform: translateY(0) scale(0.98) !important;
 }
 
+/* Tipografia dos 6 cards — Remoção da opacidade dessaturante */
+.capa-launch-btn b {
+  color: #0f172a;
+  font-weight: 700;
+  font-size: 17.5px;
+  line-height: 1.25;
+}
+.capa-launch-btn span {
+  color: #475569;
+  font-size: 13px;
+  opacity: 1 !important; /* Sem dessaturação por opacidade */
+  line-height: 1.4;
+}
+
+/* 2. Caixinha do Ícone (.capa-launch-ico) com degradê diagonal gelo */
 .capa-launch-ico {
   display: inline-flex;
   align-items: center;
@@ -9410,26 +9466,129 @@ font-size: 14px;
   width: 48px;
   height: 48px;
   border-radius: 12px;
-  background: var(--accent-soft, rgba(30, 64, 175, 0.08));
-  transition: var(--btn-transition);
+  background: linear-gradient(135deg, #eaf1fb 0%, #dbeafe 100%) !important;
+  transition: background 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.capa-launch-btn:hover .capa-launch-ico {
+  background: linear-gradient(135deg, #dbeafe 0%, #c7dcfa 100%) !important;
 }
 
-/* 5. Refinamento dos 3 Botões Grandes do Leitor (.reader-big-btn) */
+/* 3. Cartões Secundários (.capa-path) — Sem pé azul forte */
+.capa-path {
+  background: linear-gradient(180deg, #ffffff 0%, #fafcfe 100%) !important;
+  border: 1px solid rgba(203, 213, 225, 0.4) !important;
+  box-shadow: 0 1px 3px rgba(23, 37, 84, 0.04) !important;
+  transition: border-color 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+.capa-path:hover {
+  transform: none !important; /* Não levanta no hover */
+  border-color: rgba(30, 64, 175, 0.3) !important;
+  box-shadow: 0 2px 6px rgba(23, 37, 84, 0.06) !important;
+}
+
+/* 4. Botões-Pílula do Leitor (.reader-big-btn) — FORA do Amanhecer */
 .reader-big-btn {
-  border-radius: var(--btn-radius-pill) !important;
-  border: 1px solid var(--border-soft) !important;
-  background: var(--surface) !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(203, 213, 225, 0.5) !important;
+  background: #ffffff !important;
+  color: var(--text) !important;
   font-weight: 600 !important;
-  box-shadow: var(--btn-shadow-rest) !important;
-  transition: var(--btn-transition) !important;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05) !important;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1) !important;
 }
 .reader-big-btn:hover, .reader-big-btn.open {
-  border-color: var(--accent) !important;
-  background: var(--accent-soft) !important;
-  color: var(--accent-dark) !important;
-  box-shadow: var(--btn-shadow-hover) !important;
+  border-color: rgba(30, 64, 175, 0.4) !important;
+  background: #dbeafe !important;
+  color: #172554 !important;
+  box-shadow: 0 4px 12px rgba(23, 37, 84, 0.08) !important;
 }
 .reader-big-btn:active {
   transform: translateY(0) scale(0.98) !important;
 }
+
+/* 5. Modo Escuro (Dark Mode Specs para Amanhecer Azul) */
+:root[data-theme="dark"] body {
+  background: linear-gradient(180deg, #0b132b 0%, #0a0f22 100%) !important;
+  background-attachment: fixed !important;
+}
+:root[data-theme="dark"] .capa-launch-btn {
+  background: linear-gradient(180deg, #1c2541 0%, #192138 100%) !important;
+  border-color: rgba(51, 65, 85, 0.7) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+}
+:root[data-theme="dark"] .capa-launch-btn:hover {
+  border-color: rgba(96, 165, 250, 0.45) !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+}
+:root[data-theme="dark"] .capa-launch-btn b {
+  color: #f1f5f9 !important;
+}
+:root[data-theme="dark"] .capa-launch-btn span {
+  color: #94a3b8 !important;
+}
+:root[data-theme="dark"] .capa-launch-ico {
+  background: linear-gradient(135deg, #1e293b 0%, #233252 100%) !important;
+}
+:root[data-theme="dark"] .capa-path {
+  background: linear-gradient(180deg, #1c2541 0%, #192138 100%) !important;
+  border-color: rgba(51, 65, 85, 0.7) !important;
+}
+:root[data-theme="dark"] .capa-path:hover {
+  border-color: rgba(96, 165, 250, 0.45) !important;
+}
+:root[data-theme="dark"] .reader-big-btn {
+  background: #1c2541 !important;
+  border-color: rgba(51, 65, 85, 0.7) !important;
+  color: #f1f5f9 !important;
+}
+:root[data-theme="dark"] .reader-big-btn:hover,
+:root[data-theme="dark"] .reader-big-btn.open {
+  background: #1e293b !important;
+  color: #60a5fa !important;
+  border-color: rgba(96, 165, 250, 0.45) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) body {
+    background: linear-gradient(180deg, #0b132b 0%, #0a0f22 100%) !important;
+    background-attachment: fixed !important;
+  }
+  :root:not([data-theme]) .capa-launch-btn {
+    background: linear-gradient(180deg, #1c2541 0%, #192138 100%) !important;
+    border-color: rgba(51, 65, 85, 0.7) !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4) !important;
+  }
+  :root:not([data-theme]) .capa-launch-btn:hover {
+    border-color: rgba(96, 165, 250, 0.45) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5) !important;
+  }
+  :root:not([data-theme]) .capa-launch-btn b {
+    color: #f1f5f9 !important;
+  }
+  :root:not([data-theme]) .capa-launch-btn span {
+    color: #94a3b8 !important;
+  }
+  :root:not([data-theme]) .capa-launch-ico {
+    background: linear-gradient(135deg, #1e293b 0%, #233252 100%) !important;
+  }
+  :root:not([data-theme]) .capa-path {
+    background: linear-gradient(180deg, #1c2541 0%, #192138 100%) !important;
+    border-color: rgba(51, 65, 85, 0.7) !important;
+  }
+  :root:not([data-theme]) .capa-path:hover {
+    border-color: rgba(96, 165, 250, 0.45) !important;
+  }
+  :root:not([data-theme]) .reader-big-btn {
+    background: #1c2541 !important;
+    border-color: rgba(51, 65, 85, 0.7) !important;
+    color: #f1f5f9 !important;
+  }
+  :root:not([data-theme]) .reader-big-btn:hover,
+  :root:not([data-theme]) .reader-big-btn.open {
+    background: #1e293b !important;
+    color: #60a5fa !important;
+    border-color: rgba(96, 165, 250, 0.45) !important;
+  }
+}
+
 
