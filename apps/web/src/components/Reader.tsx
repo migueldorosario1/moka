@@ -13,6 +13,7 @@ import { CloseAppButton } from "./CloseAppButton";
 import { LangSwitcher } from "./LangSwitcher";
 import { useTTS } from "@/hooks/useTTS";
 import { getTargetLang, getAudioLang, getConfigSync, listAllEntriesSync, getTtsVoice, getEntryForVoice } from "@/lib/config";
+import { getConta } from "@/lib/moka-conta";
 import { SettingsModal } from "./SettingsModal";
 import { AskModal } from "./AskModal";
 import { PageActionModal } from "./PageActionModal";
@@ -152,6 +153,29 @@ function getNeuralTtsConfig(config: {
     providerId: config.providerId,
     providerName: config.label || config.providerId,
   };
+}
+
+/**
+ * Modo casa (sprint revisor Google, 05/09): sem BYOK configurado, mas com
+ * CONTA Moka logada, a voz neural sai do gateway da casa (OpenAI tts-1 no
+ * servidor — debita pontos, trava natural; a chave da casa nunca vem ao
+ * navegador). O revisor do Google entra com a conta de teste e ouve tudo.
+ */
+function getTtsConfigOuCasa():
+  | ReturnType<typeof getNeuralTtsConfig>
+  | { casa: true; voice: string; providerId: string; providerName: string } {
+  const voiceConfig = getEntryForVoice();
+  const cfg = voiceConfig ? getNeuralTtsConfig(voiceConfig) : null;
+  if (cfg) return cfg;
+  if (typeof window !== "undefined" && getConta()) {
+    return {
+      casa: true,
+      voice: getTtsVoice() || "alloy",
+      providerId: "moka-casa",
+      providerName: "Moka — IA da casa (pontos)",
+    };
+  }
+  return null;
 }
 
 export function Reader({
@@ -325,8 +349,7 @@ export function Reader({
     if (!prepared) return;
 
     // Tenta voz NEURAL primeiro (se há entry marcada pra voz — OpenAI/Grok/Groq).
-    const voiceConfig = getEntryForVoice();
-    const ttsCfg = voiceConfig ? getNeuralTtsConfig(voiceConfig) : null;
+    const ttsCfg = getTtsConfigOuCasa();
     if (ttsCfg) {
       const gen = ttsPrepGen.current;
       setTtsPrep("voice");
@@ -1749,8 +1772,7 @@ export function Reader({
     const prepared = await prepareSpeech(text, book.language || "en");
     if (!prepared) return;
 
-    const voiceConfig = getEntryForVoice();
-    const ttsCfg = voiceConfig ? getNeuralTtsConfig(voiceConfig) : null;
+    const ttsCfg = getTtsConfigOuCasa();
     if (ttsCfg) {
       const gen = ttsPrepGen.current;
       setTtsPrep("voice");

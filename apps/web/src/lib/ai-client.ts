@@ -26,6 +26,7 @@ import {
 import { getConfigSync, getEntryForText, getTargetLang } from "./config";
 import { captureError } from "./diagnostics";
 import { t } from "./messages";
+import { getConta, gatewayProvider } from "./moka-conta";
 import {
   recordUsage,
   getPrefs,
@@ -69,19 +70,27 @@ function buildContext(ctx: BookContext): string | undefined {
   return parts.length ? parts.join("\n") : undefined;
 }
 
-/** Instancia o provider SEMPRE com a chave do usuário (BYOK).
- *  FASE GRATUITA (pivô 2026-08-04): não existe mais IA da casa/pontos —
- *  sem chave configurada, o erro guia a pessoa a colocar a própria. */
+/** Instancia o provider com a chave do usuário (BYOK). Sem BYOK configurado
+ *  mas COM CONTA Moka logada, usa a IA da casa (gateway de pontos — debita
+ *  no servidor; a chave da casa nunca chega ao navegador). Sprint revisor
+ *  Google, 05/09: o revisor entra com a conta de teste e testa tudo. */
 function resolveProvider() {
   const config = getEntryForText();
-  if (!config) {
-    throw new Error(
-      "Para usar a IA, abra as ⚙️ Configurações e cole a SUA chave de IA " +
-      "(ela fica só no seu dispositivo). Em /ajuda tem o passo a passo de 1 minuto.",
-    );
+  if (config) {
+    const transport = createProxyTransport("/api/proxy");
+    return { provider: getProvider(config as AIConfig, transport), config };
   }
-  const transport = createProxyTransport("/api/proxy");
-  return { provider: getProvider(config as AIConfig, transport), config };
+  if (getConta()) {
+    return {
+      provider: gatewayProvider("resumo_livro"),
+      config: { providerId: "moka-casa", model: "casa" },
+    };
+  }
+  throw new Error(
+    "Para usar a IA, abra as ⚙️ Configurações e cole a SUA chave de IA " +
+    "(ela fica só no seu dispositivo) — ou entre com sua conta Moka. " +
+    "Em /ajuda tem o passo a passo de 1 minuto.",
+  );
 }
 
 // ─── Telemetria: integração (registro + trava, sem nunca travar) ─────────

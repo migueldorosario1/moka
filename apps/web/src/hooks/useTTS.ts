@@ -2,6 +2,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import { recordUsage, estimateTtsCostUsd } from "@/lib/telemetry";
+import { iaTtsCasa } from "@/lib/moka-conta";
 
 /**
  * Divide um texto longo em frases menores pra leitura mais fluida.
@@ -179,19 +180,22 @@ export function useTTS() {
       text: string,
       lang: string,
       ttsConfig: {
-        baseUrl: string;
-        apiKey: string;
+        baseUrl?: string;
+        apiKey?: string;
         model?: string;
         voice?: string;
         /** Identidade pra telemetria de gastos (a voz usa a chave do usuário). */
         providerId?: string;
         providerName?: string;
+        /** Modo casa (revisor Google, 05/09): voz neural do gateway de pontos
+         *  (OpenAI tts-1 no servidor) — sem BYOK, chave da casa não vem ao cliente. */
+        casa?: boolean;
       },
     ): Promise<{ ok: boolean; status?: number }> => {
       if (!text.trim()) return { ok: false };
 
       // Chave do cache = hash simples do texto + voz.
-      const cacheKey = `${ttsConfig.voice || "nova"}:${text.slice(0, 200)}`;
+      const cacheKey = `${ttsConfig.casa ? "casa" : ""}${ttsConfig.voice || "nova"}:${text.slice(0, 200)}`;
 
       let httpStatus: number | undefined;
       try {
@@ -212,37 +216,61 @@ export function useTTS() {
         const controller = new AbortController();
         abortRef.current = controller;
 
-        const sentText = text.slice(0, 4000);
+        const sentText = ttsConfig.casa ? text.slice(0, 1500) : text.slice(0, 4000);
         const ttsModel = ttsConfig.model || "tts-1";
 
-        const response = await fetch("/api/tts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            text: sentText,
-            voice: ttsConfig.voice || "nova",
-            model: ttsModel,
-            baseUrl: ttsConfig.baseUrl,
-            apiKey: ttsConfig.apiKey,
-          }),
-          signal: controller.signal,
-        });
-
-        if (!response.ok) {
-          httpStatus = response.status;
-          // Telemetria: registra a tentativa falha (ex.: sem crédito).
-          if (ttsConfig.providerId) {
-            void recordUsage({
-              task: "tts",
-              providerId: ttsConfig.providerId,
-              providerName: ttsConfig.providerName || ttsConfig.providerId,
-              model: ttsModel,
-              promptText: sentText,
-              costUsdOverride: 0, // falhou — nada foi cobrado
-              status: "error",
-            }).catch(() => {});
+        // Casa: gateway de pontos (JSON com base64). BYOK: /api/tts (blob MP3).
+        let blob: Blob;
+        if (ttsConfig.casa) {
+          try {
+            const d = await iaTtsCasa(sentText, ttsConfig.voice || "alloy");
+            const bytes = Uint8Array.from(atob(d.audioBase64), (c) => c.charCodeAt(0));
+            blob = new Blob([bytes], { type: "audio/mpeg" });
+          } catch (e) {
+            httpStatus = (e as { status?: number }).status ?? 502;
+            if (ttsConfig.providerId) {
+              void recordUsage({
+                task: "tts",
+                providerId: ttsConfig.providerId,
+                providerName: ttsConfig.providerName || ttsConfig.providerId,
+                model: ttsModel,
+                promptText: sentText,
+                costUsdOverride: 0,
+                status: "error",
+              }).catch(() => {});
+            }
+            throw e;
           }
-          throw new Error(`TTS falhou: ${response.status}`);
+        } else {
+          const response = await fetch("/api/tts", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              text: sentText,
+              voice: ttsConfig.voice || "nova",
+              model: ttsModel,
+              baseUrl: ttsConfig.baseUrl,
+              apiKey: ttsConfig.apiKey,
+            }),
+            signal: controller.signal,
+          });
+          if (!response.ok) {
+            httpStatus = response.status;
+            // Telemetria: registra a tentativa falha (ex.: sem crédito).
+            if (ttsConfig.providerId) {
+              void recordUsage({
+                task: "tts",
+                providerId: ttsConfig.providerId,
+                providerName: ttsConfig.providerName || ttsConfig.providerId,
+                model: ttsModel,
+                promptText: sentText,
+                costUsdOverride: 0, // falhou — nada foi cobrado
+                status: "error",
+              }).catch(() => {});
+            }
+            throw new Error(`TTS falhou: ${response.status}`);
+          }
+          blob = await response.blob();
         }
 
         // Telemetria: TTS é cobrado por CARACTERE (não por token) —
@@ -258,7 +286,6 @@ export function useTTS() {
           }).catch(() => {});
         }
 
-        const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         // Guarda no cache pra não regenerar na próxima vez.
         audioCacheRef.current.set(cacheKey, url);

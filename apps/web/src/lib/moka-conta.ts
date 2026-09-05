@@ -90,10 +90,31 @@ export interface ModeloCasaInfo {
 export const MODELOS_CASA: ModeloCasaInfo[] = [
   {
     id: "",
+    rotulo: "GPT-4o mini (OpenAI)",
+    tokensPorPonto: "~60 mil",
+    mult: 1,
+    economico: true,
+  },
+  {
+    id: "gpt-4o-mini",
+    rotulo: "GPT-4o mini (OpenAI)",
+    tokensPorPonto: "~60 mil",
+    mult: 1,
+    economico: false,
+  },
+  {
+    id: "gpt-4o",
+    rotulo: "GPT-4o (OpenAI)",
+    tokensPorPonto: "~12 mil",
+    mult: 4,
+    economico: false,
+  },
+  {
+    id: "deepseek-v4-flash",
     rotulo: "DeepSeek V4 Flash",
     tokensPorPonto: "~90 mil",
     mult: 1,
-    economico: true,
+    economico: false,
   },
   {
     id: "deepseek-v4-pro",
@@ -156,15 +177,44 @@ export function gatewayProvider(acao: AcaoIa): AIProvider {
       if (!conta) {
         throw new Error(
           "Para usar a IA: abra ⚙️ Configurações e entre com o e-mail e a senha " +
-          "da sua compra — ou compre pontos em /experimente (a partir de R$ 40).",
+          "da sua compra — ou cole a sua própria chave de IA (é grátis, fica " +
+          "só no seu aparelho; o passo a passo está em /ajuda).",
         );
       }
+      // 05/09 (revisor Google): default da casa passou a ser OpenAI gpt-4o-mini
+      // (ordem do Miguel: "do OpenAI e já tá bom — ele já faz tudo").
       const r = await iaCompletar(
         conta, acao, opts?.systemPrompt ?? "", prompt,
         opts?.context ?? "", opts?.maxTokens ?? 2000,
-        getModeloCasa(),
+        getModeloCasa() || "gpt-4o-mini",
       );
       return { text: r.texto };
     },
   };
+}
+
+// ─── Voz neural da casa (sprint revisor Google, 05/09) ───────────────────────
+// Sem BYOK, mas com conta logada: o TTS sai do gateway (OpenAI tts-1 no
+// servidor, chave da casa NUNCA no navegador). Trava do gateway: ≤1500 chars.
+
+export async function iaTtsCasa(
+  texto: string,
+  voz = "alloy",
+): Promise<{ audioBase64: string; debitado: number; saldo: number }> {
+  const conta = getConta();
+  if (!conta) throw new Error("entre com sua conta Moka para usar a voz da casa");
+  const r = await fetch(`${API_PONTOS}/ia/tts`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: conta.email,
+      senha: conta.senha,
+      texto: texto.slice(0, 1500),
+      voz,
+    }),
+  });
+  const d = await r.json();
+  if (r.status === 402) throw new SaldoInsuficienteError(0);
+  if (!r.ok) throw new Error(d.detail || "a voz da casa falhou — tente de novo");
+  return { audioBase64: d.audio_base64, debitado: d.debitado, saldo: d.saldo_pontos };
 }

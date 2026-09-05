@@ -43,6 +43,8 @@ const ICONES_HELP: Array<{ icon: string; nome: { pt: string; en: string }; desc:
 interface Faq { q: string; a: string; tags: string[] }
 
 const FAQ_PT: Faq[] = [
+  { q: "Sou revisor/imprensa — como testo tudo sem chave de IA?", tags: ["revisor", "google", "reviewer", "play", "testar", "conta de teste", "sem chave", "imprensa", "prévia"],
+    a: "Fale com a equipe (info@mokareader.com) e receba uma conta de teste com IA da casa inclusa: abra ⚙️ Configurações → Entrar com sua conta e use o e-mail e a senha fornecidos. Com a conta logada, TODA a IA do app funciona sem você colar chave nenhuma — texto (GPT-4o mini, OpenAI) e voz neural (tts-1) — paga por um saldo de pontos de cortesia que a equipe carrega pra você. Seus livros continuam só no seu aparelho." },
   { q: "O Moka tem paywall ou cobrança?", tags: ["paywall", "cobrança", "pagar", "assinatura", "grátis", "gratuito", "cadastro", "conta", "login"],
     a: "Não. O Moka Reader é 100% gratuito: sem paywall, sem assinatura e sem compra dentro do app. E sem cadastro obrigatório — você abre o site e usa tudo na hora, sem nem criar conta (a conta é opcional e serve só pra sincronizar sua biblioteca entre aparelhos). A única coisa que vem de fora é a chave de IA: você conecta a sua, do provedor que quiser, e paga o provedor diretamente pelo que usar — o Moka nunca cobra nada." },
   { q: "O que é o Moka?", tags: ["moka", "que", "é", "app", "aplicativo"],
@@ -78,6 +80,8 @@ const FAQ_PT: Faq[] = [
 ];
 
 const FAQ_EN: Faq[] = [
+  { q: "I'm a reviewer/press — how do I test everything without an AI key?", tags: ["reviewer", "google", "play", "test", "test account", "no key", "press", "preview"],
+    a: "Contact the team (info@mokareader.com) to receive a test account with house AI included: open ⚙️ Settings → Sign in with your account and use the e-mail and password provided. Once signed in, ALL the AI in the app works without pasting any key — text (GPT-4o mini, OpenAI) and neural voice (tts-1) — covered by a courtesy point balance the team loads for you. Your books still stay only on your device." },
   { q: "Does Moka have a paywall or any charge?", tags: ["paywall", "charge", "payment", "subscription", "free", "account", "login", "signup"],
     a: "No. Moka Reader is 100% free: no paywall, no subscription and no in-app purchase. And no mandatory sign-up — you open the site and use everything right away, without creating an account (an account is optional and only syncs your library across devices). The only thing that comes from outside is the AI key: you connect your own, from whichever provider you choose, and pay the provider directly for what you use — Moka never charges anything." },
   { q: "What is Moka?", tags: ["moka", "what", "is", "app"],
