@@ -4681,6 +4681,16 @@ border-radius: 12px; box-shadow: var(--shadow-lg); padding: 14px;
 display: flex; flex-direction: column; gap: 8px;
 }
 .conta-titulo { font-weight: 700; font-size: 13.5px; margin: 0 0 2px; text-align: center; }
+/* Cabeçalho com ✕: o pop de conta NÃO fecha mais por clique fora (bug do
+   Miguel, 06/09 — "caixa instável, ficou fechando"); fecha só por ✕/tecla do
+   botão da topbar. */
+.conta-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.conta-head .conta-titulo { flex: 1; margin: 0; }
+.conta-fechar {
+  border: none; background: var(--surface-alt, #eee); color: var(--text-muted);
+  width: 26px; height: 26px; border-radius: 50%; cursor: pointer; flex-shrink: 0;
+  font-size: 13px; line-height: 1;
+}
 .conta-nome { margin: 0; font-size: 13.5px; line-height: 1.2; }
 .conta-email { margin: 0; font-size: 11.5px; color: var(--text-muted); }
 .conta-saldo, .conta-lic { margin: 0; font-size: 13.5px; }
@@ -9827,7 +9837,13 @@ body {
   color: var(--accent) !important;
 }
 
-.auth-signin {
+/* GUERRA DE ESPECIFICIDADE (bug do Miguel, 06/09): a regra de grupo
+   ".igot-topbar-actions button" (0,1,1) vencia este override (0,1,0) mesmo
+   com !important — o "Entrar" herdava font-size 20px e caixa 44x44 de ícone,
+   e a palavra estourava para fora do botão. Seletores button.auth-signin
+   (0,1,1, posterior no arquivo) e o escopado (0,2,1) vencem a guerra. */
+.igot-topbar-actions button.auth-signin,
+button.auth-signin {
   width: auto !important;
   height: 44px !important;
   min-height: 44px !important;
@@ -9837,13 +9853,15 @@ body {
   justify-content: center !important;
   padding: 0 16px !important;
   border-radius: var(--btn-radius-md, 12px) !important;
-  border: 1px solid var(--border-soft) !important;
-  background: var(--surface) !important;
+  border: 1px solid var(--accent) !important;
+  background: var(--accent) !important;
   font-size: 14px !important;
-  font-weight: 600 !important;
-  color: var(--text) !important;
+  font-weight: 700 !important;
+  color: var(--accent-contrast, #fff8ee) !important;
   box-sizing: border-box !important;
   flex-shrink: 0 !important;
+  line-height: 1 !important;
+  white-space: nowrap !important;
 }
 
 .auth-avatar-btn {
@@ -9932,7 +9950,8 @@ body {
     border-radius: var(--btn-radius-md, 12px) !important;
   }
 
-  .auth-signin,
+  .igot-topbar-actions button.auth-signin,
+  button.auth-signin,
   .lang-switcher-btn {
     height: 48px !important;
     min-height: 48px !important;

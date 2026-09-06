@@ -44,15 +44,26 @@ export function ContaButton() {
     }
   }, [user, info]);
 
-  // Fecha ao clicar fora.
+  // NÃO fecha mais por clique fora (bug do Miguel, 06/09 — "a caixa de login
+  // ficou fechando, não está estável"): fechava no meio da digitação quando o
+  // toque/clique caía fora do pop. Agora fecha só pelo ✕ ou pelo botão da
+  // topbar. O ref continua ancorando o pop ao botão.
+
+  // Login feito pela OUTRA porta (AuthModal com fallback de pontos) refaz a
+  // verificação aqui na hora, sem recarregar a página.
   useEffect(() => {
-    if (!aberto) return;
-    const handler = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) setAberto(false);
+    const recarrega = () => {
+      const c = getConta();
+      if (!c) return;
+      setLoading(true);
+      Promise.all([verificarConta(c.email, c.senha), licencaAtiva(c.email, c.senha)])
+        .then(([i, lic]) => { setInfo({ email: c.email, nome: i.nome, saldo: i.saldo }); setLicenca(lic); })
+        .catch(() => setConta(null))
+        .finally(() => setLoading(false));
     };
-    document.addEventListener("mousedown", handler);
-    return () => document.removeEventListener("mousedown", handler);
-  }, [aberto]);
+    window.addEventListener("moka-conta-mudou", recarrega);
+    return () => window.removeEventListener("moka-conta-mudou", recarrega);
+  }, []);
 
   const entrarPontos = async () => {
     setErro("");
@@ -114,6 +125,7 @@ export function ContaButton() {
                   <p className="conta-nome"><strong>{nomeExibicao}</strong></p>
                   <p className="conta-email">{user?.email || info?.email}</p>
                 </div>
+                <button type="button" className="conta-fechar" onClick={() => setAberto(false)} aria-label="Fechar">✕</button>
               </div>
               {info && <p className="conta-saldo">🪙 <strong>{info.saldo.toLocaleString("pt-BR")}</strong> pontos</p>}
               {licenca && <p className="conta-lic">💼 licença avançada ativa</p>}
@@ -122,7 +134,10 @@ export function ContaButton() {
             </>
           ) : (
             <>
-              <p className="conta-titulo">🔑 Entrar no Moka</p>
+              <div className="conta-head">
+                <p className="conta-titulo">🔑 Entrar no Moka</p>
+                <button type="button" className="conta-fechar" onClick={() => setAberto(false)} aria-label="Fechar">✕</button>
+              </div>
               
               <button
                 type="button"

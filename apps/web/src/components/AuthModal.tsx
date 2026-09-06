@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useI18n } from "./I18nProvider";
+import { setConta, verificarConta } from "@/lib/moka-conta";
 import type { useAuth } from "@/lib/auth";
 
 type Auth = ReturnType<typeof useAuth>;
@@ -66,7 +67,18 @@ export function AuthModal({ auth, onClose }: AuthModalProps) {
     }
     if (mode === "login") {
       await run(async () => {
-        await auth.signInWithPassword(mail, senha);
+        try {
+          await auth.signInWithPassword(mail, senha);
+        } catch (eCloud) {
+          // PORTA DUPLA (bug do Miguel, 06/09): contas de pontos/teste (incl. a
+          // do revisor do Google) vivem no gateway Tencent, não no Supabase.
+          // Se a porta cloud recusar, tenta a MESMA credencial no gateway —
+          // assim o revisor entra por qualquer porta que tocar.
+          const info = await verificarConta(mail, senha).catch(() => null);
+          if (!info) throw eCloud;
+          setConta({ email: mail, senha });
+          window.dispatchEvent(new Event("moka-conta-mudou"));
+        }
         onClose();
       });
     } else if (mode === "signup") {
@@ -97,11 +109,22 @@ export function AuthModal({ auth, onClose }: AuthModalProps) {
   // no body, o overlay cobre a viewport INTEIRA sempre, em qualquer página.
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
+
+  // Fecha só por ✕ ou Esc. Clique no escuro NÃO fecha (bug do Miguel, 06/09:
+  // a caixa "ficou fechando" sozinha no meio do teste de login).
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
+
   if (!mounted) return null;
 
   return createPortal(
-    <div className="am-overlay" onClick={onClose}>
-      <div className="am-card" onClick={(e) => e.stopPropagation()} role="dialog" aria-label={t("auth_modal_title")}>
+    <div className="am-overlay">
+      <div className="am-card" role="dialog" aria-label={t("auth_modal_title")}>
         <header className="am-head">
           <h2>{t("auth_modal_title")}</h2>
           <button onClick={onClose} aria-label={t("close")} title={t("close")}>✕</button>
