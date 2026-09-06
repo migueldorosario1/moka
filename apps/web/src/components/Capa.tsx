@@ -4,6 +4,7 @@ import Link from "next/link";
 import { SiteFooter } from "@/components/SiteFooter";
 import { useI18n } from "@/components/I18nProvider";
 import { LangSwitcher } from "@/components/LangSwitcher";
+import { AuthGate } from "@/components/AuthGate";
 
 /**
  * CAPA — fase GRATUITA (pivô do Miguel, 2026-08-04):
@@ -25,7 +26,10 @@ export function Capa() {
 
       {/* 🌐 Bandeirinha de idioma (ordem do Miguel, 31/08: o menu saiu
           da capa, mas a bandeirinha FICA — ela é importante) */}
+      {/* 🔑 Entrar ao lado da bandeirinha (ordem do Miguel, 06/09: o login
+          volta à página inicial e fica ao lado da bandeira em toda página) */}
       <div className="capa-lang">
+        <AuthGate />
         <LangSwitcher />
       </div>
 

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { CafezinhoLogo } from "@/components/CafezinhoLogo";
 import { LangSwitcher } from "@/components/LangSwitcher";
+import { AuthGate } from "@/components/AuthGate";
 import { SiteFooter } from "@/components/SiteFooter";
 import { useI18n } from "@/components/I18nProvider";
 
@@ -26,6 +27,7 @@ export default function Experimente() {
           </Link>
         </div>
         <div className="igot-topbar-actions">
+          <AuthGate />
           <LangSwitcher />
         </div>
       </div>

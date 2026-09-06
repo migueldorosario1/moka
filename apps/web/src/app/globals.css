@@ -9380,6 +9380,8 @@ font-size: 14px;
 .capa-lang {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
   padding: 10px 16px 0;
 }
 
